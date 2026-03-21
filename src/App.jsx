@@ -5,7 +5,14 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-// Add page imports here
+import AppLayout from './components/layout/AppLayout';
+import Home from './pages/Home';
+import Professionals from './pages/Professionals';
+import ProfessionalProfile from './pages/ProfessionalProfile';
+import RequestQuote from './pages/RequestQuote';
+import Categories from './pages/Categories';
+import HowItWorks from './pages/HowItWorks';
+import Dashboard from './pages/Dashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -33,7 +40,15 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/professionals" element={<Professionals />} />
+        <Route path="/professional/:id" element={<ProfessionalProfile />} />
+        <Route path="/request-quote" element={<RequestQuote />} />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
