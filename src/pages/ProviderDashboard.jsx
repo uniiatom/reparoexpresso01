@@ -1,0 +1,336 @@
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, DollarSign, CheckCircle2, Clock, MapPin, Star, TrendingUp, AlertCircle } from "lucide-react";
+import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
+
+export default function ProviderDashboard() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [provider, setProvider] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    base44.auth.me().then(u => {
+      setUser(u);
+    }).catch(() => navigate('/'));
+  }, [navigate]);
+
+  // Fetch provider data
+  const { data: providers } = useQuery({
+    queryKey: ['provider', user?.email],
+    queryFn: () => base44.entities.Provider.filter({ user_id: user?.id }),
+    enabled: !!user?.id,
+  });
+
+  useEffect(() => {
+    if (providers?.length > 0) {
+      setProvider(providers[0]);
+    }
+  }, [providers]);
+
+  // Fetch accepted services
+  const { data: acceptedServices = [] } = useQuery({
+    queryKey: ['acceptedServices', provider?.id],
+    queryFn: () => base44.entities.ServiceRequest.filter({ 
+      provider_id: provider?.id,
+      status: { $in: ['aceito', 'a_caminho', 'em_andamento', 'concluido'] }
+    }),
+    enabled: !!provider?.id,
+  });
+
+  // Fetch payment history
+  const { data: payments = [] } = useQuery({
+    queryKey: ['payments', provider?.id],
+    queryFn: () => base44.entities.ServiceRequest.filter({ 
+      provider_id: provider?.id,
+      final_price: { $exists: true }
+    }),
+    enabled: !!provider?.id,
+  });
+
+  // Fetch availability
+  const { data: availability = [] } = useQuery({
+    queryKey: ['availability', provider?.id],
+    queryFn: () => base44.entities.ProviderAvailability.filter({ provider_id: provider?.id }),
+    enabled: !!provider?.id,
+  });
+
+  if (!user || !provider) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // Calculate stats
+  const totalEarnings = payments.reduce((sum, p) => sum + (p.final_price || 0), 0);
+  const completedServices = acceptedServices.filter(s => s.status === 'concluido').length;
+  const activeServices = acceptedServices.filter(s => ['a_caminho', 'em_andamento'].includes(s.status)).length;
+  const avgRating = provider.rating || 0;
+
+  const statusColors = {
+    aceito: 'bg-blue-100 text-blue-700',
+    a_caminho: 'bg-yellow-100 text-yellow-700',
+    em_andamento: 'bg-purple-100 text-purple-700',
+    concluido: 'bg-green-100 text-green-700',
+    cancelado: 'bg-red-100 text-red-700',
+  };
+
+  const statusLabels = {
+    aceito: 'Aceito',
+    a_caminho: 'A caminho',
+    em_andamento: 'Em andamento',
+    concluido: 'Concluído',
+    cancelado: 'Cancelado',
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="max-w-5xl mx-auto px-4 py-6">
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-1">Painel do Prestador</h1>
+              <p className="text-muted-foreground">Gerenciar serviços, pagamentos e disponibilidade</p>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center gap-2 mb-1">
+                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                <span className="text-lg font-bold text-foreground">{avgRating.toFixed(1)}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">{provider.total_reviews || 0} avaliações</p>
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Ganhos</p>
+                      <p className="text-2xl font-bold text-foreground">R$ {totalEarnings.toFixed(2)}</p>
+                    </div>
+                    <DollarSign className="w-8 h-8 text-primary opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Serviços Ativos</p>
+                      <p className="text-2xl font-bold text-foreground">{activeServices}</p>
+                    </div>
+                    <Clock className="w-8 h-8 text-primary opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Concluídos</p>
+                      <p className="text-2xl font-bold text-foreground">{completedServices}</p>
+                    </div>
+                    <CheckCircle2 className="w-8 h-8 text-green-500 opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Total Serviços</p>
+                      <p className="text-2xl font-bold text-foreground">{acceptedServices.length}</p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-primary opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Main Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="overview">Serviços</TabsTrigger>
+            <TabsTrigger value="payments">Pagamentos</TabsTrigger>
+            <TabsTrigger value="availability">Disponibilidade</TabsTrigger>
+          </TabsList>
+
+          {/* Tab: Serviços Aceitos */}
+          <TabsContent value="overview" className="space-y-4">
+            {acceptedServices.length === 0 ? (
+              <Card className="bg-muted/50 border-border">
+                <CardContent className="pt-6 text-center">
+                  <AlertCircle className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
+                  <p className="text-muted-foreground text-sm">Nenhum serviço aceito ainda</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {acceptedServices.map((service, idx) => (
+                  <motion.div
+                    key={service.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                  >
+                    <Card className="bg-card border-border hover:shadow-lg transition-all">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-foreground">{service.service_type}</h3>
+                              <Badge className={statusColors[service.status]}>
+                                {statusLabels[service.status]}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3" /> {service.city}, {service.state}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" /> {new Date(service.created_date).toLocaleDateString('pt-BR')}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {service.final_price && (
+                              <div>
+                                <p className="text-xs text-muted-foreground">Valor final</p>
+                                <p className="text-lg font-bold text-primary">R$ {service.final_price.toFixed(2)}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Tab: Histórico de Pagamentos */}
+          <TabsContent value="payments" className="space-y-4">
+            {payments.length === 0 ? (
+              <Card className="bg-muted/50 border-border">
+                <CardContent className="pt-6 text-center">
+                  <DollarSign className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
+                  <p className="text-muted-foreground text-sm">Nenhum pagamento recebido ainda</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {payments.map((payment, idx) => (
+                  <motion.div
+                    key={payment.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                  >
+                    <Card className="bg-card border-border">
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold text-foreground mb-1">{payment.service_type}</h3>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(payment.updated_date).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground mb-1">Valor recebido</p>
+                            <p className="text-2xl font-bold text-green-600">R$ {payment.final_price.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Tab: Disponibilidade */}
+          <TabsContent value="availability" className="space-y-4">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle>Horários de Funcionamento</CardTitle>
+                <CardDescription>Configure quando você está disponível para serviços</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {availability.length === 0 ? (
+                  <div className="text-center py-8">
+                    <AlertCircle className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
+                    <p className="text-muted-foreground text-sm mb-4">Nenhuma disponibilidade configurada</p>
+                    <Button onClick={() => navigate('/prestador/horarios')} className="rounded-2xl">
+                      Configurar Horários
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {[0, 1, 2, 3, 4, 5, 6].map(day => {
+                      const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                      const dayAvail = availability.filter(a => a.day_of_week === day);
+                      
+                      return (
+                        <div key={day} className="flex items-center justify-between p-4 rounded-2xl border border-border bg-muted/50">
+                          <span className="font-medium text-foreground">{dayNames[day]}</span>
+                          <div className="text-right">
+                            {dayAvail.length > 0 ? (
+                              <div>
+                                {dayAvail.map(av => (
+                                  <p key={av.id} className="text-xs text-primary font-semibold">
+                                    {av.start_time} - {av.end_time} ({av.max_slots_per_day} slots)
+                                  </p>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted-foreground">Indisponível</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {availability.length > 0 && (
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/prestador/horarios')}
+                className="w-full rounded-2xl"
+              >
+                Editar Horários
+              </Button>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
