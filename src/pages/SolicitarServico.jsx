@@ -33,6 +33,7 @@ const SERVICE_TYPES = [
   { value: "conversao_vaso_coplado", label: "Conversão Vaso CX Acoplada", icon: Droplets, group: "casa" },
   { value: "instalacao_vaso_monobloco", label: "Vaso Monobloco", icon: Droplets, group: "casa" },
   { value: "reparo_forro_gesso", label: "Reparo Forro de Gesso", icon: Hammer, group: "casa" },
+  { value: "desentupimento", label: "Desentupimento", icon: Droplets, group: "casa" },
   { value: "outros", label: "Outros", icon: Wrench, group: "casa" },
   { value: "troca_pneu", label: "Troca de Pneu", icon: Car, group: "veiculo" },
   { value: "recarga_bateria", label: "Recarga de Bateria", icon: Zap, group: "veiculo" },
