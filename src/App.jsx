@@ -23,6 +23,7 @@ import ProviderSchedule from './pages/ProviderSchedule';
 import LoyaltyRewards from './pages/LoyaltyRewards';
 import ProviderLocationMap from './pages/ProviderLocationMap';
 import MeusPedidos from './pages/MeusPedidos';
+import PartnerRegister from './pages/PartnerRegister';
 import { Toaster as SonnerToaster } from "sonner";
 
 const AuthenticatedApp = () => {
@@ -64,6 +65,7 @@ const AuthenticatedApp = () => {
         <Route path="/cadastro-prestador" element={<ProviderRegister />} />
         <Route path="/termos-cliente" element={<TermosCliente />} />
         <Route path="/termos-prestador" element={<TermosPrestador />} />
+        <Route path="/cadastro-parceiro" element={<PartnerRegister />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
