@@ -378,15 +378,15 @@ export default function SolicitarServico() {
           </Button>
         )}
       </div>
-    </div>
 
-    {showProviderSearch && (
-      <ProviderSearchModal
-        form={form}
-        onConfirm={handleFinalConfirm}
-        onSchedule={handleFinalConfirm}
-        onClose={() => setShowProviderSearch(false)}
-      />
-    )}
+      {showProviderSearch && (
+        <ProviderSearchModal
+          form={form}
+          onConfirm={handleFinalConfirm}
+          onSchedule={handleFinalConfirm}
+          onClose={() => setShowProviderSearch(false)}
+        />
+      )}
+    </div>
   );
 }
