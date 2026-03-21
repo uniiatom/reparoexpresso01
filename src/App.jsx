@@ -13,6 +13,8 @@ import ProviderApp from './pages/ProviderApp';
 import AdminPanel from './pages/AdminPanel';
 import ClientRegister from './pages/ClientRegister';
 import ProviderRegister from './pages/ProviderRegister';
+import TermosCliente from './pages/TermosCliente';
+import TermosPrestador from './pages/TermosPrestador';
 import { Toaster as SonnerToaster } from "sonner";
 
 const AuthenticatedApp = () => {
