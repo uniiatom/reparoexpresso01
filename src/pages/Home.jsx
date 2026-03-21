@@ -48,7 +48,8 @@ const electricalServices = [
 
 const hydraulicServices = [
   { label: "Vazamento", type: "hidraulica_vazamento", price: "R$ 80 - R$ 200" },
-  { label: "Substituição de Registro", type: "hidraulica_registro", price: "R$ 60 - R$ 150" },
+  { label: "Registro de Gaveta", type: "hidraulica_registro_gaveta", price: "R$ 60 - R$ 150" },
+  { label: "Registro de Pressão", type: "hidraulica_registro_pressao", price: "R$ 60 - R$ 150" },
   { label: "Reparo de Vaso Sanitário", type: "hidraulica_vaso", price: "R$ 80 - R$ 200" },
 ];
 
