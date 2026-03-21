@@ -337,18 +337,21 @@ export default function Home() {
                           />
                           <AvailableScheduleSelector
                             onConfirm={(scheduleData) => {
+                              const isElectrical = selectedElectricalService !== null;
                               setPendingServiceData({
-                                type: 'eletrica',
-                                subtipo: selectedElectricalService.type,
+                                type: isElectrical ? 'eletrica' : 'hidraulica',
+                                subtipo: isElectrical ? selectedElectricalService.type : selectedHydraulicService.type,
                                 modality: 'agendado',
                                 date: scheduleData.date,
                                 time: scheduleData.time,
-                                price: selectedElectricalService.price
+                                price: isElectrical ? selectedElectricalService.price : selectedHydraulicService.price
                               });
                               setShowPaymentModal(true);
                               setShowElectricalModal(false);
+                              setShowHydraulicModal(false);
                               setShowScheduleModal(false);
                               setSelectedElectricalService(null);
+                              setSelectedHydraulicService(null);
                             }}
                             onCancel={() => { setShowScheduleModal(false); setScheduleType(null); }}
                           />
