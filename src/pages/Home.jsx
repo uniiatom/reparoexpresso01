@@ -30,7 +30,6 @@ const vehicleServices = [
   { icon: Zap, label: "Recarga Bateria", type: "recarga_bateria", color: "bg-yellow-100 text-yellow-700" },
   { icon: Wrench, label: "Conserto Pneu", type: "conserto_pneu", color: "bg-red-100 text-red-700" },
   { icon: Truck, label: "Reboque", type: "reboque", color: "bg-orange-100 text-orange-700" },
-  { icon: Lock, label: "Chaveiro", type: "veiculo_outros", color: "bg-green-100 text-green-700" },
 ];
 
 export default function Home() {
