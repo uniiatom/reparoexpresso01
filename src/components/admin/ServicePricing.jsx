@@ -35,12 +35,15 @@ const ALL_SERVICES = [
 
 function PricingRow({ service, pricing, onSave }) {
   const [editing, setEditing] = useState(false);
+  const [showCity, setShowCity] = useState(false);
   const [min, setMin] = useState(pricing?.price_min ?? '');
   const [max, setMax] = useState(pricing?.price_max ?? '');
   const [note, setNote] = useState(pricing?.note ?? '');
+  const [city, setCity] = useState(pricing?.city ?? '');
+  const [state, setState] = useState(pricing?.state ?? '');
 
   const handleSave = () => {
-    onSave({ service_type: service.type, price_min: Number(min), price_max: Number(max), note });
+    onSave({ service_type: service.type, price_min: Number(min), price_max: Number(max), note, city, state });
     setEditing(false);
   };
 
@@ -48,6 +51,8 @@ function PricingRow({ service, pricing, onSave }) {
     setMin(pricing?.price_min ?? '');
     setMax(pricing?.price_max ?? '');
     setNote(pricing?.note ?? '');
+    setCity(pricing?.city ?? '');
+    setState(pricing?.state ?? '');
     setEditing(false);
   };
 
@@ -58,15 +63,26 @@ function PricingRow({ service, pricing, onSave }) {
           <p className="font-semibold text-foreground text-sm min-w-[160px]">{service.label}</p>
 
           {editing ? (
-            <div className="flex items-center gap-2 flex-1 flex-wrap">
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground">R$</span>
-                <Input value={min} onChange={e => setMin(e.target.value)} placeholder="Mín" className="w-20 h-8 text-sm" type="number" />
-                <span className="text-xs text-muted-foreground">–</span>
-                <Input value={max} onChange={e => setMax(e.target.value)} placeholder="Máx" className="w-20 h-8 text-sm" type="number" />
+            <div className="flex-1 space-y-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground">R$</span>
+                  <Input value={min} onChange={e => setMin(e.target.value)} placeholder="Mín" className="w-20 h-8 text-sm" type="number" />
+                  <span className="text-xs text-muted-foreground">–</span>
+                  <Input value={max} onChange={e => setMax(e.target.value)} placeholder="Máx" className="w-20 h-8 text-sm" type="number" />
+                </div>
+                <Input value={note} onChange={e => setNote(e.target.value)} placeholder="Observação (ex: por ponto)" className="flex-1 h-8 text-sm min-w-[140px]" />
               </div>
-              <Input value={note} onChange={e => setNote(e.target.value)} placeholder="Observação (ex: por ponto)" className="flex-1 h-8 text-sm min-w-[140px]" />
-              <div className="flex gap-1">
+              <button onClick={() => setShowCity(!showCity)} className="text-xs text-primary hover:underline">
+                {showCity ? '✕ Remover localidade' : '+ Adicionar por localidade'}
+              </button>
+              {showCity && (
+                <div className="flex gap-2 pl-4 border-l-2 border-primary/30">
+                  <Input value={city} onChange={e => setCity(e.target.value)} placeholder="Cidade" className="h-8 text-sm flex-1" />
+                  <Input value={state} onChange={e => setState(e.target.value)} placeholder="UF" className="h-8 text-sm w-12" maxLength="2" />
+                </div>
+              )}
+              <div className="flex gap-1 pt-2">
                 <Button size="icon" className="h-8 w-8 rounded-xl bg-green-600 text-white" onClick={handleSave}><Check className="w-4 h-4" /></Button>
                 <Button size="icon" variant="outline" className="h-8 w-8 rounded-xl" onClick={handleCancel}><X className="w-4 h-4" /></Button>
               </div>
@@ -78,6 +94,7 @@ function PricingRow({ service, pricing, onSave }) {
                   <p className="text-sm font-bold text-primary">
                     R$ {pricing.price_min} – R$ {pricing.price_max}
                   </p>
+                  {pricing.city && <p className="text-xs text-muted-foreground">{pricing.city}/{pricing.state}</p>}
                   {pricing.note && <p className="text-xs text-muted-foreground">{pricing.note}</p>}
                 </div>
               ) : (
@@ -104,7 +121,8 @@ export default function ServicePricing() {
 
   const savePricing = useMutation({
     mutationFn: async (data) => {
-      const existing = pricingList.find(p => p.service_type === data.service_type);
+      const filter = { service_type: data.service_type, city: data.city || null, state: data.state || null };
+      const existing = pricingList.find(p => p.service_type === data.service_type && (p.city || null) === (data.city || null) && (p.state || null) === (data.state || null));
       if (existing) {
         return base44.entities.ServicePricing.update(existing.id, data);
       } else {
