@@ -172,7 +172,7 @@ export default function Home() {
                     {serviceTab === 'casa' && (
                       <div className="grid grid-cols-4 gap-3">
                         {homeServices.map((s, i) => (
-                          <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
+                          <motion.div key={`home-${s.type}-${i}`} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
                             {s.type === 'eletrica' ? (
                               <button 
                                 onClick={() => setShowElectricalModal(true)}
