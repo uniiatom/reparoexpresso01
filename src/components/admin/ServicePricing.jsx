@@ -25,6 +25,7 @@ const ALL_SERVICES = [
   { type: "conversao_vaso_coplado", label: "Conversão Vaso CX Acoplada" },
   { type: "instalacao_vaso_monobloco", label: "Vaso Monobloco" },
   { type: "reparo_forro_gesso", label: "Reparo Forro de Gesso" },
+  { type: "desentupimento", label: "Desentupimento" },
   { type: "troca_pneu", label: "Troca de Pneu" },
   { type: "recarga_bateria", label: "Recarga de Bateria" },
   { type: "conserto_pneu", label: "Conserto de Pneu" },
