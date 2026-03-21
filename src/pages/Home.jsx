@@ -6,6 +6,7 @@ import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, 
 import { motion, AnimatePresence } from "framer-motion";
 import ReferralCard from "@/components/ReferralCard";
 import FavoritesList from "@/components/FavoritesList";
+import PaymentModal from "@/components/PaymentModal";
 
 const homeServices = [
   { icon: Zap, label: "Elétrica", type: "eletrica", color: "bg-yellow-100 text-yellow-700" },
