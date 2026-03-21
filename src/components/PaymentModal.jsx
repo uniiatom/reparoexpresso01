@@ -5,11 +5,18 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Loader2, AlertCircle, CheckCircle2, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function PaymentModal({ isOpen, onClose, requestId, finalPrice, serviceName, onPaymentConfirmed }) {
+export default function PaymentModal({ isOpen, onClose, serviceData }) {
   const [isPaying, setIsPaying] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('stripe'); // 'stripe' or 'pix'
   const [error, setError] = useState(null);
+
+  if (!serviceData) return null;
+
+  // Parse price from string like "R$ 80 - R$ 150"
+  const priceText = serviceData.price || '0';
+  const priceMatch = priceText.match(/R\$\s([\d.,]+)/);
+  const amount = priceMatch ? parseFloat(priceMatch[1].replace('.', '').replace(',', '.')) : 0;
 
   const handlePayment = async () => {
     setIsPaying(true);
@@ -24,9 +31,9 @@ export default function PaymentModal({ isOpen, onClose, requestId, finalPrice, s
       }
 
       const response = await base44.functions.invoke('createCheckoutSession', {
-        serviceRequestId: requestId,
-        amount: finalPrice,
-        serviceName: serviceName,
+        amount: amount,
+        serviceName: `${serviceData.type} - ${serviceData.subtipo}`,
+        serviceData: serviceData,
       });
 
       if (response.data.sessionUrl) {
