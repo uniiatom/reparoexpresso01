@@ -251,6 +251,13 @@ export default function ProviderApp() {
           </div>
         </div>
       )}
+
+      {/* Banner de novo chamado com alerta sonoro */}
+      <NewJobBanner
+        job={incomingJob}
+        onAccept={handleAcceptBanner}
+        onDecline={handleDeclineBanner}
+      />
     </div>
   );
 }
