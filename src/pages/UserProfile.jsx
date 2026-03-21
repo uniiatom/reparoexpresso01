@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, LogOut, MapPin, Phone, Calendar } from "lucide-react";
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, LogOut, MapPin, Phone, Calendar, Gift } from "lucide-react";
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import ServiceHistory from '@/components/ServiceHistory';
 import { Loader2 } from 'lucide-react';
@@ -116,10 +116,17 @@ export default function UserProfile() {
         )}
       </div>
 
-      {/* Logout */}
-      <Button onClick={handleLogout} variant="outline" className="w-full rounded-2xl h-12">
-        <LogOut className="w-4 h-4 mr-2" /> Sair da conta
-      </Button>
+      {/* Actions */}
+      <div className="space-y-2">
+        <Link to="/recompensas" className="block">
+          <Button variant="outline" className="w-full rounded-2xl h-12 font-semibold border-primary/30 text-primary hover:bg-primary/10">
+            <Gift className="w-4 h-4 mr-2" /> Meu Programa de Fidelidade
+          </Button>
+        </Link>
+        <Button onClick={handleLogout} variant="outline" className="w-full rounded-2xl h-12 text-destructive border-destructive/30 hover:bg-destructive/10">
+          <LogOut className="w-4 h-4 mr-2" /> Sair da conta
+        </Button>
+      </div>
     </div>
   );
 }
