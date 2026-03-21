@@ -30,9 +30,8 @@ const ALL_SERVICES = [
   { type: "recarga_bateria", label: "Recarga de Bateria" },
   { type: "conserto_pneu", label: "Conserto de Pneu" },
   { type: "reboque", label: "Reboque" },
-  { type: "veiculo_outros", label: "Chaveiro (Veículo)" },
   { type: "outros", label: "Outros" },
-];
+  ];
 
 function RepasseRow({ service, pricing, onSave }) {
   const [editing, setEditing] = useState(false);
