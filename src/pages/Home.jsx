@@ -135,7 +135,8 @@ export default function Home() {
                 {/* Benefits */}
                 <div className="space-y-3">
                   {[
-                    { icon: ClipboardList, title: "Receba chamados", desc: "Clientes próximos de você em tempo real" },
+                    { icon: Smartphone, title: "App para prestadores", desc: "Receba alertas sonoros de novos chamados no celular" },
+                    { icon: ClipboardList, title: "Aceite ou recuse", desc: "Você decide quais chamados atender" },
                     { icon: BadgeCheck, title: "Homologação gratuita", desc: "Certificação pela Escola Prática inclusa" },
                     { icon: Star, title: "Construa reputação", desc: "Avaliações que aumentam seus ganhos" },
                   ].map(item => (
