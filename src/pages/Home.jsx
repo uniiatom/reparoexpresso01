@@ -50,6 +50,7 @@ export default function Home() {
   const [serviceTab, setServiceTab] = useState('casa');
   const [user, setUser] = useState(null);
   const [showElectricalModal, setShowElectricalModal] = useState(false);
+  const [selectedElectricalService, setSelectedElectricalService] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(u => setUser(u)).catch(() => {});
