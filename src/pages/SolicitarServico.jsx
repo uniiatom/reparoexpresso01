@@ -32,6 +32,7 @@ const SERVICE_TYPES = [
   { value: "instalacao_coifa_ilha", label: "Coifa Ilha", icon: Wind, group: "casa" },
   { value: "conversao_vaso_coplado", label: "Conversão Vaso Coplado", icon: Droplets, group: "casa" },
   { value: "instalacao_vaso_monobloco", label: "Vaso Monobloco", icon: Droplets, group: "casa" },
+  { value: "reparo_forro_gesso", label: "Reparo Forro de Gesso", icon: Hammer, group: "casa" },
   { value: "outros", label: "Outros", icon: Wrench, group: "casa" },
   { value: "troca_pneu", label: "Troca de Pneu", icon: Car, group: "veiculo" },
   { value: "recarga_bateria", label: "Recarga de Bateria", icon: Zap, group: "veiculo" },
