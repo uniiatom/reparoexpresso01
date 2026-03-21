@@ -13,6 +13,12 @@ const homeServices = [
   { icon: Hammer, label: "Alvenaria", type: "alvenaria", color: "bg-red-100 text-red-700" },
   { icon: Lock, label: "Fechadura", type: "fechadura", color: "bg-green-100 text-green-700" },
   { icon: Wind, label: "Ar Condicionado", type: "ar_condicionado", color: "bg-cyan-100 text-cyan-700" },
+  { icon: Droplets, label: "Limpeza Caixa d'Água", type: "limpeza_caixa_dagua", color: "bg-blue-100 text-blue-700" },
+  { icon: Wrench, label: "Limpeza de Calha", type: "limpeza_calha", color: "bg-slate-100 text-slate-700" },
+  { icon: Hammer, label: "Substituição de Telha", type: "substituicao_telha", color: "bg-orange-100 text-orange-700" },
+  { icon: Wrench, label: "Limpeza de Telhado", type: "limpeza_telhado", color: "bg-amber-100 text-amber-700" },
+  { icon: Wind, label: "Coifa de Parede", type: "instalacao_coifa_parede", color: "bg-teal-100 text-teal-700" },
+  { icon: Wind, label: "Coifa Ilha", type: "instalacao_coifa_ilha", color: "bg-emerald-100 text-emerald-700" },
 ];
 
 const vehicleServices = [
