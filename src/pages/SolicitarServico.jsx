@@ -379,5 +379,14 @@ export default function SolicitarServico() {
         )}
       </div>
     </div>
+
+    {showProviderSearch && (
+      <ProviderSearchModal
+        form={form}
+        onConfirm={handleFinalConfirm}
+        onSchedule={handleFinalConfirm}
+        onClose={() => setShowProviderSearch(false)}
+      />
+    )}
   );
 }
