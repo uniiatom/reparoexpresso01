@@ -48,7 +48,20 @@ export default function ProviderApp() {
   });
 
   const toggleOnline = useMutation({
-    mutationFn: (val) => base44.entities.Provider.update(provider.id, { is_online: val }),
+    mutationFn: (val) => {
+      const updateData = { is_online: val };
+      // Ao ficar online, capturar localização GPS do prestador
+      if (val && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          base44.entities.Provider.update(provider.id, {
+            is_online: true,
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+        }, null, { enableHighAccuracy: true, timeout: 8000 });
+      }
+      return base44.entities.Provider.update(provider.id, updateData);
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-provider'] }),
   });
 
