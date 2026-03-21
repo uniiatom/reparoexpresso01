@@ -197,6 +197,7 @@ export default function Home() {
                                     <s.icon className="w-6 h-6" />
                                   </div>
                                   <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
+                                  <span className="text-xs text-center text-muted-foreground">{s.subtitle}</span>
                                 </div>
                               </button>
                             ) : s.type === 'hidraulica' ? (
@@ -209,6 +210,7 @@ export default function Home() {
                                     <s.icon className="w-6 h-6" />
                                   </div>
                                   <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
+                                  <span className="text-xs text-center text-muted-foreground">{s.subtitle}</span>
                                 </div>
                               </button>
                             ) : (
@@ -218,6 +220,7 @@ export default function Home() {
                                     <s.icon className="w-6 h-6" />
                                   </div>
                                   <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
+                                  <span className="text-xs text-center text-muted-foreground">{s.subtitle}</span>
                                 </div>
                               </Link>
                             )}
