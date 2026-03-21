@@ -346,15 +346,29 @@ export default function Home() {
                               </div>
                             </div>
                             {selectedElectricalService && scheduledDate && scheduledTime && (
-                              <Link 
-                                to={`/solicitar?tipo=eletrica&subtipo=${selectedElectricalService.type}&modality=agendado&date=${scheduledDate}&time=${scheduledTime}`}
-                                onClick={() => { setShowElectricalModal(false); setShowScheduleModal(false); setScheduledDate(''); setScheduledTime(''); }}
-                                className="block mt-6"
+                              <button 
+                                onClick={() => {
+                                  setPendingServiceData({
+                                    type: 'eletrica',
+                                    subtipo: selectedElectricalService.type,
+                                    modality: 'agendado',
+                                    date: scheduledDate,
+                                    time: scheduledTime,
+                                    price: selectedElectricalService.price
+                                  });
+                                  setShowPaymentModal(true);
+                                  setShowElectricalModal(false);
+                                  setShowScheduleModal(false);
+                                  setScheduledDate('');
+                                  setScheduledTime('');
+                                  setSelectedElectricalService(null);
+                                }}
+                                className="block mt-6 w-full"
                               >
                                 <Button className="w-full h-10 rounded-2xl font-bold text-sm">
                                   Confirmar Agendamento
                                 </Button>
-                              </Link>
+                              </button>
                             )}
                             {(!scheduledDate || !scheduledTime) && (
                               <div className="mt-6 p-3 bg-muted rounded-2xl text-center">
