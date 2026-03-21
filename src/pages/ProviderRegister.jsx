@@ -301,33 +301,8 @@ export default function ProviderRegister() {
         </div>
       )}
 
-      {/* ── STEP 3: Documentos ── */}
+      {/* ── STEP 3: Habilidades ── */}
       {step === 3 && (
-        <div className="space-y-5">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground mb-1">Documentos</h2>
-            <p className="text-muted-foreground text-sm">Necessários para validação e segurança dos clientes</p>
-          </div>
-          <div className="space-y-3">
-            <div className="space-y-2">
-              <Label>CPF *</Label>
-              <Input value={form.cpf} onChange={e => set('cpf', e.target.value)} placeholder="000.000.000-00" className="rounded-2xl" maxLength={14} />
-            </div>
-            <div className="space-y-2">
-              <Label>RG / Identidade *</Label>
-              <Input value={form.rg} onChange={e => set('rg', e.target.value)} placeholder="Número do RG" className="rounded-2xl" />
-            </div>
-          </div>
-          <div className="bg-muted/60 rounded-2xl p-4">
-            <p className="text-xs text-muted-foreground">
-              🔒 Seus documentos são usados apenas para verificação de identidade e não serão compartilhados com terceiros.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ── STEP 4: Habilidades ── */}
-      {step === 4 && (
         <div className="space-y-5">
           <div>
             <h2 className="text-2xl font-bold text-foreground mb-1">Habilidades</h2>
