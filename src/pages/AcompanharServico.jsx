@@ -186,7 +186,22 @@ export default function AcompanharServico() {
             <span className="font-semibold text-foreground">Valor do serviço</span>
             <span className="text-2xl font-bold text-primary">R$ {request.final_price.toFixed(2)}</span>
           </div>
-          {request.status === 'concluido' && (
+          {/* Payment Status */}
+          {request.payment_status && (
+            <div className={cn(
+              "text-sm p-3 rounded-xl text-center font-semibold",
+              request.payment_status === 'paid'
+                ? 'bg-green-100 text-green-700'
+                : request.payment_status === 'pending'
+                ? 'bg-yellow-100 text-yellow-700'
+                : 'bg-red-100 text-red-700'
+            )}>
+              {request.payment_status === 'paid' && '✓ Pagamento confirmado'}
+              {request.payment_status === 'pending' && '⏳ Aguardando pagamento'}
+              {request.payment_status === 'expired' && '✕ Sessão de pagamento expirada'}
+            </div>
+          )}
+          {request.status === 'concluido' && request.payment_status !== 'paid' && (
             <Button
               onClick={() => setShowPayment(true)}
               className="w-full rounded-2xl bg-primary text-primary-foreground font-semibold h-11"

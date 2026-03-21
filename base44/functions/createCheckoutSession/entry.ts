@@ -39,9 +39,12 @@ Deno.serve(async (req) => {
       metadata: {
         serviceRequestId,
         userId: user.id,
+        userEmail: user.email,
         base44_app_id: Deno.env.get('BASE44_APP_ID'),
       },
     });
+
+    console.log(`Created checkout session ${session.id} for amount ${amount} BRL`);
 
     return new Response(JSON.stringify({ sessionUrl: session.url, sessionId: session.id }), { status: 200 });
   } catch (error) {
