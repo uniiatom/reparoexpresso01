@@ -71,6 +71,8 @@ export default function Home() {
   const [pendingServiceData, setPendingServiceData] = useState(null);
   const [electricalModalExpanded, setElectricalModalExpanded] = useState(true);
   const [hydraulicModalExpanded, setHydraulicModalExpanded] = useState(true);
+  const [expandedElectrical, setExpandedElectrical] = useState(true);
+  const [expandedHydraulic, setExpandedHydraulic] = useState(true);
 
   useEffect(() => {
     base44.auth.me().then(u => setUser(u)).catch(() => {});
