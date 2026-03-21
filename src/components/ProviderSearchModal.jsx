@@ -104,26 +104,38 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                 <CheckCircle2 className="w-5 h-5" />
                 <span className="font-bold text-base">Prestador disponível!</span>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  {nearestProvider.photo_url ? (
-                    <img src={nearestProvider.photo_url} alt="" className="w-full h-full object-cover rounded-2xl" />
-                  ) : (
-                    <span className="text-2xl font-bold text-primary">{nearestProvider.name?.charAt(0)}</span>
-                  )}
+              {/* Fotos do prestador */}
+              <div className="flex gap-3 mb-3">
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-20 h-20 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center border-2 border-primary/20 flex-shrink-0">
+                    {nearestProvider.photo_url ? (
+                      <img src={nearestProvider.photo_url} alt="rosto" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl font-bold text-primary">{nearestProvider.name?.charAt(0)}</span>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted-foreground">Rosto</span>
                 </div>
-                <div>
+                {nearestProvider.photo_body_url && (
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-20 h-20 rounded-2xl bg-muted overflow-hidden border-2 border-border flex-shrink-0">
+                      <img src={nearestProvider.photo_body_url} alt="corpo" className="w-full h-full object-cover" />
+                    </div>
+                    <span className="text-xs text-muted-foreground">Corpo inteiro</span>
+                  </div>
+                )}
+                <div className="flex flex-col justify-center gap-1 flex-1">
                   <p className="font-bold text-foreground">{nearestProvider.name}</p>
-                  <div className="flex items-center gap-1 mt-0.5">
+                  <div className="flex items-center gap-1">
                     <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
                     <span className="text-sm text-foreground font-medium">{nearestProvider.rating?.toFixed(1) || '5.0'}</span>
-                    <span className="text-xs text-muted-foreground">({nearestProvider.total_reviews || 0} avaliações)</span>
+                    <span className="text-xs text-muted-foreground">({nearestProvider.total_reviews || 0} aval.)</span>
                   </div>
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1">
                     <MapPin className="w-3 h-3 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">
                       {nearestProvider.distance !== null
-                        ? `${nearestProvider.distance.toFixed(1)} km de distância`
+                        ? `${nearestProvider.distance.toFixed(1)} km`
                         : 'Distância não disponível'}
                     </span>
                   </div>

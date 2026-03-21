@@ -122,6 +122,7 @@ export default function ProviderRegister() {
       name: form.name,
       phone: form.phone,
       photo_url: form.photo_url,
+      photo_body_url: form.photo_body_url,
       city: form.city,
       state: form.state,
       bio: form.bio,
