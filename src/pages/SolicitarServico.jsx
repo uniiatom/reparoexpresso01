@@ -71,6 +71,12 @@ export default function SolicitarServico() {
     state: '',
     latitude: null,
     longitude: null,
+    delivery_address: '',
+    delivery_city: '',
+    delivery_state: '',
+    delivery_latitude: null,
+    delivery_longitude: null,
+    tow_distance_km: null,
     modality: 'imediato',
     urgency: 'agora',
     scheduled_date: '',
@@ -80,6 +86,17 @@ export default function SolicitarServico() {
   });
 
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const calcDistance = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  };
+
+  const isTow = form.service_type === 'reboque';
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -117,14 +134,21 @@ export default function SolicitarServico() {
   });
 
   const handleFinalConfirm = (formData) => {
+    const dataToSend = { ...formData };
+    if (isTow && form.latitude && form.delivery_latitude) {
+      dataToSend.tow_distance_km = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude);
+    }
     setShowProviderSearch(false);
-    createRequest.mutate(formData);
+    createRequest.mutate(dataToSend);
   };
 
   const canNext = () => {
     if (step === 1) return !!form.service_type;
     if (step === 2) return form.description.length > 5;
-    if (step === 3) return form.address.length > 3;
+    if (step === 3) {
+      const hasDelivery = !isTow || (form.delivery_address.length > 3 && form.delivery_latitude && form.delivery_longitude);
+      return form.address.length > 3 && hasDelivery;
+    }
     if (step === 4) {
       if (form.modality === 'agendado') return !!form.scheduled_date && !!form.scheduled_time;
       return true;
@@ -311,10 +335,96 @@ export default function SolicitarServico() {
               </div>
             </div>
           </div>
-        </div>
-      )}
+          </div>
+          )}
 
-      {/* Step 4: Quando */}
+          {/* Step 3b: Localização de Entrega (apenas para Reboque) */}
+          {step === 3 && isTow && (
+          <div className="space-y-5 mt-8 pt-8 border-t border-border">
+          <div>
+            <h3 className="text-xl font-bold text-foreground mb-1">Local de entrega do veículo</h3>
+            <p className="text-muted-foreground mb-4">Onde o veículo será rebocado?</p>
+          </div>
+
+          <button
+            onClick={() => {
+              getLocation();
+              setTimeout(() => {
+                if (location) {
+                  setForm(prev => ({
+                    ...prev,
+                    delivery_address: location.address || prev.delivery_address,
+                    delivery_city: location.city || prev.delivery_city,
+                    delivery_state: location.state || prev.delivery_state,
+                    delivery_latitude: location.latitude,
+                    delivery_longitude: location.longitude,
+                  }));
+                }
+              }, 500);
+            }}
+            disabled={geoLoading}
+            className={cn(
+              "w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left",
+              form.delivery_latitude ? "border-primary bg-primary/5" : "border-dashed border-border hover:border-primary/50"
+            )}
+          >
+            {geoLoading ? (
+              <Loader2 className="w-5 h-5 text-primary animate-spin flex-shrink-0" />
+            ) : (
+              <Navigation className={cn("w-5 h-5 flex-shrink-0", form.delivery_latitude ? "text-primary" : "text-muted-foreground")} />
+            )}
+            <div>
+              <p className={cn("font-semibold text-sm", form.delivery_latitude ? "text-primary" : "text-foreground")}>
+                {geoLoading ? "Obtendo localização..." : form.delivery_latitude ? "Localização entrega obtida ✓" : "Usar minha localização atual"}
+              </p>
+              {form.delivery_latitude && <p className="text-xs text-muted-foreground mt-0.5">Localização de entrega confirmada</p>}
+            </div>
+          </button>
+
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">ou digite o endereço</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label>Endereço de entrega</Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rua, número, bairro..."
+                  value={form.delivery_address}
+                  onChange={e => set('delivery_address', e.target.value)}
+                  className="pl-10 rounded-2xl"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Cidade</Label>
+                <Input placeholder="Cidade" value={form.delivery_city} onChange={e => set('delivery_city', e.target.value)} className="rounded-2xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Estado</Label>
+                <Input placeholder="UF" value={form.delivery_state} onChange={e => set('delivery_state', e.target.value)} className="rounded-2xl" maxLength={2} />
+              </div>
+            </div>
+          </div>
+
+          {form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude && (
+            <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
+              <p className="text-sm font-semibold text-blue-900 mb-1">Distância calculada</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude).toFixed(1)} km
+              </p>
+              <p className="text-xs text-blue-700 mt-1">entre o local de saída e entrega</p>
+            </div>
+          )}
+          </div>
+          )}
+
+          {/* Step 4: Quando */}
       {step === 4 && (
         <div className="space-y-5">
           <div>
@@ -401,6 +511,14 @@ export default function SolicitarServico() {
             <p className="text-sm text-muted-foreground">🔧 {SERVICE_TYPES.find(s => s.value === form.service_type)?.label}</p>
             <p className="text-sm text-muted-foreground">📍 {form.address}{form.city ? `, ${form.city}` : ''}</p>
             {form.latitude && <p className="text-sm text-muted-foreground">📡 Localização GPS ativada</p>}
+            {isTow && form.delivery_address && (
+              <p className="text-sm text-muted-foreground">
+                📌 Entrega: {form.delivery_address}{form.delivery_city ? `, ${form.delivery_city}` : ''}
+                {form.latitude && form.delivery_latitude && (
+                  <span className="block mt-1 font-semibold">Distância: {calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude).toFixed(1)} km</span>
+                )}
+              </p>
+            )}
             {form.problem_photos.length > 0 && <p className="text-sm text-muted-foreground">📷 {form.problem_photos.length} foto(s) anexada(s)</p>}
              {form.client_suggested_price && <p className="text-sm text-muted-foreground">💰 Sugestão de valor: R$ {Number(form.client_suggested_price).toFixed(2)}</p>}
              <p className="text-sm text-muted-foreground">
