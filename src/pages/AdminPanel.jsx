@@ -99,6 +99,9 @@ export default function AdminPanel() {
           <TabsTrigger value="providers">
             Prestadores {pendingProviders.length > 0 && `(${pendingProviders.length} pendentes)`}
           </TabsTrigger>
+          <TabsTrigger value="pricing">
+            <DollarSign className="w-3.5 h-3.5 mr-1" /> Precificação
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="requests">
