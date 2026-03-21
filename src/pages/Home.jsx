@@ -51,6 +51,7 @@ const hydraulicServices = [
   { label: "Registro de Gaveta", type: "hidraulica_registro_gaveta", price: "R$ 60 - R$ 150" },
   { label: "Registro de Pressão", type: "hidraulica_registro_pressao", price: "R$ 60 - R$ 150" },
   { label: "Reparo de Vaso Sanitário", type: "hidraulica_vaso", price: "R$ 80 - R$ 200" },
+  { label: "Descarga", type: "hidraulica_descarga", price: "R$ 100 - R$ 250" },
 ];
 
 export default function Home() {
