@@ -143,9 +143,21 @@ export default function SolicitarServico() {
       {step === 1 && (
         <div>
           <h2 className="text-2xl font-bold text-foreground mb-1">Qual serviço?</h2>
-          <p className="text-muted-foreground mb-6">Selecione o tipo de serviço que precisa</p>
+          <p className="text-muted-foreground mb-4">Selecione o tipo de serviço que precisa</p>
+          <div className="flex gap-2 mb-5">
+            <button onClick={() => setServiceTab('casa')}
+              className={cn("flex-1 py-2 rounded-xl text-sm font-semibold transition-all",
+                serviceTab === 'casa' ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+              🏠 Casa
+            </button>
+            <button onClick={() => setServiceTab('veiculo')}
+              className={cn("flex-1 py-2 rounded-xl text-sm font-semibold transition-all",
+                serviceTab === 'veiculo' ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+              🚗 Veículo
+            </button>
+          </div>
           <div className="grid grid-cols-3 gap-3">
-            {SERVICE_TYPES.map(s => {
+            {SERVICE_TYPES.filter(s => s.group === serviceTab).map(s => {
               const Icon = s.icon;
               const selected = form.service_type === s.value;
               return (
