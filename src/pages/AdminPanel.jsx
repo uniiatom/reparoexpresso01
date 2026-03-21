@@ -103,6 +103,9 @@ export default function AdminPanel() {
           <TabsTrigger value="pricing">
             <DollarSign className="w-3.5 h-3.5 mr-1" /> Precificação
           </TabsTrigger>
+          <TabsTrigger value="repasse">
+            <DollarSign className="w-3.5 h-3.5 mr-1" /> Repasse
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="requests">
