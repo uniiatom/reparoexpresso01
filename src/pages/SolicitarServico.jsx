@@ -100,6 +100,11 @@ export default function SolicitarServico() {
     onSuccess: (result) => navigate(`/acompanhar/${result.id}`),
   });
 
+  const handleFinalConfirm = (formData) => {
+    setShowProviderSearch(false);
+    createRequest.mutate(formData);
+  };
+
   const canNext = () => {
     if (step === 1) return !!form.service_type;
     if (step === 2) return form.description.length > 5;
