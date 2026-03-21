@@ -21,6 +21,7 @@ const homeServices = [
   { icon: Wind, label: "Coifa Ilha", type: "instalacao_coifa_ilha", color: "bg-emerald-100 text-emerald-700" },
   { icon: Droplets, label: "Conversão Vaso Coplado", type: "conversao_vaso_coplado", color: "bg-indigo-100 text-indigo-700" },
   { icon: Droplets, label: "Vaso Monobloco", type: "instalacao_vaso_monobloco", color: "bg-violet-100 text-violet-700" },
+  { icon: Hammer, label: "Reparo Forro de Gesso", type: "reparo_forro_gesso", color: "bg-stone-100 text-stone-700" },
 ];
 
 const vehicleServices = [
