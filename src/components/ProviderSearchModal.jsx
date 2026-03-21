@@ -63,12 +63,20 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     setPhase('found');
   };
 
+  const checkNightSurcharge = (time) => {
+    if (!time) return false;
+    const [hours] = time.split(':');
+    return parseInt(hours) >= 18;
+  };
+
   const handleConfirmImmediate = () => {
-    onConfirm({ ...form, modality: 'imediato', urgency: 'agora' });
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    onConfirm({ ...form, modality: 'imediato', urgency: 'agora', night_surcharge: checkNightSurcharge(currentTime) });
   };
 
   const handleConfirmSchedule = () => {
-    onSchedule({ ...form, modality: 'agendado', scheduled_date: scheduledDate, scheduled_time: scheduledTime });
+    onSchedule({ ...form, modality: 'agendado', scheduled_date: scheduledDate, scheduled_time: scheduledTime, night_surcharge: checkNightSurcharge(scheduledTime) });
   };
 
   const estMin = nearestProvider ? estMinutes(nearestProvider.distance) : null;
@@ -196,14 +204,17 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-foreground">Horário</label>
                 <div className="flex flex-wrap gap-2">
-                  {TIME_SLOTS.map(t => (
-                    <button key={t} onClick={() => setScheduledTime(t)}
-                      className={cn("px-3 py-1.5 rounded-xl text-xs font-medium border-2 transition-all",
-                        scheduledTime === t ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground")}>
-                      {t}
-                    </button>
-                  ))}
-                </div>
+                    {TIME_SLOTS.map(t => {
+                      const isNight = checkNightSurcharge(t);
+                      return (
+                        <button key={t} onClick={() => setScheduledTime(t)}
+                          className={cn("px-3 py-1.5 rounded-xl text-xs font-medium border-2 transition-all",
+                            scheduledTime === t ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground")}>
+                          {t} {isNight && <span className="text-red-500 ml-1">+30%</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
               </div>
               <Button
                 onClick={handleConfirmSchedule}
