@@ -24,6 +24,7 @@ const URGENCY_LABELS = { agora: "🔥 Urgente", hoje: "⏰ Hoje", esta_semana: "
 export default function ProviderApp() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const [incomingJob, setIncomingJob] = useState(null);
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
