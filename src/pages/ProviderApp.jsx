@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { MapPin, Phone, Clock, CheckCircle2, Wrench, Zap, Droplets, Paintbrush, Star, BellRing } from "lucide-react";
+import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/AuthContext";
 import ProviderSetupModal from '../components/ProviderSetupModal';
+import NewJobBanner from '../components/NewJobBanner';
+import { useNewJobAlert } from '../hooks/useNewJobAlert';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
