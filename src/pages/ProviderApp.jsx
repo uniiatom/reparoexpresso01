@@ -26,15 +26,6 @@ export default function ProviderApp() {
   const { user } = useAuth();
   const [incomingJob, setIncomingJob] = useState(null);
 
-  const handleNewJob = useCallback((job) => {
-    setIncomingJob(job);
-  }, []);
-
-  useNewJobAlert({
-    enabled: !!(provider?.is_online && provider?.is_approved),
-    onNewJob: handleNewJob,
-  });
-
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
     queryFn: async () => {
@@ -43,6 +34,15 @@ export default function ProviderApp() {
       return list[0] || null;
     },
     enabled: !!user,
+  });
+
+  const handleNewJob = useCallback((job) => {
+    setIncomingJob(job);
+  }, []);
+
+  useNewJobAlert({
+    enabled: !!(provider?.is_online && provider?.is_approved),
+    onNewJob: handleNewJob,
   });
 
   const { data: requests = [] } = useQuery({
