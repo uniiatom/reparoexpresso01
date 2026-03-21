@@ -61,40 +61,40 @@ export default function Home() {
         {!splashDone && (
           <motion.div
             key="splash"
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center cursor-pointer bg-cover bg-center"
-            style={{
-              backgroundImage: 'url(https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/496e4e125_WhatsAppImage2026-03-21at182452.jpg)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}
+            className="fixed inset-0 z-50 bg-gradient-to-br from-primary to-primary/80 flex flex-col items-center justify-center cursor-pointer"
             onClick={() => setSplashDone(true)}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.4 }}
           >
-            {/* Overlay escuro para melhor legibilidade */}
-            <div className="absolute inset-0 bg-black/40" />
+            {/* decorative dots */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {[...Array(24)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-2 h-2 bg-white/20 rounded-full"
+                  style={{ left: `${(i * 37 + 5) % 100}%`, top: `${(i * 53 + 10) % 100}%` }}
+                />
+              ))}
+            </div>
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center gap-8"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="flex flex-col items-center gap-8 px-8 text-center"
             >
-              {/* Texto destacado */}
-              <div className="max-w-xs">
-                <h1 className="text-4xl font-black text-white drop-shadow-2xl leading-tight mb-2">
-                  Profissionais qualificados
-                </h1>
-                <p className="text-2xl font-bold text-primary drop-shadow-2xl">
-                  podendo chegar em minutos
-                </p>
-              </div>
-
-              {/* Call to action */}
+              <img
+                src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg"
+                alt="Me Socorro"
+                className="w-72 max-w-xs object-contain drop-shadow-2xl"
+              />
+              <p className="text-white/80 text-lg max-w-xs">
+                Profissionais qualificados podendo chegar em minutos
+              </p>
               <motion.div
                 animate={{ opacity: [0.4, 1, 0.4] }}
                 transition={{ repeat: Infinity, duration: 1.6 }}
-                className="text-white/80 text-sm font-medium mt-8"
+                className="text-white/60 text-sm mt-4"
               >
                 Toque para continuar
               </motion.div>
