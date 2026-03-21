@@ -213,7 +213,7 @@ export default function Home() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed inset-x-4 top-24 z-50 bg-card rounded-3xl p-6 shadow-2xl max-w-sm mx-auto"
+                            className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
                           >
                             <h2 className="text-2xl font-bold text-foreground mb-4">Serviços Elétricos</h2>
                             <div className="space-y-2 mb-4">
