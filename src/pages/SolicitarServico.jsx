@@ -62,6 +62,7 @@ export default function SolicitarServico() {
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [showProviderSearch, setShowProviderSearch] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
+  const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
   
   const [form, setForm] = useState({
     service_type: urlParams.get('tipo') || '',
@@ -86,6 +87,8 @@ export default function SolicitarServico() {
     client_name: '',
     client_phone: '',
   });
+
+  const { data: nearbyProviders = [] } = useNearbyProviders(location?.latitude, location?.longitude, form.service_type);
 
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
