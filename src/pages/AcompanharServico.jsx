@@ -48,9 +48,11 @@ export default function AcompanharServico() {
 
   useEffect(() => {
     if (request?.status === 'concluido' && !request?.rating_client) {
-      setShowRating(true);
+      // Delay modal appearance slightly to ensure smooth UX
+      const timer = setTimeout(() => setShowRating(true), 500);
+      return () => clearTimeout(timer);
     }
-  }, [request?.status]);
+  }, [request?.status, request?.rating_client]);
 
   if (!request) {
     return (

@@ -42,62 +42,83 @@ export default function RatingModal({ requestId, onClose }) {
   });
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4 backdrop-blur-sm">
       <motion.div
-        initial={{ opacity: 0, y: 60 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 60, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 60 }}
+        transition={{ type: "spring", damping: 25, stiffness: 400 }}
         className="bg-card rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
       >
         <AnimatePresence mode="wait">
           {!done ? (
             <motion.div key="form" exit={{ opacity: 0 }} className="p-6">
               {/* Header */}
-              <div className="text-center mb-5">
+              <div className="text-center mb-6">
                 {request?.provider_name && (
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.1, type: "spring" }}
+                    className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-3"
+                  >
                     <span className="text-3xl font-bold text-primary">{request.provider_name.charAt(0)}</span>
-                  </div>
+                  </motion.div>
                 )}
-                <h2 className="text-xl font-bold text-foreground">Como foi o atendimento?</h2>
+                <h2 className="text-2xl font-bold text-foreground">Serviço concluído! 🎉</h2>
+                <p className="text-sm text-muted-foreground mt-2">Como foi a experiência com o prestador?</p>
                 {request?.provider_name && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Avalie <span className="font-semibold text-foreground">{request.provider_name}</span>
+                  <p className="text-sm font-semibold text-primary mt-1">
+                    {request.provider_name}
                   </p>
                 )}
               </div>
 
               {/* Estrelas */}
-              <div className="flex justify-center gap-2 mb-2">
-                {[1, 2, 3, 4, 5].map(s => (
-                  <button
+              <div className="flex justify-center gap-3 mb-3">
+                {[1, 2, 3, 4, 5].map((s, idx) => (
+                  <motion.button
                     key={s}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.1 }}
                     onMouseEnter={() => setHovered(s)}
                     onMouseLeave={() => setHovered(0)}
                     onClick={() => setRating(s)}
-                    className="focus:outline-none"
+                    className="focus:outline-none cursor-pointer"
                   >
                     <Star className={cn(
-                      "w-11 h-11 transition-all duration-150",
+                      "w-12 h-12 transition-all duration-150",
                       s <= (hovered || rating)
                         ? "text-yellow-400 fill-yellow-400 scale-110"
-                        : "text-muted-foreground/30"
+                        : "text-muted-foreground/20"
                     )} />
-                  </button>
+                  </motion.button>
                 ))}
               </div>
 
               {/* Label da nota */}
-              <p className="text-center text-sm font-semibold text-primary mb-5 h-5">
+              <motion.p 
+                key={hovered || rating}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center text-base font-bold text-primary mb-6 h-6"
+              >
                 {RATING_LABELS[hovered || rating]}
-              </p>
+              </motion.p>
 
               {/* Comentário */}
-              <Textarea
-                placeholder="Conte como foi a experiência (opcional)..."
-                value={comment}
-                onChange={e => setComment(e.target.value)}
-                className="rounded-2xl mb-4 min-h-[90px]"
-              />
+              <div className="mb-4">
+                <p className="text-xs text-muted-foreground mb-2 font-semibold">Deixe um comentário (opcional)</p>
+                <Textarea
+                  placeholder="Conte como foi a experiência..."
+                  value={comment}
+                  onChange={e => setComment(e.target.value)}
+                  className="rounded-2xl min-h-[90px] resize-none"
+                  maxLength={500}
+                />
+                <p className="text-xs text-muted-foreground mt-1 text-right">{comment.length}/500</p>
+              </div>
 
               <Button
                 className="w-full rounded-2xl bg-primary text-primary-foreground font-bold h-12"
