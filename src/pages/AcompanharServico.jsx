@@ -9,6 +9,7 @@ import RatingModal from '../components/RatingModal';
 import LocationTracker from '../components/LocationTracker';
 import ServiceChat from '../components/ServiceChat';
 import PaymentModal from '../components/PaymentModal';
+import PixPaymentModal from '../components/PixPaymentModal';
 import NotificationPermissionBanner from '../components/NotificationPermissionBanner';
 import { useServiceNotifications } from '../hooks/useServiceNotifications';
 
@@ -32,6 +33,7 @@ export default function AcompanharServico() {
   const queryClient = useQueryClient();
   const [showRating, setShowRating] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [showPixPayment, setShowPixPayment] = useState(false);
   const [previousStatus, setPreviousStatus] = useState(null);
 
   // Setup notifications for status changes
@@ -213,12 +215,21 @@ export default function AcompanharServico() {
             </div>
           )}
           {request.status === 'concluido' && request.payment_status !== 'paid' && (
-            <Button
-              onClick={() => setShowPayment(true)}
-              className="w-full rounded-2xl bg-primary text-primary-foreground font-semibold h-11"
-            >
-              💳 Pagar agora
-            </Button>
+           <div className="space-y-2">
+             <Button
+               onClick={() => setShowPixPayment(true)}
+               className="w-full rounded-2xl bg-primary text-primary-foreground font-semibold h-11"
+             >
+               🔐 PIX
+             </Button>
+             <Button
+               onClick={() => setShowPayment(true)}
+               variant="outline"
+               className="w-full rounded-2xl font-semibold h-11"
+             >
+               💳 Cartão de Crédito
+             </Button>
+           </div>
           )}
         </div>
       )}
@@ -271,13 +282,23 @@ export default function AcompanharServico() {
       />
       {showRating && <RatingModal requestId={id} onClose={() => setShowRating(false)} />}
       {request.final_price && (
-        <PaymentModal
-          isOpen={showPayment}
-          onClose={() => setShowPayment(false)}
-          requestId={id}
-          finalPrice={request.final_price}
-          serviceName={SERVICE_LABELS[request.service_type] || request.service_type}
-        />
+        <>
+          <PaymentModal
+            isOpen={showPayment}
+            onClose={() => setShowPayment(false)}
+            requestId={id}
+            finalPrice={request.final_price}
+            serviceName={SERVICE_LABELS[request.service_type] || request.service_type}
+          />
+          <PixPaymentModal
+            isOpen={showPixPayment}
+            onClose={() => setShowPixPayment(false)}
+            requestId={id}
+            finalPrice={request.final_price}
+            serviceName={SERVICE_LABELS[request.service_type] || request.service_type}
+            onPaymentConfirmed={() => queryClient.invalidateQueries({ queryKey: ['service-request', id] })}
+          />
+        </>
       )}
     </div>
   );
