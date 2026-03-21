@@ -47,6 +47,8 @@ const AuthenticatedApp = () => {
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/cadastro" element={<ClientRegister />} />
         <Route path="/cadastro-prestador" element={<ProviderRegister />} />
+        <Route path="/termos-cliente" element={<TermosCliente />} />
+        <Route path="/termos-prestador" element={<TermosPrestador />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
