@@ -277,15 +277,25 @@ export default function Home() {
                               <p className="text-xs text-green-700 mt-2">Você será conectado a um prestador em até 5 minutos</p>
                             </div>
                             {selectedElectricalService && (
-                              <Link 
-                                to={`/solicitar?tipo=eletrica&subtipo=${selectedElectricalService.type}&modality=imediato`}
-                                onClick={() => { setShowElectricalModal(false); setShowScheduleModal(false); }}
-                                className="block"
+                              <button 
+                                onClick={() => {
+                                  setPendingServiceData({
+                                    type: 'eletrica',
+                                    subtipo: selectedElectricalService.type,
+                                    modality: 'imediato',
+                                    price: selectedElectricalService.price
+                                  });
+                                  setShowPaymentModal(true);
+                                  setShowElectricalModal(false);
+                                  setShowScheduleModal(false);
+                                  setSelectedElectricalService(null);
+                                }}
+                                className="block w-full"
                               >
                                 <Button className="w-full h-10 rounded-2xl font-bold text-sm bg-green-600 hover:bg-green-700">
                                   Confirmar Serviço Imediato
                                 </Button>
-                              </Link>
+                              </button>
                             )}
                           </motion.div>
                         </>
