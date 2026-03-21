@@ -54,6 +54,8 @@ export default function Home() {
   const [scheduleType, setScheduleType] = useState(null);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [pendingServiceData, setPendingServiceData] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(u => setUser(u)).catch(() => {});
