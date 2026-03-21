@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Clock, User, Phone, Star, MapPin, Wrench, AlertCircle } from "lucide-react";
+import { CheckCircle2, Clock, User, Phone, Star, MapPin, Wrench, AlertCircle, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import RatingModal from '../components/RatingModal';
 import LocationTracker from '../components/LocationTracker';
@@ -247,9 +247,22 @@ export default function AcompanharServico() {
       )}
 
       {request.status === 'concluido' && (
-        <Button className="w-full rounded-2xl bg-primary text-primary-foreground" onClick={() => navigate('/')}>
-          Voltar ao início
-        </Button>
+        <div className="space-y-3">
+          <Button 
+            className="w-full rounded-2xl bg-primary text-primary-foreground font-semibold h-11"
+            onClick={() => navigate(`/solicitar?tipo=${request.service_type}`)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Abrir Retorno
+          </Button>
+          <Button 
+            variant="outline"
+            className="w-full rounded-2xl"
+            onClick={() => navigate('/')}
+          >
+            Voltar ao início
+          </Button>
+        </div>
       )}
 
       <LocationTracker
