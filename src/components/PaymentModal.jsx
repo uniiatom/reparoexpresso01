@@ -31,10 +31,15 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
         return;
       }
 
+      // Generate reference code
+      const code = `MES-${Date.now().toString().slice(-8).toUpperCase()}`;
+      setReferenceCode(code);
+
       const response = await base44.functions.invoke('createCheckoutSession', {
         amount: amount,
         serviceName: `${serviceData.type} - ${serviceData.subtipo}`,
         serviceData: serviceData,
+        referenceCode: code,
       });
 
       if (response.data.sessionUrl) {
