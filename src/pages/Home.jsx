@@ -574,6 +574,15 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Payment Modal */}
+          {showPaymentModal && pendingServiceData && (
+            <PaymentModal
+              isOpen={showPaymentModal}
+              onClose={() => setShowPaymentModal(false)}
+              serviceData={pendingServiceData}
+            />
+          )}
+
           {/* Trust */}
           <div className="max-w-lg mx-auto px-4 mt-6 grid grid-cols-3 gap-3 pb-10">
             {[
