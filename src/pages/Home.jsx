@@ -162,6 +162,12 @@ export default function Home() {
                         🏠 Casa
                       </button>
                       <button
+                        onClick={() => setServiceTab('desentupimento')}
+                        className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${serviceTab === 'desentupimento' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                      >
+                        💧 Desentupimento
+                      </button>
+                      <button
                         onClick={() => setServiceTab('veiculo')}
                         className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${serviceTab === 'veiculo' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                       >
@@ -171,7 +177,7 @@ export default function Home() {
 
                     {serviceTab === 'casa' && (
                       <div className="grid grid-cols-4 gap-3">
-                        {homeServices.map((s, i) => (
+                        {homeServices.filter(s => s.type !== 'desentupimento').map((s, i) => (
                           <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
                             <Link to={`/solicitar?tipo=${s.type}`}>
                               <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
@@ -183,6 +189,26 @@ export default function Home() {
                             </Link>
                           </motion.div>
                         ))}
+                      </div>
+                    )}
+
+                    {serviceTab === 'desentupimento' && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-4">Serviços de desentupimento de cano, ralo, vaso sanitário e outros</p>
+                        <div className="grid grid-cols-3 gap-3">
+                          {homeServices.filter(s => s.type === 'desentupimento').map((s, i) => (
+                            <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
+                              <Link to={`/solicitar?tipo=${s.type}`}>
+                                <div className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-accent transition-colors cursor-pointer border border-border">
+                                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${s.color}`}>
+                                    <s.icon className="w-7 h-7" />
+                                  </div>
+                                  <span className="text-sm text-center text-foreground font-medium leading-tight">{s.label}</span>
+                                </div>
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </div>
                       </div>
                     )}
 
