@@ -199,6 +199,154 @@ export default function Home() {
                       </div>
                     )}
 
+                    {/* Modal de Agendamento */}
+                    <AnimatePresence>
+                      {showScheduleModal && !scheduleType && (
+                        <>
+                          <motion.div
+                            key="overlay-schedule"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowScheduleModal(false)}
+                            className="fixed inset-0 bg-black/40 z-40"
+                          />
+                          <motion.div
+                            key="modal-schedule"
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
+                          >
+                            <h2 className="text-xl font-bold text-foreground mb-4">Quando você precisa?</h2>
+                            <div className="space-y-3">
+                              <button
+                                onClick={() => setScheduleType('imediato')}
+                                className="w-full p-4 rounded-2xl border-2 border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left"
+                              >
+                                <p className="font-bold text-foreground">⚡ Agora</p>
+                                <p className="text-xs text-muted-foreground mt-1">Prestador disponível em minutos</p>
+                              </button>
+                              <button
+                                onClick={() => setScheduleType('agendado')}
+                                className="w-full p-4 rounded-2xl border-2 border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left"
+                              >
+                                <p className="font-bold text-foreground">📅 Agendar</p>
+                                <p className="text-xs text-muted-foreground mt-1">Escolher data e hora</p>
+                              </button>
+                            </div>
+                            <button
+                              onClick={() => setShowScheduleModal(false)}
+                              className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors mt-4"
+                            >
+                              Fechar
+                            </button>
+                          </motion.div>
+                        </>
+                      )}
+
+                      {showScheduleModal && scheduleType === 'imediato' && (
+                        <>
+                          <motion.div
+                            key="overlay-imediato"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => { setShowScheduleModal(false); setScheduleType(null); }}
+                            className="fixed inset-0 bg-black/40 z-40"
+                          />
+                          <motion.div
+                            key="modal-imediato"
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
+                          >
+                            <button 
+                              onClick={() => setScheduleType(null)}
+                              className="text-sm text-primary font-semibold mb-3 flex items-center gap-1"
+                            >
+                              ← Voltar
+                            </button>
+                            <h2 className="text-xl font-bold text-foreground mb-4">Serviço Imediato</h2>
+                            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4">
+                              <p className="text-sm text-green-800 font-semibold">✓ Prestadores disponíveis agora!</p>
+                              <p className="text-xs text-green-700 mt-2">Você será conectado a um prestador em até 5 minutos</p>
+                            </div>
+                            <Link 
+                              to={`/solicitar?tipo=eletrica&subtipo=${selectedElectricalService.type}&modality=imediato`}
+                              onClick={() => { setShowElectricalModal(false); setShowScheduleModal(false); }}
+                              className="block"
+                            >
+                              <Button className="w-full h-10 rounded-2xl font-bold text-sm bg-green-600 hover:bg-green-700">
+                                Confirmar Serviço Imediato
+                              </Button>
+                            </Link>
+                          </motion.div>
+                        </>
+                      )}
+
+                      {showScheduleModal && scheduleType === 'agendado' && (
+                        <>
+                          <motion.div
+                            key="overlay-agendado"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => { setShowScheduleModal(false); setScheduleType(null); }}
+                            className="fixed inset-0 bg-black/40 z-40"
+                          />
+                          <motion.div
+                            key="modal-agendado"
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto max-h-[70vh] overflow-y-auto"
+                          >
+                            <button 
+                              onClick={() => setScheduleType(null)}
+                              className="text-sm text-primary font-semibold mb-3 flex items-center gap-1"
+                            >
+                              ← Voltar
+                            </button>
+                            <h2 className="text-xl font-bold text-foreground mb-4">Agendar Serviço</h2>
+                            <div className="space-y-4">
+                              <div>
+                                <label className="text-sm font-semibold text-foreground block mb-2">Selecione a data</label>
+                                <input 
+                                  type="date" 
+                                  className="w-full px-3 py-2 rounded-xl border border-border focus:border-primary outline-none text-sm"
+                                  min={new Date().toISOString().split('T')[0]}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-sm font-semibold text-foreground block mb-2">Selecione a hora</label>
+                                <select className="w-full px-3 py-2 rounded-xl border border-border focus:border-primary outline-none text-sm">
+                                  <option>08:00</option>
+                                  <option>09:00</option>
+                                  <option>10:00</option>
+                                  <option>11:00</option>
+                                  <option>14:00</option>
+                                  <option>15:00</option>
+                                  <option>16:00</option>
+                                  <option>17:00</option>
+                                </select>
+                              </div>
+                            </div>
+                            <Link 
+                              to={`/solicitar?tipo=eletrica&subtipo=${selectedElectricalService.type}&modality=agendado`}
+                              onClick={() => { setShowElectricalModal(false); setShowScheduleModal(false); }}
+                              className="block mt-6"
+                            >
+                              <Button className="w-full h-10 rounded-2xl font-bold text-sm">
+                                Confirmar Agendamento
+                              </Button>
+                            </Link>
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
+
                     {/* Modal de Elétrica */}
                     <AnimatePresence>
                       {showElectricalModal && (
