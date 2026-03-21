@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Wrench, Menu, X, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import NotificationCenter from '@/components/NotificationCenter';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -26,6 +27,7 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden sm:flex items-center gap-1">
+          <NotificationCenter />
           {links.map(l => (
             <Link key={l.to} to={l.to}>
               <Button
@@ -45,9 +47,12 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <button className="sm:hidden p-2 rounded-xl hover:bg-accent" onClick={() => setOpen(!open)}>
-          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationCenter />
+          <button className="sm:hidden p-2 rounded-xl hover:bg-accent" onClick={() => setOpen(!open)}>
+            {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {open && (
