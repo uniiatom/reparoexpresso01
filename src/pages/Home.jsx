@@ -21,7 +21,7 @@ const homeServices = [
   { icon: Waves, label: "Limpeza Caixa d'Água", subtitle: "Limpeza especializada", type: "limpeza_caixa_dagua", color: "bg-blue-100 text-blue-700" },
   { icon: Droplets, label: "Limpeza de Calha", subtitle: "Desobstrução", type: "limpeza_calha", color: "bg-slate-100 text-slate-700" },
   { icon: Layers, label: "Substituição de Telha", subtitle: "Reparos de cobertura", type: "substituicao_telha", color: "bg-orange-100 text-orange-700" },
-  { icon: Home, label: "Limpeza de Telhado", subtitle: "Limpeza de cobertura", type: "limpeza_telhado", color: "bg-amber-100 text-amber-700" },
+  { icon: Sparkles, label: "Limpeza de Telhado", subtitle: "Limpeza de cobertura", type: "limpeza_telhado", color: "bg-amber-100 text-amber-700" },
   { icon: ChefHat, label: "Coifa de Parede", subtitle: "Instalação de coifa", type: "instalacao_coifa_parede", color: "bg-teal-100 text-teal-700" },
   { icon: ChefHat, label: "Coifa Ilha", subtitle: "Instalação de coifa", type: "instalacao_coifa_ilha", color: "bg-emerald-100 text-emerald-700" },
   { icon: ShowerHead, label: "Conversão Vaso CX Acoplada", subtitle: "Adaptação sanitária", type: "conversao_vaso_coplado", color: "bg-indigo-100 text-indigo-700" },
