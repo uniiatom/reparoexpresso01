@@ -37,6 +37,7 @@ const SERVICE_TYPES = [
   { value: "troca_pneu", label: "Troca de Pneu", icon: Car, group: "veiculo" },
   { value: "recarga_bateria", label: "Recarga de Bateria", icon: Zap, group: "veiculo" },
   { value: "conserto_pneu", label: "Conserto de Pneu", icon: Car, group: "veiculo" },
+  { value: "reboque", label: "Reboque", icon: Car, group: "veiculo" },
   { value: "veiculo_outros", label: "Outros (Veículo)", icon: Car, group: "veiculo" },
 ];
 
