@@ -386,9 +386,18 @@ export default function Home() {
                               initial={{ opacity: 0, scale: 0.95, y: 20 }}
                               animate={{ opacity: 1, scale: 1, y: 0 }}
                               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                              className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
+                              className={`fixed inset-x-4 z-50 bg-card rounded-3xl p-4 shadow-2xl mx-auto transition-all ${hydraulicModalExpanded ? 'top-12 max-w-sm' : 'bottom-4 max-w-xs'}`}
                             >
-                              <h2 className="text-2xl font-bold text-foreground mb-4">Serviços Hidráulicos</h2>
+                              <div className="flex items-center justify-between mb-4">
+                                <h2 className={`font-bold text-foreground ${hydraulicModalExpanded ? 'text-2xl' : 'text-lg'}`}>Serviços Hidráulicos</h2>
+                                <button
+                                  onClick={() => setHydraulicModalExpanded(!hydraulicModalExpanded)}
+                                  className="p-1 hover:bg-muted rounded-lg transition-colors"
+                                >
+                                  {hydraulicModalExpanded ? <Minimize2 className="w-4 h-4 text-muted-foreground" /> : <Maximize2 className="w-4 h-4 text-muted-foreground" />}
+                                </button>
+                              </div>
+                              {hydraulicModalExpanded && (
                               <div className="space-y-2 mb-4">
                                 {hydraulicServices.map(service => (
                                   <button 
