@@ -6,8 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, MapPin, Zap, Droplets, Paintbrush, Wrench, Settings, Hammer, Lock, Wind, ChevronRight, Calendar, Clock } from "lucide-react";
+import {
+  ArrowLeft, MapPin, Zap, Droplets, Paintbrush, Wrench,
+  Settings, Hammer, Lock, Wind, ChevronRight, Calendar,
+  Clock, Camera, X, Navigation, Loader2
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGeolocation } from "@/hooks/useGeolocation";
 
 const SERVICE_TYPES = [
   { value: "eletrica", label: "Elétrica", icon: Zap },
@@ -28,19 +33,26 @@ const URGENCY = [
 ];
 
 const TIME_SLOTS = [
-  "07:00", "08:00", "09:00", "10:00", "11:00",
-  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00",
+  "07:00","08:00","09:00","10:00","11:00",
+  "13:00","14:00","15:00","16:00","17:00","18:00",
 ];
 
 export default function SolicitarServico() {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const [step, setStep] = useState(1);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
+
   const [form, setForm] = useState({
     service_type: urlParams.get('tipo') || '',
     description: '',
+    problem_photos: [],
     address: '',
     city: '',
+    state: '',
+    latitude: null,
+    longitude: null,
     modality: 'imediato',
     urgency: 'agora',
     scheduled_date: '',
@@ -49,12 +61,42 @@ export default function SolicitarServico() {
     client_phone: '',
   });
 
+  const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handlePhotoUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploadingPhotos(true);
+    const urls = await Promise.all(files.map(f => base44.integrations.Core.UploadFile({ file: f }).then(r => r.file_url)));
+    setForm(prev => ({ ...prev, problem_photos: [...prev.problem_photos, ...urls] }));
+    setUploadingPhotos(false);
+  };
+
+  const removePhoto = (idx) => {
+    setForm(prev => ({ ...prev, problem_photos: prev.problem_photos.filter((_, i) => i !== idx) }));
+  };
+
+  const applyGeolocation = () => {
+    if (location) {
+      setForm(prev => ({
+        ...prev,
+        address: location.address || prev.address,
+        city: location.city || prev.city,
+        state: location.state || prev.state,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      }));
+    }
+  };
+
+  React.useEffect(() => {
+    if (location) applyGeolocation();
+  }, [location]);
+
   const createRequest = useMutation({
     mutationFn: (data) => base44.entities.ServiceRequest.create({ ...data, status: 'aguardando' }),
     onSuccess: (result) => navigate(`/acompanhar/${result.id}`),
   });
-
-  const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
   const canNext = () => {
     if (step === 1) return !!form.service_type;
@@ -70,13 +112,9 @@ export default function SolicitarServico() {
 
   const totalSteps = 5;
 
-  // Resumo de quando no step 5
-  const modalitySummary = form.modality === 'agendado'
-    ? `📅 Agendado: ${form.scheduled_date} às ${form.scheduled_time}`
-    : `⚡ ${URGENCY.find(u => u.value === form.urgency)?.label}`;
-
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
+      {/* Progress */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => step > 1 ? setStep(s => s - 1) : navigate('/')} className="p-2 hover:bg-accent rounded-xl">
           <ArrowLeft className="w-5 h-5" />
@@ -89,7 +127,7 @@ export default function SolicitarServico() {
         </div>
       </div>
 
-      {/* Step 1: Tipo */}
+      {/* Step 1: Tipo de serviço */}
       {step === 1 && (
         <div>
           <h2 className="text-2xl font-bold text-foreground mb-1">Qual serviço?</h2>
@@ -99,14 +137,9 @@ export default function SolicitarServico() {
               const Icon = s.icon;
               const selected = form.service_type === s.value;
               return (
-                <button
-                  key={s.value}
-                  onClick={() => set('service_type', s.value)}
-                  className={cn(
-                    "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all",
-                    selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
-                  )}
-                >
+                <button key={s.value} onClick={() => set('service_type', s.value)}
+                  className={cn("flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all",
+                    selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40")}>
                   <Icon className={cn("w-7 h-7", selected ? "text-primary" : "text-muted-foreground")} />
                   <span className={cn("text-xs font-medium text-center", selected ? "text-primary" : "text-foreground")}>{s.label}</span>
                 </button>
@@ -116,7 +149,7 @@ export default function SolicitarServico() {
         </div>
       )}
 
-      {/* Step 2: Descrição */}
+      {/* Step 2: Descrição + Fotos */}
       {step === 2 && (
         <div className="space-y-5">
           <div>
@@ -126,22 +159,81 @@ export default function SolicitarServico() {
           <div className="space-y-2">
             <Label>O que está acontecendo?</Label>
             <Textarea
-              placeholder="Ex: Tomada não funciona no quarto, chuveiro vazando, porta não abre..."
+              placeholder="Ex: Tomada não funciona no quarto, chuveiro vazando..."
               value={form.description}
               onChange={e => set('description', e.target.value)}
-              className="min-h-[120px] rounded-2xl"
+              className="min-h-[110px] rounded-2xl"
             />
+          </div>
+
+          {/* Fotos do problema */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2"><Camera className="w-4 h-4" /> Fotos do problema (opcional)</Label>
+            <div className="flex flex-wrap gap-2">
+              {form.problem_photos.map((url, idx) => (
+                <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <button onClick={() => removePhoto(idx)}
+                    className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center">
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              ))}
+              {form.problem_photos.length < 4 && (
+                <label className={cn(
+                  "w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors",
+                  uploadingPhotos && "opacity-50 pointer-events-none"
+                )}>
+                  {uploadingPhotos ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" /> : <Camera className="w-6 h-6 text-muted-foreground" />}
+                  <span className="text-xs text-muted-foreground mt-1">{uploadingPhotos ? "..." : "Adicionar"}</span>
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} capture="environment" />
+                </label>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">Tire fotos diretamente com a câmera ou escolha da galeria (máx. 4)</p>
           </div>
         </div>
       )}
 
-      {/* Step 3: Endereço */}
+      {/* Step 3: Localização */}
       {step === 3 && (
         <div className="space-y-5">
           <div>
             <h2 className="text-2xl font-bold text-foreground mb-1">Onde é o serviço?</h2>
-            <p className="text-muted-foreground mb-4">Informe o endereço completo</p>
+            <p className="text-muted-foreground mb-4">Use sua localização atual ou informe o endereço</p>
           </div>
+
+          {/* Botão de geolocalização */}
+          <button
+            onClick={getLocation}
+            disabled={geoLoading}
+            className={cn(
+              "w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left",
+              form.latitude ? "border-primary bg-primary/5" : "border-dashed border-border hover:border-primary/50"
+            )}
+          >
+            {geoLoading ? (
+              <Loader2 className="w-5 h-5 text-primary animate-spin flex-shrink-0" />
+            ) : (
+              <Navigation className={cn("w-5 h-5 flex-shrink-0", form.latitude ? "text-primary" : "text-muted-foreground")} />
+            )}
+            <div>
+              <p className={cn("font-semibold text-sm", form.latitude ? "text-primary" : "text-foreground")}>
+                {geoLoading ? "Obtendo localização..." : form.latitude ? "Localização obtida ✓" : "Usar minha localização atual"}
+              </p>
+              {form.latitude && location && (
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{location.full?.split(',').slice(0, 3).join(',')}</p>
+              )}
+              {geoError && <p className="text-xs text-destructive mt-0.5">{geoError}</p>}
+            </div>
+          </button>
+
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">ou digite o endereço</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
           <div className="space-y-3">
             <div className="space-y-2">
               <Label>Endereço</Label>
@@ -155,9 +247,15 @@ export default function SolicitarServico() {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Cidade</Label>
-              <Input placeholder="Sua cidade" value={form.city} onChange={e => set('city', e.target.value)} className="rounded-2xl" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Cidade</Label>
+                <Input placeholder="Cidade" value={form.city} onChange={e => set('city', e.target.value)} className="rounded-2xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Estado</Label>
+                <Input placeholder="UF" value={form.state} onChange={e => set('state', e.target.value)} className="rounded-2xl" maxLength={2} />
+              </div>
             </div>
           </div>
         </div>
@@ -168,22 +266,16 @@ export default function SolicitarServico() {
         <div className="space-y-5">
           <div>
             <h2 className="text-2xl font-bold text-foreground mb-1">Quando?</h2>
-            <p className="text-muted-foreground mb-4">Escolha se quer atendimento imediato ou agendado</p>
+            <p className="text-muted-foreground mb-4">Atendimento imediato ou agendado?</p>
           </div>
-
           <div className="grid grid-cols-2 gap-3">
             {[
               { value: "imediato", label: "Imediato", desc: "Prestador chega o quanto antes", icon: Zap },
               { value: "agendado", label: "Agendado", desc: "Escolha data e horário", icon: Calendar },
             ].map(m => (
-              <button
-                key={m.value}
-                onClick={() => set('modality', m.value)}
-                className={cn(
-                  "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 transition-all text-left",
-                  form.modality === m.value ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
-                )}
-              >
+              <button key={m.value} onClick={() => set('modality', m.value)}
+                className={cn("flex flex-col items-start gap-2 p-4 rounded-2xl border-2 transition-all text-left",
+                  form.modality === m.value ? "border-primary bg-primary/5" : "border-border hover:border-primary/40")}>
                 <m.icon className={cn("w-6 h-6", form.modality === m.value ? "text-primary" : "text-muted-foreground")} />
                 <div>
                   <p className={cn("font-semibold text-sm", form.modality === m.value ? "text-primary" : "text-foreground")}>{m.label}</p>
@@ -198,14 +290,9 @@ export default function SolicitarServico() {
               <Label>Urgência</Label>
               <div className="grid grid-cols-3 gap-2">
                 {URGENCY.map(u => (
-                  <button
-                    key={u.value}
-                    onClick={() => set('urgency', u.value)}
-                    className={cn(
-                      "p-3 rounded-2xl border-2 text-left transition-all",
-                      form.urgency === u.value ? "border-primary bg-primary/5" : "border-border"
-                    )}
-                  >
+                  <button key={u.value} onClick={() => set('urgency', u.value)}
+                    className={cn("p-3 rounded-2xl border-2 text-left transition-all",
+                      form.urgency === u.value ? "border-primary bg-primary/5" : "border-border")}>
                     <p className={cn("font-semibold text-sm", form.urgency === u.value ? "text-primary" : "text-foreground")}>{u.label}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{u.desc}</p>
                   </button>
@@ -218,26 +305,16 @@ export default function SolicitarServico() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Data</Label>
-                <Input
-                  type="date"
-                  value={form.scheduled_date}
-                  min={new Date().toISOString().split('T')[0]}
-                  onChange={e => set('scheduled_date', e.target.value)}
-                  className="rounded-2xl"
-                />
+                <Input type="date" value={form.scheduled_date} min={new Date().toISOString().split('T')[0]}
+                  onChange={e => set('scheduled_date', e.target.value)} className="rounded-2xl" />
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Clock className="w-4 h-4" /> Horário</Label>
                 <div className="flex flex-wrap gap-2">
                   {TIME_SLOTS.map(t => (
-                    <button
-                      key={t}
-                      onClick={() => set('scheduled_time', t)}
-                      className={cn(
-                        "px-3 py-1.5 rounded-xl text-sm font-medium border-2 transition-all",
-                        form.scheduled_time === t ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground"
-                      )}
-                    >
+                    <button key={t} onClick={() => set('scheduled_time', t)}
+                      className={cn("px-3 py-1.5 rounded-xl text-sm font-medium border-2 transition-all",
+                        form.scheduled_time === t ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground")}>
                       {t}
                     </button>
                   ))}
@@ -248,7 +325,7 @@ export default function SolicitarServico() {
         </div>
       )}
 
-      {/* Step 5: Dados do cliente */}
+      {/* Step 5: Dados pessoais */}
       {step === 5 && (
         <div className="space-y-5">
           <div>
@@ -265,33 +342,32 @@ export default function SolicitarServico() {
               <Input placeholder="(11) 99999-9999" value={form.client_phone} onChange={e => set('client_phone', e.target.value)} className="rounded-2xl" />
             </div>
           </div>
-          <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
+          {/* Resumo */}
+          <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20 space-y-1">
             <p className="text-sm font-semibold text-foreground mb-2">Resumo do pedido</p>
+            <p className="text-sm text-muted-foreground">🔧 {SERVICE_TYPES.find(s => s.value === form.service_type)?.label}</p>
             <p className="text-sm text-muted-foreground">📍 {form.address}{form.city ? `, ${form.city}` : ''}</p>
-            <p className="text-sm text-muted-foreground mt-1">🔧 {SERVICE_TYPES.find(s => s.value === form.service_type)?.label}</p>
-            <p className="text-sm text-muted-foreground mt-1">{modalitySummary}</p>
+            {form.latitude && <p className="text-sm text-muted-foreground">📡 Localização GPS ativada</p>}
+            {form.problem_photos.length > 0 && <p className="text-sm text-muted-foreground">📷 {form.problem_photos.length} foto(s) anexada(s)</p>}
+            <p className="text-sm text-muted-foreground">
+              {form.modality === 'agendado' ? `📅 Agendado: ${form.scheduled_date} às ${form.scheduled_time}` : `⚡ ${URGENCY.find(u => u.value === form.urgency)?.label}`}
+            </p>
           </div>
         </div>
       )}
 
       <div className="mt-8">
         {step < totalSteps ? (
-          <Button
-            onClick={() => setStep(s => s + 1)}
-            disabled={!canNext()}
-            className="w-full h-14 rounded-2xl font-bold text-base bg-primary text-primary-foreground"
-          >
+          <Button onClick={() => setStep(s => s + 1)} disabled={!canNext()}
+            className="w-full h-14 rounded-2xl font-bold text-base bg-primary text-primary-foreground">
             Continuar <ChevronRight className="ml-2 w-5 h-5" />
           </Button>
         ) : (
-          <Button
-            onClick={() => createRequest.mutate(form)}
-            disabled={!canNext() || createRequest.isPending}
-            className="w-full h-14 rounded-2xl font-bold text-base bg-primary text-primary-foreground"
-          >
-            {createRequest.isPending ? (
-              <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-            ) : "Confirmar pedido 🔧"}
+          <Button onClick={() => createRequest.mutate(form)} disabled={!canNext() || createRequest.isPending}
+            className="w-full h-14 rounded-2xl font-bold text-base bg-primary text-primary-foreground">
+            {createRequest.isPending
+              ? <Loader2 className="w-5 h-5 animate-spin" />
+              : "Confirmar pedido 🔧"}
           </Button>
         )}
       </div>
