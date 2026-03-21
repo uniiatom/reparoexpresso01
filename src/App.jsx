@@ -15,6 +15,7 @@ import ClientRegister from './pages/ClientRegister';
 import ProviderRegister from './pages/ProviderRegister';
 import TermosCliente from './pages/TermosCliente';
 import TermosPrestador from './pages/TermosPrestador';
+import UserProfile from './pages/UserProfile';
 import { Toaster as SonnerToaster } from "sonner";
 
 const AuthenticatedApp = () => {
@@ -43,6 +44,7 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Home />} />
         <Route path="/solicitar" element={<SolicitarServico />} />
         <Route path="/acompanhar/:id" element={<AcompanharServico />} />
+        <Route path="/perfil" element={<UserProfile />} />
         <Route path="/prestador" element={<ProviderApp />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/cadastro" element={<ClientRegister />} />
