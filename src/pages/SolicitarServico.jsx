@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import {
   ArrowLeft, MapPin, Zap, Droplets, Paintbrush, Wrench,
   Settings, Hammer, Lock, Wind, ChevronRight, Calendar,
-  Clock, Camera, X, Navigation, Loader2
+  Clock, Camera, X, Navigation, Loader2, Car
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGeolocation } from "@/hooks/useGeolocation";
