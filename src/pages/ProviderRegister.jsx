@@ -188,21 +188,45 @@ export default function ProviderRegister() {
             <p className="text-muted-foreground text-sm">Informações básicas para sua identificação</p>
           </div>
 
-          {/* Foto */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-24 h-24 rounded-full bg-muted overflow-hidden border-2 border-border flex items-center justify-center">
-              {form.photo_url
-                ? <img src={form.photo_url} alt="foto" className="w-full h-full object-cover" />
-                : <User className="w-10 h-10 text-muted-foreground" />}
+          {/* Fotos */}
+          <div className="space-y-4">
+            <Label>Fotos de identificação</Label>
+            <div className="grid grid-cols-2 gap-4">
+              {/* Foto de rosto */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-full aspect-square rounded-2xl bg-muted overflow-hidden border-2 border-border flex items-center justify-center">
+                  {form.photo_url
+                    ? <img src={form.photo_url} alt="rosto" className="w-full h-full object-cover" />
+                    : <User className="w-10 h-10 text-muted-foreground" />}
+                </div>
+                <label className={cn(
+                  "flex items-center gap-1.5 text-xs font-medium text-primary cursor-pointer px-3 py-1.5 rounded-xl border border-primary/40 hover:bg-primary/5 transition-colors",
+                  uploadingFacePhoto && "opacity-50 pointer-events-none"
+                )}>
+                  {uploadingFacePhoto ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+                  {uploadingFacePhoto ? "Enviando..." : "Foto de rosto"}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleFacePhotoUpload} capture="user" />
+                </label>
+              </div>
+
+              {/* Foto corpo inteiro */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-full aspect-square rounded-2xl bg-muted overflow-hidden border-2 border-border flex items-center justify-center">
+                  {form.photo_body_url
+                    ? <img src={form.photo_body_url} alt="corpo" className="w-full h-full object-cover" />
+                    : <User className="w-10 h-10 text-muted-foreground" />}
+                </div>
+                <label className={cn(
+                  "flex items-center gap-1.5 text-xs font-medium text-primary cursor-pointer px-3 py-1.5 rounded-xl border border-primary/40 hover:bg-primary/5 transition-colors",
+                  uploadingBodyPhoto && "opacity-50 pointer-events-none"
+                )}>
+                  {uploadingBodyPhoto ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+                  {uploadingBodyPhoto ? "Enviando..." : "Corpo inteiro"}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleBodyPhotoUpload} capture="environment" />
+                </label>
+              </div>
             </div>
-            <label className={cn(
-              "flex items-center gap-2 text-sm font-medium text-primary cursor-pointer",
-              uploadingPhoto && "opacity-50 pointer-events-none"
-            )}>
-              {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-              {uploadingPhoto ? "Enviando..." : "Adicionar foto"}
-              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-            </label>
+            <p className="text-xs text-muted-foreground text-center">As fotos ajudam o cliente a identificar o prestador na chegada</p>
           </div>
 
           <div className="space-y-3">
