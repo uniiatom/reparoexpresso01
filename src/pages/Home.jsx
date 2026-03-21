@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, ArrowRight, Star, Shield, Clock, Car } from "lucide-react";
+import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, ArrowRight, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
 const homeServices = [
@@ -22,11 +22,13 @@ const vehicleServices = [
 ];
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('casa');
+  const [mainTab, setMainTab] = useState('cliente');
+  const [serviceTab, setServiceTab] = useState('casa');
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-primary/90 to-primary px-4 pt-14 pb-20 text-center relative overflow-hidden">
+      <div className="bg-gradient-to-br from-primary/90 to-primary px-4 pt-14 pb-24 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           {[...Array(20)].map((_, i) => (
             <div key={i} className="absolute w-2 h-2 bg-white rounded-full" style={{ left: `${Math.random()*100}%`, top: `${Math.random()*100}%` }} />
@@ -42,69 +44,128 @@ export default function Home() {
           <p className="text-white/80 mt-3 text-lg max-w-sm mx-auto">
             Profissionais qualificados a caminho em minutos
           </p>
-          <Link to="/solicitar">
-            <Button size="lg" className="mt-8 bg-white text-primary hover:bg-white/90 font-bold text-base px-8 h-14 rounded-2xl shadow-xl">
-              Pedir Serviço Agora <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
         </motion.div>
       </div>
 
-      {/* Serviços */}
-      <div className="max-w-lg mx-auto px-4 -mt-8">
-        <div className="bg-card rounded-3xl shadow-xl p-6">
-          {/* Tabs */}
-          <div className="flex gap-2 mb-5">
+      {/* Main tabs card */}
+      <div className="max-w-lg mx-auto px-4 -mt-10">
+        <div className="bg-card rounded-3xl shadow-xl overflow-hidden">
+          {/* Main tab switcher */}
+          <div className="flex border-b border-border">
             <button
-              onClick={() => setActiveTab('casa')}
-              className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'casa' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+              onClick={() => setMainTab('cliente')}
+              className={`flex-1 py-4 text-sm font-bold transition-all ${mainTab === 'cliente' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
             >
-              🏠 Casa
+              👤 Sou Cliente
             </button>
             <button
-              onClick={() => setActiveTab('veiculo')}
-              className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'veiculo' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+              onClick={() => setMainTab('prestador')}
+              className={`flex-1 py-4 text-sm font-bold transition-all ${mainTab === 'prestador' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
             >
-              🚗 Veículo
+              🔧 Sou Prestador
             </button>
           </div>
 
-          {activeTab === 'casa' && (
-            <div className="grid grid-cols-4 gap-3">
-              {homeServices.map((s, i) => (
-                <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
-                  <Link to={`/solicitar?tipo=${s.type}`}>
-                    <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
-                        <s.icon className="w-6 h-6" />
-                      </div>
-                      <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          )}
+          <div className="p-6">
+            {/* ── CLIENTE ── */}
+            {mainTab === 'cliente' && (
+              <motion.div key="cliente" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                {/* Service tabs */}
+                <div className="flex gap-2 mb-5">
+                  <button
+                    onClick={() => setServiceTab('casa')}
+                    className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${serviceTab === 'casa' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                  >
+                    🏠 Casa
+                  </button>
+                  <button
+                    onClick={() => setServiceTab('veiculo')}
+                    className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${serviceTab === 'veiculo' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                  >
+                    🚗 Veículo
+                  </button>
+                </div>
 
-          {activeTab === 'veiculo' && (
-            <div>
-              <p className="text-xs text-muted-foreground mb-4">Atendimento emergencial para veículos — prestadores homologados pela Escola Prática</p>
-              <div className="grid grid-cols-3 gap-3">
-                {vehicleServices.map((s, i) => (
-                  <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
-                    <Link to={`/solicitar?tipo=${s.type}`}>
-                      <div className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-accent transition-colors cursor-pointer border border-border">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
-                          <s.icon className="w-6 h-6" />
-                        </div>
-                        <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
+                {serviceTab === 'casa' && (
+                  <div className="grid grid-cols-4 gap-3">
+                    {homeServices.map((s, i) => (
+                      <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
+                        <Link to={`/solicitar?tipo=${s.type}`}>
+                          <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
+                              <s.icon className="w-6 h-6" />
+                            </div>
+                            <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+
+                {serviceTab === 'veiculo' && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-4">Atendimento emergencial para veículos — prestadores homologados pela Escola Prática</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {vehicleServices.map((s, i) => (
+                        <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
+                          <Link to={`/solicitar?tipo=${s.type}`}>
+                            <div className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-accent transition-colors cursor-pointer border border-border">
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
+                                <s.icon className="w-6 h-6" />
+                              </div>
+                              <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
+                            </div>
+                          </Link>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* ── PRESTADOR ── */}
+            {mainTab === 'prestador' && (
+              <motion.div key="prestador" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                <p className="text-sm text-muted-foreground text-center mb-2">
+                  Faça parte da nossa rede de profissionais homologados pela <span className="font-semibold text-foreground">Escola Prática</span>
+                </p>
+
+                {/* Benefits */}
+                <div className="space-y-3">
+                  {[
+                    { icon: ClipboardList, title: "Receba chamados", desc: "Clientes próximos de você em tempo real" },
+                    { icon: BadgeCheck, title: "Homologação gratuita", desc: "Certificação pela Escola Prática inclusa" },
+                    { icon: Star, title: "Construa reputação", desc: "Avaliações que aumentam seus ganhos" },
+                  ].map(item => (
+                    <div key={item.title} className="flex items-start gap-3 p-3 bg-muted/50 rounded-2xl">
+                      <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <item.icon className="w-5 h-5 text-primary" />
                       </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          )}
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                        <p className="text-xs text-muted-foreground">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-col gap-3 pt-2">
+                  <Link to="/prestador">
+                    <Button className="w-full h-12 rounded-2xl font-bold text-sm">
+                      <UserCheck className="w-4 h-4 mr-2" /> Já sou cadastrado — Entrar
+                    </Button>
+                  </Link>
+                  <Link to="/prestador">
+                    <Button variant="outline" className="w-full h-12 rounded-2xl font-bold text-sm">
+                      Quero me cadastrar como prestador
+                    </Button>
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
       </div>
 
