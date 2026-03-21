@@ -259,6 +259,11 @@ export default function ProviderApp() {
         </div>
       )}
 
+      {/* Checklist modal */}
+      {showChecklist && activeJob && (
+        <ServiceChecklist job={activeJob} onClose={() => setShowChecklist(false)} />
+      )}
+
       {/* Banner de novo chamado com alerta sonoro */}
       <NewJobBanner
         job={incomingJob}
