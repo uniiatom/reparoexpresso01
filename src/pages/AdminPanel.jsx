@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, DollarSign } from "lucide-react";
 import ServicePricing from '../components/admin/ServicePricing';
 import ProviderRepasse from '../components/admin/ProviderRepasse';
+import Analytics from '../components/admin/Analytics';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -94,8 +95,9 @@ export default function AdminPanel() {
         </div>
       )}
 
-      <Tabs defaultValue="requests">
-        <TabsList className="mb-6">
+      <Tabs defaultValue="analytics">
+        <TabsList className="mb-6 flex flex-wrap">
+          <TabsTrigger value="analytics">📊 Analytics</TabsTrigger>
           <TabsTrigger value="requests">Chamados</TabsTrigger>
           <TabsTrigger value="providers">
             Prestadores {pendingProviders.length > 0 && `(${pendingProviders.length} pendentes)`}
@@ -107,6 +109,10 @@ export default function AdminPanel() {
             <DollarSign className="w-3.5 h-3.5 mr-1" /> Repasse
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="analytics">
+          <Analytics />
+        </TabsContent>
 
         <TabsContent value="requests">
           <div className="space-y-3">
