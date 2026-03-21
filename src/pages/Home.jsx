@@ -258,15 +258,12 @@ export default function Home() {
                                 <p className="text-2xl font-bold text-primary">{selectedElectricalService.price}</p>
                               </div>
                               <p className="text-xs text-muted-foreground mb-4">Prestadores disponíveis em sua região</p>
-                              <Link 
-                                to={`/solicitar?tipo=eletrica&subtipo=${selectedElectricalService.type}`}
-                                onClick={() => setShowElectricalModal(false)}
-                                className="block"
+                              <Button 
+                                onClick={() => setShowScheduleModal(true)}
+                                className="w-full h-10 rounded-2xl font-bold text-sm"
                               >
-                                <Button className="w-full h-10 rounded-2xl font-bold text-sm">
-                                  Agendar Serviço
-                                </Button>
-                              </Link>
+                                Agendar Serviço
+                              </Button>
                             </motion.div>
                           )}
                         </>
