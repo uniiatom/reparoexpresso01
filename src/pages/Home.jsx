@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
-import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck, Smartphone, Waves, Layers, HardHat, Thermometer, ChefHat, Truck, ShowerHead, Pipette, Gift } from "lucide-react";
+import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck, Smartphone, Waves, Layers, HardHat, Thermometer, ChefHat, Truck, ShowerHead, Pipette, Gift, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReferralCard from "@/components/ReferralCard";
+import FavoritesList from "@/components/FavoritesList";
 
 const homeServices = [
   { icon: Zap, label: "Elétrica", type: "eletrica", color: "bg-yellow-100 text-yellow-700" },
@@ -132,12 +133,20 @@ export default function Home() {
                   🔧 Sou Prestador
                 </button>
                 {user && (
-                  <button
-                    onClick={() => setMainTab('promocao')}
-                    className={`flex-1 py-4 text-sm font-bold transition-all ${mainTab === 'promocao' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
-                  >
-                    🎁 Indique e Ganhe
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setMainTab('favoritos')}
+                      className={`flex-1 py-4 text-sm font-bold transition-all ${mainTab === 'favoritos' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                    >
+                      ❤️ Favoritos
+                    </button>
+                    <button
+                      onClick={() => setMainTab('promocao')}
+                      className={`flex-1 py-4 text-sm font-bold transition-all ${mainTab === 'promocao' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                    >
+                      🎁 Indique e Ganhe
+                    </button>
+                  </>
                 )}
               </div>
 
@@ -196,6 +205,13 @@ export default function Home() {
                         </div>
                       </div>
                     )}
+                  </motion.div>
+                )}
+
+                {/* ── FAVORITOS ── */}
+                {mainTab === 'favoritos' && user && (
+                  <motion.div key="favoritos" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <FavoritesList />
                   </motion.div>
                 )}
 

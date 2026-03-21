@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, Star, BadgeCheck, Phone, Mail, Award, Briefcase, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import FavoriteButton from "@/components/FavoriteButton";
 
 export default function ProviderProfile() {
   const { id } = useParams();
@@ -168,6 +169,12 @@ export default function ProviderProfile() {
             <Button className="flex-1 bg-primary text-primary-foreground rounded-2xl h-11 font-semibold">
               <MessageCircle className="w-4 h-4 mr-2" /> Enviar mensagem
             </Button>
+            <FavoriteButton
+              providerId={provider.id}
+              providerName={provider.name}
+              size="md"
+              variant="outline"
+            />
           </div>
         </div>
       </motion.div>
