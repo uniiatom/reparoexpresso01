@@ -109,10 +109,9 @@ export default function ProviderRegister() {
 
   const canNext = () => {
     if (step === 1) return form.name.length > 2 && form.phone.length > 7 && form.birth_date;
-    if (step === 2) return form.address.length > 3 && form.city && form.state && form.zip_code;
-    if (step === 3) return form.cpf.length >= 11 && form.rg.length >= 5;
-    if (step === 4) return form.specialties.length > 0 && form.experience_years;
-    if (step === 5) return form.accepts_homologation;
+    if (step === 2) return form.address.length > 3 && form.city && form.state && form.zip_code && form.cpf.length >= 11 && form.rg.length >= 5;
+    if (step === 3) return form.specialties.length > 0 && form.experience_years;
+    if (step === 4) return form.accepts_homologation;
     return false;
   };
 
