@@ -489,15 +489,16 @@ export default function Home() {
                                     ⚡ {service.label}
                                   </button>
                                 ))}
-                              </div>
-                              <button
+                                </div>
+                                )}
+                                <button
                                 onClick={() => setShowElectricalModal(false)}
                                 className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors"
-                              >
+                                >
                                 Fechar
-                              </button>
-                            </motion.div>
-                          ) : (
+                                </button>
+                                </motion.div>
+                                ) : (
                             <motion.div
                               key="modal-detail"
                               initial={{ opacity: 0, scale: 0.95, y: 20 }}
