@@ -39,6 +39,7 @@ const vehicleServices = [
 
 const electricalServices = [
   { label: "Chuveiro", type: "eletrica_chuveiro", price: "R$ 80 - R$ 150" },
+  { label: "Instalação de Chuveiro", type: "eletrica_instalacao_chuveiro", price: "R$ 120 - R$ 280" },
   { label: "Tomada", type: "eletrica_tomada", price: "R$ 60 - R$ 120" },
   { label: "QDC", type: "eletrica_qdc", price: "R$ 100 - R$ 200" },
   { label: "Curto-circuito", type: "eletrica_curto", price: "R$ 120 - R$ 250" },
