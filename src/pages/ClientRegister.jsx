@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Camera, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, User, Camera, CheckCircle2, CreditCard, Banknote, Smartphone, Info } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function ClientRegister() {
