@@ -7,6 +7,7 @@ import { CheckCircle2, Clock, User, Phone, Star, MapPin, Wrench, AlertCircle } f
 import { cn } from "@/lib/utils";
 import RatingModal from '../components/RatingModal';
 import LocationTracker from '../components/LocationTracker';
+import ServiceChat from '../components/ServiceChat';
 
 const STATUS_STEPS = [
   { key: "aguardando", label: "Aguardando prestador", icon: Clock },

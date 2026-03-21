@@ -14,6 +14,7 @@ import NewJobBanner from '../components/NewJobBanner';
 import { useNewJobAlert } from '../hooks/useNewJobAlert';
 import ServiceChecklist from '../components/ServiceChecklist';
 import AdditionalPointModal from '../components/AdditionalPointModal';
+import ServiceChat from '../components/ServiceChat';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
