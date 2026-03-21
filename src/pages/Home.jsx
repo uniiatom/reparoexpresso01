@@ -19,6 +19,8 @@ const homeServices = [
   { icon: Wrench, label: "Limpeza de Telhado", type: "limpeza_telhado", color: "bg-amber-100 text-amber-700" },
   { icon: Wind, label: "Coifa de Parede", type: "instalacao_coifa_parede", color: "bg-teal-100 text-teal-700" },
   { icon: Wind, label: "Coifa Ilha", type: "instalacao_coifa_ilha", color: "bg-emerald-100 text-emerald-700" },
+  { icon: Droplets, label: "Conversão Vaso Coplado", type: "conversao_vaso_coplado", color: "bg-indigo-100 text-indigo-700" },
+  { icon: Droplets, label: "Vaso Monobloco", type: "instalacao_vaso_monobloco", color: "bg-violet-100 text-violet-700" },
 ];
 
 const vehicleServices = [
