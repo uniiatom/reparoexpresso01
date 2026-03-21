@@ -69,16 +69,14 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
         <div className="space-y-4 py-4">
           {/* Amount */}
           <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20 text-center">
-            <p className="text-xs text-muted-foreground mb-1">Valor a pagar</p>
-            <p className="text-3xl font-bold text-primary">R$ {finalPrice.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground mb-1">Valor estimado</p>
+            <p className="text-3xl font-bold text-primary">{serviceData.price}</p>
           </div>
 
           {/* Service Name */}
-          {serviceName && (
-            <div className="text-sm text-muted-foreground text-center">
-              Serviço: <span className="font-semibold text-foreground">{serviceName}</span>
-            </div>
-          )}
+          <div className="text-sm text-muted-foreground text-center">
+            Serviço: <span className="font-semibold text-foreground">{serviceData.type}</span>
+          </div>
 
           {/* Payment Method Selection */}
           {paymentMethod === 'stripe' && (
