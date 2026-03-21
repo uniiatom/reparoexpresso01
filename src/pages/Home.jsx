@@ -408,13 +408,14 @@ export default function Home() {
                                     💧 {service.label}
                                   </button>
                                 ))}
-                              </div>
-                              <button
+                                </div>
+                                )}
+                                <button
                                 onClick={() => setShowHydraulicModal(false)}
                                 className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors"
-                              >
+                                >
                                 Fechar
-                              </button>
+                                </button>
                             </motion.div>
                           ) : (
                             <motion.div
