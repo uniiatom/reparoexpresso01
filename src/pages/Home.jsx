@@ -209,14 +209,14 @@ export default function Home() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowScheduleModal(false)}
-                            className="fixed inset-0 bg-black/40 z-40"
+                            className="fixed inset-0 bg-black/40 z-50"
                           />
                           <motion.div
                             key="modal-schedule"
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
+                            className="fixed inset-x-4 top-12 z-[60] bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
                           >
                             <h2 className="text-xl font-bold text-foreground mb-4">Quando você precisa?</h2>
                             <div className="space-y-3">
