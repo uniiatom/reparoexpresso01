@@ -80,9 +80,9 @@ export default function ProviderApp() {
   const acceptJob = useMutation({
     mutationFn: (reqId) => base44.entities.ServiceRequest.update(reqId, {
       status: 'aceito',
-      provider_id: provider.id,
-      provider_name: provider.name,
-      provider_phone: provider.phone,
+      provider_id: provider?.id,
+      provider_name: provider?.name,
+      provider_phone: provider?.phone,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['available-requests'] });
@@ -90,6 +90,15 @@ export default function ProviderApp() {
       toast.success("Chamado aceito! Vá até o cliente.");
     },
   });
+
+  const handleAcceptBanner = (job) => {
+    setIncomingJob(null);
+    acceptJob.mutate(job.id);
+  };
+
+  const handleDeclineBanner = () => {
+    setIncomingJob(null);
+  };
 
   const updateJobStatus = useMutation({
     mutationFn: ({ id, status, final_price }) => base44.entities.ServiceRequest.update(id, { status, ...(final_price && { final_price }) }),
