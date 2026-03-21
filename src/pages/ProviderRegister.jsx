@@ -353,8 +353,8 @@ export default function ProviderRegister() {
         </div>
       )}
 
-      {/* ── STEP 5: Homologação ── */}
-      {step === 5 && (
+      {/* ── STEP 4: Homologação ── */}
+      {step === 4 && (
         <div className="space-y-5">
           <div>
             <h2 className="text-2xl font-bold text-foreground mb-1">Teste de Homologação</h2>
