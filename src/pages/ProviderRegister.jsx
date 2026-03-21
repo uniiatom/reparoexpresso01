@@ -249,12 +249,12 @@ export default function ProviderRegister() {
         </div>
       )}
 
-      {/* ── STEP 2: Endereço ── */}
+      {/* ── STEP 2: Endereço e Documentos ── */}
       {step === 2 && (
         <div className="space-y-5">
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-1">Endereço</h2>
-            <p className="text-muted-foreground text-sm">Onde você mora e atua como profissional</p>
+            <h2 className="text-2xl font-bold text-foreground mb-1">Endereço e Documentos</h2>
+            <p className="text-muted-foreground text-sm">Informações de localização e documentação pessoal</p>
           </div>
           <div className="space-y-3">
             <div className="space-y-2">
@@ -278,6 +278,24 @@ export default function ProviderRegister() {
                 <Label>Estado *</Label>
                 <Input value={form.state} onChange={e => set('state', e.target.value)} placeholder="UF" className="rounded-2xl" maxLength={2} />
               </div>
+            </div>
+          </div>
+
+          <div className="border-t border-border pt-5">
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label>CPF *</Label>
+                <Input value={form.cpf} onChange={e => set('cpf', e.target.value)} placeholder="000.000.000-00" className="rounded-2xl" maxLength={14} />
+              </div>
+              <div className="space-y-2">
+                <Label>RG / Identidade *</Label>
+                <Input value={form.rg} onChange={e => set('rg', e.target.value)} placeholder="Número do RG" className="rounded-2xl" />
+              </div>
+            </div>
+            <div className="bg-muted/60 rounded-2xl p-4 mt-4">
+              <p className="text-xs text-muted-foreground">
+                🔒 Seus documentos são usados apenas para verificação de identidade e não serão compartilhados com terceiros.
+              </p>
             </div>
           </div>
         </div>
