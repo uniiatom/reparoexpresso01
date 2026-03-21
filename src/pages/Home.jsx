@@ -36,11 +36,20 @@ const vehicleServices = [
   { icon: Truck, label: "Reboque", type: "reboque", color: "bg-orange-100 text-orange-700" },
 ];
 
+const electricalServices = [
+  { label: "Chuveiro", type: "eletrica_chuveiro" },
+  { label: "Tomada", type: "eletrica_tomada" },
+  { label: "QDC", type: "eletrica_qdc" },
+  { label: "Curto-circuito", type: "eletrica_curto" },
+  { label: "Troca de Lâmpada", type: "eletrica_lampada" },
+];
+
 export default function Home() {
   const [splashDone, setSplashDone] = useState(false);
   const [mainTab, setMainTab] = useState('cliente');
   const [serviceTab, setServiceTab] = useState('casa');
   const [user, setUser] = useState(null);
+  const [showElectricalModal, setShowElectricalModal] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => setUser(u)).catch(() => {});
@@ -173,18 +182,76 @@ export default function Home() {
                       <div className="grid grid-cols-4 gap-3">
                         {homeServices.map((s, i) => (
                           <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
-                            <Link to={`/solicitar?tipo=${s.type}`}>
-                              <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
-                                  <s.icon className="w-6 h-6" />
+                            {s.type === 'eletrica' ? (
+                              <button 
+                                onClick={() => setShowElectricalModal(true)}
+                                className="w-full h-full"
+                              >
+                                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
+                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
+                                    <s.icon className="w-6 h-6" />
+                                  </div>
+                                  <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
                                 </div>
-                                <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
-                              </div>
-                            </Link>
+                              </button>
+                            ) : (
+                              <Link to={`/solicitar?tipo=${s.type}`}>
+                                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
+                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
+                                    <s.icon className="w-6 h-6" />
+                                  </div>
+                                  <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
+                                </div>
+                              </Link>
+                            )}
                           </motion.div>
                         ))}
                       </div>
                     )}
+
+                    {/* Modal de Elétrica */}
+                    <AnimatePresence>
+                      {showElectricalModal && (
+                        <>
+                          <motion.div
+                            key="overlay"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowElectricalModal(false)}
+                            className="fixed inset-0 bg-black/40 z-40"
+                          />
+                          <motion.div
+                            key="modal"
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-card rounded-3xl p-6 shadow-2xl max-w-sm mx-auto"
+                          >
+                            <h2 className="text-2xl font-bold text-foreground mb-4">Serviços Elétricos</h2>
+                            <div className="space-y-2 mb-4">
+                              {electricalServices.map(service => (
+                                <Link 
+                                  key={service.type}
+                                  to={`/solicitar?tipo=eletrica&subtipo=${service.type}`}
+                                  onClick={() => setShowElectricalModal(false)}
+                                >
+                                  <button className="w-full px-4 py-3 text-left rounded-2xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all font-semibold text-foreground">
+                                    ⚡ {service.label}
+                                  </button>
+                                </Link>
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => setShowElectricalModal(false)}
+                              className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors"
+                            >
+                              Fechar
+                            </button>
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
 
                     {serviceTab === 'veiculo' && (
                       <div>
