@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReferralCard from "@/components/ReferralCard";
 import FavoritesList from "@/components/FavoritesList";
 import PaymentModal from "@/components/PaymentModal";
+import AvailableScheduleSelector from "@/components/AvailableScheduleSelector";
 
 const homeServices = [
   { icon: Zap, label: "Elétrica", type: "eletrica", color: "bg-yellow-100 text-yellow-700" },
