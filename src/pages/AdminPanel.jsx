@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, DollarSign } from "lucide-react";
 import ServicePricing from '../components/admin/ServicePricing';
+import ProviderRepasse from '../components/admin/ProviderRepasse';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
