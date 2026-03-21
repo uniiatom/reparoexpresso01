@@ -16,9 +16,12 @@ const RATING_LABELS = {
 };
 
 export default function RatingModal({ requestId, onClose }) {
-  const [rating, setRating] = useState(5);
+  const [overallRating, setOverallRating] = useState(5);
+  const [punctualityRating, setPunctualityRating] = useState(5);
+  const [qualityRating, setQualityRating] = useState(5);
+  const [behaviorRating, setBehaviorRating] = useState(5);
   const [comment, setComment] = useState('');
-  const [hovered, setHovered] = useState(0);
+  const [hoveredCategory, setHoveredCategory] = useState(null);
   const [done, setDone] = useState(false);
   const queryClient = useQueryClient();
 
@@ -31,12 +34,32 @@ export default function RatingModal({ requestId, onClose }) {
   });
 
   const submitRating = useMutation({
-    mutationFn: () => base44.entities.ServiceRequest.update(requestId, {
-      rating_client: rating,
-      rating_comment: comment,
-    }),
+    mutationFn: async () => {
+      // Criar registro de avaliação detalhada
+      const user = await base44.auth.me();
+      await base44.entities.Review.create({
+        professional_id: request?.provider_id,
+        provider_id: request?.provider_id,
+        service_request_id: requestId,
+        client_id: user?.id,
+        client_name: request?.client_name,
+        overall_rating: overallRating,
+        punctuality_rating: punctualityRating,
+        quality_rating: qualityRating,
+        behavior_rating: behaviorRating,
+        comment: comment,
+        service_description: request?.service_type,
+      });
+
+      // Atualizar ServiceRequest com nota geral (backward compatibility)
+      await base44.entities.ServiceRequest.update(requestId, {
+        rating_client: overallRating,
+        rating_comment: comment,
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-request', requestId] });
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
       setDone(true);
     },
   });
@@ -74,38 +97,70 @@ export default function RatingModal({ requestId, onClose }) {
                 )}
               </div>
 
-              {/* Estrelas */}
-              <div className="flex justify-center gap-3 mb-3">
-                {[1, 2, 3, 4, 5].map((s, idx) => (
-                  <motion.button
-                    key={s}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.1 }}
-                    onMouseEnter={() => setHovered(s)}
-                    onMouseLeave={() => setHovered(0)}
-                    onClick={() => setRating(s)}
-                    className="focus:outline-none cursor-pointer"
-                  >
-                    <Star className={cn(
-                      "w-12 h-12 transition-all duration-150",
-                      s <= (hovered || rating)
-                        ? "text-yellow-400 fill-yellow-400 scale-110"
-                        : "text-muted-foreground/20"
-                    )} />
-                  </motion.button>
-                ))}
+              {/* Nota Geral */}
+              <div className="mb-6">
+                <p className="text-xs text-muted-foreground mb-3 font-semibold">Avaliação Geral</p>
+                <div className="flex justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((s, idx) => (
+                    <motion.button
+                      key={s}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.05 }}
+                      onMouseEnter={() => setHoveredCategory('overall')}
+                      onMouseLeave={() => setHoveredCategory(null)}
+                      onClick={() => setOverallRating(s)}
+                      className="focus:outline-none cursor-pointer"
+                    >
+                      <Star className={cn(
+                        "w-8 h-8 transition-all duration-150",
+                        s <= overallRating
+                          ? "text-yellow-400 fill-yellow-400"
+                          : "text-muted-foreground/30"
+                      )} />
+                    </motion.button>
+                  ))}
+                </div>
+                <motion.p 
+                  key={overallRating}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center text-sm font-bold text-primary mt-2"
+                >
+                  {RATING_LABELS[overallRating]}
+                </motion.p>
               </div>
 
-              {/* Label da nota */}
-              <motion.p 
-                key={hovered || rating}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center text-base font-bold text-primary mb-6 h-6"
-              >
-                {RATING_LABELS[hovered || rating]}
-              </motion.p>
+              {/* Critérios específicos */}
+              <div className="space-y-4 mb-6 pb-4 border-b border-border">
+                {[
+                  { key: 'punctuality', label: '⏰ Pontualidade', rating: punctualityRating, setRating: setPunctualityRating },
+                  { key: 'quality', label: '✨ Qualidade do Trabalho', rating: qualityRating, setRating: setQualityRating },
+                  { key: 'behavior', label: '😊 Educação e Comportamento', rating: behaviorRating, setRating: setBehaviorRating },
+                ].map(criterion => (
+                  <div key={criterion.key}>
+                    <p className="text-xs text-muted-foreground mb-2 font-semibold">{criterion.label}</p>
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <motion.button
+                          key={s}
+                          whileHover={{ scale: 1.1 }}
+                          onClick={() => criterion.setRating(s)}
+                          className="focus:outline-none"
+                        >
+                          <Star className={cn(
+                            "w-5 h-5 transition-all",
+                            s <= criterion.rating
+                              ? "text-yellow-400 fill-yellow-400"
+                              : "text-muted-foreground/20"
+                          )} />
+                        </motion.button>
+                      ))}
+                      <span className="text-xs font-bold text-primary ml-auto">{criterion.rating}/5</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               {/* Comentário */}
               <div className="mb-4">
@@ -145,11 +200,14 @@ export default function RatingModal({ requestId, onClose }) {
               <p className="text-sm text-muted-foreground mb-2">
                 Obrigado pelo feedback. Isso ajuda a manter a qualidade dos nossos prestadores.
               </p>
-              <div className="flex justify-center gap-1 mb-6">
+              <div className="flex justify-center gap-1 mb-4">
                 {[1,2,3,4,5].map(s => (
-                  <Star key={s} className={cn("w-6 h-6", s <= rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground/30")} />
+                  <Star key={s} className={cn("w-6 h-6", s <= overallRating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground/30")} />
                 ))}
               </div>
+              <p className="text-sm text-muted-foreground mb-6">
+                <span className="font-semibold text-foreground">Critérios:</span> Pontualidade {punctualityRating}/5 • Qualidade {qualityRating}/5 • Educação {behaviorRating}/5
+              </p>
               <Button className="w-full rounded-2xl bg-primary text-primary-foreground font-bold" onClick={onClose}>
                 <ThumbsUp className="w-4 h-4 mr-2" /> Fechar
               </Button>

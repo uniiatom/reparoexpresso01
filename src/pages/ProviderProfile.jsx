@@ -8,6 +8,7 @@ import { ArrowLeft, MapPin, Star, BadgeCheck, Phone, Mail, Award, Briefcase, Mes
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import FavoriteButton from "@/components/FavoriteButton";
+import CriteriaStats from "@/components/CriteriaStats";
 
 export default function ProviderProfile() {
   const { id } = useParams();
@@ -236,35 +237,73 @@ export default function ProviderProfile() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="space-y-3"
+            className="space-y-6"
           >
             {reviews.length > 0 ? (
-              reviews.map((review, idx) => (
-                <div key={idx} className="bg-card rounded-2xl p-4 border border-border">
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="font-semibold text-foreground">{review.client_name}</p>
-                    <div className="flex gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={cn(
-                            "w-4 h-4",
-                            i < review.rating
-                              ? "text-yellow-400 fill-yellow-400"
-                              : "text-muted-foreground/30"
-                          )}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  {review.service_description && (
-                    <p className="text-xs text-muted-foreground mb-2">{review.service_description}</p>
-                  )}
-                  {review.comment && (
-                    <p className="text-sm text-foreground">{review.comment}</p>
-                  )}
+              <>
+                {/* Critérios por categoria */}
+                <div className="bg-card rounded-2xl p-4 border border-border">
+                  <p className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Award className="w-4 h-4 text-primary" /> Avaliação por Critério
+                  </p>
+                  <CriteriaStats reviews={reviews} />
                 </div>
-              ))
+
+                {/* Avaliações individuais */}
+                <div>
+                  <p className="text-sm font-bold text-foreground mb-3">Todas as Avaliações</p>
+                  <div className="space-y-3">
+                    {reviews.map((review, idx) => (
+                      <div key={idx} className="bg-card rounded-2xl p-4 border border-border">
+                        <div className="flex items-start justify-between mb-2">
+                          <p className="font-semibold text-foreground">{review.client_name}</p>
+                          <div className="flex gap-0.5">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={cn(
+                                  "w-4 h-4",
+                                  i < (review.overall_rating || review.rating)
+                                    ? "text-yellow-400 fill-yellow-400"
+                                    : "text-muted-foreground/30"
+                                )}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Critérios individuais */}
+                        {(review.punctuality_rating || review.quality_rating || review.behavior_rating) && (
+                          <div className="grid grid-cols-3 gap-2 mb-2 pb-2 border-b border-border text-xs">
+                            {review.punctuality_rating && (
+                              <div className="text-center">
+                                <p className="text-muted-foreground">Pontualidade</p>
+                                <p className="font-bold text-primary">{review.punctuality_rating}/5</p>
+                              </div>
+                            )}
+                            {review.quality_rating && (
+                              <div className="text-center">
+                                <p className="text-muted-foreground">Qualidade</p>
+                                <p className="font-bold text-primary">{review.quality_rating}/5</p>
+                              </div>
+                            )}
+                            {review.behavior_rating && (
+                              <div className="text-center">
+                                <p className="text-muted-foreground">Educação</p>
+                                <p className="font-bold text-primary">{review.behavior_rating}/5</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {review.comment && (
+                          <p className="text-sm text-foreground">{review.comment}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
             ) : (
               <div className="bg-card rounded-3xl p-6 border border-border text-center text-muted-foreground text-sm">
                 Ainda não há avaliações
