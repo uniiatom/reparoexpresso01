@@ -24,6 +24,7 @@ import LoyaltyRewards from './pages/LoyaltyRewards';
 import ProviderLocationMap from './pages/ProviderLocationMap';
 import MeusPedidos from './pages/MeusPedidos';
 import PartnerRegister from './pages/PartnerRegister';
+import ProviderDashboard from './pages/ProviderDashboard';
 import { Toaster as SonnerToaster } from "sonner";
 
 const AuthenticatedApp = () => {
