@@ -106,21 +106,7 @@ export default function Home() {
       {/* Main content — only renders after splash */}
       {splashDone && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-          {/* Hero */}
-          <div className="bg-gradient-to-br from-primary/90 to-primary px-4 pt-14 pb-24 text-center relative overflow-hidden">
-            <div className="absolute inset-0 opacity-10">
-              {[...Array(20)].map((_, i) => (
-                <div key={i} className="absolute w-2 h-2 bg-white rounded-full" style={{ left: `${(i * 37 + 5) % 100}%`, top: `${(i * 53 + 10) % 100}%` }} />
-              ))}
-            </div>
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-               <img
-                 src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg"
-                 alt="Me Socorro - Marido de Aluguel"
-                 className="h-36 w-auto object-contain mx-auto mb-2 drop-shadow-xl"
-               />
-             </motion.div>
-          </div>
+
 
           {/* Main tabs card */}
           <div className="max-w-lg mx-auto px-4 -mt-10">
