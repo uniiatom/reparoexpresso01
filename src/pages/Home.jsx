@@ -481,24 +481,26 @@ export default function Home() {
                                 </button>
                               </div>
                               {electricalModalExpanded && (
-                              <div className="space-y-2 mb-4">
-                                {electricalServices.map(service => (
-                                  <button 
-                                    key={service.type}
-                                    onClick={() => setSelectedElectricalService(service)}
-                                    className="w-full px-4 py-3 text-left rounded-2xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all font-semibold text-foreground"
-                                  >
-                                    ⚡ {service.label}
-                                  </button>
-                                ))}
+                                <div className="space-y-2 mb-4">
+                                  {electricalServices.map(service => (
+                                    <button 
+                                      key={service.type}
+                                      onClick={() => setSelectedElectricalService(service)}
+                                      className="w-full px-4 py-3 text-left rounded-2xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all font-semibold text-foreground"
+                                    >
+                                      ⚡ {service.label}
+                                    </button>
+                                  ))}
                                 </div>
-                                )}
+                              )}
+                              {electricalModalExpanded && (
                                 <button
-                                onClick={() => setShowElectricalModal(false)}
-                                className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors"
+                                  onClick={() => setShowElectricalModal(false)}
+                                  className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors"
                                 >
-                                Fechar
+                                  Fechar
                                 </button>
+                              )}
                                 </motion.div>
                                 ) : (
                             <motion.div
