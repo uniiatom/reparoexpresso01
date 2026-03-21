@@ -10,6 +10,7 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('stripe'); // 'stripe' or 'pix'
   const [error, setError] = useState(null);
+  const [referenceCode, setReferenceCode] = useState(null);
 
   if (!serviceData) return null;
 
