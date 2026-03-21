@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import RatingModal from '../components/RatingModal';
 import LocationTracker from '../components/LocationTracker';
 import ServiceChat from '../components/ServiceChat';
+import PaymentModal from '../components/PaymentModal';
 
 const STATUS_STEPS = [
   { key: "aguardando", label: "Aguardando prestador", icon: Clock },
@@ -28,6 +29,7 @@ export default function AcompanharServico() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showRating, setShowRating] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
 
   const { data: request } = useQuery({
     queryKey: ['service-request', id],
@@ -163,9 +165,19 @@ export default function AcompanharServico() {
 
       {/* Preço final */}
       {request.final_price && (
-        <div className="bg-card rounded-3xl p-5 border border-border mb-5 flex items-center justify-between">
-          <span className="font-semibold text-foreground">Valor do serviço</span>
-          <span className="text-2xl font-bold text-primary">R$ {request.final_price.toFixed(2)}</span>
+        <div className="bg-card rounded-3xl p-5 border border-border mb-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-foreground">Valor do serviço</span>
+            <span className="text-2xl font-bold text-primary">R$ {request.final_price.toFixed(2)}</span>
+          </div>
+          {request.status === 'concluido' && (
+            <Button
+              onClick={() => setShowPayment(true)}
+              className="w-full rounded-2xl bg-primary text-primary-foreground font-semibold h-11"
+            >
+              💳 Pagar agora
+            </Button>
+          )}
         </div>
       )}
 
@@ -203,6 +215,15 @@ export default function AcompanharServico() {
         active={['aguardando','aceito','a_caminho','em_andamento'].includes(request?.status)}
       />
       {showRating && <RatingModal requestId={id} onClose={() => setShowRating(false)} />}
+      {request.final_price && (
+        <PaymentModal
+          isOpen={showPayment}
+          onClose={() => setShowPayment(false)}
+          requestId={id}
+          finalPrice={request.final_price}
+          serviceName={SERVICE_LABELS[request.service_type] || request.service_type}
+        />
+      )}
     </div>
   );
 }
