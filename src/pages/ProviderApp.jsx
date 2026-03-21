@@ -176,9 +176,14 @@ export default function ProviderApp() {
               </Button>
             )}
             {activeJob.status === 'em_andamento' && (
-              <Button size="sm" className="flex-1 rounded-xl bg-green-600 text-white" onClick={() => updateJobStatus.mutate({ id: activeJob.id, status: 'concluido' })}>
-                <CheckCircle2 className="w-4 h-4 mr-1" /> Concluir
-              </Button>
+              <>
+                <Button size="sm" variant="outline" className="flex-1 rounded-xl border-primary text-primary" onClick={() => setShowChecklist(true)}>
+                  <ClipboardList className="w-4 h-4 mr-1" /> Checklist
+                </Button>
+                <Button size="sm" className="flex-1 rounded-xl bg-green-600 text-white" onClick={() => updateJobStatus.mutate({ id: activeJob.id, status: 'concluido' })}>
+                  <CheckCircle2 className="w-4 h-4 mr-1" /> Concluir
+                </Button>
+              </>
             )}
           </div>
         </div>
