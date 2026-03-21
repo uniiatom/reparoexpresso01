@@ -22,6 +22,7 @@ const vehicleServices = [
 ];
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState('casa');
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
