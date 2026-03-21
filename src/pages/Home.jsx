@@ -49,7 +49,6 @@ const hydraulicServices = [
   { label: "Desentupimento", type: "hidraulica_desentupimento", price: "R$ 100 - R$ 250" },
   { label: "Vazamento", type: "hidraulica_vazamento", price: "R$ 80 - R$ 200" },
   { label: "Substituição de Registro", type: "hidraulica_registro", price: "R$ 60 - R$ 150" },
-  { label: "Instalação de Chuveiro", type: "hidraulica_chuveiro", price: "R$ 120 - R$ 280" },
   { label: "Reparo de Vaso Sanitário", type: "hidraulica_vaso", price: "R$ 80 - R$ 200" },
 ];
 
