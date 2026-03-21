@@ -274,6 +274,11 @@ export default function ProviderApp() {
         <ServiceChecklist job={activeJob} onClose={() => setShowChecklist(false)} />
       )}
 
+      {/* Ponto adicional modal */}
+      {showAdditionalPoint && activeJob && (
+        <AdditionalPointModal job={activeJob} onClose={() => { setShowAdditionalPoint(false); queryClient.invalidateQueries({ queryKey: ['my-jobs'] }); }} />
+      )}
+
       {/* Banner de novo chamado com alerta sonoro */}
       <NewJobBanner
         job={incomingJob}
