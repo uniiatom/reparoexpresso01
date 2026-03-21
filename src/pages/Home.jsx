@@ -440,7 +440,7 @@ export default function Home() {
                         <p className="text-xs text-muted-foreground mb-4">Atendimento emergencial para veículos — prestadores homologados pela Escola Prática</p>
                         <div className="grid grid-cols-3 gap-3">
                           {vehicleServices.map((s, i) => (
-                            <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
+                            <motion.div key={`vehicle-${s.type}-${i}`} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
                               <Link to={`/solicitar?tipo=${s.type}`}>
                                 <div className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-accent transition-colors cursor-pointer border border-border">
                                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
