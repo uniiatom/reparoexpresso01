@@ -44,6 +44,9 @@ export default function ProviderRegister() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [done, setDone] = useState(false);
 
+  const [uploadingFacePhoto, setUploadingFacePhoto] = useState(false);
+  const [uploadingBodyPhoto, setUploadingBodyPhoto] = useState(false);
+
   const [form, setForm] = useState({
     // Pessoais
     name: '',
@@ -51,6 +54,7 @@ export default function ProviderRegister() {
     email: '',
     birth_date: '',
     photo_url: '',
+    photo_body_url: '',
     // Endereço
     address: '',
     neighborhood: '',
@@ -84,6 +88,24 @@ export default function ProviderRegister() {
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     set('photo_url', file_url);
     setUploadingPhoto(false);
+  };
+
+  const handleFacePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingFacePhoto(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    set('photo_url', file_url);
+    setUploadingFacePhoto(false);
+  };
+
+  const handleBodyPhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingBodyPhoto(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    set('photo_body_url', file_url);
+    setUploadingBodyPhoto(false);
   };
 
   const canNext = () => {
