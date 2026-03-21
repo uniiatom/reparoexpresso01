@@ -114,15 +114,12 @@ export default function Home() {
               ))}
             </div>
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <img
-                src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg"
-                alt="Me Socorro - Marido de Aluguel"
-                className="h-36 w-auto object-contain mx-auto mb-2 drop-shadow-xl"
-              />
-              <p className="text-white/80 mt-2 text-lg max-w-sm mx-auto">
-                Profissionais qualificados podendo chegar em minutos
-              </p>
-            </motion.div>
+               <img
+                 src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg"
+                 alt="Me Socorro - Marido de Aluguel"
+                 className="h-36 w-auto object-contain mx-auto mb-2 drop-shadow-xl"
+               />
+             </motion.div>
           </div>
 
           {/* Main tabs card */}
