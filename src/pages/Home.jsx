@@ -319,34 +319,46 @@ export default function Home() {
                                 <label className="text-sm font-semibold text-foreground block mb-2">Selecione a data</label>
                                 <input 
                                   type="date" 
+                                  value={scheduledDate}
+                                  onChange={(e) => setScheduledDate(e.target.value)}
                                   className="w-full px-3 py-2 rounded-xl border border-border focus:border-primary outline-none text-sm"
                                   min={new Date().toISOString().split('T')[0]}
                                 />
                               </div>
                               <div>
                                 <label className="text-sm font-semibold text-foreground block mb-2">Selecione a hora</label>
-                                <select className="w-full px-3 py-2 rounded-xl border border-border focus:border-primary outline-none text-sm">
-                                  <option>08:00</option>
-                                  <option>09:00</option>
-                                  <option>10:00</option>
-                                  <option>11:00</option>
-                                  <option>14:00</option>
-                                  <option>15:00</option>
-                                  <option>16:00</option>
-                                  <option>17:00</option>
+                                <select 
+                                  value={scheduledTime}
+                                  onChange={(e) => setScheduledTime(e.target.value)}
+                                  className="w-full px-3 py-2 rounded-xl border border-border focus:border-primary outline-none text-sm"
+                                >
+                                  <option value="">Escolher horário</option>
+                                  <option value="08:00">08:00</option>
+                                  <option value="09:00">09:00</option>
+                                  <option value="10:00">10:00</option>
+                                  <option value="11:00">11:00</option>
+                                  <option value="14:00">14:00</option>
+                                  <option value="15:00">15:00</option>
+                                  <option value="16:00">16:00</option>
+                                  <option value="17:00">17:00</option>
                                 </select>
                               </div>
                             </div>
-                            {selectedElectricalService && (
+                            {selectedElectricalService && scheduledDate && scheduledTime && (
                               <Link 
-                                to={`/solicitar?tipo=eletrica&subtipo=${selectedElectricalService.type}&modality=agendado`}
-                                onClick={() => { setShowElectricalModal(false); setShowScheduleModal(false); }}
+                                to={`/solicitar?tipo=eletrica&subtipo=${selectedElectricalService.type}&modality=agendado&date=${scheduledDate}&time=${scheduledTime}`}
+                                onClick={() => { setShowElectricalModal(false); setShowScheduleModal(false); setScheduledDate(''); setScheduledTime(''); }}
                                 className="block mt-6"
                               >
                                 <Button className="w-full h-10 rounded-2xl font-bold text-sm">
                                   Confirmar Agendamento
                                 </Button>
                               </Link>
+                            )}
+                            {(!scheduledDate || !scheduledTime) && (
+                              <div className="mt-6 p-3 bg-muted rounded-2xl text-center">
+                                <p className="text-xs text-muted-foreground">Selecione data e hora para continuar</p>
+                              </div>
                             )}
                           </motion.div>
                         </>
