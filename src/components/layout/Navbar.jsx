@@ -18,10 +18,11 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 bg-card/90 backdrop-blur-xl border-b border-border/50">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
-            <Wrench className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <span className="font-extrabold text-foreground tracking-tight">MaridoPro</span>
+          <img
+            src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg"
+            alt="Me Socorro - Marido de Aluguel"
+            className="h-10 w-auto object-contain"
+          />
         </Link>
 
         <div className="hidden sm:flex items-center gap-1">
