@@ -14,8 +14,15 @@ const DEFAULT_ITEMS = [
   "Área de trabalho limpa e organizada",
 ];
 
+const AUTHORIZATION_ITEMS = [
+  "Cliente autorizou os trabalhos realizados",
+  "Cliente recebeu explicação clara do executado",
+  "Cliente concorda com o serviço entregue",
+];
+
 export default function ServiceChecklist({ job, onClose }) {
   const [checkedItems, setCheckedItems] = useState({});
+  const [authorizationItems, setAuthorizationItems] = useState({});
   const [photos, setPhotos] = useState([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [location, setLocation] = useState(null);
@@ -26,6 +33,10 @@ export default function ServiceChecklist({ job, onClose }) {
 
   const toggleItem = (item) => {
     setCheckedItems(prev => ({ ...prev, [item]: !prev[item] }));
+  };
+
+  const toggleAuthorizationItem = (item) => {
+    setAuthorizationItems(prev => ({ ...prev, [item]: !prev[item] }));
   };
 
   const handlePhotoUpload = async (e) => {
@@ -61,11 +72,13 @@ export default function ServiceChecklist({ job, onClose }) {
   };
 
   const allChecked = DEFAULT_ITEMS.every(item => checkedItems[item]);
+  const allAuthorizationsChecked = AUTHORIZATION_ITEMS.every(item => authorizationItems[item]);
 
   const handleSave = async () => {
     setSaving(true);
     const checklistData = {
       items: DEFAULT_ITEMS.map(item => ({ label: item, checked: !!checkedItems[item] })),
+      authorizations: AUTHORIZATION_ITEMS.map(item => ({ label: item, checked: !!authorizationItems[item] })),
       photos,
       notes,
       location,
@@ -129,6 +142,32 @@ export default function ServiceChecklist({ job, onClose }) {
                 </span>
               </button>
             ))}
+          </div>
+
+          {/* Autorização prévia do cliente */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Autorização prévia do cliente</p>
+            {AUTHORIZATION_ITEMS.map(item => (
+              <button
+                key={item}
+                onClick={() => toggleAuthorizationItem(item)}
+                className={cn(
+                  "w-full flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition-all",
+                  authorizationItems[item] ? "border-blue-500 bg-blue-50" : "border-border hover:border-primary/40"
+                )}
+              >
+                <div className={cn(
+                  "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                  authorizationItems[item] ? "bg-blue-500 border-blue-500" : "border-muted-foreground"
+                )}>
+                  {authorizationItems[item] && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                </div>
+                <span className={cn("text-sm", authorizationItems[item] ? "text-blue-700 font-medium" : "text-foreground")}>
+                  {item}
+                </span>
+              </button>
+            ))}
+            <p className="text-xs text-muted-foreground mt-2">O cliente deve confirmar a conclusão satisfatória do serviço</p>
           </div>
 
           {/* Geolocalização */}
@@ -208,14 +247,14 @@ export default function ServiceChecklist({ job, onClose }) {
 
         {/* Footer */}
         <div className="px-5 py-4 border-t border-border bg-card flex-shrink-0">
-          {!allChecked && (
+          {(!allChecked || !allAuthorizationsChecked) && (
             <p className="text-xs text-orange-600 text-center mb-2">
-              Marque todos os itens obrigatórios para salvar
+              {!allChecked ? "Marque todos os itens obrigatórios" : "Obtenha a autorização do cliente"}
             </p>
           )}
           <Button
             onClick={handleSave}
-            disabled={!allChecked || saving}
+            disabled={!allChecked || !allAuthorizationsChecked || saving}
             className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground"
           >
             {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-4 h-4 mr-2" /> Salvar checklist</>}
