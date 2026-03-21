@@ -20,6 +20,26 @@ function estMinutes(distKm) {
 
 const TIME_SLOTS = ["07:00","08:00","09:00","10:00","11:00","13:00","14:00","15:00","16:00","17:00","18:00"];
 
+const FIXED_HOLIDAYS = [
+  "01-01", // Ano Novo
+  "04-21", // Tiradentes
+  "05-01", // Dia do Trabalho
+  "09-07", // Independência
+  "10-12", // Nossa Senhora Aparecida
+  "11-02", // Finados
+  "11-15", // Proclamação da República
+  "12-25", // Natal
+];
+
+const isHolidayOrSunday = (date) => {
+  if (!date) return false;
+  const dateObj = new Date(date + 'T00:00:00');
+  const dayOfWeek = dateObj.getDay();
+  const monthDay = `${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+  
+  return dayOfWeek === 0 || FIXED_HOLIDAYS.includes(monthDay);
+};
+
 export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClose }) {
   const [phase, setPhase] = useState('searching'); // searching | found | none
   const [nearestProvider, setNearestProvider] = useState(null);
@@ -66,6 +86,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const getSurcharges = (date, time) => {
     let night_surcharge = false;
     let weekend_surcharge = false;
+    let holiday_surcharge = false;
 
     // Verificar hora (após 18:00)
     if (time) {
@@ -73,13 +94,14 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       night_surcharge = parseInt(hours) >= 18;
     }
 
-    // Verificar dia da semana (sábado = 6)
+    // Verificar dia da semana (sábado = 6) e feriados/domingos
     if (date) {
       const dateObj = new Date(date + 'T00:00:00');
       weekend_surcharge = dateObj.getDay() === 6;
+      holiday_surcharge = isHolidayOrSunday(date);
     }
 
-    return { night_surcharge, weekend_surcharge };
+    return { night_surcharge, weekend_surcharge, holiday_surcharge };
   };
 
   const handleConfirmImmediate = () => {
@@ -222,7 +244,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                 <div className="flex flex-wrap gap-2">
                     {TIME_SLOTS.map(t => {
                       const surcharges = getSurcharges(scheduledDate, t);
-                      const totalSurcharge = (surcharges.weekend_surcharge ? 40 : 0) + (surcharges.night_surcharge ? 30 : 0);
+                      const totalSurcharge = (surcharges.holiday_surcharge ? 70 : surcharges.weekend_surcharge ? 40 : 0) + (surcharges.night_surcharge ? 30 : 0);
                       return (
                         <button key={t} onClick={() => setScheduledTime(t)}
                           className={cn("px-3 py-1.5 rounded-xl text-xs font-medium border-2 transition-all",
