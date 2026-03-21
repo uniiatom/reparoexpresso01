@@ -178,14 +178,22 @@ export default function ProviderApp() {
               </Button>
             )}
             {activeJob.status === 'em_andamento' && (
-              <>
-                <Button size="sm" variant="outline" className="flex-1 rounded-xl border-primary text-primary" onClick={() => setShowChecklist(true)}>
-                  <ClipboardList className="w-4 h-4 mr-1" /> Checklist
+              <div className="flex flex-col gap-2 w-full">
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" className="flex-1 rounded-xl border-primary text-primary" onClick={() => setShowChecklist(true)}>
+                    <ClipboardList className="w-4 h-4 mr-1" /> Checklist
+                  </Button>
+                  <Button size="sm" className="flex-1 rounded-xl bg-green-600 text-white" onClick={() => updateJobStatus.mutate({ id: activeJob.id, status: 'concluido' })}>
+                    <CheckCircle2 className="w-4 h-4 mr-1" /> Concluir
+                  </Button>
+                </div>
+                <Button size="sm" variant="outline" className="w-full rounded-xl border-orange-400 text-orange-600 hover:bg-orange-50" onClick={() => setShowAdditionalPoint(true)}>
+                  <PlusCircle className="w-4 h-4 mr-1" /> Ponto adicional
                 </Button>
-                <Button size="sm" className="flex-1 rounded-xl bg-green-600 text-white" onClick={() => updateJobStatus.mutate({ id: activeJob.id, status: 'concluido' })}>
-                  <CheckCircle2 className="w-4 h-4 mr-1" /> Concluir
-                </Button>
-              </>
+                {activeJob.additional_points?.length > 0 && (
+                  <p className="text-xs text-muted-foreground text-center">{activeJob.additional_points.length} ponto(s) adicional(is) registrado(s)</p>
+                )}
+              </div>
             )}
           </div>
         </div>
