@@ -68,7 +68,7 @@ export default function Home() {
       <div className="max-w-lg mx-auto px-4 mt-6 grid grid-cols-3 gap-3 pb-10">
         {[
           { icon: Shield, title: "Verificados", desc: "Todos os prestadores são checados" },
-          { icon: Clock, title: "Rápido", desc: "Atendimento em até 30 min" },
+          { icon: Clock, title: "Rápido", desc: "Previsão de chegada em tempo real" },
           { icon: Star, title: "Avaliados", desc: "Veja notas reais de clientes" },
         ].map(item => (
           <div key={item.title} className="bg-card rounded-2xl p-4 text-center border border-border">
