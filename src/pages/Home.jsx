@@ -335,15 +335,17 @@ export default function Home() {
                                 </select>
                               </div>
                             </div>
-                            <Link 
-                              to={`/solicitar?tipo=eletrica&subtipo=${selectedElectricalService.type}&modality=agendado`}
-                              onClick={() => { setShowElectricalModal(false); setShowScheduleModal(false); }}
-                              className="block mt-6"
-                            >
-                              <Button className="w-full h-10 rounded-2xl font-bold text-sm">
-                                Confirmar Agendamento
-                              </Button>
-                            </Link>
+                            {selectedElectricalService && (
+                              <Link 
+                                to={`/solicitar?tipo=eletrica&subtipo=${selectedElectricalService.type}&modality=agendado`}
+                                onClick={() => { setShowElectricalModal(false); setShowScheduleModal(false); }}
+                                className="block mt-6"
+                              >
+                                <Button className="w-full h-10 rounded-2xl font-bold text-sm">
+                                  Confirmar Agendamento
+                                </Button>
+                              </Link>
+                            )}
                           </motion.div>
                         </>
                       )}
