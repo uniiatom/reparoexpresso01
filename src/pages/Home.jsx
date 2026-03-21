@@ -356,6 +356,77 @@ export default function Home() {
                       )}
                     </AnimatePresence>
 
+                    {/* Modal de Hidráulica */}
+                    <AnimatePresence>
+                      {showHydraulicModal && (
+                        <>
+                          <motion.div
+                            key="overlay-hydraulic"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowHydraulicModal(false)}
+                            className="fixed inset-0 bg-black/40 z-40"
+                          />
+                          {!selectedHydraulicService ? (
+                            <motion.div
+                              key="modal-hydraulic-list"
+                              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                              className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
+                            >
+                              <h2 className="text-2xl font-bold text-foreground mb-4">Serviços Hidráulicos</h2>
+                              <div className="space-y-2 mb-4">
+                                {hydraulicServices.map(service => (
+                                  <button 
+                                    key={service.type}
+                                    onClick={() => setSelectedHydraulicService(service)}
+                                    className="w-full px-4 py-3 text-left rounded-2xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all font-semibold text-foreground"
+                                  >
+                                    💧 {service.label}
+                                  </button>
+                                ))}
+                              </div>
+                              <button
+                                onClick={() => setShowHydraulicModal(false)}
+                                className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors"
+                              >
+                                Fechar
+                              </button>
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              key="modal-hydraulic-detail"
+                              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                              className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
+                            >
+                              <button 
+                                onClick={() => setSelectedHydraulicService(null)}
+                                className="text-sm text-primary font-semibold mb-3 flex items-center gap-1"
+                              >
+                                ← Voltar
+                              </button>
+                              <h2 className="text-2xl font-bold text-foreground mb-2">💧 {selectedHydraulicService.label}</h2>
+                              <div className="bg-primary/10 rounded-2xl p-4 mb-4 border border-primary/20">
+                                <p className="text-sm text-muted-foreground mb-1">Valor estimado:</p>
+                                <p className="text-2xl font-bold text-primary">{selectedHydraulicService.price}</p>
+                              </div>
+                              <p className="text-xs text-muted-foreground mb-4">Prestadores disponíveis em sua região</p>
+                              <Button 
+                                onClick={() => setShowScheduleModal(true)}
+                                className="w-full h-10 rounded-2xl font-bold text-sm"
+                              >
+                                Agendar Serviço
+                              </Button>
+                            </motion.div>
+                          )}
+                        </>
+                      )}
+                    </AnimatePresence>
+
                     {/* Modal de Elétrica */}
                     <AnimatePresence>
                       {showElectricalModal && (
