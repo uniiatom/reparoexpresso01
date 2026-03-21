@@ -370,11 +370,11 @@ export default function SolicitarServico() {
             Continuar <ChevronRight className="ml-2 w-5 h-5" />
           </Button>
         ) : (
-          <Button onClick={() => createRequest.mutate(form)} disabled={!canNext() || createRequest.isPending}
+          <Button onClick={() => setShowProviderSearch(true)} disabled={!canNext() || createRequest.isPending}
             className="w-full h-14 rounded-2xl font-bold text-base bg-primary text-primary-foreground">
             {createRequest.isPending
               ? <Loader2 className="w-5 h-5 animate-spin" />
-              : "Confirmar pedido 🔧"}
+              : "Buscar prestador 🔧"}
           </Button>
         )}
       </div>
