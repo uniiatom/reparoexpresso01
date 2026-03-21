@@ -73,6 +73,15 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {/* Reference Code */}
+          {referenceCode && (
+            <div className="bg-green-50 rounded-2xl p-4 border border-green-200">
+              <p className="text-xs text-green-700 font-semibold mb-1">Código de Referência</p>
+              <p className="text-lg font-bold text-green-900 font-mono">{referenceCode}</p>
+              <p className="text-xs text-green-600 mt-2">Use este código para acompanhar seu pedido</p>
+            </div>
+          )}
+
           {/* Amount */}
           <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20 text-center">
             <p className="text-xs text-muted-foreground mb-1">Valor estimado</p>
