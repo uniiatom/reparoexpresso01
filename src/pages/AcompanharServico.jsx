@@ -152,6 +152,15 @@ export default function AcompanharServico() {
         </div>
       )}
 
+      {/* Chat */}
+      {['aceito','a_caminho','em_andamento','concluido'].includes(request.status) && (
+        <ServiceChat
+          requestId={id}
+          senderRole="cliente"
+          senderName={request.client_name}
+        />
+      )}
+
       {/* Preço final */}
       {request.final_price && (
         <div className="bg-card rounded-3xl p-5 border border-border mb-5 flex items-center justify-between">

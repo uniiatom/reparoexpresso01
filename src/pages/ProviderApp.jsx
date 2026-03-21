@@ -172,6 +172,12 @@ export default function ProviderApp() {
               <Phone className="w-3.5 h-3.5" /> {activeJob.client_name} · {activeJob.client_phone}
             </p>
           </div>
+          <ServiceChat
+            requestId={activeJob.id}
+            senderRole="prestador"
+            senderName={provider.name}
+          />
+
           <div className="flex gap-2">
             {activeJob.status === 'aceito' && (
               <Button size="sm" className="flex-1 rounded-xl bg-primary text-primary-foreground" onClick={() => updateJobStatus.mutate({ id: activeJob.id, status: 'em_andamento' })}>
