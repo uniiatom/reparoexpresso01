@@ -35,13 +35,12 @@ export default function Home() {
           ))}
         </div>
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <Wrench className="w-9 h-9 text-white" />
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-            Marido de<br />Aluguel
-          </h1>
-          <p className="text-white/80 mt-3 text-lg max-w-sm mx-auto">
+          <img
+            src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg"
+            alt="Me Socorro - Marido de Aluguel"
+            className="h-36 w-auto object-contain mx-auto mb-2 drop-shadow-xl"
+          />
+          <p className="text-white/80 mt-2 text-lg max-w-sm mx-auto">
             Profissionais qualificados a caminho em minutos
           </p>
         </motion.div>
