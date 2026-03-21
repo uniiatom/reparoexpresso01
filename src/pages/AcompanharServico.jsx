@@ -9,6 +9,8 @@ import RatingModal from '../components/RatingModal';
 import LocationTracker from '../components/LocationTracker';
 import ServiceChat from '../components/ServiceChat';
 import PaymentModal from '../components/PaymentModal';
+import NotificationPermissionBanner from '../components/NotificationPermissionBanner';
+import { useServiceNotifications } from '../hooks/useServiceNotifications';
 
 const STATUS_STEPS = [
   { key: "aguardando", label: "Aguardando prestador", icon: Clock },
@@ -30,6 +32,17 @@ export default function AcompanharServico() {
   const queryClient = useQueryClient();
   const [showRating, setShowRating] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [previousStatus, setPreviousStatus] = useState(null);
+
+  // Setup notifications for status changes
+  useServiceNotifications(request, previousStatus);
+
+  // Track status changes
+  useEffect(() => {
+    if (request?.status && request.status !== previousStatus) {
+      setPreviousStatus(request.status);
+    }
+  }, [request?.status, previousStatus]);
 
   const { data: request } = useQuery({
     queryKey: ['service-request', id],
@@ -75,6 +88,7 @@ export default function AcompanharServico() {
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
+      <NotificationPermissionBanner />
       {/* Header */}
       <div className="text-center mb-8">
         <div className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-3", statusColor)}>
