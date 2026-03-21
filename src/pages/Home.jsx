@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, ArrowRight, Star, Shield, Clock } from "lucide-react";
+import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, ArrowRight, Star, Shield, Clock, Car } from "lucide-react";
 import { motion } from "framer-motion";
 
-const services = [
+const homeServices = [
   { icon: Zap, label: "Elétrica", type: "eletrica", color: "bg-yellow-100 text-yellow-700" },
   { icon: Droplets, label: "Hidráulica", type: "hidraulica", color: "bg-blue-100 text-blue-700" },
   { icon: Paintbrush, label: "Pintura", type: "pintura", color: "bg-orange-100 text-orange-700" },
@@ -13,6 +13,12 @@ const services = [
   { icon: Hammer, label: "Alvenaria", type: "alvenaria", color: "bg-red-100 text-red-700" },
   { icon: Lock, label: "Fechadura", type: "fechadura", color: "bg-green-100 text-green-700" },
   { icon: Wind, label: "Ar Condicionado", type: "ar_condicionado", color: "bg-cyan-100 text-cyan-700" },
+];
+
+const vehicleServices = [
+  { icon: Car, label: "Troca de Pneu", type: "troca_pneu", color: "bg-slate-100 text-slate-700" },
+  { icon: Zap, label: "Recarga Bateria", type: "recarga_bateria", color: "bg-yellow-100 text-yellow-700" },
+  { icon: Wrench, label: "Conserto Pneu", type: "conserto_pneu", color: "bg-red-100 text-red-700" },
 ];
 
 export default function Home() {
