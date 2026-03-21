@@ -57,66 +57,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AnimatePresence>
-        {!splashDone && (
-          <motion.div
-            key="splash"
-            className="fixed inset-0 z-50 bg-gradient-to-br from-primary to-primary/80 flex flex-col items-center justify-center cursor-pointer"
-            onClick={() => setSplashDone(true)}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.4 }}
-          >
-            {/* decorative dots */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {[...Array(24)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-2 h-2 bg-white/20 rounded-full"
-                  style={{ left: `${(i * 37 + 5) % 100}%`, top: `${(i * 53 + 10) % 100}%` }}
-                />
-              ))}
-            </div>
+      {/* Hero Banner Fullscreen */}
+      <div className="w-full h-screen bg-primary/10 flex items-center justify-center overflow-hidden relative">
+        <img
+          src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/496e4e125_WhatsAppImage2026-03-21at182452.jpg"
+          alt="Me Socorro"
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="flex flex-col items-center gap-8 px-8 text-center"
-            >
-              <img
-                src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg"
-                alt="Me Socorro"
-                className="w-72 max-w-xs object-contain drop-shadow-2xl"
-              />
-              <p className="text-white/80 text-lg max-w-xs">
-                Profissionais qualificados podendo chegar em minutos
-              </p>
-              <motion.div
-                animate={{ opacity: [0.4, 1, 0.4] }}
-                transition={{ repeat: Infinity, duration: 1.6 }}
-                className="text-white/60 text-sm mt-4"
-              >
-                Toque para continuar
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main content — only renders after splash */}
-      {splashDone && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-          {/* Hero Banner */}
-          <div className="w-full h-96 bg-primary/10 flex items-center justify-center overflow-hidden relative">
-            <img
-              src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/496e4e125_WhatsAppImage2026-03-21at182452.jpg"
-              alt="Me Socorro"
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          {/* Main tabs card */}
-          <div className="max-w-lg mx-auto px-4 -mt-12 relative z-10">
+      {/* Main content */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+           {/* Main tabs card */}
+           <div className="max-w-lg mx-auto px-4 py-6">
             <div className="bg-card rounded-3xl shadow-xl overflow-hidden">
               <div className="flex border-b border-border overflow-x-auto">
                  <button
