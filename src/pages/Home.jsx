@@ -52,21 +52,58 @@ export default function Home() {
       {/* Serviços */}
       <div className="max-w-lg mx-auto px-4 -mt-8">
         <div className="bg-card rounded-3xl shadow-xl p-6">
-          <h2 className="font-bold text-foreground text-lg mb-4">O que você precisa?</h2>
-          <div className="grid grid-cols-4 gap-3">
-            {services.map((s, i) => (
-              <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
-                <Link to={`/solicitar?tipo=${s.type}`}>
-                  <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
-                      <s.icon className="w-6 h-6" />
-                    </div>
-                    <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+          {/* Tabs */}
+          <div className="flex gap-2 mb-5">
+            <button
+              onClick={() => setActiveTab('casa')}
+              className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'casa' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            >
+              🏠 Casa
+            </button>
+            <button
+              onClick={() => setActiveTab('veiculo')}
+              className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'veiculo' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            >
+              🚗 Veículo
+            </button>
           </div>
+
+          {activeTab === 'casa' && (
+            <div className="grid grid-cols-4 gap-3">
+              {homeServices.map((s, i) => (
+                <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
+                  <Link to={`/solicitar?tipo=${s.type}`}>
+                    <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
+                        <s.icon className="w-6 h-6" />
+                      </div>
+                      <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'veiculo' && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-4">Atendimento emergencial para veículos — prestadores homologados pela Escola Prática</p>
+              <div className="grid grid-cols-3 gap-3">
+                {vehicleServices.map((s, i) => (
+                  <motion.div key={s.type} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
+                    <Link to={`/solicitar?tipo=${s.type}`}>
+                      <div className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-accent transition-colors cursor-pointer border border-border">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
+                          <s.icon className="w-6 h-6" />
+                        </div>
+                        <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
