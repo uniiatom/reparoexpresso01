@@ -12,10 +12,12 @@ import {
   Clock, Camera, X, Navigation, Loader2, Car
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AlertCircle } from "lucide-react";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useNearbyProviders } from "@/hooks/useNearbyProviders";
 import MapView from "@/components/MapView";
 import ProviderSearchModal from "@/components/ProviderSearchModal";
+import ClientScheduleSelector from "@/components/ClientScheduleSelector";
 
 const SERVICE_TYPES = [
   { value: "eletrica", label: "Elétrica", icon: Zap, group: "casa" },
@@ -503,25 +505,23 @@ export default function SolicitarServico() {
             </div>
           )}
 
-          {form.modality === 'agendado' && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Data</Label>
-                <Input type="date" value={form.scheduled_date} min={new Date().toISOString().split('T')[0]}
-                  onChange={e => set('scheduled_date', e.target.value)} className="rounded-2xl" />
-              </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Clock className="w-4 h-4" /> Horário</Label>
-                <div className="flex flex-wrap gap-2">
-                  {TIME_SLOTS.map(t => (
-                    <button key={t} onClick={() => set('scheduled_time', t)}
-                      className={cn("px-3 py-1.5 rounded-xl text-sm font-medium border-2 transition-all",
-                        form.scheduled_time === t ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground")}>
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          {form.modality === 'agendado' && selectedProvider && (
+            <ClientScheduleSelector 
+              providerId={selectedProvider.id}
+              onScheduleSelect={(schedule) => {
+                set('scheduled_date', schedule.scheduled_date);
+                set('scheduled_time', schedule.scheduled_time);
+              }}
+              compact={false}
+            />
+          )}
+
+          {form.modality === 'agendado' && !selectedProvider && (
+            <div className="bg-yellow-50 rounded-2xl p-4 border border-yellow-200 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-yellow-700">
+                Volte à etapa anterior e selecione um prestador para agendar um horário específico.
+              </p>
             </div>
           )}
         </div>
