@@ -106,8 +106,17 @@ export default function Home() {
       {/* Main content — only renders after splash */}
       {splashDone && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+          {/* Hero Banner */}
+          <div className="w-full h-96 bg-primary/10 flex items-center justify-center overflow-hidden relative">
+            <img
+              src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/496e4e125_WhatsAppImage2026-03-21at182452.jpg"
+              alt="Me Socorro"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
           {/* Main tabs card */}
-          <div className="max-w-lg mx-auto px-4 pt-4">
+          <div className="max-w-lg mx-auto px-4 -mt-12 relative z-10">
             <div className="bg-card rounded-3xl shadow-xl overflow-hidden">
               <div className="flex border-b border-border overflow-x-auto">
                  <button
