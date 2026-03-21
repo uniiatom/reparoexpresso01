@@ -64,6 +64,7 @@ export default function SolicitarServico() {
   const [form, setForm] = useState({
     service_type: urlParams.get('tipo') || '',
     description: '',
+    client_suggested_price: '',
     problem_photos: [],
     address: '',
     city: '',
@@ -200,9 +201,27 @@ export default function SolicitarServico() {
             />
           </div>
 
+          {/* Sugestão de valor */}
+           <div className="space-y-2">
+             <Label>Qual valor você sugere? (opcional)</Label>
+             <div className="relative">
+               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+               <Input
+                 placeholder="Ex: 150,00"
+                 value={form.client_suggested_price}
+                 onChange={e => set('client_suggested_price', e.target.value)}
+                 className="pl-10 rounded-2xl"
+                 type="number"
+                 step="0.01"
+                 min="0"
+               />
+             </div>
+             <p className="text-xs text-muted-foreground">Isso ajuda os prestadores a estimarem melhor o orçamento</p>
+           </div>
+
           {/* Fotos do problema */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2"><Camera className="w-4 h-4" /> Fotos do problema (opcional)</Label>
+           <div className="space-y-2">
+             <Label className="flex items-center gap-2"><Camera className="w-4 h-4" /> Fotos do problema (opcional)</Label>
             <div className="flex flex-wrap gap-2">
               {form.problem_photos.map((url, idx) => (
                 <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
@@ -383,9 +402,10 @@ export default function SolicitarServico() {
             <p className="text-sm text-muted-foreground">📍 {form.address}{form.city ? `, ${form.city}` : ''}</p>
             {form.latitude && <p className="text-sm text-muted-foreground">📡 Localização GPS ativada</p>}
             {form.problem_photos.length > 0 && <p className="text-sm text-muted-foreground">📷 {form.problem_photos.length} foto(s) anexada(s)</p>}
-            <p className="text-sm text-muted-foreground">
-              {form.modality === 'agendado' ? `📅 Agendado: ${form.scheduled_date} às ${form.scheduled_time}` : `⚡ ${URGENCY.find(u => u.value === form.urgency)?.label}`}
-            </p>
+             {form.client_suggested_price && <p className="text-sm text-muted-foreground">💰 Sugestão de valor: R$ {Number(form.client_suggested_price).toFixed(2)}</p>}
+             <p className="text-sm text-muted-foreground">
+               {form.modality === 'agendado' ? `📅 Agendado: ${form.scheduled_date} às ${form.scheduled_time}` : `⚡ ${URGENCY.find(u => u.value === form.urgency)?.label}`}
+             </p>
           </div>
         </div>
       )}
