@@ -19,7 +19,7 @@ const homeServices = [
   { icon: Hammer, label: "Limpeza de Telhado", type: "limpeza_telhado", color: "bg-amber-100 text-amber-700" },
   { icon: ChefHat, label: "Coifa de Parede", type: "instalacao_coifa_parede", color: "bg-teal-100 text-teal-700" },
   { icon: ChefHat, label: "Coifa Ilha", type: "instalacao_coifa_ilha", color: "bg-emerald-100 text-emerald-700" },
-  { icon: ShowerHead, label: "Conversão Vaso Coplado", type: "conversao_vaso_coplado", color: "bg-indigo-100 text-indigo-700" },
+  { icon: ShowerHead, label: "Conversão Vaso CX Acoplada", type: "conversao_vaso_coplado", color: "bg-indigo-100 text-indigo-700" },
   { icon: ShowerHead, label: "Vaso Monobloco", type: "instalacao_vaso_monobloco", color: "bg-violet-100 text-violet-700" },
   { icon: Layers, label: "Reparo Forro de Gesso", type: "reparo_forro_gesso", color: "bg-stone-100 text-stone-700" },
   { icon: Lock, label: "Chaveiro", type: "fechadura", color: "bg-green-100 text-green-700" },

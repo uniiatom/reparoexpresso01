@@ -22,7 +22,7 @@ const ALL_SERVICES = [
   { type: "limpeza_telhado", label: "Limpeza de Telhado" },
   { type: "instalacao_coifa_parede", label: "Coifa de Parede" },
   { type: "instalacao_coifa_ilha", label: "Coifa Ilha" },
-  { type: "conversao_vaso_coplado", label: "Conversão Vaso Coplado" },
+  { type: "conversao_vaso_coplado", label: "Conversão Vaso CX Acoplada" },
   { type: "instalacao_vaso_monobloco", label: "Vaso Monobloco" },
   { type: "reparo_forro_gesso", label: "Reparo Forro de Gesso" },
   { type: "troca_pneu", label: "Troca de Pneu" },
