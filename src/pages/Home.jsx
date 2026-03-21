@@ -501,8 +501,8 @@ export default function Home() {
                                   Fechar
                                 </button>
                               )}
-                                </motion.div>
-                                ) : (
+                              </motion.div>
+                              ) : (
                             <motion.div
                               key="modal-detail"
                               initial={{ opacity: 0, scale: 0.95, y: 20 }}
