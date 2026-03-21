@@ -7,56 +7,47 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import AppLayout from './components/layout/AppLayout';
 import Home from './pages/Home';
-import Professionals from './pages/Professionals';
-import ProfessionalProfile from './pages/ProfessionalProfile';
-import RequestQuote from './pages/RequestQuote';
-import Categories from './pages/Categories';
-import HowItWorks from './pages/HowItWorks';
-import Dashboard from './pages/Dashboard';
+import SolicitarServico from './pages/SolicitarServico';
+import AcompanharServico from './pages/AcompanharServico';
+import ProviderApp from './pages/ProviderApp';
+import AdminPanel from './pages/AdminPanel';
+import { Toaster as SonnerToaster } from "sonner";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-primary rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
   }
 
-  // Render the main app
   return (
     <Routes>
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/professionals" element={<Professionals />} />
-        <Route path="/professional/:id" element={<ProfessionalProfile />} />
-        <Route path="/request-quote" element={<RequestQuote />} />
-        <Route path="/categories" element={<Categories />} />
-        <Route path="/how-it-works" element={<HowItWorks />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/solicitar" element={<SolicitarServico />} />
+        <Route path="/acompanhar/:id" element={<AcompanharServico />} />
+        <Route path="/prestador" element={<ProviderApp />} />
+        <Route path="/admin" element={<AdminPanel />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
@@ -64,9 +55,10 @@ function App() {
           <AuthenticatedApp />
         </Router>
         <Toaster />
+        <SonnerToaster position="top-center" richColors />
       </QueryClientProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;
