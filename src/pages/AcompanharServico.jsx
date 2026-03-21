@@ -131,6 +131,17 @@ export default function AcompanharServico() {
         </div>
       )}
 
+      {/* Map Link */}
+      {['aguardando', 'aceito', 'a_caminho'].includes(request?.status) && (
+        <Button
+          onClick={() => navigate(`/mapa/${id}`)}
+          variant="outline"
+          className="w-full rounded-2xl h-11 mb-5 border-primary/30 text-primary hover:bg-primary/10 font-semibold"
+        >
+          🗺️ Ver Mapa de Localização
+        </Button>
+      )}
+
       {/* Prestador info */}
       {request.provider_name && (
         <div className="bg-card rounded-3xl p-5 border border-border mb-5">
