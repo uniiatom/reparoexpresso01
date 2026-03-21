@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { useNearbyProviders } from "@/hooks/useNearbyProviders";
+import MapView from "@/components/MapView";
 import ProviderSearchModal from "@/components/ProviderSearchModal";
 
 const SERVICE_TYPES = [
@@ -59,7 +61,9 @@ export default function SolicitarServico() {
   const [serviceTab, setServiceTab] = useState(urlParams.get('tipo') && ['troca_pneu','recarga_bateria','conserto_pneu','veiculo_outros'].includes(urlParams.get('tipo')) ? 'veiculo' : 'casa');
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [showProviderSearch, setShowProviderSearch] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState(null);
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
+  const { data: nearbyProviders = [] } = useNearbyProviders(location?.latitude, location?.longitude, form.service_type);
 
   const [form, setForm] = useState({
     service_type: urlParams.get('tipo') || '',
@@ -149,6 +153,7 @@ export default function SolicitarServico() {
       const hasDelivery = !isTow || (form.delivery_address.length > 3 && form.delivery_latitude && form.delivery_longitude);
       return form.address.length > 3 && hasDelivery;
     }
+    if (step === 3.5) return !!selectedProvider;
     if (step === 4) {
       if (form.modality === 'agendado') return !!form.scheduled_date && !!form.scheduled_time;
       return true;
@@ -157,7 +162,7 @@ export default function SolicitarServico() {
     return true;
   };
 
-  const totalSteps = 5;
+  const totalSteps = 6;
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
@@ -424,7 +429,40 @@ export default function SolicitarServico() {
           </div>
           )}
 
-          {/* Step 4: Quando */}
+          {/* Step 3.5: Mapa */}
+      {step === 3.5 && (
+        <div className="space-y-5">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground mb-1">Prestadores próximos</h2>
+            <p className="text-muted-foreground mb-4">Encontre profissionais na sua região</p>
+          </div>
+          <MapView
+            clientLocation={location}
+            providers={nearbyProviders}
+            selectedProvider={selectedProvider}
+            onSelectProvider={setSelectedProvider}
+            maxDistance={20}
+          />
+          {selectedProvider && (
+            <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
+              <p className="text-sm font-semibold text-foreground mb-2">
+                Prestador selecionado: {selectedProvider.name}
+              </p>
+              <p className="text-xs text-muted-foreground mb-3">
+                {selectedProvider.distance?.toFixed(1)} km • Avaliação: {selectedProvider.rating?.toFixed(1)} ⭐
+              </p>
+              <Button
+                onClick={() => setStep(4)}
+                className="w-full bg-primary text-primary-foreground rounded-2xl h-11 font-semibold"
+              >
+                Continuar <ChevronRight className="ml-2 w-5 h-5" />
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Step 4: Quando */}
       {step === 4 && (
         <div className="space-y-5">
           <div>
