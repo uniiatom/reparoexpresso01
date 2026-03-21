@@ -60,6 +60,8 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [showElectricalModal, setShowElectricalModal] = useState(false);
   const [selectedElectricalService, setSelectedElectricalService] = useState(null);
+  const [showHydraulicModal, setShowHydraulicModal] = useState(false);
+  const [selectedHydraulicService, setSelectedHydraulicService] = useState(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleType, setScheduleType] = useState(null);
   const [scheduledDate, setScheduledDate] = useState('');
