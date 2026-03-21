@@ -45,6 +45,14 @@ const electricalServices = [
   { label: "Troca de Lâmpada", type: "eletrica_lampada", price: "R$ 40 - R$ 80" },
 ];
 
+const hydraulicServices = [
+  { label: "Desentupimento", type: "hidraulica_desentupimento", price: "R$ 100 - R$ 250" },
+  { label: "Vazamento", type: "hidraulica_vazamento", price: "R$ 80 - R$ 200" },
+  { label: "Substituição de Registro", type: "hidraulica_registro", price: "R$ 60 - R$ 150" },
+  { label: "Instalação de Chuveiro", type: "hidraulica_chuveiro", price: "R$ 120 - R$ 280" },
+  { label: "Reparo de Vaso Sanitário", type: "hidraulica_vaso", price: "R$ 80 - R$ 200" },
+];
+
 export default function Home() {
   const [splashDone, setSplashDone] = useState(false);
   const [mainTab, setMainTab] = useState('cliente');
