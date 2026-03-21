@@ -300,19 +300,22 @@ export default function Home() {
                               <p className="text-sm text-green-800 font-semibold">✓ Prestadores disponíveis agora!</p>
                               <p className="text-xs text-green-700 mt-2">Você será conectado a um prestador em até 5 minutos</p>
                             </div>
-                            {selectedElectricalService && (
+                            {(selectedElectricalService || selectedHydraulicService) && (
                               <button 
                                 onClick={() => {
+                                  const isElectrical = selectedElectricalService !== null;
                                   setPendingServiceData({
-                                    type: 'eletrica',
-                                    subtipo: selectedElectricalService.type,
+                                    type: isElectrical ? 'eletrica' : 'hidraulica',
+                                    subtipo: isElectrical ? selectedElectricalService.type : selectedHydraulicService.type,
                                     modality: 'imediato',
-                                    price: selectedElectricalService.price
+                                    price: isElectrical ? selectedElectricalService.price : selectedHydraulicService.price
                                   });
                                   setShowPaymentModal(true);
                                   setShowElectricalModal(false);
+                                  setShowHydraulicModal(false);
                                   setShowScheduleModal(false);
                                   setSelectedElectricalService(null);
+                                  setSelectedHydraulicService(null);
                                 }}
                                 className="block w-full"
                               >
