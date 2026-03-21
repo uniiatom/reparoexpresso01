@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import ProviderSearchModal from "@/components/ProviderSearchModal";
 
 const SERVICE_TYPES = [
   { value: "eletrica", label: "Elétrica", icon: Zap },
