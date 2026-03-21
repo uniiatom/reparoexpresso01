@@ -106,8 +106,36 @@ export default function ClientRegister() {
           <Input type="date" value={form.birth_date} onChange={e => set('birth_date', e.target.value)} className="rounded-2xl h-12" />
         </div>
 
+        {/* Informações de pagamento */}
+        <div className="mt-2 rounded-2xl border-2 border-primary/20 bg-primary/5 p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <CreditCard className="w-4 h-4 text-primary" />
+            <p className="text-sm font-bold text-foreground">Formas de pagamento aceitas</p>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-col items-center gap-1.5 bg-background rounded-xl p-3 border border-border">
+              <CreditCard className="w-5 h-5 text-primary" />
+              <span className="text-xs font-medium text-foreground text-center">Cartão de crédito / débito</span>
+            </div>
+            <div className="flex flex-col items-center gap-1.5 bg-background rounded-xl p-3 border border-border">
+              <Smartphone className="w-5 h-5 text-primary" />
+              <span className="text-xs font-medium text-foreground text-center">Pix</span>
+            </div>
+            <div className="flex flex-col items-center gap-1.5 bg-background rounded-xl p-3 border border-border">
+              <Banknote className="w-5 h-5 text-primary" />
+              <span className="text-xs font-medium text-foreground text-center">Dinheiro</span>
+            </div>
+          </div>
+          <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800 leading-relaxed">
+              O pagamento é realizado <strong>diretamente ao prestador</strong> após a conclusão do serviço. O valor será combinado antes do início do atendimento.
+            </p>
+          </div>
+        </div>
+
         <Button
-          className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-base mt-4"
+          className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-base mt-2"
           onClick={() => createClient.mutate()}
           disabled={!form.name || !form.phone || createClient.isPending}
         >
