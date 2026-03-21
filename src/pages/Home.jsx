@@ -50,7 +50,7 @@ export default function Home() {
             className="h-36 w-auto object-contain mx-auto mb-2 drop-shadow-xl"
           />
           <p className="text-white/80 mt-2 text-lg max-w-sm mx-auto">
-            Profissionais qualificados a caminho em minutos
+            Profissionais qualificados podendo chegar em minutos
           </p>
         </motion.div>
       </div>
