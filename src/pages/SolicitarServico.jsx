@@ -46,6 +46,7 @@ export default function SolicitarServico() {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const [step, setStep] = useState(1);
+  const [serviceTab, setServiceTab] = useState(urlParams.get('tipo') && ['troca_pneu','recarga_bateria','conserto_pneu','veiculo_outros'].includes(urlParams.get('tipo')) ? 'veiculo' : 'casa');
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [showProviderSearch, setShowProviderSearch] = useState(false);
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
