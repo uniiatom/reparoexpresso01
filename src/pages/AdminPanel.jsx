@@ -176,6 +176,10 @@ export default function AdminPanel() {
             ))}
           </div>
         </TabsContent>
+
+        <TabsContent value="pricing">
+          <ServicePricing />
+        </TabsContent>
       </Tabs>
     </div>
   );
