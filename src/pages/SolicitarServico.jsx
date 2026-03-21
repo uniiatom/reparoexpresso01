@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, MapPin, Zap, Droplets, Paintbrush, Wrench, Settings, Hammer, Lock, Wind, ChevronRight } from "lucide-react";
+import { ArrowLeft, MapPin, Zap, Droplets, Paintbrush, Wrench, Settings, Hammer, Lock, Wind, ChevronRight, Calendar, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const SERVICE_TYPES = [
@@ -27,6 +27,11 @@ const URGENCY = [
   { value: "esta_semana", label: "Esta semana", desc: "Sem pressa" },
 ];
 
+const TIME_SLOTS = [
+  "07:00", "08:00", "09:00", "10:00", "11:00",
+  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00",
+];
+
 export default function SolicitarServico() {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
@@ -36,7 +41,10 @@ export default function SolicitarServico() {
     description: '',
     address: '',
     city: '',
+    modality: 'imediato',
     urgency: 'agora',
+    scheduled_date: '',
+    scheduled_time: '',
     client_name: '',
     client_phone: '',
   });
@@ -52,9 +60,20 @@ export default function SolicitarServico() {
     if (step === 1) return !!form.service_type;
     if (step === 2) return form.description.length > 5;
     if (step === 3) return form.address.length > 3;
-    if (step === 4) return form.client_name.length > 2 && form.client_phone.length > 7;
+    if (step === 4) {
+      if (form.modality === 'agendado') return !!form.scheduled_date && !!form.scheduled_time;
+      return true;
+    }
+    if (step === 5) return form.client_name.length > 2 && form.client_phone.length > 7;
     return true;
   };
+
+  const totalSteps = 5;
+
+  // Resumo de quando no step 5
+  const modalitySummary = form.modality === 'agendado'
+    ? `📅 Agendado: ${form.scheduled_date} às ${form.scheduled_time}`
+    : `⚡ ${URGENCY.find(u => u.value === form.urgency)?.label}`;
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
@@ -63,9 +82,9 @@ export default function SolicitarServico() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
-          <p className="text-xs text-muted-foreground mb-1">Passo {step} de 4</p>
+          <p className="text-xs text-muted-foreground mb-1">Passo {step} de {totalSteps}</p>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full transition-all duration-300" style={{ width: `${(step / 4) * 100}%` }} />
+            <div className="h-full bg-primary rounded-full transition-all duration-300" style={{ width: `${(step / totalSteps) * 100}%` }} />
           </div>
         </div>
       </div>
@@ -97,7 +116,7 @@ export default function SolicitarServico() {
         </div>
       )}
 
-      {/* Step 2: Descrição + Urgência */}
+      {/* Step 2: Descrição */}
       {step === 2 && (
         <div className="space-y-5">
           <div>
@@ -112,24 +131,6 @@ export default function SolicitarServico() {
               onChange={e => set('description', e.target.value)}
               className="min-h-[120px] rounded-2xl"
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Urgência</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {URGENCY.map(u => (
-                <button
-                  key={u.value}
-                  onClick={() => set('urgency', u.value)}
-                  className={cn(
-                    "p-3 rounded-2xl border-2 text-left transition-all",
-                    form.urgency === u.value ? "border-primary bg-primary/5" : "border-border"
-                  )}
-                >
-                  <p className={cn("font-semibold text-sm", form.urgency === u.value ? "text-primary" : "text-foreground")}>{u.label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{u.desc}</p>
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       )}
@@ -162,8 +163,93 @@ export default function SolicitarServico() {
         </div>
       )}
 
-      {/* Step 4: Dados do cliente */}
+      {/* Step 4: Quando */}
       {step === 4 && (
+        <div className="space-y-5">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground mb-1">Quando?</h2>
+            <p className="text-muted-foreground mb-4">Escolha se quer atendimento imediato ou agendado</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { value: "imediato", label: "Imediato", desc: "Prestador chega o quanto antes", icon: Zap },
+              { value: "agendado", label: "Agendado", desc: "Escolha data e horário", icon: Calendar },
+            ].map(m => (
+              <button
+                key={m.value}
+                onClick={() => set('modality', m.value)}
+                className={cn(
+                  "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 transition-all text-left",
+                  form.modality === m.value ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                )}
+              >
+                <m.icon className={cn("w-6 h-6", form.modality === m.value ? "text-primary" : "text-muted-foreground")} />
+                <div>
+                  <p className={cn("font-semibold text-sm", form.modality === m.value ? "text-primary" : "text-foreground")}>{m.label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{m.desc}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {form.modality === 'imediato' && (
+            <div className="space-y-2">
+              <Label>Urgência</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {URGENCY.map(u => (
+                  <button
+                    key={u.value}
+                    onClick={() => set('urgency', u.value)}
+                    className={cn(
+                      "p-3 rounded-2xl border-2 text-left transition-all",
+                      form.urgency === u.value ? "border-primary bg-primary/5" : "border-border"
+                    )}
+                  >
+                    <p className={cn("font-semibold text-sm", form.urgency === u.value ? "text-primary" : "text-foreground")}>{u.label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{u.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {form.modality === 'agendado' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Data</Label>
+                <Input
+                  type="date"
+                  value={form.scheduled_date}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={e => set('scheduled_date', e.target.value)}
+                  className="rounded-2xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><Clock className="w-4 h-4" /> Horário</Label>
+                <div className="flex flex-wrap gap-2">
+                  {TIME_SLOTS.map(t => (
+                    <button
+                      key={t}
+                      onClick={() => set('scheduled_time', t)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-xl text-sm font-medium border-2 transition-all",
+                        form.scheduled_time === t ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground"
+                      )}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Step 5: Dados do cliente */}
+      {step === 5 && (
         <div className="space-y-5">
           <div>
             <h2 className="text-2xl font-bold text-foreground mb-1">Seus dados</h2>
@@ -183,13 +269,13 @@ export default function SolicitarServico() {
             <p className="text-sm font-semibold text-foreground mb-2">Resumo do pedido</p>
             <p className="text-sm text-muted-foreground">📍 {form.address}{form.city ? `, ${form.city}` : ''}</p>
             <p className="text-sm text-muted-foreground mt-1">🔧 {SERVICE_TYPES.find(s => s.value === form.service_type)?.label}</p>
-            <p className="text-sm text-muted-foreground mt-1">⚡ {URGENCY.find(u => u.value === form.urgency)?.label}</p>
+            <p className="text-sm text-muted-foreground mt-1">{modalitySummary}</p>
           </div>
         </div>
       )}
 
       <div className="mt-8">
-        {step < 4 ? (
+        {step < totalSteps ? (
           <Button
             onClick={() => setStep(s => s + 1)}
             disabled={!canNext()}
@@ -205,7 +291,7 @@ export default function SolicitarServico() {
           >
             {createRequest.isPending ? (
               <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-            ) : "Buscar Prestador 🔧"}
+            ) : "Confirmar pedido 🔧"}
           </Button>
         )}
       </div>
