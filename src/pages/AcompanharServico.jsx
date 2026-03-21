@@ -188,6 +188,10 @@ export default function AcompanharServico() {
         </Button>
       )}
 
+      <LocationTracker
+        requestId={id}
+        active={['aguardando','aceito','a_caminho','em_andamento'].includes(request?.status)}
+      />
       {showRating && <RatingModal requestId={id} onClose={() => setShowRating(false)} />}
     </div>
   );

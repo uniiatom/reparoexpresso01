@@ -9,6 +9,7 @@ export default function Navbar() {
   const location = useLocation();
 
   const links = [
+    { to: "/cadastro", label: "Criar conta" },
     { to: "/prestador", label: "Sou Prestador" },
     { to: "/admin", label: "Admin", icon: Shield },
   ];
