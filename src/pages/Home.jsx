@@ -69,6 +69,8 @@ export default function Home() {
   const [scheduledTime, setScheduledTime] = useState('');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [pendingServiceData, setPendingServiceData] = useState(null);
+  const [electricalModalExpanded, setElectricalModalExpanded] = useState(true);
+  const [hydraulicModalExpanded, setHydraulicModalExpanded] = useState(true);
 
   useEffect(() => {
     base44.auth.me().then(u => setUser(u)).catch(() => {});
