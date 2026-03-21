@@ -159,11 +159,11 @@ export default function Home() {
                 )}
               </div>
 
-              <div className="p-6">
-                {/* ── CLIENTE ── */}
-                {mainTab === 'cliente' && (
-                  <motion.div key="cliente" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <div className="flex gap-2 mb-5">
+              <div className="p-6 pt-8">
+                 {/* ── CLIENTE ── */}
+                 {mainTab === 'cliente' && (
+                   <motion.div key="cliente" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                     <div className="flex gap-2 mb-8">
                       <button
                         onClick={() => setServiceTab('casa')}
                         className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${serviceTab === 'casa' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
