@@ -9,6 +9,7 @@ import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, Dolla
 import ServicePricing from '../components/admin/ServicePricing';
 import ProviderRepasse from '../components/admin/ProviderRepasse';
 import Analytics from '../components/admin/Analytics';
+import ScheduledServicesOptimizer from '../components/admin/ScheduledServicesOptimizer';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -98,6 +99,7 @@ export default function AdminPanel() {
       <Tabs defaultValue="analytics">
         <TabsList className="mb-6 flex flex-wrap">
           <TabsTrigger value="analytics">📊 Analytics</TabsTrigger>
+          <TabsTrigger value="optimizer">🎯 Otimizar Rotas</TabsTrigger>
           <TabsTrigger value="requests">Chamados</TabsTrigger>
           <TabsTrigger value="providers">
             Prestadores {pendingProviders.length > 0 && `(${pendingProviders.length} pendentes)`}
@@ -112,6 +114,10 @@ export default function AdminPanel() {
 
         <TabsContent value="analytics">
           <Analytics />
+        </TabsContent>
+
+        <TabsContent value="optimizer">
+          <ScheduledServicesOptimizer />
         </TabsContent>
 
         <TabsContent value="requests">
