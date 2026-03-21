@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, ArrowRight, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck } from "lucide-react";
+import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, ArrowRight, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck, Smartphone } from "lucide-react";
 import { motion } from "framer-motion";
 
 const homeServices = [
