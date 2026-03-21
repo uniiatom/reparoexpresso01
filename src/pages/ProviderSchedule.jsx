@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -22,19 +23,26 @@ export default function ProviderSchedule() {
   const queryClient = useQueryClient();
   const [provider, setProvider] = useState(null);
   const [editingDay, setEditingDay] = useState(null);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(user => {
-      if (user?.role !== 'prestador') {
-        navigate('/');
-        return;
-      }
-      base44.entities.Provider.filter({ user_id: user.id }).then(providers => {
+    const checkAuth = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (!user || user?.role !== 'prestador') {
+          navigate('/');
+          return;
+        }
+        const providers = await base44.entities.Provider.filter({ user_id: user.id });
         if (providers.length > 0) {
           setProvider(providers[0]);
         }
-      });
-    });
+      } catch (error) {
+        console.error('Auth error:', error);
+        navigate('/');
+      }
+    };
+    checkAuth();
   }, [navigate]);
 
   // Fetch availability
@@ -56,6 +64,12 @@ export default function ProviderSchedule() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['provider-availability', provider?.id] });
       setEditingDay(null);
+      setToast({ type: 'success', message: 'Horário atualizado com sucesso!' });
+      setTimeout(() => setToast(null), 3000);
+    },
+    onError: () => {
+      setToast({ type: 'error', message: 'Erro ao salvar horário' });
+      setTimeout(() => setToast(null), 3000);
     },
   });
 
@@ -69,6 +83,13 @@ export default function ProviderSchedule() {
 
   return (
     <div className="min-h-screen bg-background max-w-2xl mx-auto px-4 py-6 pb-20">
+      {/* Toast */}
+      {toast && (
+        <div className={cn("fixed top-4 right-4 p-4 rounded-2xl text-white font-semibold shadow-lg z-50", toast.type === 'success' ? 'bg-green-500' : 'bg-red-500')}>
+          {toast.message}
+        </div>
+      )}
+
       {/* Header */}
       <button
         onClick={() => navigate(-1)}
