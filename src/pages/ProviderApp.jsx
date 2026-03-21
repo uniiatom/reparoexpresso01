@@ -26,6 +26,7 @@ export default function ProviderApp() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [incomingJob, setIncomingJob] = useState(null);
+  const [showChecklist, setShowChecklist] = useState(false);
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
