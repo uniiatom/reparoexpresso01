@@ -43,6 +43,7 @@ export default function SolicitarServico() {
   const urlParams = new URLSearchParams(window.location.search);
   const [step, setStep] = useState(1);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [showProviderSearch, setShowProviderSearch] = useState(false);
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
 
   const [form, setForm] = useState({
