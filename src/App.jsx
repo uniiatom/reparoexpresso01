@@ -18,6 +18,7 @@ import TermosPrestador from './pages/TermosPrestador';
 import UserProfile from './pages/UserProfile';
 import ProviderProfile from './pages/ProviderProfile';
 import ProviderEarnings from './pages/ProviderEarnings';
+import ProviderSchedule from './pages/ProviderSchedule';
 import { Toaster as SonnerToaster } from "sonner";
 
 const AuthenticatedApp = () => {
@@ -50,6 +51,7 @@ const AuthenticatedApp = () => {
         <Route path="/prestador" element={<ProviderApp />} />
         <Route path="/prestador/:id" element={<ProviderProfile />} />
         <Route path="/prestador/ganhos" element={<ProviderEarnings />} />
+        <Route path="/prestador/horarios" element={<ProviderSchedule />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/cadastro" element={<ClientRegister />} />
         <Route path="/cadastro-prestador" element={<ProviderRegister />} />
