@@ -313,81 +313,23 @@ export default function Home() {
                             onClick={() => { setShowScheduleModal(false); setScheduleType(null); }}
                             className="fixed inset-0 bg-black/40 z-50"
                           />
-                          <motion.div
-                            key="modal-agendado"
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed inset-x-4 top-12 z-[60] bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto max-h-[70vh] overflow-y-auto"
-                          >
-                            <button 
-                              onClick={() => setScheduleType(null)}
-                              className="text-sm text-primary font-semibold mb-3 flex items-center gap-1"
-                            >
-                              ← Voltar
-                            </button>
-                            <h2 className="text-xl font-bold text-foreground mb-4">Agendar Serviço</h2>
-                            <div className="space-y-4">
-                              <div>
-                                <label className="text-sm font-semibold text-foreground block mb-2">Selecione a data</label>
-                                <input 
-                                  type="date" 
-                                  value={scheduledDate}
-                                  onChange={(e) => setScheduledDate(e.target.value)}
-                                  className="w-full px-3 py-2 rounded-xl border border-border focus:border-primary outline-none text-sm"
-                                  min={new Date().toISOString().split('T')[0]}
-                                />
-                              </div>
-                              <div>
-                                <label className="text-sm font-semibold text-foreground block mb-2">Selecione a hora</label>
-                                <select 
-                                  value={scheduledTime}
-                                  onChange={(e) => setScheduledTime(e.target.value)}
-                                  className="w-full px-3 py-2 rounded-xl border border-border focus:border-primary outline-none text-sm"
-                                >
-                                  <option value="">Escolher horário</option>
-                                  <option value="08:00">08:00</option>
-                                  <option value="09:00">09:00</option>
-                                  <option value="10:00">10:00</option>
-                                  <option value="11:00">11:00</option>
-                                  <option value="14:00">14:00</option>
-                                  <option value="15:00">15:00</option>
-                                  <option value="16:00">16:00</option>
-                                  <option value="17:00">17:00</option>
-                                </select>
-                              </div>
-                            </div>
-                            {selectedElectricalService && scheduledDate && scheduledTime && (
-                              <button 
-                                onClick={() => {
-                                  setPendingServiceData({
-                                    type: 'eletrica',
-                                    subtipo: selectedElectricalService.type,
-                                    modality: 'agendado',
-                                    date: scheduledDate,
-                                    time: scheduledTime,
-                                    price: selectedElectricalService.price
-                                  });
-                                  setShowPaymentModal(true);
-                                  setShowElectricalModal(false);
-                                  setShowScheduleModal(false);
-                                  setScheduledDate('');
-                                  setScheduledTime('');
-                                  setSelectedElectricalService(null);
-                                }}
-                                className="block mt-6 w-full"
-                              >
-                                <Button className="w-full h-10 rounded-2xl font-bold text-sm">
-                                  Confirmar Agendamento
-                                </Button>
-                              </button>
-                            )}
-                            {(!scheduledDate || !scheduledTime) && (
-                              <div className="mt-6 p-3 bg-muted rounded-2xl text-center">
-                                <p className="text-xs text-muted-foreground">Selecione data e hora para continuar</p>
-                              </div>
-                            )}
-                          </motion.div>
+                          <AvailableScheduleSelector
+                            onConfirm={(scheduleData) => {
+                              setPendingServiceData({
+                                type: 'eletrica',
+                                subtipo: selectedElectricalService.type,
+                                modality: 'agendado',
+                                date: scheduleData.date,
+                                time: scheduleData.time,
+                                price: selectedElectricalService.price
+                              });
+                              setShowPaymentModal(true);
+                              setShowElectricalModal(false);
+                              setShowScheduleModal(false);
+                              setSelectedElectricalService(null);
+                            }}
+                            onCancel={() => { setShowScheduleModal(false); setScheduleType(null); }}
+                          />
                         </>
                       )}
                     </AnimatePresence>
