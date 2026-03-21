@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
-import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck, Smartphone, Waves, Layers, HardHat, Thermometer, ChefHat, Truck, ShowerHead, Pipette } from "lucide-react";
+import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck, Smartphone, Waves, Layers, HardHat, Thermometer, ChefHat, Truck, ShowerHead, Pipette, Gift } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ReferralCard from "@/components/ReferralCard";
 
 const homeServices = [
   { icon: Zap, label: "Elétrica", type: "eletrica", color: "bg-yellow-100 text-yellow-700" },
@@ -37,6 +39,11 @@ export default function Home() {
   const [splashDone, setSplashDone] = useState(false);
   const [mainTab, setMainTab] = useState('cliente');
   const [serviceTab, setServiceTab] = useState('casa');
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(u => setUser(u)).catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,6 +131,14 @@ export default function Home() {
                 >
                   🔧 Sou Prestador
                 </button>
+                {user && (
+                  <button
+                    onClick={() => setMainTab('promocao')}
+                    className={`flex-1 py-4 text-sm font-bold transition-all ${mainTab === 'promocao' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                  >
+                    🎁 Indique e Ganhe
+                  </button>
+                )}
               </div>
 
               <div className="p-6">
@@ -181,6 +196,13 @@ export default function Home() {
                         </div>
                       </div>
                     )}
+                  </motion.div>
+                )}
+
+                {/* ── PROMOÇÃO ── */}
+                {mainTab === 'promocao' && user && (
+                  <motion.div key="promocao" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <ReferralCard user={user} />
                   </motion.div>
                 )}
 
