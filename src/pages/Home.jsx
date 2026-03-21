@@ -199,6 +199,18 @@ export default function Home() {
                                   <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
                                 </div>
                               </button>
+                            ) : s.type === 'hidraulica' ? (
+                              <button 
+                                onClick={() => setShowHydraulicModal(true)}
+                                className="w-full h-full"
+                              >
+                                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
+                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
+                                    <s.icon className="w-6 h-6" />
+                                  </div>
+                                  <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
+                                </div>
+                              </button>
                             ) : (
                               <Link to={`/solicitar?tipo=${s.type}`}>
                                 <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
