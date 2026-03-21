@@ -126,7 +126,7 @@ export default function Home() {
           </div>
 
           {/* Main tabs card */}
-          <div className="max-w-lg mx-auto px-4 -mt-10">
+          <div className="max-w-lg mx-auto px-4 -mt-20">
             <div className="bg-card rounded-3xl shadow-xl overflow-hidden">
               <div className="flex border-b border-border">
                 <button
