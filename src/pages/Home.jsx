@@ -37,11 +37,11 @@ const vehicleServices = [
 ];
 
 const electricalServices = [
-  { label: "Chuveiro", type: "eletrica_chuveiro" },
-  { label: "Tomada", type: "eletrica_tomada" },
-  { label: "QDC", type: "eletrica_qdc" },
-  { label: "Curto-circuito", type: "eletrica_curto" },
-  { label: "Troca de Lâmpada", type: "eletrica_lampada" },
+  { label: "Chuveiro", type: "eletrica_chuveiro", price: "R$ 80 - R$ 150" },
+  { label: "Tomada", type: "eletrica_tomada", price: "R$ 60 - R$ 120" },
+  { label: "QDC", type: "eletrica_qdc", price: "R$ 100 - R$ 200" },
+  { label: "Curto-circuito", type: "eletrica_curto", price: "R$ 120 - R$ 250" },
+  { label: "Troca de Lâmpada", type: "eletrica_lampada", price: "R$ 40 - R$ 80" },
 ];
 
 export default function Home() {
