@@ -63,20 +63,36 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     setPhase('found');
   };
 
-  const checkNightSurcharge = (time) => {
-    if (!time) return false;
-    const [hours] = time.split(':');
-    return parseInt(hours) >= 18;
+  const getSurcharges = (date, time) => {
+    let night_surcharge = false;
+    let weekend_surcharge = false;
+
+    // Verificar hora (após 18:00)
+    if (time) {
+      const [hours] = time.split(':');
+      night_surcharge = parseInt(hours) >= 18;
+    }
+
+    // Verificar dia da semana (sábado = 6)
+    if (date) {
+      const dateObj = new Date(date + 'T00:00:00');
+      weekend_surcharge = dateObj.getDay() === 6;
+    }
+
+    return { night_surcharge, weekend_surcharge };
   };
 
   const handleConfirmImmediate = () => {
     const now = new Date();
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    onConfirm({ ...form, modality: 'imediato', urgency: 'agora', night_surcharge: checkNightSurcharge(currentTime) });
+    const currentDate = now.toISOString().split('T')[0];
+    const surcharges = getSurcharges(currentDate, currentTime);
+    onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges });
   };
 
   const handleConfirmSchedule = () => {
-    onSchedule({ ...form, modality: 'agendado', scheduled_date: scheduledDate, scheduled_time: scheduledTime, night_surcharge: checkNightSurcharge(scheduledTime) });
+    const surcharges = getSurcharges(scheduledDate, scheduledTime);
+    onSchedule({ ...form, modality: 'agendado', scheduled_date: scheduledDate, scheduled_time: scheduledTime, ...surcharges });
   };
 
   const estMin = nearestProvider ? estMinutes(nearestProvider.distance) : null;
@@ -205,12 +221,13 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                 <label className="text-sm font-semibold text-foreground">Horário</label>
                 <div className="flex flex-wrap gap-2">
                     {TIME_SLOTS.map(t => {
-                      const isNight = checkNightSurcharge(t);
+                      const surcharges = getSurcharges(scheduledDate, t);
+                      const totalSurcharge = (surcharges.weekend_surcharge ? 40 : 0) + (surcharges.night_surcharge ? 30 : 0);
                       return (
                         <button key={t} onClick={() => setScheduledTime(t)}
                           className={cn("px-3 py-1.5 rounded-xl text-xs font-medium border-2 transition-all",
                             scheduledTime === t ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground")}>
-                          {t} {isNight && <span className="text-red-500 ml-1">+30%</span>}
+                          {t} {totalSurcharge > 0 && <span className="text-red-500 ml-1">+{totalSurcharge}%</span>}
                         </button>
                       );
                     })}
