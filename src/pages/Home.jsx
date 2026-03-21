@@ -157,7 +157,7 @@ export default function Home() {
                       <UserCheck className="w-4 h-4 mr-2" /> Já sou cadastrado — Entrar
                     </Button>
                   </Link>
-                  <Link to="/prestador">
+                  <Link to="/cadastro-prestador">
                     <Button variant="outline" className="w-full h-12 rounded-2xl font-bold text-sm">
                       Quero me cadastrar como prestador
                     </Button>
