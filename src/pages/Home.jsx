@@ -273,15 +273,17 @@ export default function Home() {
                               <p className="text-sm text-green-800 font-semibold">✓ Prestadores disponíveis agora!</p>
                               <p className="text-xs text-green-700 mt-2">Você será conectado a um prestador em até 5 minutos</p>
                             </div>
-                            <Link 
-                              to={`/solicitar?tipo=eletrica&subtipo=${selectedElectricalService.type}&modality=imediato`}
-                              onClick={() => { setShowElectricalModal(false); setShowScheduleModal(false); }}
-                              className="block"
-                            >
-                              <Button className="w-full h-10 rounded-2xl font-bold text-sm bg-green-600 hover:bg-green-700">
-                                Confirmar Serviço Imediato
-                              </Button>
-                            </Link>
+                            {selectedElectricalService && (
+                              <Link 
+                                to={`/solicitar?tipo=eletrica&subtipo=${selectedElectricalService.type}&modality=imediato`}
+                                onClick={() => { setShowElectricalModal(false); setShowScheduleModal(false); }}
+                                className="block"
+                              >
+                                <Button className="w-full h-10 rounded-2xl font-bold text-sm bg-green-600 hover:bg-green-700">
+                                  Confirmar Serviço Imediato
+                                </Button>
+                              </Link>
+                            )}
                           </motion.div>
                         </>
                       )}
