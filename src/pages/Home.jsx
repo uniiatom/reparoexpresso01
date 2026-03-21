@@ -53,6 +53,8 @@ export default function Home() {
   const [selectedElectricalService, setSelectedElectricalService] = useState(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleType, setScheduleType] = useState(null);
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
 
   useEffect(() => {
     base44.auth.me().then(u => setUser(u)).catch(() => {});
