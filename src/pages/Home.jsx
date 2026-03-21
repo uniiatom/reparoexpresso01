@@ -67,7 +67,7 @@ export default function Home() {
       {/* Trust */}
       <div className="max-w-lg mx-auto px-4 mt-6 grid grid-cols-3 gap-3 pb-10">
         {[
-          { icon: Shield, title: "Verificados", desc: "Todos os prestadores são checados" },
+          { icon: Shield, title: "Homologados", desc: "Certificados pela Escola Prática" },
           { icon: Clock, title: "Rápido", desc: "Previsão de chegada em tempo real" },
           { icon: Star, title: "Avaliados", desc: "Veja notas reais de clientes" },
         ].map(item => (
