@@ -16,15 +16,19 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import ProviderSearchModal from "@/components/ProviderSearchModal";
 
 const SERVICE_TYPES = [
-  { value: "eletrica", label: "Elétrica", icon: Zap },
-  { value: "hidraulica", label: "Hidráulica", icon: Droplets },
-  { value: "pintura", label: "Pintura", icon: Paintbrush },
-  { value: "reparo_geral", label: "Reparo Geral", icon: Wrench },
-  { value: "montagem", label: "Montagem", icon: Settings },
-  { value: "alvenaria", label: "Alvenaria", icon: Hammer },
-  { value: "fechadura", label: "Fechadura", icon: Lock },
-  { value: "ar_condicionado", label: "Ar Condicionado", icon: Wind },
-  { value: "outros", label: "Outros", icon: Wrench },
+  { value: "eletrica", label: "Elétrica", icon: Zap, group: "casa" },
+  { value: "hidraulica", label: "Hidráulica", icon: Droplets, group: "casa" },
+  { value: "pintura", label: "Pintura", icon: Paintbrush, group: "casa" },
+  { value: "reparo_geral", label: "Reparo Geral", icon: Wrench, group: "casa" },
+  { value: "montagem", label: "Montagem", icon: Settings, group: "casa" },
+  { value: "alvenaria", label: "Alvenaria", icon: Hammer, group: "casa" },
+  { value: "fechadura", label: "Fechadura", icon: Lock, group: "casa" },
+  { value: "ar_condicionado", label: "Ar Condicionado", icon: Wind, group: "casa" },
+  { value: "outros", label: "Outros", icon: Wrench, group: "casa" },
+  { value: "troca_pneu", label: "Troca de Pneu", icon: Car, group: "veiculo" },
+  { value: "recarga_bateria", label: "Recarga de Bateria", icon: Zap, group: "veiculo" },
+  { value: "conserto_pneu", label: "Conserto de Pneu", icon: Car, group: "veiculo" },
+  { value: "veiculo_outros", label: "Outros (Veículo)", icon: Car, group: "veiculo" },
 ];
 
 const URGENCY = [
