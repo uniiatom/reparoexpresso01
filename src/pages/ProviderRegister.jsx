@@ -32,8 +32,7 @@ const SPECIALTIES = [
 
 const STEPS = [
   { label: "Dados Pessoais", icon: User },
-  { label: "Endereço", icon: MapPin },
-  { label: "Documentos", icon: FileText },
+  { label: "Endereço e Documentos", icon: MapPin },
   { label: "Habilidades", icon: Wrench },
   { label: "Homologação", icon: GraduationCap },
 ];
