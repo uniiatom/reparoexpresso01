@@ -96,7 +96,7 @@ export default function ProviderApp() {
             <Clock className="w-8 h-8 text-yellow-600" />
           </div>
           <h2 className="text-xl font-bold text-foreground">Aguardando aprovação</h2>
-          <p className="text-muted-foreground mt-2 text-sm">Sua conta está sendo analisada pelo time da plataforma. Você receberá uma notificação em breve.</p>
+          <p className="text-muted-foreground mt-2 text-sm">Sua conta está sendo analisada pela Escola Prática. Somente profissionais homologados pela escola podem atuar na plataforma. Você receberá uma notificação em breve.</p>
         </div>
       </div>
     );
