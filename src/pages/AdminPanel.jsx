@@ -184,6 +184,10 @@ export default function AdminPanel() {
         <TabsContent value="pricing">
           <ServicePricing />
         </TabsContent>
+
+        <TabsContent value="repasse">
+          <ProviderRepasse />
+        </TabsContent>
       </Tabs>
     </div>
   );
