@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
-import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck, Smartphone, Waves, Layers, HardHat, Thermometer, ChefHat, Truck, ShowerHead, Pipette, Gift, Heart } from "lucide-react";
+import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck, Smartphone, Waves, Layers, HardHat, Thermometer, ChefHat, Truck, ShowerHead, Pipette, Gift, Heart, Store } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReferralCard from "@/components/ReferralCard";
 import FavoritesList from "@/components/FavoritesList";
@@ -109,36 +109,42 @@ export default function Home() {
           {/* Main tabs card */}
           <div className="max-w-lg mx-auto px-4 pt-4">
             <div className="bg-card rounded-3xl shadow-xl overflow-hidden">
-              <div className="flex border-b border-border">
-                <button
-                  onClick={() => setMainTab('cliente')}
-                  className={`flex-1 py-4 text-sm font-bold transition-all ${mainTab === 'cliente' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
-                >
-                  👤 Sou Cliente
-                </button>
-                <button
-                  onClick={() => setMainTab('prestador')}
-                  className={`flex-1 py-4 text-sm font-bold transition-all ${mainTab === 'prestador' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
-                >
-                  🔧 Sou Prestador
-                </button>
-                {user && (
-                  <>
-                    <button
-                      onClick={() => setMainTab('favoritos')}
-                      className={`flex-1 py-4 text-sm font-bold transition-all ${mainTab === 'favoritos' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
-                    >
-                      ❤️ Favoritos
-                    </button>
-                    <button
-                      onClick={() => setMainTab('promocao')}
-                      className={`flex-1 py-4 text-sm font-bold transition-all ${mainTab === 'promocao' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
-                    >
-                      🎁 Indique e Ganhe
-                    </button>
-                  </>
-                )}
-              </div>
+              <div className="flex border-b border-border overflow-x-auto">
+                 <button
+                   onClick={() => setMainTab('cliente')}
+                   className={`flex-1 py-4 text-sm font-bold transition-all whitespace-nowrap ${mainTab === 'cliente' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                 >
+                   👤 Cliente
+                 </button>
+                 <button
+                   onClick={() => setMainTab('prestador')}
+                   className={`flex-1 py-4 text-sm font-bold transition-all whitespace-nowrap ${mainTab === 'prestador' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                 >
+                   🔧 Prestador
+                 </button>
+                 <button
+                   onClick={() => setMainTab('parceiro')}
+                   className={`flex-1 py-4 text-sm font-bold transition-all whitespace-nowrap ${mainTab === 'parceiro' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                 >
+                   🏪 Parceiro
+                 </button>
+                 {user && (
+                   <>
+                     <button
+                       onClick={() => setMainTab('favoritos')}
+                       className={`flex-1 py-4 text-sm font-bold transition-all whitespace-nowrap ${mainTab === 'favoritos' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                     >
+                       ❤️ Favoritos
+                     </button>
+                     <button
+                       onClick={() => setMainTab('promocao')}
+                       className={`flex-1 py-4 text-sm font-bold transition-all whitespace-nowrap ${mainTab === 'promocao' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                     >
+                       🎁 Ganhe
+                     </button>
+                   </>
+                 )}
+               </div>
 
               <div className="p-6 pt-8">
                  {/* ── CLIENTE ── */}
@@ -267,6 +273,40 @@ export default function Home() {
                 {mainTab === 'promocao' && user && (
                   <motion.div key="promocao" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <ReferralCard user={user} />
+                  </motion.div>
+                )}
+
+                {/* ── PARCEIRO ── */}
+                {mainTab === 'parceiro' && (
+                  <motion.div key="parceiro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                    <p className="text-sm text-muted-foreground text-center mb-2">
+                      Seja um parceiro lojista ou vendedor e aumente seus ganhos
+                    </p>
+                    <div className="space-y-3">
+                      {[
+                        { icon: Store, title: "Lojista", desc: "Gerencie sua loja e aumente vendas" },
+                        { icon: Smartphone, title: "Vendedor", desc: "Venda produtos direto pela plataforma" },
+                        { icon: BadgeCheck, title: "Credibilidade", desc: "Construa sua reputação na rede" },
+                        { icon: Star, title: "Comissões", desc: "Ganhe comissões competitivas" },
+                      ].map(item => (
+                        <div key={item.title} className="flex items-start gap-3 p-3 bg-muted/50 rounded-2xl">
+                          <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <item.icon className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                            <p className="text-xs text-muted-foreground">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex flex-col gap-3 pt-2">
+                      <Link to="/cadastro-parceiro">
+                        <Button className="w-full h-12 rounded-2xl font-bold text-sm">
+                          <Store className="w-4 h-4 mr-2" /> Cadastrar como Parceiro
+                        </Button>
+                      </Link>
+                    </div>
                   </motion.div>
                 )}
 
