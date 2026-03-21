@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, ClipboardList } from "lucide-react";
+import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, ClipboardList, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/AuthContext";
@@ -13,6 +13,7 @@ import ProviderSetupModal from '../components/ProviderSetupModal';
 import NewJobBanner from '../components/NewJobBanner';
 import { useNewJobAlert } from '../hooks/useNewJobAlert';
 import ServiceChecklist from '../components/ServiceChecklist';
+import AdditionalPointModal from '../components/AdditionalPointModal';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -27,6 +28,7 @@ export default function ProviderApp() {
   const { user } = useAuth();
   const [incomingJob, setIncomingJob] = useState(null);
   const [showChecklist, setShowChecklist] = useState(false);
+  const [showAdditionalPoint, setShowAdditionalPoint] = useState(false);
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
