@@ -34,15 +34,29 @@ Deno.serve(async (req) => {
       // Update service request with payment info
       if (session.metadata?.serviceRequestId) {
         try {
+          // Get amount from line items
+          const amount = session.amount_total / 100; // Convert from cents to BRL
+
           await base44.asServiceRole.entities.ServiceRequest.update(
             session.metadata.serviceRequestId,
             {
               payment_status: 'paid',
               payment_session_id: session.id,
+              final_price: amount,
               payment_completed_at: new Date().toISOString(),
             }
           );
-          console.log(`Updated ServiceRequest ${session.metadata.serviceRequestId} with payment info`);
+          console.log(`Updated ServiceRequest ${session.metadata.serviceRequestId} with payment info - Amount: R$${amount.toFixed(2)}`);
+
+          // Process automatic provider repayment
+          try {
+            await base44.asServiceRole.functions.invoke('processProviderRepayment', {
+              serviceRequestId: session.metadata.serviceRequestId,
+            });
+          } catch (repaymentError) {
+            console.error(`Error processing provider repayment:`, repaymentError.message);
+            // Don't fail the webhook, just log the error
+          }
         } catch (error) {
           console.error(`Error updating service request:`, error.message);
         }
