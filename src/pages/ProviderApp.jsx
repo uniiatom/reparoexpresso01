@@ -258,6 +258,11 @@ export default function ProviderApp() {
         </div>
       )}
 
+      {/* QR Code Avaliação Google */}
+      <div className="mb-5 flex justify-center">
+        <GoogleReviewQRCode />
+      </div>
+
       {/* Histórico */}
       {completedJobs.length > 0 && (
         <div>
