@@ -81,6 +81,17 @@ export default function Home() {
     base44.auth.me().then(u => setUser(u)).catch(() => {});
   }, []);
 
+  const { data: pricingList = [] } = useQuery({
+    queryKey: ['service-pricing'],
+    queryFn: () => base44.entities.ServicePricing.list(),
+  });
+
+  const getPriceLabel = (serviceType) => {
+    const p = pricingList.find(x => x.service_type === serviceType);
+    if (!p || p.price_min == null) return null;
+    return `R$ ${p.price_min} - R$ ${p.price_max}`;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <AnimatePresence>
