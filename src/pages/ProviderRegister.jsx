@@ -41,6 +41,7 @@ const SPECIALTIES = [
   { label: "Recarga de Bateria", icon: "🔋" },
   { label: "Conserto de Pneu", icon: "🛞" },
   { label: "Reboque", icon: "🚛" },
+  { label: "Alarme / Cerca Elétrica", icon: "🚨" },
 ];
 
 const STEPS = [
