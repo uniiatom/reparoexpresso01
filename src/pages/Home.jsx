@@ -465,6 +465,47 @@ export default function Home() {
                       )}
                     </AnimatePresence>
 
+                    {/* Modal Vaso Monobloco */}
+                    <AnimatePresence>
+                      {showVasoMonoblocoModal && (
+                        <>
+                          <motion.div
+                            key="overlay-vaso"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowVasoMonoblocoModal(false)}
+                            className="fixed inset-0 bg-black/40 z-40"
+                          />
+                          <motion.div
+                            key="modal-vaso"
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
+                          >
+                            <h2 className="text-2xl font-bold text-foreground mb-2">🚿 Vaso Monobloco</h2>
+                            <div className="bg-primary/10 rounded-2xl p-4 mb-4 border border-primary/20">
+                              <p className="text-sm text-muted-foreground mb-1">Valor do serviço:</p>
+                              <p className="text-2xl font-bold text-primary">R$ 1.200,00</p>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-4">Prestadores disponíveis em sua região</p>
+                            <Link to="/solicitar?tipo=instalacao_vaso_monobloco" onClick={() => setShowVasoMonoblocoModal(false)}>
+                              <Button className="w-full h-10 rounded-2xl font-bold text-sm">
+                                Solicitar Serviço
+                              </Button>
+                            </Link>
+                            <button
+                              onClick={() => setShowVasoMonoblocoModal(false)}
+                              className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors mt-2"
+                            >
+                              Fechar
+                            </button>
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
+
                     {/* Modal de Elétrica */}
                     <AnimatePresence>
                       {showElectricalModal && (
