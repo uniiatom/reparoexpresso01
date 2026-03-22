@@ -3,74 +3,87 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const { event, data } = await req.json();
 
-    if (!user || user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    // Dados da solicitação de serviço criada
+    const serviceRequest = data;
+    
+    if (!serviceRequest || event.type !== 'create') {
+      return Response.json({ error: 'Invalid event' }, { status: 400 });
     }
 
-    const { request_id, auto_assign = false } = await req.json();
+    // Buscar prestadores online e aprovados nas especialidades do serviço
+    const providers = await base44.asServiceRole.entities.Provider.filter({
+      is_online: true,
+      is_approved: true,
+      specialties: { $in: [serviceRequest.service_type] }
+    });
 
-    if (!request_id) {
-      return Response.json({ error: 'Missing request_id' }, { status: 400 });
-    }
-
-    // Fetch service request
-    const requests = await base44.asServiceRole.entities.ServiceRequest.filter({ id: request_id });
-    const serviceRequest = requests[0];
-
-    if (!serviceRequest) {
-      return Response.json({ error: 'Service request not found' }, { status: 404 });
-    }
-
-    let provider_id = null;
-
-    if (auto_assign) {
-      // Get ranked providers using the ranking function
-      const rankRes = await base44.asServiceRole.functions.invoke('rankProvidersForService', {
-        service_type: serviceRequest.service_type,
-        latitude: serviceRequest.latitude || -23.5505,
-        longitude: serviceRequest.longitude || -46.6333,
-        max_distance: 20
+    if (!providers || providers.length === 0) {
+      console.log(`No providers available for service: ${serviceRequest.service_type}`);
+      return Response.json({ 
+        success: false,
+        message: 'No providers available for this service type'
       });
-
-      if (rankRes.ranked_providers && rankRes.ranked_providers.length > 0) {
-        // Assign to the highest-ranked provider
-        provider_id = rankRes.ranked_providers[0].provider_id;
-      } else {
-        return Response.json({ error: 'No qualified providers found' }, { status: 404 });
-      }
-    } else {
-      const { provider_id: manual_provider_id } = await req.json();
-      if (!manual_provider_id) {
-        return Response.json({ error: 'Missing provider_id for manual assignment' }, { status: 400 });
-      }
-      provider_id = manual_provider_id;
     }
 
-    // Update service request with provider assignment
-    const updated = await base44.asServiceRole.entities.ServiceRequest.update(request_id, {
-      provider_id,
+    // Calcular distância e encontrar o prestador mais próximo
+    const getDistance = (lat1, lon1, lat2, lon2) => {
+      if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    };
+
+    let nearestProvider = null;
+    let minDistance = Infinity;
+
+    for (const provider of providers) {
+      if (!provider.latitude || !provider.longitude) continue;
+      
+      const distance = getDistance(
+        serviceRequest.latitude,
+        serviceRequest.longitude,
+        provider.latitude,
+        provider.longitude
+      );
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestProvider = provider;
+      }
+    }
+
+    if (!nearestProvider) {
+      console.log('No provider with location found');
+      return Response.json({ 
+        success: false,
+        message: 'No provider with valid location found'
+      });
+    }
+
+    // Atualizar a solicitação com o prestador atribuído
+    await base44.asServiceRole.entities.ServiceRequest.update(serviceRequest.id, {
+      provider_id: nearestProvider.id,
+      provider_name: nearestProvider.name,
+      provider_phone: nearestProvider.phone,
+      provider_latitude: nearestProvider.latitude,
+      provider_longitude: nearestProvider.longitude,
       status: 'aceito'
     });
 
-    // Fetch provider details for notification
-    const providers = await base44.asServiceRole.entities.Provider.filter({ id: provider_id });
-    const provider = providers[0];
+    console.log(`Service ${serviceRequest.id} assigned to provider ${nearestProvider.id}`);
 
-    console.log(`[Service Assignment] Request ${request_id} assigned to provider ${provider_id} (${provider?.name}) - Auto: ${auto_assign}`);
-
-    return Response.json({
+    return Response.json({ 
       success: true,
-      request_id,
-      provider_id,
-      provider_name: provider?.name,
-      auto_assigned: auto_assign,
-      message: `Serviço atribuído a ${provider?.name}`
+      provider_id: nearestProvider.id,
+      provider_name: nearestProvider.name
     });
 
   } catch (error) {
-    console.error('[Service Assignment Error]', error);
+    console.error('Error assigning service:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
