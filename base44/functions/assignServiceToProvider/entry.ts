@@ -46,11 +46,36 @@ Deno.serve(async (req) => {
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     };
 
+    // Se não houver localização do serviço, pegar primeiro prestador
+    if (!serviceRequest.latitude || !serviceRequest.longitude) {
+      console.log('Service has no location, assigning first provider');
+      const nearestProvider = providers[0];
+      
+      const updateData = {
+        provider_id: nearestProvider.id,
+        provider_name: nearestProvider.name,
+        provider_phone: nearestProvider.phone,
+        status: 'aceito'
+      };
+      
+      await base44.asServiceRole.entities.ServiceRequest.update(serviceRequest.id, updateData);
+      return Response.json({ 
+        success: true,
+        provider_id: nearestProvider.id,
+        provider_name: nearestProvider.name
+      });
+    }
+
+    // Calcular distância e encontrar o prestador mais próximo
     let nearestProvider = null;
     let minDistance = Infinity;
 
     for (const provider of providers) {
-      if (!provider.latitude || !provider.longitude) continue;
+      if (!provider.latitude || !provider.longitude) {
+        // Se prestador não tem localização, usar mesmo assim como fallback
+        if (!nearestProvider) nearestProvider = provider;
+        continue;
+      }
       
       const distance = getDistance(
         serviceRequest.latitude,
@@ -66,10 +91,10 @@ Deno.serve(async (req) => {
     }
 
     if (!nearestProvider) {
-      console.log('No provider with location found');
+      console.log('No provider found');
       return Response.json({ 
         success: false,
-        message: 'No provider with valid location found'
+        message: 'No provider available'
       });
     }
 
