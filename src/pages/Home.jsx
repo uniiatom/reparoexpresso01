@@ -50,7 +50,7 @@ const electricalServices = [
 
 const hydraulicServices = [
   { label: "Cano Furado", type: "hidraulica_cano_furado", price: "R$ 80 - R$ 200" },
-  { label: "Troca de Registro", type: "hidraulica_registro", price: "R$ 60 - R$ 150" },
+  { label: "Registro de Gaveta ou Pressão", type: "hidraulica_registro", price: "R$ 60 - R$ 150" },
   { label: "Reparo de Vaso Sanitário", type: "hidraulica_vaso", price: "R$ 80 - R$ 200" },
   { label: "Descarga", type: "hidraulica_descarga", price: "R$ 100 - R$ 250" },
 ];
