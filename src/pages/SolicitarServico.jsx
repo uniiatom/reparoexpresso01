@@ -308,7 +308,32 @@ export default function SolicitarServico() {
             />
           </div>
 
-
+          {/* Fotos do problema */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2"><Camera className="w-4 h-4" /> Foto do problema</Label>
+            <div className="flex flex-wrap gap-2">
+              {form.problem_photos.map((url, idx) => (
+                <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <button onClick={() => removePhoto(idx)}
+                    className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center">
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              ))}
+              {form.problem_photos.length < 4 && (
+                <label className={cn(
+                  "w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors",
+                  uploadingPhotos && "opacity-50 pointer-events-none"
+                )}>
+                  {uploadingPhotos ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" /> : <Camera className="w-6 h-6 text-muted-foreground" />}
+                  <span className="text-xs text-muted-foreground mt-1">{uploadingPhotos ? "..." : "Adicionar"}</span>
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} capture="environment" />
+                </label>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">Tire fotos diretamente com a câmera ou escolha da galeria (máx. 4)</p>
+          </div>
 
         </div>
       )}
