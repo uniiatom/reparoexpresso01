@@ -113,6 +113,8 @@ export default function SolicitarServico() {
    client_suggested_price: '',
    problem_photos: [],
    address: '',
+   number: '',
+   neighborhood: '',
    city: '',
    state: '',
    cep: '',
