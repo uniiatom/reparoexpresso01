@@ -703,7 +703,7 @@ export default function SolicitarServico() {
           <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20 space-y-1">
             <p className="text-sm font-semibold text-foreground mb-2">Resumo do pedido</p>
             <p className="text-sm text-muted-foreground">🔧 {form.service_type.map(t => SERVICE_TYPES.find(s => s.value === t)?.label).join(', ')}</p>
-            <p className="text-sm text-muted-foreground">📍 {form.address}{form.city ? `, ${form.city}` : ''}</p>
+            <p className="text-sm text-muted-foreground">📍 {form.address}{form.number ? `, ${form.number}` : ''}{form.neighborhood ? ` - ${form.neighborhood}` : ''}{form.city ? `, ${form.city}` : ''}</p>
             {form.latitude && <p className="text-sm text-muted-foreground">📡 Localização GPS ativada</p>}
             {form.client_latitude && <p className="text-sm text-green-600 font-semibold">🟢 Localização em tempo real ativa</p>}
             {isTow && form.delivery_address && (
