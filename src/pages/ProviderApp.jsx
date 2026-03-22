@@ -136,7 +136,7 @@ export default function ProviderApp() {
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold text-foreground">Olá, {provider.name.split(' ')[0]}!</h1>
           <div className="flex gap-1 mt-1">
