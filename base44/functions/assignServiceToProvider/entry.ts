@@ -73,14 +73,17 @@ Deno.serve(async (req) => {
     }
 
     // Atualizar a solicitação com o prestador atribuído
-    await base44.asServiceRole.entities.ServiceRequest.update(serviceRequest.id, {
+    const updateData = {
       provider_id: nearestProvider.id,
       provider_name: nearestProvider.name,
       provider_phone: nearestProvider.phone,
-      provider_latitude: nearestProvider.latitude,
-      provider_longitude: nearestProvider.longitude,
       status: 'aceito'
-    });
+    };
+    
+    if (nearestProvider.latitude) updateData.provider_latitude = nearestProvider.latitude;
+    if (nearestProvider.longitude) updateData.provider_longitude = nearestProvider.longitude;
+    
+    await base44.asServiceRole.entities.ServiceRequest.update(serviceRequest.id, updateData);
 
     console.log(`Service ${serviceRequest.id} assigned to provider ${nearestProvider.id}`);
 
