@@ -31,6 +31,7 @@ export default function ProviderApp() {
   const [incomingJob, setIncomingJob] = useState(null);
   const [showChecklist, setShowChecklist] = useState(false);
   const [showAdditionalPoint, setShowAdditionalPoint] = useState(false);
+  const [activeTab, setActiveTab] = useState('chamados');
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
