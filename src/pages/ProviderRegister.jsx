@@ -42,6 +42,7 @@ const SPECIALTIES = [
   { label: "Conserto de Pneu", icon: "🛞" },
   { label: "Reboque", icon: "🚛" },
   { label: "Alarme / Cerca Elétrica", icon: "🚨" },
+  { label: "Concertina", icon: "🔒" },
 ];
 
 const STEPS = [
