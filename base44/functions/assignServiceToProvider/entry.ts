@@ -12,27 +12,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid event' }, { status: 400 });
     }
 
-    // Buscar prestadores aprovados (não exigir online, pois pode não estar atualizado em tempo real)
-    let providers = await base44.asServiceRole.entities.Provider.filter({
-      is_approved: true
-    });
+    // Buscar todos os prestadores (remover filtro para testar)
+    let providers = await base44.asServiceRole.entities.Provider.list();
 
-    console.log(`Found ${providers.length} approved providers`);
-
-    // Filtrar por especialidade
-    if (serviceRequest.service_type) {
-      providers = providers.filter(p => 
-        p.specialties && p.specialties.includes(serviceRequest.service_type)
-      );
-      console.log(`Found ${providers.length} providers for specialty: ${serviceRequest.service_type}`);
-    }
+    console.log(`Found ${providers.length} total providers`);
 
     if (!providers || providers.length === 0) {
-      console.log(`No providers available for service: ${serviceRequest.service_type}`);
+      console.log('No providers found in database');
       return Response.json({ 
         success: false,
-        message: 'No providers available for this service type'
+        message: 'No providers found'
       });
+    }
+
+    // Filtrar por especialidade se existir
+    if (serviceRequest.service_type) {
+      const filtered = providers.filter(p => 
+        p.specialties && Array.isArray(p.specialties) && p.specialties.includes(serviceRequest.service_type)
+      );
+      console.log(`Found ${filtered.length} providers for specialty: ${serviceRequest.service_type}`);
+      if (filtered.length > 0) {
+        providers = filtered;
+      }
     }
 
     // Calcular distância e encontrar o prestador mais próximo
