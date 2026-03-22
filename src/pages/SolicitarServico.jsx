@@ -66,6 +66,34 @@ export default function SolicitarServico() {
   const [selectedProvider, setSelectedProvider] = useState(null);
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
   
+  const [sharingLocation, setSharingLocation] = useState(false);
+  const [liveWatchId, setLiveWatchId] = useState(null);
+
+  const startLiveLocation = () => {
+    if (!navigator.geolocation) return;
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        setForm(prev => ({
+          ...prev,
+          client_latitude: pos.coords.latitude,
+          client_longitude: pos.coords.longitude,
+        }));
+      },
+      null,
+      { enableHighAccuracy: true, maximumAge: 5000 }
+    );
+    setLiveWatchId(id);
+    setSharingLocation(true);
+  };
+
+  const stopLiveLocation = () => {
+    if (liveWatchId !== null) navigator.geolocation.clearWatch(liveWatchId);
+    setLiveWatchId(null);
+    setSharingLocation(false);
+  };
+
+  React.useEffect(() => () => { if (liveWatchId !== null) navigator.geolocation.clearWatch(liveWatchId); }, [liveWatchId]);
+
   const [form, setForm] = useState({
     service_type: urlParams.get('tipo') || '',
     description: '',
