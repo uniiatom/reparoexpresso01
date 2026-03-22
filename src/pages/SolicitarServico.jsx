@@ -513,38 +513,7 @@ export default function SolicitarServico() {
           </div>
           )}
 
-          {/* Step 3.5: Mapa */}
-      {step === 3.5 && (
-        <div className="space-y-5">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground mb-1">Prestadores próximos</h2>
-            <p className="text-muted-foreground mb-4">Encontre profissionais na sua região</p>
-          </div>
-          <MapView
-            clientLocation={location}
-            providers={nearbyProviders}
-            selectedProvider={selectedProvider}
-            onSelectProvider={setSelectedProvider}
-            maxDistance={20}
-          />
-          {selectedProvider && (
-            <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
-              <p className="text-sm font-semibold text-foreground mb-2">
-                Prestador selecionado: {selectedProvider.name}
-              </p>
-              <p className="text-xs text-muted-foreground mb-3">
-                {selectedProvider.distance?.toFixed(1)} km • Avaliação: {selectedProvider.rating?.toFixed(1)} ⭐
-              </p>
-              <Button
-                onClick={() => setStep(4)}
-                className="w-full bg-primary text-primary-foreground rounded-2xl h-11 font-semibold"
-              >
-                Continuar <ChevronRight className="ml-2 w-5 h-5" />
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
+    
 
       {/* Step 4: Quando */}
       {step === 4 && (
