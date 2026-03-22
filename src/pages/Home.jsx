@@ -586,7 +586,7 @@ export default function Home() {
                               <h2 className="text-2xl font-bold text-foreground mb-2">⚡ {selectedElectricalService.label}</h2>
                               <div className="bg-primary/10 rounded-2xl p-4 mb-4 border border-primary/20">
                                 <p className="text-sm text-muted-foreground mb-1">Valor estimado:</p>
-                                <p className="text-2xl font-bold text-primary">{selectedElectricalService.price}</p>
+                                <p className="text-2xl font-bold text-primary">{getPriceLabel('eletrica') || selectedElectricalService.price}</p>
                               </div>
                               <p className="text-xs text-muted-foreground mb-4">Prestadores disponíveis em sua região</p>
                               <Button 
