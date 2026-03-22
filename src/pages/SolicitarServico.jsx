@@ -123,6 +123,8 @@ export default function SolicitarServico() {
    client_latitude: null,
    client_longitude: null,
    delivery_address: '',
+   delivery_number: '',
+   delivery_neighborhood: '',
    delivery_city: '',
    delivery_state: '',
    delivery_cep: '',
