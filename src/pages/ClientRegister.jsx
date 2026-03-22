@@ -123,12 +123,7 @@ export default function ClientRegister() {
             </div>
 
           </div>
-          <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
-            <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-800 leading-relaxed">
-              O pagamento é realizado <strong>diretamente ao prestador</strong> após a conclusão do serviço. O valor será combinado antes do início do atendimento.
-            </p>
-          </div>
+
         </div>
 
         <Button
