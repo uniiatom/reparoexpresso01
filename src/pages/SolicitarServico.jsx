@@ -446,6 +446,21 @@ export default function SolicitarServico() {
 
           <div className="space-y-3">
             <div className="space-y-2">
+              <Label>CEP</Label>
+              <div className="relative">
+                <Input
+                  placeholder="00000-000"
+                  value={form.cep}
+                  onChange={e => set('cep', e.target.value)}
+                  onBlur={() => searchByCep(form.cep, false)}
+                  disabled={loadingCep}
+                  className="rounded-2xl"
+                />
+                {loadingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />}
+              </div>
+              {cepError && <p className="text-xs text-destructive">{cepError}</p>}
+            </div>
+            <div className="space-y-2">
               <Label>Endereço</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
