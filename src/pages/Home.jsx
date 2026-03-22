@@ -28,6 +28,7 @@ const homeServices = [
   { icon: ShowerHead, label: "Vaso Monobloco", subtitle: "Instalação sanitária", type: "instalacao_vaso_monobloco", color: "bg-violet-100 text-violet-700" },
   { icon: Layers, label: "Reparo Forro de Gesso", subtitle: "Manutenção de forro", type: "reparo_forro_gesso", color: "bg-stone-100 text-stone-700" },
   { icon: Droplets, label: "Desentupimento", subtitle: "Desobstrução rápida", type: "desentupimento", color: "bg-amber-100 text-amber-700" },
+  { icon: DoorOpen, label: "Portão Eletrônico", subtitle: "Instalação e reparo", type: "portao_eletronico", color: "bg-sky-100 text-sky-700" },
 ];
 
 const vehicleServices = [
