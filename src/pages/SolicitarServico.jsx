@@ -308,23 +308,6 @@ export default function SolicitarServico() {
             />
           </div>
 
-          {/* Sugestão de valor */}
-           <div className="space-y-2">
-             <Label>Qual valor você sugere? (opcional)</Label>
-             <div className="relative">
-               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
-               <Input
-                 placeholder="Ex: 150,00"
-                 value={form.client_suggested_price}
-                 onChange={e => set('client_suggested_price', e.target.value)}
-                 className="pl-10 rounded-2xl"
-                 type="number"
-                 step="0.01"
-                 min="0"
-               />
-             </div>
-             <p className="text-xs text-muted-foreground">Isso ajuda os prestadores a estimarem melhor o orçamento</p>
-           </div>
 
           {/* Fotos do problema */}
            <div className="space-y-2">
