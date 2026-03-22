@@ -308,9 +308,10 @@ export default function SolicitarServico() {
             />
           </div>
 
+
           {/* Fotos do problema */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2"><Camera className="w-4 h-4" /> Foto do problema</Label>
+           <div className="space-y-2">
+             <Label className="flex items-center gap-2"><Camera className="w-4 h-4" /> Fotos do problema (opcional)</Label>
             <div className="flex flex-wrap gap-2">
               {form.problem_photos.map((url, idx) => (
                 <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
@@ -334,7 +335,6 @@ export default function SolicitarServico() {
             </div>
             <p className="text-xs text-muted-foreground">Tire fotos diretamente com a câmera ou escolha da galeria (máx. 4)</p>
           </div>
-
         </div>
       )}
 
