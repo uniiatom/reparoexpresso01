@@ -40,16 +40,6 @@ export default function AcompanharServico() {
   // Setup notifications for status changes
   useServiceNotifications(request, previousStatus);
 
-  // Track status changes and play sound when provider accepts
-  useEffect(() => {
-    if (request?.status && request.status !== previousStatus) {
-      setPreviousStatus(request.status);
-      
-      // Play sound when provider is assigned
-      if (request.status === 'aceito' && previousStatus === 'aguardando') {
-        playNotificationSound();
-      }
-    }
   const playNotificationSound = () => {
     // Create a simple beep sound using Web Audio API
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -68,6 +58,18 @@ export default function AcompanharServico() {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.5);
   };
+
+  // Track status changes and play sound when provider accepts
+  useEffect(() => {
+    if (request?.status && request.status !== previousStatus) {
+      setPreviousStatus(request.status);
+      
+      // Play sound when provider is assigned
+      if (request.status === 'aceito' && previousStatus === 'aguardando') {
+        playNotificationSound();
+      }
+    }
+  }, [request?.status, previousStatus]);
 
   const { data: request } = useQuery({
     queryKey: ['service-request', id],
