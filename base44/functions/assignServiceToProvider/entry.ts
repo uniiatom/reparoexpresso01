@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid event' }, { status: 400 });
     }
 
-    // Buscar todos os prestadores (remover filtro para testar)
+    // Buscar prestadores online ou aprovados
     let providers = await base44.asServiceRole.entities.Provider.list();
 
     console.log(`Found ${providers.length} total providers`);
@@ -25,14 +25,30 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Priorizar prestadores online
+    let onlineProviders = providers.filter(p => p.is_online === true);
+    console.log(`Found ${onlineProviders.length} online providers`);
+    
+    if (onlineProviders.length > 0) {
+      providers = onlineProviders;
+    }
+
     // Filtrar por especialidade se existir
     if (serviceRequest.service_type) {
-      const filtered = providers.filter(p => 
-        p.specialties && Array.isArray(p.specialties) && p.specialties.includes(serviceRequest.service_type)
-      );
+      const specialtyName = serviceRequest.service_type;
+      const filtered = providers.filter(p => {
+        if (!p.specialties || !Array.isArray(p.specialties)) return false;
+        // Comparar lowercase para evitar diferenças de maiúsculas
+        return p.specialties.some(s => 
+          s.toLowerCase().includes(specialtyName.toLowerCase()) || 
+          specialtyName.toLowerCase().includes(s.toLowerCase())
+        );
+      });
       console.log(`Found ${filtered.length} providers for specialty: ${serviceRequest.service_type}`);
       if (filtered.length > 0) {
         providers = filtered;
+      } else {
+        console.log('No providers with matching specialty, using all online providers');
       }
     }
 
