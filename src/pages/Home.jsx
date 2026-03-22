@@ -71,6 +71,7 @@ export default function Home() {
   const [scheduledTime, setScheduledTime] = useState('');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [pendingServiceData, setPendingServiceData] = useState(null);
+  const [showNearbyMap, setShowNearbyMap] = useState(false);
   const [electricalModalExpanded, setElectricalModalExpanded] = useState(true);
   const [hydraulicModalExpanded, setHydraulicModalExpanded] = useState(true);
 
