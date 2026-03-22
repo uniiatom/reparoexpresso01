@@ -43,6 +43,7 @@ const SPECIALTIES = [
   { label: "Reboque", icon: "🚛" },
   { label: "Alarme / Cerca Elétrica", icon: "🚨" },
   { label: "Concertina", icon: "🔒" },
+  { label: "Câmera / CFTV", icon: "📷" },
 ];
 
 const STEPS = [
