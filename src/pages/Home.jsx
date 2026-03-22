@@ -8,6 +8,7 @@ import ReferralCard from "@/components/ReferralCard";
 import FavoritesList from "@/components/FavoritesList";
 import PaymentModal from "@/components/PaymentModal";
 import AvailableScheduleSelector from "@/components/AvailableScheduleSelector";
+import NearbyProvidersMap from "@/components/NearbyProvidersMap";
 
 const homeServices = [
   { icon: Zap, label: "Elétrica", subtitle: "Chuveiro, tomada, QDC", type: "eletrica", color: "bg-yellow-100 text-yellow-700" },
