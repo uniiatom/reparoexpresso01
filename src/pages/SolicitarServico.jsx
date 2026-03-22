@@ -129,8 +129,8 @@ export default function SolicitarServico() {
     urgency: 'agora',
     scheduled_date: '',
     scheduled_time: '',
-    client_name: '',
-    client_phone: '',
+    client_name: clientProfile?.name || '',
+    client_phone: clientProfile?.phone || '',
   });
 
   const { data: nearbyProviders = [] } = useNearbyProviders(location?.latitude, location?.longitude, form.service_type);
