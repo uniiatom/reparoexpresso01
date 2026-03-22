@@ -62,52 +62,42 @@ Deno.serve(async (req) => {
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     };
 
-    // Se não houver localização do serviço, pegar primeiro prestador
-    if (!serviceRequest.latitude || !serviceRequest.longitude) {
-      console.log('Service has no location, assigning first provider');
-      const nearestProvider = providers[0];
-      
-      const updateData = {
-        provider_id: nearestProvider.id,
-        provider_name: nearestProvider.name,
-        provider_phone: nearestProvider.phone,
-        status: 'aceito'
-      };
-      
-      await base44.asServiceRole.entities.ServiceRequest.update(serviceRequest.id, updateData);
-      return Response.json({ 
-        success: true,
-        provider_id: nearestProvider.id,
-        provider_name: nearestProvider.name
-      });
+    // Selecionar prestador (com ou sem localização)
+    let nearestProvider = null;
+
+    // Se houver localização do serviço, calcular distância
+    if (serviceRequest.latitude && serviceRequest.longitude) {
+      let minDistance = Infinity;
+
+      for (const provider of providers) {
+        if (!provider.latitude || !provider.longitude) {
+          // Se prestador não tem localização, usar como fallback
+          if (!nearestProvider) nearestProvider = provider;
+          continue;
+        }
+        
+        const distance = getDistance(
+          serviceRequest.latitude,
+          serviceRequest.longitude,
+          provider.latitude,
+          provider.longitude
+        );
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestProvider = provider;
+        }
+      }
     }
 
-    // Calcular distância e encontrar o prestador mais próximo
-    let nearestProvider = null;
-    let minDistance = Infinity;
-
-    for (const provider of providers) {
-      if (!provider.latitude || !provider.longitude) {
-        // Se prestador não tem localização, usar mesmo assim como fallback
-        if (!nearestProvider) nearestProvider = provider;
-        continue;
-      }
-      
-      const distance = getDistance(
-        serviceRequest.latitude,
-        serviceRequest.longitude,
-        provider.latitude,
-        provider.longitude
-      );
-
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearestProvider = provider;
-      }
+    // Se não encontrou por distância, usar o primeiro prestador disponível
+    if (!nearestProvider && providers.length > 0) {
+      nearestProvider = providers[0];
+      console.log('Using first available provider');
     }
 
     if (!nearestProvider) {
-      console.log('No provider found');
+      console.log('No provider available');
       return Response.json({ 
         success: false,
         message: 'No provider available'
