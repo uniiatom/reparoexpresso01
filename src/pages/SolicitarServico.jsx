@@ -341,6 +341,29 @@ export default function SolicitarServico() {
             </div>
           </button>
 
+          {/* Compartilhamento de localização em tempo real */}
+          <button
+            onClick={sharingLocation ? stopLiveLocation : startLiveLocation}
+            className={cn(
+              "w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left",
+              sharingLocation ? "border-green-500 bg-green-50" : "border-dashed border-border hover:border-primary/50"
+            )}
+          >
+            <div className={cn("w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center", sharingLocation ? "bg-green-500" : "bg-muted")}>
+              {sharingLocation
+                ? <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                : <Navigation className="w-3 h-3 text-muted-foreground" />}
+            </div>
+            <div className="flex-1">
+              <p className={cn("font-semibold text-sm", sharingLocation ? "text-green-700" : "text-foreground")}>
+                {sharingLocation ? "📡 Compartilhando localização em tempo real" : "Compartilhar localização em tempo real"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {sharingLocation ? "O prestador verá sua posição ao vivo — toque para parar" : "Permite que o prestador te encontre com mais facilidade"}
+              </p>
+            </div>
+          </button>
+
           <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
             <span className="text-xs text-muted-foreground">ou digite o endereço</span>
