@@ -108,7 +108,7 @@ export default function SolicitarServico() {
   React.useEffect(() => () => { if (liveWatchId !== null) navigator.geolocation.clearWatch(liveWatchId); }, [liveWatchId]);
 
   const [form, setForm] = useState({
-   service_type: urlParams.get('tipo') || '',
+   service_type: urlParams.get('tipo') ? [urlParams.get('tipo')] : [],
    description: '',
    client_suggested_price: '',
    problem_photos: [],
