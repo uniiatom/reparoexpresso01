@@ -659,6 +659,24 @@ export default function Home() {
             />
           )}
 
+          {/* Nearby Providers Map Button */}
+          <div className="max-w-lg mx-auto px-4 mt-4">
+            <button
+              onClick={() => setShowNearbyMap(true)}
+              className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl px-4 py-3 hover:bg-accent transition-colors shadow-sm"
+            >
+              <span className="text-2xl">🗺️</span>
+              <div className="text-left flex-1">
+                <p className="font-semibold text-foreground text-sm">Ver prestadores online próximos</p>
+                <p className="text-xs text-muted-foreground">Mapa em tempo real</p>
+              </div>
+              <span className="flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span>
+                Ao vivo
+              </span>
+            </button>
+          </div>
+
           {/* Trust */}
           <div className="max-w-lg mx-auto px-4 mt-6 grid grid-cols-3 gap-3 pb-10">
             {[
