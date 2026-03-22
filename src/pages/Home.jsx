@@ -74,6 +74,7 @@ export default function Home() {
   const [showNearbyMap, setShowNearbyMap] = useState(false);
   const [electricalModalExpanded, setElectricalModalExpanded] = useState(true);
   const [hydraulicModalExpanded, setHydraulicModalExpanded] = useState(true);
+  const [showVasoMonoblocoModal, setShowVasoMonoblocoModal] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => setUser(u)).catch(() => {});
