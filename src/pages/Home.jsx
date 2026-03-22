@@ -38,6 +38,7 @@ const homeServices = [
   { icon: Gauge, label: "Pressurizador", subtitle: "Instalação e reparo", type: "pressurizador", color: "bg-cyan-100 text-cyan-700" },
   { icon: ShieldAlert, label: "Alarme/Cerca Elétrica", subtitle: "Instalação e reparo", type: "alarme_cerca_eletrica", color: "bg-red-100 text-red-700" },
   { icon: Shield, label: "Concertina", subtitle: "Instalação e reparo", type: "concertina", color: "bg-zinc-100 text-zinc-700" },
+  { icon: Video, label: "Câmera/CFTV", subtitle: "Instalação e reparo", type: "camera_cftv", color: "bg-gray-100 text-gray-700" },
 ];
 
 const vehicleServices = [
