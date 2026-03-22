@@ -15,7 +15,7 @@ const homeServices = [
   { icon: Zap, label: "Elétrica", subtitle: "Chuveiro, tomada, QDC", type: "eletrica", color: "bg-yellow-100 text-yellow-700" },
   { icon: Pipette, label: "Hidráulica", subtitle: "Vazamento, registro", type: "hidraulica", color: "bg-blue-100 text-blue-700" },
   { icon: Paintbrush, label: "Pintura", subtitle: "Paredes e acabamentos", type: "pintura", color: "bg-orange-100 text-orange-700" },
-  { icon: Wrench, label: "Reparo Geral", subtitle: "Diversos reparos", type: "reparo_geral", color: "bg-gray-100 text-gray-700" },
+
   { icon: Settings, label: "Montagem", subtitle: "Móveis e estruturas", type: "montagem", color: "bg-purple-100 text-purple-700" },
   { icon: HardHat, label: "Alvenaria", subtitle: "Construção e reforma", type: "alvenaria", color: "bg-red-100 text-red-700" },
   { icon: Lock, label: "Fechadura", subtitle: "Serviços de fechadura", type: "fechadura", color: "bg-green-100 text-green-700" },
