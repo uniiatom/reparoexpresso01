@@ -31,6 +31,7 @@ const homeServices = [
   { icon: Layers, label: "Reparo Forro de Gesso", subtitle: "Manutenção de forro", type: "reparo_forro_gesso", color: "bg-stone-100 text-stone-700" },
   { icon: Droplets, label: "Desentupimento", subtitle: "Desobstrução rápida", type: "desentupimento", color: "bg-amber-100 text-amber-700" },
   { icon: Droplets, label: "Caça Vazamento", subtitle: "Detecção de vazamentos", type: "caca_vazamento", color: "bg-blue-100 text-blue-700" },
+  { icon: ClipboardList, label: "Check-up", subtitle: "Vistoria completa", type: "checkup", color: "bg-green-100 text-green-700" },
   { icon: DoorOpen, label: "Portão Eletrônico", subtitle: "Instalação e reparo", type: "portao_eletronico", color: "bg-sky-100 text-sky-700" },
   { icon: Phone, label: "Interfone", subtitle: "Instalação e reparo", type: "interfone", color: "bg-lime-100 text-lime-700" },
 ];
