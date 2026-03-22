@@ -35,6 +35,7 @@ const homeServices = [
   { icon: Layers, label: "Rejunte", subtitle: "Rejunte de azulejos", type: "rejunte", color: "bg-rose-100 text-rose-700" },
   { icon: DoorOpen, label: "Portão Eletrônico", subtitle: "Instalação e reparo", type: "portao_eletronico", color: "bg-sky-100 text-sky-700" },
   { icon: Phone, label: "Interfone", subtitle: "Instalação e reparo", type: "interfone", color: "bg-lime-100 text-lime-700" },
+  { icon: Gauge, label: "Pressurizador", subtitle: "Instalação e reparo", type: "pressurizador", color: "bg-cyan-100 text-cyan-700" },
 ];
 
 const vehicleServices = [
