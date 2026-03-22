@@ -121,10 +121,7 @@ export default function ClientRegister() {
               <Smartphone className="w-5 h-5 text-primary" />
               <span className="text-xs font-medium text-foreground text-center">Pix</span>
             </div>
-            <div className="flex flex-col items-center gap-1.5 bg-background rounded-xl p-3 border border-border">
-              <Banknote className="w-5 h-5 text-primary" />
-              <span className="text-xs font-medium text-foreground text-center">Dinheiro</span>
-            </div>
+
           </div>
           <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
             <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
