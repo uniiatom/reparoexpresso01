@@ -321,9 +321,14 @@ export default function SolicitarServico() {
           <div className="grid grid-cols-3 gap-3">
             {SERVICE_TYPES.filter(s => s.group === serviceTab).map(s => {
               const Icon = s.icon;
-              const selected = form.service_type === s.value;
+              const selected = form.service_type.includes(s.value);
               return (
-                <button key={s.value} onClick={() => set('service_type', s.value)}
+                <button key={s.value} onClick={() => {
+                  set('service_type', selected 
+                    ? form.service_type.filter(t => t !== s.value)
+                    : [...form.service_type, s.value]
+                  );
+                }}
                   className={cn("flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all",
                     selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40")}>
                   <Icon className={cn("w-7 h-7", selected ? "text-primary" : "text-muted-foreground")} />
