@@ -708,7 +708,7 @@ export default function SolicitarServico() {
             {form.client_latitude && <p className="text-sm text-green-600 font-semibold">🟢 Localização em tempo real ativa</p>}
             {isTow && form.delivery_address && (
               <p className="text-sm text-muted-foreground">
-                📌 Entrega: {form.delivery_address}{form.delivery_city ? `, ${form.delivery_city}` : ''}
+                📌 Entrega: {form.delivery_address}{form.delivery_number ? `, ${form.delivery_number}` : ''}{form.delivery_neighborhood ? ` - ${form.delivery_neighborhood}` : ''}{form.delivery_city ? `, ${form.delivery_city}` : ''}
                 {form.latitude && form.delivery_latitude && (
                   <span className="block mt-1 font-semibold">Distância: {calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude).toFixed(1)} km</span>
                 )}
