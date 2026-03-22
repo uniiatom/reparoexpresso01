@@ -104,6 +104,8 @@ export default function SolicitarServico() {
     state: '',
     latitude: null,
     longitude: null,
+    client_latitude: null,
+    client_longitude: null,
     delivery_address: '',
     delivery_city: '',
     delivery_state: '',
