@@ -131,7 +131,7 @@ export default function ClientRegister() {
           onClick={() => createClient.mutate()}
           disabled={!form.name || !form.phone || createClient.isPending}
         >
-          {createClient.isPending ? "Salvando..." : "Criar conta"}
+          {createClient.isPending ? "Salvando..." : "Cadastrar como Cliente"}
         </Button>
       </div>
     </div>
