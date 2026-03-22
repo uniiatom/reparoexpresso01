@@ -12,12 +12,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid event' }, { status: 400 });
     }
 
-    // Buscar prestadores online e aprovados nas especialidades do serviço
-    const providers = await base44.asServiceRole.entities.Provider.filter({
-      is_online: true,
-      is_approved: true,
-      specialties: { $in: [serviceRequest.service_type] }
+    // Buscar prestadores aprovados (não exigir online, pois pode não estar atualizado em tempo real)
+    let providers = await base44.asServiceRole.entities.Provider.filter({
+      is_approved: true
     });
+
+    console.log(`Found ${providers.length} approved providers`);
+
+    // Filtrar por especialidade
+    if (serviceRequest.service_type) {
+      providers = providers.filter(p => 
+        p.specialties && p.specialties.includes(serviceRequest.service_type)
+      );
+      console.log(`Found ${providers.length} providers for specialty: ${serviceRequest.service_type}`);
+    }
 
     if (!providers || providers.length === 0) {
       console.log(`No providers available for service: ${serviceRequest.service_type}`);
