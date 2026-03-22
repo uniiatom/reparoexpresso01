@@ -289,22 +289,81 @@ export default function ProviderApp() {
         <GoogleReviewQRCode />
       </div>
 
-      {/* Histórico */}
-      {completedJobs.length > 0 && (
+      </> /* fim aba chamados */}
+
+      {/* ── ABA CHECK-LIST ── */}
+      {activeTab === 'checklist' && (
         <div>
-          <h2 className="font-bold text-foreground mb-3">Serviços concluídos ({completedJobs.length})</h2>
-          <div className="space-y-2">
-            {completedJobs.slice(0, 5).map(job => (
-              <div key={job.id} className="bg-card rounded-2xl p-4 border border-border flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground text-sm">{SERVICE_LABELS[job.service_type]}</p>
-                  <p className="text-xs text-muted-foreground truncate">{job.client_name} · {job.city}</p>
-                </div>
-                {job.final_price && <span className="text-sm font-bold text-primary">R$ {job.final_price}</span>}
+          {activeJob ? (
+            <div className="space-y-4">
+              <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
+                <p className="text-xs text-primary font-semibold uppercase tracking-wide mb-1">Serviço em andamento</p>
+                <p className="font-bold text-foreground">{SERVICE_LABELS[activeJob.service_type] || activeJob.service_type}</p>
+                <p className="text-sm text-muted-foreground">{activeJob.client_name} · {activeJob.address}</p>
               </div>
-            ))}
-          </div>
+              {activeJob.checklist?.items?.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-foreground">Itens preenchidos:</p>
+                  {activeJob.checklist.items.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3 bg-card rounded-xl p-3 border border-border">
+                      <CheckCircle2 className={`w-5 h-5 flex-shrink-0 ${item.checked ? 'text-green-500' : 'text-muted-foreground'}`} />
+                      <span className={`text-sm ${item.checked ? 'text-foreground' : 'text-muted-foreground'}`}>{item.label}</span>
+                    </div>
+                  ))}
+                  {activeJob.checklist.notes && (
+                    <div className="bg-muted rounded-xl p-3 text-sm text-muted-foreground">
+                      <p className="font-semibold text-foreground mb-1">Observações:</p>
+                      {activeJob.checklist.notes}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-card rounded-2xl p-6 border border-border text-center">
+                  <ClipboardList className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Checklist ainda não preenchido</p>
+                </div>
+              )}
+              <Button
+                className="w-full rounded-2xl font-bold"
+                onClick={() => setShowChecklist(true)}
+              >
+                <ClipboardList className="w-4 h-4 mr-2" />
+                {activeJob.checklist?.items?.length > 0 ? 'Editar Checklist' : 'Preencher Checklist'}
+              </Button>
+            </div>
+          ) : (
+            <div className="bg-card rounded-3xl p-10 border border-border text-center">
+              <ClipboardList className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="font-semibold text-foreground">Nenhum serviço ativo</p>
+              <p className="text-sm text-muted-foreground mt-1">O check-list fica disponível quando há um serviço em andamento</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── ABA HISTÓRICO ── */}
+      {activeTab === 'historico' && (
+        <div>
+          {completedJobs.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground mb-3">Total: {completedJobs.length} serviço(s) concluído(s)</p>
+              {completedJobs.map(job => (
+                <div key={job.id} className="bg-card rounded-2xl p-4 border border-border flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground text-sm">{SERVICE_LABELS[job.service_type] || job.service_type}</p>
+                    <p className="text-xs text-muted-foreground truncate">{job.client_name} · {job.city}</p>
+                  </div>
+                  {job.final_price && <span className="text-sm font-bold text-primary">R$ {job.final_price}</span>}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-card rounded-3xl p-10 border border-border text-center">
+              <CheckCircle2 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="font-semibold text-foreground">Nenhum serviço concluído ainda</p>
+            </div>
+          )}
         </div>
       )}
 
