@@ -63,7 +63,7 @@ export default function ClientRegister() {
         <button onClick={() => navigate('/')} className="p-2 hover:bg-accent rounded-xl">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-bold text-foreground">Criar conta</h1>
+        <h1 className="text-xl font-bold text-foreground">Cadastro de Cliente</h1>
       </div>
 
       {/* Foto de perfil */}
