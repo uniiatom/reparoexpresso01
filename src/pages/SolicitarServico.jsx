@@ -164,6 +164,7 @@ export default function SolicitarServico() {
          delivery_address: data.logradouro || '',
          delivery_city: data.localidade || '',
          delivery_state: data.uf || '',
+         delivery_neighborhood: data.bairro || '',
          delivery_cep: cleanCep,
        }));
      } else {
@@ -172,6 +173,7 @@ export default function SolicitarServico() {
          address: data.logradouro || '',
          city: data.localidade || '',
          state: data.uf || '',
+         neighborhood: data.bairro || '',
          cep: cleanCep,
        }));
      }
