@@ -499,7 +499,7 @@ export default function Home() {
                             <h2 className="text-2xl font-bold text-foreground mb-2">🚿 Vaso Monobloco</h2>
                             <div className="bg-primary/10 rounded-2xl p-4 mb-4 border border-primary/20">
                               <p className="text-sm text-muted-foreground mb-1">Valor do serviço:</p>
-                              <p className="text-2xl font-bold text-primary">R$ 1.200,00</p>
+                              <p className="text-2xl font-bold text-primary">{getPriceLabel('instalacao_vaso_monobloco') || 'R$ 1.200,00'}</p>
                             </div>
                             <p className="text-xs text-muted-foreground mb-4">Prestadores disponíveis em sua região</p>
                             <Link to="/solicitar?tipo=instalacao_vaso_monobloco" onClick={() => setShowVasoMonoblocoModal(false)}>
