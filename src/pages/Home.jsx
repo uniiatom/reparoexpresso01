@@ -26,7 +26,7 @@ const homeServices = [
   { icon: ChefHat, label: "Coifa de Parede", subtitle: "Instalação de coifa", type: "instalacao_coifa_parede", color: "bg-teal-100 text-teal-700" },
   { icon: ChefHat, label: "Coifa Ilha", subtitle: "Instalação de coifa", type: "instalacao_coifa_ilha", color: "bg-emerald-100 text-emerald-700" },
   { icon: ShowerHead, label: "Conversão Vaso CX Acoplada", subtitle: "Adaptação sanitária", type: "conversao_vaso_coplado", color: "bg-indigo-100 text-indigo-700" },
-  { icon: ShowerHead, label: "Vaso Monobloco", subtitle: "Instalação sanitária", type: "instalacao_vaso_monobloco", color: "bg-violet-100 text-violet-700" },
+  { icon: ShowerHead, label: "Vaso Monobloco", subtitle: "R$ 1.200,00", type: "instalacao_vaso_monobloco", color: "bg-violet-100 text-violet-700" },
   { icon: Layers, label: "Reparo Forro de Gesso", subtitle: "Manutenção de forro", type: "reparo_forro_gesso", color: "bg-stone-100 text-stone-700" },
   { icon: Droplets, label: "Desentupimento", subtitle: "Desobstrução rápida", type: "desentupimento", color: "bg-amber-100 text-amber-700" },
   { icon: DoorOpen, label: "Portão Eletrônico", subtitle: "Instalação e reparo", type: "portao_eletronico", color: "bg-sky-100 text-sky-700" },
