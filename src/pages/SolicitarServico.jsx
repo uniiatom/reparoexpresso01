@@ -108,30 +108,74 @@ export default function SolicitarServico() {
   React.useEffect(() => () => { if (liveWatchId !== null) navigator.geolocation.clearWatch(liveWatchId); }, [liveWatchId]);
 
   const [form, setForm] = useState({
-    service_type: urlParams.get('tipo') || '',
-    description: '',
-    client_suggested_price: '',
-    problem_photos: [],
-    address: '',
-    city: '',
-    state: '',
-    latitude: null,
-    longitude: null,
-    client_latitude: null,
-    client_longitude: null,
-    delivery_address: '',
-    delivery_city: '',
-    delivery_state: '',
-    delivery_latitude: null,
-    delivery_longitude: null,
-    tow_distance_km: null,
-    modality: 'imediato',
-    urgency: 'agora',
-    scheduled_date: '',
-    scheduled_time: '',
-    client_name: clientProfile?.name || '',
-    client_phone: clientProfile?.phone || '',
+   service_type: urlParams.get('tipo') || '',
+   description: '',
+   client_suggested_price: '',
+   problem_photos: [],
+   address: '',
+   city: '',
+   state: '',
+   cep: '',
+   latitude: null,
+   longitude: null,
+   client_latitude: null,
+   client_longitude: null,
+   delivery_address: '',
+   delivery_city: '',
+   delivery_state: '',
+   delivery_cep: '',
+   delivery_latitude: null,
+   delivery_longitude: null,
+   tow_distance_km: null,
+   modality: 'imediato',
+   urgency: 'agora',
+   scheduled_date: '',
+   scheduled_time: '',
+   client_name: clientProfile?.name || '',
+   client_phone: clientProfile?.phone || '',
   });
+
+  const [loadingCep, setLoadingCep] = useState(false);
+  const [cepError, setCepError] = useState('');
+
+  const searchByCep = async (cep, isDelivery = false) => {
+   const cleanCep = cep.replace(/\D/g, '');
+   if (cleanCep.length !== 8) return;
+
+   setLoadingCep(true);
+   setCepError('');
+   try {
+     const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+     const data = await res.json();
+
+     if (data.erro) {
+       setCepError('CEP não encontrado');
+       setLoadingCep(false);
+       return;
+     }
+
+     if (isDelivery) {
+       setForm(prev => ({
+         ...prev,
+         delivery_address: data.logradouro || '',
+         delivery_city: data.localidade || '',
+         delivery_state: data.uf || '',
+         delivery_cep: cleanCep,
+       }));
+     } else {
+       setForm(prev => ({
+         ...prev,
+         address: data.logradouro || '',
+         city: data.localidade || '',
+         state: data.uf || '',
+         cep: cleanCep,
+       }));
+     }
+   } catch {
+     setCepError('Erro ao buscar CEP');
+   }
+   setLoadingCep(false);
+  };
 
   const { data: nearbyProviders = [] } = useNearbyProviders(location?.latitude, location?.longitude, form.service_type);
 
