@@ -573,15 +573,25 @@ export default function SolicitarServico() {
               {cepError && <p className="text-xs text-destructive">{cepError}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Endereço de entrega</Label>
+              <Label>Rua de entrega</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rua, número, bairro..."
+                  placeholder="Nome da rua..."
                   value={form.delivery_address}
                   onChange={e => set('delivery_address', e.target.value)}
                   className="pl-10 rounded-2xl"
                 />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Número</Label>
+                <Input placeholder="Nº" value={form.delivery_number} onChange={e => set('delivery_number', e.target.value)} className="rounded-2xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Bairro</Label>
+                <Input placeholder="Bairro" value={form.delivery_neighborhood} onChange={e => set('delivery_neighborhood', e.target.value)} className="rounded-2xl" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
