@@ -234,7 +234,11 @@ export default function SolicitarServico() {
   });
 
   const handleFinalConfirm = (formData) => {
-    const dataToSend = { ...formData };
+    const dataToSend = { 
+      ...formData,
+      service_type: Array.isArray(formData.service_type) ? formData.service_type[0] : formData.service_type,
+      client_suggested_price: formData.client_suggested_price ? Number(formData.client_suggested_price) : null
+    };
     if (isTow && form.latitude && form.delivery_latitude) {
       dataToSend.tow_distance_km = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude);
     }
