@@ -237,7 +237,7 @@ export default function SolicitarServico() {
   };
 
   const canNext = () => {
-    if (step === 1) return !!form.service_type;
+    if (step === 1) return form.service_type.length > 0;
     if (step === 2) return form.description.length > 5;
     if (step === 3) {
       const hasDelivery = !isTow || (form.delivery_address.length > 3 && form.delivery_latitude && form.delivery_longitude);
