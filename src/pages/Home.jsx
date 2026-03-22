@@ -650,6 +650,9 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Nearby Providers Map */}
+          {showNearbyMap && <NearbyProvidersMap onClose={() => setShowNearbyMap(false)} />}
+
           {/* Payment Modal */}
           {showPaymentModal && pendingServiceData && (
             <PaymentModal
