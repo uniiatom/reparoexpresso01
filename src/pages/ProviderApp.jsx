@@ -158,6 +158,31 @@ export default function ProviderApp() {
         </div>
       </div>
 
+      {/* Abas de navegação */}
+      <div className="flex gap-2 mb-5 bg-muted rounded-2xl p-1">
+        <button
+          onClick={() => setActiveTab('chamados')}
+          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'chamados' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          🔔 Chamados
+        </button>
+        <button
+          onClick={() => setActiveTab('checklist')}
+          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'checklist' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          ✅ Check-list
+        </button>
+        <button
+          onClick={() => setActiveTab('historico')}
+          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'historico' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          📋 Histórico
+        </button>
+      </div>
+
+      {/* ── ABA CHAMADOS ── */}
+      {activeTab === 'chamados' && <>
+
       {/* Job ativo */}
       {activeJob && (
         <div className="bg-primary/5 rounded-3xl p-5 border border-primary/20 mb-5">
