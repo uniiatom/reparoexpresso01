@@ -36,6 +36,7 @@ const homeServices = [
   { icon: DoorOpen, label: "Portão Eletrônico", subtitle: "Instalação e reparo", type: "portao_eletronico", color: "bg-sky-100 text-sky-700" },
   { icon: Phone, label: "Interfone", subtitle: "Instalação e reparo", type: "interfone", color: "bg-lime-100 text-lime-700" },
   { icon: Gauge, label: "Pressurizador", subtitle: "Instalação e reparo", type: "pressurizador", color: "bg-cyan-100 text-cyan-700" },
+  { icon: ShieldAlert, label: "Alarme/Cerca Elétrica", subtitle: "Instalação e reparo", type: "alarme_cerca_eletrica", color: "bg-red-100 text-red-700" },
 ];
 
 const vehicleServices = [
