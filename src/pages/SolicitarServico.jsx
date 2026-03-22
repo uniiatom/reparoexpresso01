@@ -210,6 +210,38 @@ export default function SolicitarServico() {
 
   const totalSteps = 6;
 
+  // Aguarda carregar dados do usuário e perfil de cliente
+  if (!userLoaded || clientLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Se não tem cadastro de cliente, bloqueia e pede para se cadastrar
+  if (userLoaded && !clientProfile) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center max-w-lg mx-auto">
+        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+          <span className="text-4xl">👤</span>
+        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-2">Cadastro necessário</h2>
+        <p className="text-muted-foreground text-sm max-w-xs mb-8">
+          Para solicitar um serviço você precisa criar sua conta de cliente primeiro. É rápido!
+        </p>
+        <Link to="/cadastro" className="w-full max-w-xs">
+          <Button className="w-full h-14 rounded-2xl font-bold text-base">
+            Criar minha conta
+          </Button>
+        </Link>
+        <button onClick={() => navigate('/')} className="mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          Voltar ao início
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
       {/* Progress */}
