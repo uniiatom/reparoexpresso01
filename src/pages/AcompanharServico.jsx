@@ -120,10 +120,32 @@ export default function AcompanharServico() {
           {STATUS_STEPS.find(s => s.key === request.status)?.label || request.status}
         </div>
         <h1 className="text-2xl font-bold text-foreground">{SERVICE_LABELS[request.service_type] || request.service_type}</h1>
+        {request.service_number && (
+          <p className="text-xs font-mono font-bold text-primary/80 mt-1">Nº {request.service_number}</p>
+        )}
         <p className="text-muted-foreground text-sm mt-1 flex items-center justify-center gap-1">
           <MapPin className="w-3 h-3" /> {request.address}
         </p>
       </div>
+
+      {/* Senhas de segurança */}
+      {request.security_password && (
+        <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 mb-5 space-y-3">
+          <p className="text-xs font-bold text-amber-800 uppercase tracking-wide">🔐 Senhas de segurança</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white rounded-2xl p-3 border border-amber-100 text-center">
+              <p className="text-xs text-amber-700 font-semibold mb-1">Senha do prestador</p>
+              <p className="text-2xl font-mono font-black text-amber-900 tracking-widest">{request.security_password}</p>
+              <p className="text-xs text-amber-600 mt-1">Peça ao prestador esta senha</p>
+            </div>
+            <div className="bg-white rounded-2xl p-3 border border-amber-100 text-center">
+              <p className="text-xs text-amber-700 font-semibold mb-1">Sua senha de validação</p>
+              <p className="text-2xl font-mono font-black text-amber-900 tracking-widest">{request.validation_password}</p>
+              <p className="text-xs text-amber-600 mt-1">Informe ao prestador ao chegar</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Progress */}
       {request.status !== 'cancelado' && (
