@@ -162,9 +162,9 @@ export default function RatingModal({ requestId, onClose }) {
                   <Star key={s} className={cn("w-6 h-6", s <= overallRating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground/30")} />
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground mb-6">
-                <span className="font-semibold text-foreground">Critérios:</span> Pontualidade {punctualityRating}/5 • Qualidade {qualityRating}/5 • Educação {behaviorRating}/5
-              </p>
+              {comment && (
+                <p className="text-sm text-muted-foreground mb-4 italic">"{comment}"</p>
+              )}
               <Button className="w-full rounded-2xl bg-primary text-primary-foreground font-bold" onClick={onClose}>
                 <ThumbsUp className="w-4 h-4 mr-2" /> Fechar
               </Button>
