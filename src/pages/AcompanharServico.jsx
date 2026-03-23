@@ -136,7 +136,7 @@ export default function AcompanharServico() {
             <div className="bg-white rounded-2xl p-3 border border-amber-100 text-center">
               <p className="text-xs text-amber-700 font-semibold mb-1">Senha do prestador</p>
               <p className="text-2xl font-mono font-black text-amber-900 tracking-widest">{request.security_password}</p>
-              <p className="text-xs text-amber-600 mt-1">Peça ao prestador esta senha</p>
+              <p className="text-xs text-amber-600 mt-1">Peça ao prestador esta senha antes de autorizar a entrada</p>
             </div>
             <div className="bg-white rounded-2xl p-3 border border-amber-100 text-center">
               <p className="text-xs text-amber-700 font-semibold mb-1">Sua senha de validação</p>
