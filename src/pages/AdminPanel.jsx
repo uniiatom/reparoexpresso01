@@ -128,6 +128,7 @@ export default function AdminPanel() {
             <DollarSign className="w-3.5 h-3.5 mr-1" /> Repasse
           </TabsTrigger>
           <TabsTrigger value="checklists">✅ Checklists</TabsTrigger>
+          <TabsTrigger value="additional">➕ Pontos Adicionais</TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics">
