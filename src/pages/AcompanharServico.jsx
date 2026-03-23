@@ -158,7 +158,7 @@ export default function AcompanharServico() {
               const stepIdx = statusOrder.indexOf(step);
               const isCompleted = currentIdx > stepIdx;
               const isCurrent = currentIdx === stepIdx;
-              const labels = { aguardando: "Aguardando prestador", aceito: "Prestador confirmado", a_caminho: "🚗 A caminho", em_andamento: "Em andamento", concluido: "Concluído" };
+              const labels = { aguardando: "Aguardando prestador", aceito: "Prestador confirmado", a_caminho: "🚗 A caminho", em_andamento: "Em execução", concluido: "Concluído" };
               return (
                 <div key={step} className="flex items-center gap-3">
                   <div className={cn(
