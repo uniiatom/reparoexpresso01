@@ -22,8 +22,32 @@ const STEPS = [
   { status: 'concluido',    label: 'Concluído',         icon: CheckCircle2, color: 'text-green-600 bg-green-100' },
 ];
 
+// Hook para enviar GPS do prestador em tempo real quando a_caminho
+function useProviderLocationBroadcast(jobId, active) {
+  const watchRef = useRef(null);
+  useEffect(() => {
+    if (!active || !jobId || !navigator.geolocation) return;
+    watchRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        base44.entities.ServiceRequest.update(jobId, {
+          provider_latitude: pos.coords.latitude,
+          provider_longitude: pos.coords.longitude,
+        });
+      },
+      null,
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+    return () => {
+      if (watchRef.current != null) navigator.geolocation.clearWatch(watchRef.current);
+    };
+  }, [jobId, active]);
+}
+
 export default function ActiveJobCard({ job, providerName, onUpdateStatus, onShowChecklist, onShowAdditionalPoint, isPending }) {
   const [validationInput, setValidationInput] = useState('');
+
+  // Transmite localização GPS apenas quando a_caminho
+  useProviderLocationBroadcast(job.id, job.status === 'a_caminho');
 
   const currentStepIndex = STEPS.findIndex(s => s.status === job.status);
   const currentStep = STEPS[currentStepIndex];

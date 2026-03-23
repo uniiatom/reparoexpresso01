@@ -62,6 +62,7 @@ const AuthenticatedApp = () => {
         <Route path="/prestador/horarios" element={<ProviderSchedule />} />
         <Route path="/recompensas" element={<LoyaltyRewards />} />
         <Route path="/mapa/:requestId" element={<ProviderLocationMap />} />
+        <Route path="/rastreamento/:requestId" element={<TrackingMap />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/cadastro" element={<ClientRegister />} />
         <Route path="/cadastro-prestador" element={<ProviderRegister />} />
