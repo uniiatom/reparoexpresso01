@@ -202,6 +202,10 @@ export default function AdminPanel() {
         <TabsContent value="repasse">
           <ProviderRepasse />
         </TabsContent>
+
+        <TabsContent value="checklists">
+          <ChecklistsAdmin />
+        </TabsContent>
       </Tabs>
     </div>
   );
