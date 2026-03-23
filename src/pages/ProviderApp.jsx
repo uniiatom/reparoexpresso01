@@ -408,6 +408,14 @@ export default function ProviderApp() {
         onAccept={handleAcceptBanner}
         onDecline={() => handleDeclineBanner(incomingJob)}
       />
+
+      {/* Modal de motivo de recusa */}
+      {declineTarget && (
+        <DeclineReasonModal
+          onConfirm={handleDeclineConfirm}
+          onCancel={() => setDeclineTarget(null)}
+        />
+      )}
     </div>
   );
 }
