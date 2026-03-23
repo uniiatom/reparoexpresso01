@@ -84,12 +84,12 @@ export default function ChecklistsAdmin() {
                 <div className="mt-4 border-t border-border pt-4 space-y-4">
 
                   {/* Descrição do serviço */}
-                  {cl.service_description && (
-                    <div>
-                      <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1">Descrição do serviço</p>
-                      <p className="text-sm text-muted-foreground bg-muted rounded-xl p-3">{cl.service_description}</p>
-                    </div>
-                  )}
+                  <div>
+                    <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1">Descrição do serviço realizado</p>
+                    <p className="text-sm text-muted-foreground bg-muted rounded-xl p-3">
+                      {cl.service_description || <span className="italic opacity-60">Não informado</span>}
+                    </p>
+                  </div>
 
                   {/* Itens do checklist */}
                   {cl.items?.length > 0 && (
