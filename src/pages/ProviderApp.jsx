@@ -202,90 +202,14 @@ export default function ProviderApp() {
 
       {/* Job ativo */}
       {activeJob && (
-        <div className="bg-primary/5 rounded-3xl p-5 border border-primary/20 mb-5">
-          <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-3 flex items-center gap-1">
-            <BellRing className="w-3.5 h-3.5" /> Chamado ativo
-          </p>
-          <div className="mb-3">
-            <div className="flex items-center gap-2 mb-1">
-              <p className="font-bold text-foreground text-lg">{SERVICE_LABELS[activeJob.service_type]}</p>
-              {activeJob.service_number && (
-                <span className="text-xs font-mono font-bold text-primary/70 bg-primary/10 px-2 py-0.5 rounded-lg">{activeJob.service_number}</span>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">{activeJob.description}</p>
-            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" /> {activeJob.address}{activeJob.city ? `, ${activeJob.city}` : ''}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-              <Phone className="w-3.5 h-3.5" /> {activeJob.client_name} · {activeJob.client_phone}
-            </p>
-            {activeJob.security_password && (
-              <div className="mt-3 space-y-3">
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-center">
-                  <p className="text-xs text-amber-700 font-semibold">Sua senha de identificação</p>
-                  <p className="text-2xl font-mono font-black text-amber-900 tracking-widest mt-1">{activeJob.security_password}</p>
-                  <p className="text-xs text-amber-600 mt-1">Mostre esta senha ao cliente antes de entrar</p>
-                </div>
-                {activeJob.status === 'aceito' && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3">
-                    <p className="text-xs text-blue-700 font-semibold mb-2 flex items-center gap-1">
-                      <KeyRound className="w-3.5 h-3.5" /> Digite a senha informada pelo cliente
-                    </p>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={6}
-                      placeholder="000000"
-                      value={validationInput}
-                      onChange={e => setValidationInput(e.target.value.replace(/\D/g, ''))}
-                      className="rounded-xl text-center font-mono text-xl tracking-widest h-12"
-                    />
-                    {validationInput.length === 6 && validationInput !== activeJob.validation_password && (
-                      <p className="text-xs text-red-600 mt-1 text-center">Senha incorreta. Peça novamente ao cliente.</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          <ServiceChat
-            requestId={activeJob.id}
-            senderRole="prestador"
-            senderName={provider.name}
-          />
-
-          <div className="flex gap-2">
-            {activeJob.status === 'aceito' && (
-              <Button
-                size="sm"
-                className="flex-1 rounded-xl bg-primary text-primary-foreground"
-                disabled={activeJob.validation_password && validationInput !== activeJob.validation_password}
-                onClick={() => { updateJobStatus.mutate({ id: activeJob.id, status: 'em_andamento' }); setValidationInput(''); }}
-              >
-                Iniciar serviço
-              </Button>
-            )}
-            {activeJob.status === 'em_andamento' && (
-              <div className="flex flex-col gap-2 w-full">
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="flex-1 rounded-xl border-primary text-primary" onClick={() => setShowChecklist(true)}>
-                    <ClipboardList className="w-4 h-4 mr-1" /> Checklist
-                  </Button>
-                  <Button size="sm" className="flex-1 rounded-xl bg-green-600 text-white" onClick={() => updateJobStatus.mutate({ id: activeJob.id, status: 'concluido' })}>
-                    <CheckCircle2 className="w-4 h-4 mr-1" /> Concluir
-                  </Button>
-                </div>
-                <Button size="sm" variant="outline" className="w-full rounded-xl border-orange-400 text-orange-600 hover:bg-orange-50" onClick={() => setShowAdditionalPoint(true)}>
-                  <PlusCircle className="w-4 h-4 mr-1" /> Ponto adicional
-                </Button>
-                {activeJob.additional_points?.length > 0 && (
-                  <p className="text-xs text-muted-foreground text-center">{activeJob.additional_points.length} ponto(s) adicional(is) registrado(s)</p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+        <ActiveJobCard
+          job={activeJob}
+          providerName={provider.name}
+          onUpdateStatus={updateJobStatus.mutate}
+          onShowChecklist={() => setShowChecklist(true)}
+          onShowAdditionalPoint={() => setShowAdditionalPoint(true)}
+          isPending={updateJobStatus.isPending}
+        />
       )}
 
       {/* Chamados disponíveis */}
