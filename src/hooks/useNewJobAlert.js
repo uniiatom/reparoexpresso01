@@ -1,56 +1,78 @@
 import { useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 
-// Gera som de buzina de carro usando Web Audio API
-export function playAlertSound() {
+// Toca uma buzina de caminhão e retorna função para parar
+export function startHornLoop() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    let stopped = false;
+    let intervalId = null;
 
-    const playHorn = (startTime, duration) => {
-      // Oscilador principal — onda sawtooth grave simula buzina
+    const playHorn = () => {
+      if (stopped) return;
       const osc1 = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
       const gain = ctx.createGain();
 
       osc1.type = 'sawtooth';
-      osc1.frequency.value = 130; // grave de caminhão
+      osc1.frequency.value = 130;
       osc2.type = 'sawtooth';
-      osc2.frequency.value = 165; // harmônico grave
+      osc2.frequency.value = 165;
 
       osc1.connect(gain);
       osc2.connect(gain);
       gain.connect(ctx.destination);
 
-      gain.gain.setValueAtTime(0, ctx.currentTime + startTime);
-      gain.gain.linearRampToValueAtTime(0.6, ctx.currentTime + startTime + 0.05);
-      gain.gain.setValueAtTime(0.6, ctx.currentTime + startTime + duration - 0.1);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + startTime + duration);
+      const now = ctx.currentTime;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.6, now + 0.05);
+      gain.gain.setValueAtTime(0.6, now + 1.7);
+      gain.gain.linearRampToValueAtTime(0, now + 1.8);
 
-      osc1.start(ctx.currentTime + startTime);
-      osc1.stop(ctx.currentTime + startTime + duration);
-      osc2.start(ctx.currentTime + startTime);
-      osc2.stop(ctx.currentTime + startTime + duration);
+      osc1.start(now);
+      osc1.stop(now + 1.8);
+      osc2.start(now);
+      osc2.stop(now + 1.8);
     };
 
-    // Buzina longa de caminhão
-    playHorn(0.0, 1.8);
+    // Toca imediatamente e repete a cada 2.2s
+    playHorn();
+    intervalId = setInterval(playHorn, 2200);
+
+    return () => {
+      stopped = true;
+      clearInterval(intervalId);
+      ctx.close();
+    };
   } catch (e) {
     console.warn('Web Audio não disponível:', e);
+    return () => {};
   }
 }
 
 /**
  * Monitora novos chamados via subscribe em tempo real.
  * Quando enabled=true e chega um ServiceRequest com status='aguardando',
- * dispara o som de alerta e chama onNewJob(requestData).
+ * dispara a buzina em loop e chama onNewJob(requestData).
+ * A buzina para quando onStopHorn é chamado (ao aceitar/recusar).
  */
 export function useNewJobAlert({ enabled, onNewJob }) {
   const enabledRef = useRef(enabled);
   const seenIds = useRef(new Set());
   const onNewJobRef = useRef(onNewJob);
+  const stopHornRef = useRef(null);
 
   useEffect(() => { enabledRef.current = enabled; }, [enabled]);
   useEffect(() => { onNewJobRef.current = onNewJob; }, [onNewJob]);
+
+  // Expõe função global para parar a buzina
+  useEffect(() => {
+    window.__stopProviderHorn = () => {
+      stopHornRef.current?.();
+      stopHornRef.current = null;
+    };
+    return () => { delete window.__stopProviderHorn; };
+  }, []);
 
   useEffect(() => {
     const unsubscribe = base44.entities.ServiceRequest.subscribe((event) => {
@@ -58,7 +80,9 @@ export function useNewJobAlert({ enabled, onNewJob }) {
       if (event.type === 'create' && event.data?.status === 'aguardando') {
         if (!seenIds.current.has(event.id)) {
           seenIds.current.add(event.id);
-          playAlertSound();
+          // Para qualquer buzina anterior antes de iniciar nova
+          stopHornRef.current?.();
+          stopHornRef.current = startHornLoop();
           onNewJobRef.current?.(event.data);
         }
       }
