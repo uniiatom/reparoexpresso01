@@ -169,7 +169,7 @@ export default function TrackingMap() {
                   </Popup>
                 </Marker>
                 {/* Linha entre prestador e cliente */}
-                <Polyline
+                {clientPos && <Polyline
                   positions={[providerPos, clientPos]}
                   color="#10b981"
                   weight={3}
