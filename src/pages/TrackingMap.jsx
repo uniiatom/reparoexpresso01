@@ -175,7 +175,7 @@ export default function TrackingMap() {
                   weight={3}
                   opacity={0.6}
                   dashArray="8, 6"
-                />
+                />}
               </>
             )}
 
