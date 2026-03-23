@@ -152,6 +152,20 @@ export default function ServiceChecklist({ job, onClose }) {
             ))}
           </div>
 
+          {/* Descrição do serviço a ser realizado - pelo prestador */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Descrição do serviço a ser realizado *</p>
+            <Textarea
+              value={serviceDescription}
+              onChange={e => setServiceDescription(e.target.value)}
+              placeholder="Descreva detalhadamente o que será executado, materiais a utilizar, peças a trocar..."
+              className="rounded-2xl min-h-[100px]"
+            />
+            {serviceDescription.trim().length < 6 && serviceDescription.length > 0 && (
+              <p className="text-xs text-orange-500">Descreva com mais detalhes o que será realizado</p>
+            )}
+          </div>
+
           {/* Assinatura de autorização prévia */}
           <div className="space-y-3 bg-blue-50 rounded-2xl p-4 border border-blue-200">
             <p className="text-sm font-bold text-blue-900">✍️ Autorização prévia do cliente</p>
