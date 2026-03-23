@@ -23,19 +23,6 @@ const URGENCY_COLORS = {
  * Auto-dismiss após 30s.
  */
 export default function NewJobBanner({ job, onAccept, onDecline }) {
-  const [seconds, setSeconds] = useState(30);
-
-  useEffect(() => {
-    if (!job) return;
-    setSeconds(30);
-    const timer = setInterval(() => {
-      setSeconds(s => {
-        if (s <= 1) { clearInterval(timer); onDecline(); return 0; }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [job]);
 
   return (
     <AnimatePresence>
@@ -48,13 +35,8 @@ export default function NewJobBanner({ job, onAccept, onDecline }) {
           className="fixed bottom-4 left-0 right-0 z-50 px-4 max-w-lg mx-auto"
         >
           <div className="bg-card border-2 border-primary rounded-3xl shadow-2xl overflow-hidden">
-            {/* Barra de progresso */}
-            <motion.div
-              className="h-1.5 bg-primary"
-              initial={{ width: '100%' }}
-              animate={{ width: '0%' }}
-              transition={{ duration: 30, ease: 'linear' }}
-            />
+            {/* Pulso animado no topo */}
+            <div className="h-1.5 bg-primary animate-pulse" />
 
             <div className="p-5">
               {/* Header */}
@@ -65,7 +47,7 @@ export default function NewJobBanner({ job, onAccept, onDecline }) {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-primary uppercase tracking-wide">Novo chamado!</p>
-                    <p className="text-xs text-muted-foreground">Expira em {seconds}s</p>
+                    <p className="text-xs text-muted-foreground">Aguardando sua resposta...</p>
                   </div>
                 </div>
                 <div className={`px-2 py-1 rounded-lg text-white text-xs font-bold ${URGENCY_COLORS[job.urgency] || 'bg-primary'}`}>
