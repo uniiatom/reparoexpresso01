@@ -282,14 +282,18 @@ export default function ServiceChecklist({ job, onClose }) {
 
         {/* Footer */}
         <div className="px-5 py-4 border-t border-border bg-card flex-shrink-0">
-          {(!allChecked || !allAuthorizationsChecked) && (
+          {!canSave && (
             <p className="text-xs text-orange-600 text-center mb-2">
-              {!allChecked ? "Marque todos os itens obrigatórios" : "Obtenha a autorização do cliente"}
+              {!allChecked ? "Marque todos os itens obrigatórios" :
+               !allAuthorizationsChecked ? "Confirme todos os itens de autorização" :
+               !preAuthSignature ? "Obtenha a assinatura prévia do cliente" :
+               !serviceDescription.trim() || serviceDescription.trim().length < 6 ? "Descreva o serviço realizado" :
+               !finalSignature ? "Obtenha a assinatura final do cliente" : ""}
             </p>
           )}
           <Button
             onClick={handleSave}
-            disabled={!allChecked || !allAuthorizationsChecked || saving}
+            disabled={!canSave || saving}
             className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground"
           >
             {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-4 h-4 mr-2" /> Salvar checklist</>}
