@@ -143,11 +143,12 @@ export default function AdminPanel() {
               <p className="text-center text-muted-foreground py-10">Nenhum chamado ainda</p>
             ) : requests.map(req => (
               <Card key={req.id}>
-                <CardContent className="p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-foreground">{SERVICE_LABELS[req.service_type]}</span>
+                        <span className="font-semibold text-foreground">{SERVICE_LABELS[req.service_type] || req.service_type}</span>
+                        {req.service_number && <span className="text-xs font-mono text-primary/70 bg-primary/10 px-2 py-0.5 rounded">{req.service_number}</span>}
                         <Badge className={cn("text-xs border-0", STATUS_COLORS[req.status])}>{STATUS_LABELS[req.status]}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">{req.description}</p>
@@ -157,9 +158,47 @@ export default function AdminPanel() {
                       </p>
                     </div>
                     {req.final_price && (
-                      <span className="font-bold text-primary text-lg">R$ {req.final_price}</span>
+                      <span className="font-bold text-primary text-lg shrink-0">R$ {req.final_price}</span>
                     )}
                   </div>
+
+                  {/* Senha de validação */}
+                  {req.validation_password && (
+                    <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                      <KeyRound className="w-4 h-4 text-amber-700 flex-shrink-0" />
+                      <span className="text-xs text-amber-700 font-semibold flex-1">Senha de validação:</span>
+                      <span className={cn("font-mono font-bold text-amber-900 tracking-widest text-sm", !revealedPasswords[req.id] && "blur-sm select-none")}>
+                        {req.validation_password}
+                      </span>
+                      <button onClick={() => togglePassword(req.id)} className="p-1 hover:bg-amber-100 rounded-lg">
+                        {revealedPasswords[req.id]
+                          ? <EyeOff className="w-4 h-4 text-amber-700" />
+                          : <Eye className="w-4 h-4 text-amber-700" />}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Cancelar atendimento */}
+                  {!['cancelado', 'concluido'].includes(req.status) && (
+                    cancelConfirm === req.id ? (
+                      <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl p-2">
+                        <p className="text-xs text-red-700 font-semibold flex-1">Confirmar cancelamento?</p>
+                        <Button size="sm" variant="outline" className="rounded-lg text-xs h-7 px-2" onClick={() => setCancelConfirm(null)}>Não</Button>
+                        <Button size="sm" className="rounded-lg text-xs h-7 px-2 bg-destructive hover:bg-destructive/90 text-white" onClick={() => cancelRequest.mutate(req.id)} disabled={cancelRequest.isPending}>
+                          Sim, cancelar
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-xl text-destructive border-destructive/30 hover:bg-destructive/5 text-xs"
+                        onClick={() => setCancelConfirm(req.id)}
+                      >
+                        <XCircle className="w-3.5 h-3.5 mr-1" /> Cancelar atendimento
+                      </Button>
+                    )
+                  )}
                 </CardContent>
               </Card>
             ))}
