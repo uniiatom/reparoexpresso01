@@ -115,9 +115,10 @@ export default function AcompanharServico() {
       <div className="text-center mb-8">
         <div className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-3", statusColor)}>
           {request.status === 'aguardando' && <Clock className="w-4 h-4 animate-pulse" />}
+          {request.status === 'a_caminho' && <span>🚗</span>}
           {request.status === 'concluido' && <CheckCircle2 className="w-4 h-4" />}
           {request.status === 'cancelado' && <AlertCircle className="w-4 h-4" />}
-          {STATUS_STEPS.find(s => s.key === request.status)?.label || request.status}
+          {request.status === 'a_caminho' ? 'Prestador a caminho!' : STATUS_STEPS.find(s => s.key === request.status)?.label || request.status}
         </div>
         <h1 className="text-2xl font-bold text-foreground">{SERVICE_LABELS[request.service_type] || request.service_type}</h1>
         {request.service_number && (
