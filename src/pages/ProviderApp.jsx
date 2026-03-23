@@ -48,7 +48,11 @@ export default function ProviderApp() {
   });
 
   const handleNewJob = useCallback((job) => {
-    setIncomingJob(job);
+    setJobQueue(prev => {
+      // Evita duplicatas na fila
+      if (prev.some(j => j.id === job.id)) return prev;
+      return [...prev, job];
+    });
   }, []);
 
   useNewJobAlert({
