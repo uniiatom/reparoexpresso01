@@ -151,10 +151,13 @@ export default function AcompanharServico() {
       {request.status !== 'cancelado' && (
         <div className="bg-card rounded-3xl p-5 border border-border mb-5">
           <div className="space-y-4">
-            {["aguardando", "aceito", "em_andamento", "concluido"].map((step, i) => {
-              const isCompleted = currentStepIndex > i;
-              const isCurrent = STATUS_STEPS[currentStepIndex]?.key === step || (step === "aceito" && request.status === "a_caminho");
-              const labels = { aguardando: "Aguardando prestador", aceito: "Prestador confirmado", em_andamento: "Em andamento", concluido: "Concluído" };
+            {["aguardando", "aceito", "a_caminho", "em_andamento", "concluido"].map((step, i) => {
+              const statusOrder = ["aguardando", "aceito", "a_caminho", "em_andamento", "concluido"];
+              const currentIdx = statusOrder.indexOf(request.status);
+              const stepIdx = statusOrder.indexOf(step);
+              const isCompleted = currentIdx > stepIdx;
+              const isCurrent = currentIdx === stepIdx;
+              const labels = { aguardando: "Aguardando prestador", aceito: "Prestador confirmado", a_caminho: "🚗 Prestador a caminho", em_andamento: "Em andamento", concluido: "Concluído" };
               return (
                 <div key={step} className="flex items-center gap-3">
                   <div className={cn(
