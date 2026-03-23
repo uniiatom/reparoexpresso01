@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, ClipboardList, PlusCircle, X, Check, KeyRound } from "lucide-react";
+import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, X, Check } from "lucide-react";
 import GoogleReviewQRCode from '../components/GoogleReviewQRCode';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -16,7 +16,7 @@ import NewJobBanner from '../components/NewJobBanner';
 import { useNewJobAlert } from '../hooks/useNewJobAlert';
 import ServiceChecklist from '../components/ServiceChecklist';
 import AdditionalPointModal from '../components/AdditionalPointModal';
-import ServiceChat from '../components/ServiceChat';
+import ActiveJobCard from '../components/ActiveJobCard';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
