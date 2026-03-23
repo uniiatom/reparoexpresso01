@@ -149,7 +149,7 @@ export default function TrackingMap() {
             />
 
             {/* Cliente */}
-            <Marker position={clientPos} icon={clientIcon}>
+            {clientPos && <Marker position={clientPos} icon={clientIcon}>
               <Popup>
                 <p className="font-bold text-sm">Sua localização</p>
                 <p className="text-xs text-muted-foreground">{request.address}</p>
