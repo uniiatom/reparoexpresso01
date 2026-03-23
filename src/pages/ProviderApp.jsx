@@ -280,7 +280,7 @@ export default function ProviderApp() {
                     <Button
                       variant="outline"
                       className="flex-1 rounded-xl border-destructive text-destructive hover:bg-destructive/5"
-                      onClick={() => toast.info("Chamado ignorado.")}
+                      onClick={() => handleDeclineList(req)}
                     >
                       <X className="w-4 h-4 mr-1" /> Recusar
                     </Button>
