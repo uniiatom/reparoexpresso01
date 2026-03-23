@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, X, Check } from "lucide-react";
+import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, X, Check, ClipboardList } from "lucide-react";
 import GoogleReviewQRCode from '../components/GoogleReviewQRCode';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
