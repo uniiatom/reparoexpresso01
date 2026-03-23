@@ -34,6 +34,7 @@ export default function ProviderApp() {
   const [showChecklist, setShowChecklist] = useState(false);
   const [showAdditionalPoint, setShowAdditionalPoint] = useState(false);
   const [activeTab, setActiveTab] = useState('chamados');
+  const [declineTarget, setDeclineTarget] = useState(null); // { job, source: 'banner' | 'list' }
 
   // Job atual no banner = primeiro da fila
   const incomingJob = jobQueue[0] || null;
