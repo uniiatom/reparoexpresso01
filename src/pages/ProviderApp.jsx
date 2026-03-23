@@ -121,8 +121,8 @@ export default function ProviderApp() {
   });
 
   const handleDeclineBanner = (job) => {
+    window.__stopProviderHorn?.();
     setIncomingJob(null);
-    // Não precisa fazer nada no DB se o job ainda está como 'aguardando'
   };
 
   const updateJobStatus = useMutation({
