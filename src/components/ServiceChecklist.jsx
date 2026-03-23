@@ -86,6 +86,9 @@ export default function ServiceChecklist({ job, onClose }) {
       authorizations: AUTHORIZATION_ITEMS.map(item => ({ label: item, checked: !!authorizationItems[item] })),
       photos,
       notes,
+      service_description: serviceDescription,
+      pre_auth_signature: preAuthSignature,
+      final_signature: finalSignature,
       location,
       completed_at: new Date().toISOString(),
     };
