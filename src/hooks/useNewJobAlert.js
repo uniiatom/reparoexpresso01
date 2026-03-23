@@ -32,9 +32,8 @@ export function playAlertSound() {
       osc2.stop(ctx.currentTime + startTime + duration);
     };
 
-    // Dois "biiip" de buzina: curto + longo
-    playHorn(0.0, 0.25);
-    playHorn(0.35, 0.55);
+    // Buzina longa de caminhão
+    playHorn(0.0, 1.8);
   } catch (e) {
     console.warn('Web Audio não disponível:', e);
   }
