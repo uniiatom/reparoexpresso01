@@ -13,9 +13,9 @@ export function playAlertSound() {
       const gain = ctx.createGain();
 
       osc1.type = 'sawtooth';
-      osc1.frequency.value = 220; // nota base da buzina
+      osc1.frequency.value = 130; // grave de caminhão
       osc2.type = 'sawtooth';
-      osc2.frequency.value = 277; // nota harmônica (cria "bitonalidade" de buzina)
+      osc2.frequency.value = 165; // harmônico grave
 
       osc1.connect(gain);
       osc2.connect(gain);
