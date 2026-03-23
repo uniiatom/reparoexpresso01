@@ -405,7 +405,7 @@ export default function ProviderApp() {
       <NewJobBanner
         job={incomingJob}
         onAccept={handleAcceptBanner}
-        onDecline={handleDeclineBanner}
+        onDecline={() => handleDeclineBanner(incomingJob)}
       />
     </div>
   );
