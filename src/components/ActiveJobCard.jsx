@@ -63,6 +63,18 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
   // Botão de ação principal por etapa
   const renderActions = () => {
     if (job.status === 'aceito') {
+      return (
+        <Button
+          className="w-full rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold h-12"
+          disabled={isPending}
+          onClick={handleNextStep}
+        >
+          <Navigation className="w-4 h-4 mr-2" /> Iniciar Deslocamento
+        </Button>
+      );
+    }
+
+    if (job.status === 'a_caminho') {
       const needsValidation = !!job.validation_password;
       const validationOk = !needsValidation || validationInput === job.validation_password;
 
@@ -88,25 +100,13 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
             </div>
           )}
           <Button
-            className="w-full rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold h-12"
+            className="w-full rounded-2xl bg-primary text-primary-foreground font-bold h-12"
             disabled={!validationOk || isPending}
             onClick={handleNextStep}
           >
-            <Navigation className="w-4 h-4 mr-2" /> Iniciar Deslocamento
+            <Wrench className="w-4 h-4 mr-2" /> Iniciar Execução
           </Button>
         </div>
-      );
-    }
-
-    if (job.status === 'a_caminho') {
-      return (
-        <Button
-          className="w-full rounded-2xl bg-primary text-primary-foreground font-bold h-12"
-          disabled={isPending}
-          onClick={handleNextStep}
-        >
-          <Wrench className="w-4 h-4 mr-2" /> Iniciar Execução
-        </Button>
       );
     }
 
