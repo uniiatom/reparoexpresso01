@@ -205,7 +205,12 @@ export default function ProviderApp() {
             <BellRing className="w-3.5 h-3.5" /> Chamado ativo
           </p>
           <div className="mb-3">
-            <p className="font-bold text-foreground text-lg">{SERVICE_LABELS[activeJob.service_type]}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <p className="font-bold text-foreground text-lg">{SERVICE_LABELS[activeJob.service_type]}</p>
+              {activeJob.service_number && (
+                <span className="text-xs font-mono font-bold text-primary/70 bg-primary/10 px-2 py-0.5 rounded-lg">{activeJob.service_number}</span>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground mt-1">{activeJob.description}</p>
             <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" /> {activeJob.address}{activeJob.city ? `, ${activeJob.city}` : ''}
@@ -213,6 +218,20 @@ export default function ProviderApp() {
             <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
               <Phone className="w-3.5 h-3.5" /> {activeJob.client_name} · {activeJob.client_phone}
             </p>
+            {activeJob.security_password && (
+              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-3 grid grid-cols-2 gap-2">
+                <div className="text-center">
+                  <p className="text-xs text-amber-700 font-semibold">Sua senha</p>
+                  <p className="text-xl font-mono font-black text-amber-900 tracking-widest">{activeJob.security_password}</p>
+                  <p className="text-xs text-amber-600">Mostre ao cliente</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-amber-700 font-semibold">Senha do cliente</p>
+                  <p className="text-xl font-mono font-black text-amber-900 tracking-widest">{activeJob.validation_password}</p>
+                  <p className="text-xs text-amber-600">Cliente informa a você</p>
+                </div>
+              </div>
+            )}
           </div>
           <ServiceChat
             requestId={activeJob.id}
