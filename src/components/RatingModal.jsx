@@ -91,8 +91,7 @@ export default function RatingModal({ requestId, onClose }) {
               </div>
 
               {/* Nota Geral */}
-              <div className="mb-6">
-                <p className="text-xs text-muted-foreground mb-3 font-semibold">Avaliação Geral</p>
+              <div className="mb-5">
                 <div className="flex justify-center gap-2">
                   {[1, 2, 3, 4, 5].map((s, idx) => (
                     <motion.button
@@ -100,13 +99,11 @@ export default function RatingModal({ requestId, onClose }) {
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: idx * 0.05 }}
-                      onMouseEnter={() => setHoveredCategory('overall')}
-                      onMouseLeave={() => setHoveredCategory(null)}
                       onClick={() => setOverallRating(s)}
                       className="focus:outline-none cursor-pointer"
                     >
                       <Star className={cn(
-                        "w-8 h-8 transition-all duration-150",
+                        "w-10 h-10 transition-all duration-150",
                         s <= overallRating
                           ? "text-yellow-400 fill-yellow-400"
                           : "text-muted-foreground/30"
@@ -114,7 +111,7 @@ export default function RatingModal({ requestId, onClose }) {
                     </motion.button>
                   ))}
                 </div>
-                <motion.p 
+                <motion.p
                   key={overallRating}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -124,48 +121,15 @@ export default function RatingModal({ requestId, onClose }) {
                 </motion.p>
               </div>
 
-              {/* Critérios específicos */}
-              <div className="space-y-4 mb-6 pb-4 border-b border-border">
-                {[
-                  { key: 'punctuality', label: '⏰ Pontualidade', rating: punctualityRating, setRating: setPunctualityRating },
-                  { key: 'quality', label: '✨ Qualidade do Trabalho', rating: qualityRating, setRating: setQualityRating },
-                  { key: 'behavior', label: '😊 Educação e Comportamento', rating: behaviorRating, setRating: setBehaviorRating },
-                ].map(criterion => (
-                  <div key={criterion.key}>
-                    <p className="text-xs text-muted-foreground mb-2 font-semibold">{criterion.label}</p>
-                    <div className="flex gap-1.5">
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <motion.button
-                          key={s}
-                          whileHover={{ scale: 1.1 }}
-                          onClick={() => criterion.setRating(s)}
-                          className="focus:outline-none"
-                        >
-                          <Star className={cn(
-                            "w-5 h-5 transition-all",
-                            s <= criterion.rating
-                              ? "text-yellow-400 fill-yellow-400"
-                              : "text-muted-foreground/20"
-                          )} />
-                        </motion.button>
-                      ))}
-                      <span className="text-xs font-bold text-primary ml-auto">{criterion.rating}/5</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
               {/* Comentário */}
               <div className="mb-4">
-                <p className="text-xs text-muted-foreground mb-2 font-semibold">Deixe um comentário (opcional)</p>
                 <Textarea
-                  placeholder="Conte como foi a experiência..."
+                  placeholder="Deixe um comentário (opcional)..."
                   value={comment}
                   onChange={e => setComment(e.target.value)}
-                  className="rounded-2xl min-h-[90px] resize-none"
-                  maxLength={500}
+                  className="rounded-2xl min-h-[70px] resize-none"
+                  maxLength={300}
                 />
-                <p className="text-xs text-muted-foreground mt-1 text-right">{comment.length}/500</p>
               </div>
 
               <Button
