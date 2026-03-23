@@ -33,6 +33,7 @@ export default function ProviderApp() {
   const [showChecklist, setShowChecklist] = useState(false);
   const [showAdditionalPoint, setShowAdditionalPoint] = useState(false);
   const [activeTab, setActiveTab] = useState('chamados');
+  const [validationInput, setValidationInput] = useState('');
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
