@@ -66,11 +66,14 @@ export default function TrackingMap() {
   });
 
   const hasProvider = request?.provider_latitude && request?.provider_longitude;
-  // Usa latitude/longitude fixas do endereço OU as coordenadas em tempo real do cliente
-  const hasClient = (request?.latitude && request?.longitude) || (request?.client_latitude && request?.client_longitude);
+  // Prioriza coordenadas em tempo real do cliente, depois usa as coordenadas fixas do endereço
+  const hasClient = (request?.client_latitude && request?.client_longitude) || (request?.latitude && request?.longitude);
 
   const clientPos = hasClient
-    ? [request.client_latitude || request.latitude, request.client_longitude || request.longitude]
+    ? [
+        request.client_latitude || request.latitude,
+        request.client_longitude || request.longitude,
+      ]
     : null;
   const providerPos = hasProvider ? [request.provider_latitude, request.provider_longitude] : null;
 
