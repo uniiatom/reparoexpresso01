@@ -152,9 +152,16 @@ export default function ServiceChecklist({ job, onClose }) {
             ))}
           </div>
 
-          {/* Autorização prévia do cliente */}
+          {/* Assinatura de autorização prévia */}
+          <div className="space-y-3 bg-blue-50 rounded-2xl p-4 border border-blue-200">
+            <p className="text-sm font-bold text-blue-900">✍️ Autorização prévia do cliente</p>
+            <p className="text-xs text-blue-700">O cliente deve assinar antes do início do serviço, autorizando a execução dos trabalhos.</p>
+            <SignaturePad label="Assinatura do cliente (antes do serviço)" onSave={setPreAuthSignature} />
+          </div>
+
+          {/* Autorização prévia do cliente - checkboxes */}
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-foreground">Autorização prévia do cliente</p>
+            <p className="text-sm font-semibold text-foreground">Confirmações de autorização</p>
             {AUTHORIZATION_ITEMS.map(item => (
               <button
                 key={item}
@@ -175,7 +182,6 @@ export default function ServiceChecklist({ job, onClose }) {
                 </span>
               </button>
             ))}
-            <p className="text-xs text-muted-foreground mt-2">O cliente deve confirmar a conclusão satisfatória do serviço</p>
           </div>
 
           {/* Geolocalização */}
