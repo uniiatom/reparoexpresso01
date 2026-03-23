@@ -36,40 +36,6 @@ export default function AcompanharServico() {
   const [showPixPayment, setShowPixPayment] = useState(false);
   const [previousStatus, setPreviousStatus] = useState(null);
 
-  // Setup notifications for status changes
-  useServiceNotifications(request, previousStatus);
-
-  const playNotificationSound = () => {
-    // Create a simple beep sound using Web Audio API
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.value = 800;
-    oscillator.type = 'sine';
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.5);
-  };
-
-  // Track status changes and play sound when provider accepts
-  useEffect(() => {
-    if (request?.status && request.status !== previousStatus) {
-      setPreviousStatus(request.status);
-      
-      // Play sound when provider is assigned
-      if (request.status === 'aceito' && previousStatus === 'aguardando') {
-        playNotificationSound();
-      }
-    }
-  }, [request?.status, previousStatus]);
-
   const { data: request } = useQuery({
     queryKey: ['service-request', id],
     queryFn: async () => {
@@ -79,6 +45,33 @@ export default function AcompanharServico() {
     refetchInterval: 5000,
     enabled: !!id,
   });
+
+  // Setup notifications for status changes
+  useServiceNotifications(request, previousStatus);
+
+  const playNotificationSound = () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+  };
+
+  // Track status changes and play sound when provider accepts
+  useEffect(() => {
+    if (request?.status && request.status !== previousStatus) {
+      setPreviousStatus(request.status);
+      if (request.status === 'aceito' && previousStatus === 'aguardando') {
+        playNotificationSound();
+      }
+    }
+  }, [request?.status, previousStatus]);
 
   const cancelRequest = useMutation({
     mutationFn: () => base44.entities.ServiceRequest.update(id, { status: 'cancelado' }),
