@@ -167,12 +167,12 @@ export default function ChecklistsAdmin() {
                   )}
 
                   {/* Observações */}
-                  {cl.notes && (
-                    <div>
-                      <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1">Observações</p>
-                      <p className="text-sm text-muted-foreground bg-muted rounded-xl p-3">{cl.notes}</p>
-                    </div>
-                  )}
+                  <div>
+                    <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1">Observações</p>
+                    <p className="text-sm text-muted-foreground bg-muted rounded-xl p-3">
+                      {cl.notes || <span className="italic opacity-60">Nenhuma observação</span>}
+                    </p>
+                  </div>
                 </div>
               )}
             </CardContent>
