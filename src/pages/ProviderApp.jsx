@@ -129,22 +129,36 @@ export default function ProviderApp() {
   });
 
   const handleDeclineBanner = (job) => {
+    setDeclineTarget({ job, source: 'banner' });
+  };
+
+  const handleDeclineList = (req) => {
+    setDeclineTarget({ job: req, source: 'list' });
+  };
+
+  const handleDeclineConfirm = (reason) => {
+    const { job, source } = declineTarget;
     window.__stopProviderHorn?.();
-    // Remove da fila e avança para o próximo (se houver)
-    setJobQueue(prev => {
-      const next = prev.filter(j => j.id !== job?.id);
-      if (next.length > 0) {
-        // Reinicia buzina para o próximo chamado
-        setTimeout(() => {
-          window.__stopProviderHorn?.();
-          import('../hooks/useNewJobAlert').then(m => {
-            const stop = m.startHornLoop();
-            window.__stopProviderHorn = stop;
-          });
-        }, 500);
-      }
-      return next;
-    });
+    if (source === 'banner') {
+      setJobQueue(prev => {
+        const next = prev.filter(j => j.id !== job?.id);
+        if (next.length > 0) {
+          setTimeout(() => {
+            window.__stopProviderHorn?.();
+            import('../hooks/useNewJobAlert').then(m => {
+              const stop = m.startHornLoop();
+              window.__stopProviderHorn = stop;
+            });
+          }, 500);
+        }
+        return next;
+      });
+    }
+    if (reason) {
+      base44.entities.ServiceRequest.update(job.id, { decline_reason: reason }).catch(() => {});
+    }
+    toast.info(reason ? `Chamado recusado: ${reason}` : "Chamado recusado.");
+    setDeclineTarget(null);
   };
 
   const updateJobStatus = useMutation({
