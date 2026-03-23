@@ -179,7 +179,7 @@ export default function TrackingMap() {
               </>
             )}
 
-            <FitBounds clientPos={clientPos} providerPos={providerPos} />
+            {(clientPos || providerPos) && <FitBounds clientPos={clientPos} providerPos={providerPos} />}
           </MapContainer>
         ) : (
           <div className="flex-1 flex items-center justify-center p-10 text-center">
