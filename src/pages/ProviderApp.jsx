@@ -249,7 +249,7 @@ export default function ProviderApp() {
       )}
 
       {/* Chamados disponíveis */}
-      {provider.is_online && !activeJob && (
+      {provider.is_online && (
         <div className="mb-5">
           <h2 className="font-bold text-foreground mb-3 flex items-center gap-2">
             <BellRing className="w-4 h-4 text-primary" />
