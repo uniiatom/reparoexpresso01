@@ -137,9 +137,9 @@ export default function TrackingMap() {
 
       {/* Mapa */}
       <div className="flex-1" style={{ minHeight: 400 }}>
-        {clientPos ? (
+        {(clientPos || providerPos) ? (
           <MapContainer
-            center={clientPos}
+            center={mapCenter}
             zoom={14}
             style={{ height: '100%', width: '100%', minHeight: 400 }}
           >
