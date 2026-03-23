@@ -139,24 +139,19 @@ export default function ProviderApp() {
   const handleDeclineConfirm = (reason) => {
     const { job, source } = declineTarget;
     window.__stopProviderHorn?.();
+
     if (source === 'banner') {
-      setJobQueue(prev => {
-        const next = prev.filter(j => j.id !== job?.id);
-        if (next.length > 0) {
-          setTimeout(() => {
-            window.__stopProviderHorn?.();
-            import('../hooks/useNewJobAlert').then(m => {
-              const stop = m.startHornLoop();
-              window.__stopProviderHorn = stop;
-            });
-          }, 500);
-        }
-        return next;
-      });
+      setJobQueue(prev => prev.filter(j => j.id !== job?.id));
     }
-    if (reason) {
-      base44.entities.ServiceRequest.update(job.id, { decline_reason: reason }).catch(() => {});
-    }
+
+    // Salva o motivo e reseta o status para aguardando (recusa efetiva)
+    const updateData = { status: 'aguardando', provider_id: null, provider_name: null, provider_phone: null };
+    if (reason) updateData.decline_reason = reason;
+    base44.entities.ServiceRequest.update(job.id, updateData).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['available-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['my-jobs'] });
+    });
+
     toast.info(reason ? `Chamado recusado: ${reason}` : "Chamado recusado.");
     setDeclineTarget(null);
   };
