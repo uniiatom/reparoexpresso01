@@ -40,9 +40,6 @@ export default function RatingModal({ requestId, onClose }) {
         client_id: user?.id,
         client_name: request?.client_name,
         overall_rating: overallRating,
-        punctuality_rating: punctualityRating,
-        quality_rating: qualityRating,
-        behavior_rating: behaviorRating,
         comment: comment,
         service_description: request?.service_type,
       });
