@@ -36,6 +36,21 @@ const SERVICE_LABELS = {
 
 export default function AdminPanel() {
   const queryClient = useQueryClient();
+  const [revealedPasswords, setRevealedPasswords] = useState({});
+  const [cancelConfirm, setCancelConfirm] = useState(null);
+
+  const togglePassword = (reqId) => {
+    setRevealedPasswords(prev => ({ ...prev, [reqId]: !prev[reqId] }));
+  };
+
+  const cancelRequest = useMutation({
+    mutationFn: (id) => base44.entities.ServiceRequest.update(id, { status: 'cancelado' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-requests'] });
+      toast.success("Atendimento cancelado.");
+      setCancelConfirm(null);
+    },
+  });
 
   const { data: requests = [] } = useQuery({
     queryKey: ['all-requests'],
