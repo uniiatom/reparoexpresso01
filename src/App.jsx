@@ -22,6 +22,7 @@ import ProviderEarnings from './pages/ProviderEarnings';
 import ProviderSchedule from './pages/ProviderSchedule';
 import LoyaltyRewards from './pages/LoyaltyRewards';
 import ProviderLocationMap from './pages/ProviderLocationMap';
+import TrackingMap from './pages/TrackingMap';
 import MeusPedidos from './pages/MeusPedidos';
 import PartnerRegister from './pages/PartnerRegister';
 import ProviderDashboard from './pages/ProviderDashboard';

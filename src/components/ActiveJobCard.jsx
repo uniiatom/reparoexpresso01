@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -6,6 +6,7 @@ import {
   Navigation, Wrench, CheckCircle2, ClipboardList, PlusCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { base44 } from "@/api/base44Client";
 import ServiceChat from './ServiceChat';
 
 const SERVICE_LABELS = {
