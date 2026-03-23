@@ -262,6 +262,10 @@ export default function AdminPanel() {
         <TabsContent value="checklists">
           <ChecklistsAdmin />
         </TabsContent>
+
+        <TabsContent value="additional">
+          <AdditionalPointsAdmin />
+        </TabsContent>
       </Tabs>
     </div>
   );
