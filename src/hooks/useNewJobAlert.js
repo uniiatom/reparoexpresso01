@@ -22,8 +22,8 @@ export function playAlertSound() {
       gain.connect(ctx.destination);
 
       gain.gain.setValueAtTime(0, ctx.currentTime + startTime);
-      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + startTime + 0.02);
-      gain.gain.setValueAtTime(0.4, ctx.currentTime + startTime + duration - 0.04);
+      gain.gain.linearRampToValueAtTime(0.6, ctx.currentTime + startTime + 0.05);
+      gain.gain.setValueAtTime(0.6, ctx.currentTime + startTime + duration - 0.1);
       gain.gain.linearRampToValueAtTime(0, ctx.currentTime + startTime + duration);
 
       osc1.start(ctx.currentTime + startTime);
