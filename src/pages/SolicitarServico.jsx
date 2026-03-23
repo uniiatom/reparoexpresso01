@@ -229,21 +229,32 @@ export default function SolicitarServico() {
   }, [location]);
 
   const createRequest = useMutation({
-    mutationFn: (data) => base44.entities.ServiceRequest.create({ ...data, status: 'aguardando' }),
+    mutationFn: async (formData) => {
+      const serviceTypes = Array.isArray(formData.service_type) && formData.service_type.length > 0
+        ? formData.service_type
+        : [formData.service_type];
+
+      const baseData = {
+        ...formData,
+        client_suggested_price: formData.client_suggested_price ? Number(formData.client_suggested_price) : null,
+        status: 'aguardando',
+      };
+
+      if (isTow && form.latitude && form.delivery_latitude) {
+        baseData.tow_distance_km = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude);
+      }
+
+      const results = await Promise.all(
+        serviceTypes.map(type => base44.entities.ServiceRequest.create({ ...baseData, service_type: type }))
+      );
+      return results[0]; // retorna o primeiro para redirecionar
+    },
     onSuccess: (result) => navigate(`/acompanhar/${result.id}`),
   });
 
   const handleFinalConfirm = (formData) => {
-    const dataToSend = { 
-      ...formData,
-      service_type: Array.isArray(formData.service_type) ? formData.service_type[0] : formData.service_type,
-      client_suggested_price: formData.client_suggested_price ? Number(formData.client_suggested_price) : null
-    };
-    if (isTow && form.latitude && form.delivery_latitude) {
-      dataToSend.tow_distance_km = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude);
-    }
     setShowProviderSearch(false);
-    createRequest.mutate(dataToSend);
+    createRequest.mutate(formData);
   };
 
   const canNext = () => {
