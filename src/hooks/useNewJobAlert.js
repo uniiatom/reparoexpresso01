@@ -80,9 +80,9 @@ export function useNewJobAlert({ enabled, onNewJob }) {
       // Detecta novo chamado tanto por criação quanto por atualização para 'aguardando'
       const isNewJob = (event.type === 'create' || event.type === 'update') && event.data?.status === 'aguardando';
       if (isNewJob) {
-        const eventKey = `${event.id}-${event.type}`;
-        if (!seenIds.current.has(eventKey)) {
-          seenIds.current.add(eventKey);
+        // Rastreia apenas pelo ID do serviço para não duplicar o mesmo chamado
+        if (!seenIds.current.has(event.id)) {
+          seenIds.current.add(event.id);
           // Toca buzina (reinicia se já tocando)
           stopHornRef.current?.();
           stopHornRef.current = startHornLoop();
