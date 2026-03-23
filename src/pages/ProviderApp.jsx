@@ -17,6 +17,7 @@ import { useNewJobAlert } from '../hooks/useNewJobAlert';
 import ServiceChecklist from '../components/ServiceChecklist';
 import AdditionalPointModal from '../components/AdditionalPointModal';
 import ActiveJobCard from '../components/ActiveJobCard';
+import DeclineReasonModal from '../components/DeclineReasonModal';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
