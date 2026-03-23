@@ -77,10 +77,13 @@ export function useNewJobAlert({ enabled, onNewJob }) {
   useEffect(() => {
     const unsubscribe = base44.entities.ServiceRequest.subscribe((event) => {
       if (!enabledRef.current) return;
-      if (event.type === 'create' && event.data?.status === 'aguardando') {
-        if (!seenIds.current.has(event.id)) {
-          seenIds.current.add(event.id);
-          // Para qualquer buzina anterior antes de iniciar nova
+      // Detecta novo chamado tanto por criação quanto por atualização para 'aguardando'
+      const isNewJob = (event.type === 'create' || event.type === 'update') && event.data?.status === 'aguardando';
+      if (isNewJob) {
+        const eventKey = `${event.id}-${event.type}`;
+        if (!seenIds.current.has(eventKey)) {
+          seenIds.current.add(eventKey);
+          // Toca buzina (reinicia se já tocando)
           stopHornRef.current?.();
           stopHornRef.current = startHornLoop();
           onNewJobRef.current?.(event.data);
