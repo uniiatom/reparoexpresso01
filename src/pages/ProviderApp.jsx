@@ -212,7 +212,7 @@ export default function ProviderApp() {
         />
       )}
 
-      {/* Chamados disponíveis */}
+      {/* Chamados disponíveis - sempre mostra quando online */}
       {provider.is_online && (
         <div className="mb-5">
           <h2 className="font-bold text-foreground mb-3 flex items-center gap-2">
