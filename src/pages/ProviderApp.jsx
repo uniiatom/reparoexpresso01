@@ -103,8 +103,23 @@ export default function ProviderApp() {
     acceptJob.mutate(job.id);
   };
 
-  const handleDeclineBanner = () => {
+  const declineJob = useMutation({
+    mutationFn: (reqId) => base44.entities.ServiceRequest.update(reqId, {
+      status: 'aguardando',
+      provider_id: null,
+      provider_name: null,
+      provider_phone: null,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['available-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['my-jobs'] });
+      toast.info("Chamado recusado.");
+    },
+  });
+
+  const handleDeclineBanner = (job) => {
     setIncomingJob(null);
+    // Não precisa fazer nada no DB se o job ainda está como 'aguardando'
   };
 
   const updateJobStatus = useMutation({
