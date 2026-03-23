@@ -29,6 +29,9 @@ export default function ServiceChecklist({ job, onClose }) {
   const [location, setLocation] = useState(null);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [notes, setNotes] = useState('');
+  const [serviceDescription, setServiceDescription] = useState('');
+  const [preAuthSignature, setPreAuthSignature] = useState(null);
+  const [finalSignature, setFinalSignature] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
