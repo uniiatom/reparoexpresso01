@@ -10,6 +10,7 @@ import ServicePricing from '../components/admin/ServicePricing';
 import ProviderRepasse from '../components/admin/ProviderRepasse';
 import Analytics from '../components/admin/Analytics';
 import ScheduledServicesOptimizer from '../components/admin/ScheduledServicesOptimizer';
+import ChecklistsAdmin from '../components/admin/ChecklistsAdmin';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
