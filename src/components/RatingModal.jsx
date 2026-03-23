@@ -17,11 +17,7 @@ const RATING_LABELS = {
 
 export default function RatingModal({ requestId, onClose }) {
   const [overallRating, setOverallRating] = useState(5);
-  const [punctualityRating, setPunctualityRating] = useState(5);
-  const [qualityRating, setQualityRating] = useState(5);
-  const [behaviorRating, setBehaviorRating] = useState(5);
   const [comment, setComment] = useState('');
-  const [hoveredCategory, setHoveredCategory] = useState(null);
   const [done, setDone] = useState(false);
   const queryClient = useQueryClient();
 
