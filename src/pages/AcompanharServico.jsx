@@ -66,13 +66,15 @@ export default function AcompanharServico() {
 
   // Track status changes and play sound when provider accepts
   useEffect(() => {
-    if (request?.status && request.status !== previousStatus) {
+    if (request?.status && request.status !== previousStatusRef.current) {
+      const prev = previousStatusRef.current;
+      previousStatusRef.current = request.status;
       setPreviousStatus(request.status);
-      if (request.status === 'aceito' && previousStatus === 'aguardando') {
+      if (request.status === 'aceito' && (prev === 'aguardando' || prev === null)) {
         playNotificationSound();
       }
     }
-  }, [request?.status, previousStatus]);
+  }, [request?.status]);
 
   const cancelRequest = useMutation({
     mutationFn: () => base44.entities.ServiceRequest.update(id, { status: 'cancelado' }),
