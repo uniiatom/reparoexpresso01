@@ -201,6 +201,15 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           )}
         </div>
         <p className="text-sm text-muted-foreground">{job.description}</p>
+        {job.problem_photos?.length > 0 && (
+          <div className="mt-2 flex gap-2 flex-wrap">
+            {job.problem_photos.map((url, i) => (
+              <a key={i} href={url} target="_blank" rel="noreferrer">
+                <img src={url} alt={`Foto ${i + 1}`} className="w-20 h-20 object-cover rounded-xl border border-border" />
+              </a>
+            ))}
+          </div>
+        )}
         <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
           <MapPin className="w-3.5 h-3.5" /> {job.address}{job.city ? `, ${job.city}` : ''}
         </p>
