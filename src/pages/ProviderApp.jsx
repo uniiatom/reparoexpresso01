@@ -257,7 +257,12 @@ export default function ProviderApp() {
 
           <div className="flex gap-2">
             {activeJob.status === 'aceito' && (
-              <Button size="sm" className="flex-1 rounded-xl bg-primary text-primary-foreground" onClick={() => updateJobStatus.mutate({ id: activeJob.id, status: 'em_andamento' })}>
+              <Button
+                size="sm"
+                className="flex-1 rounded-xl bg-primary text-primary-foreground"
+                disabled={activeJob.validation_password && validationInput !== activeJob.validation_password}
+                onClick={() => { updateJobStatus.mutate({ id: activeJob.id, status: 'em_andamento' }); setValidationInput(''); }}
+              >
                 Iniciar serviço
               </Button>
             )}
