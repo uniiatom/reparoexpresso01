@@ -275,13 +275,22 @@ export default function ProviderApp() {
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5" /> {req.address}{req.city ? `, ${req.city}` : ''}
                   </p>
-                  <Button
-                    className="w-full mt-3 rounded-xl bg-primary text-primary-foreground font-semibold"
-                    onClick={() => acceptJob.mutate(req.id)}
-                    disabled={acceptJob.isPending}
-                  >
-                    Aceitar chamado
-                  </Button>
+                  <div className="flex gap-2 mt-3">
+                    <Button
+                      variant="outline"
+                      className="flex-1 rounded-xl border-destructive text-destructive hover:bg-destructive/5"
+                      onClick={() => toast.info("Chamado ignorado.")}
+                    >
+                      <X className="w-4 h-4 mr-1" /> Recusar
+                    </Button>
+                    <Button
+                      className="flex-1 rounded-xl bg-primary text-primary-foreground font-semibold"
+                      onClick={() => acceptJob.mutate(req.id)}
+                      disabled={acceptJob.isPending}
+                    >
+                      <Check className="w-4 h-4 mr-1" /> Aceitar
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
