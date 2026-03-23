@@ -77,6 +77,7 @@ export default function ServiceChecklist({ job, onClose }) {
 
   const allChecked = DEFAULT_ITEMS.every(item => checkedItems[item]);
   const allAuthorizationsChecked = AUTHORIZATION_ITEMS.every(item => authorizationItems[item]);
+  const canSave = allChecked && allAuthorizationsChecked && preAuthSignature && finalSignature && serviceDescription.trim().length > 5;
 
   const handleSave = async () => {
     setSaving(true);
