@@ -69,13 +69,19 @@ export default function TrackingMap() {
   });
 
   const hasProvider = request?.provider_latitude && request?.provider_longitude;
-  const hasClient = request?.latitude && request?.longitude;
+  // Usa latitude/longitude fixas do endereço OU as coordenadas em tempo real do cliente
+  const hasClient = (request?.latitude && request?.longitude) || (request?.client_latitude && request?.client_longitude);
 
-  const clientPos = hasClient ? [request.latitude, request.longitude] : null;
+  const clientPos = hasClient
+    ? [request.client_latitude || request.latitude, request.client_longitude || request.longitude]
+    : null;
   const providerPos = hasProvider ? [request.provider_latitude, request.provider_longitude] : null;
 
+  // Posição central do mapa: prefere o prestador, senão usa cliente, senão São Paulo
+  const mapCenter = providerPos || clientPos || [-23.5505, -46.6333];
+
   const distance = (hasClient && hasProvider)
-    ? calculateDistance(request.latitude, request.longitude, request.provider_latitude, request.provider_longitude)
+    ? calculateDistance(clientPos[0], clientPos[1], request.provider_latitude, request.provider_longitude)
     : null;
   const eta = distance != null ? estimateETA(distance) : null;
 
