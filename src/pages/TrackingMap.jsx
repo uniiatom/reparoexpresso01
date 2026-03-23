@@ -154,7 +154,7 @@ export default function TrackingMap() {
                 <p className="font-bold text-sm">Sua localização</p>
                 <p className="text-xs text-muted-foreground">{request.address}</p>
               </Popup>
-            </Marker>
+            </Marker>}
 
             {/* Prestador */}
             {providerPos && (
