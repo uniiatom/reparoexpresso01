@@ -60,7 +60,10 @@ export default function TrackingMap() {
 
   const { data: request } = useQuery({
     queryKey: ['tracking-request', requestId],
-    queryFn: () => base44.entities.ServiceRequest.get('ServiceRequest', requestId),
+    queryFn: async () => {
+      const list = await base44.entities.ServiceRequest.filter({ id: requestId });
+      return list[0] || null;
+    },
     refetchInterval: 4000,
     enabled: !!requestId,
   });
