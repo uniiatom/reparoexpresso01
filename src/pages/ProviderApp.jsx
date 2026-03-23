@@ -108,7 +108,7 @@ export default function ProviderApp() {
 
   const handleAcceptBanner = (job) => {
     window.__stopProviderHorn?.();
-    setIncomingJob(null);
+    setJobQueue(prev => prev.filter(j => j.id !== job.id));
     acceptJob.mutate(job.id);
   };
 
