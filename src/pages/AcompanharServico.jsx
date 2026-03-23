@@ -35,7 +35,7 @@ export default function AcompanharServico() {
   const [showPayment, setShowPayment] = useState(false);
   const [showPixPayment, setShowPixPayment] = useState(false);
   const [previousStatus, setPreviousStatus] = useState(null);
-  const previousStatusRef = React.useRef(null);
+  const previousStatusRef = useRef(null);
 
   const { data: request } = useQuery({
     queryKey: ['service-request', id],
