@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, MapPin, CheckCircle2, Loader2, X, ClipboardList, Plus } from "lucide-react";
+import { MapPin, CheckCircle2, Loader2, X, ClipboardList, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import SignaturePad from './SignaturePad';
 
 const DEFAULT_ITEMS = [
   "Apresentei minha identificação ao cliente",
