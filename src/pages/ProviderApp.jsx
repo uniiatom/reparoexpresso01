@@ -128,7 +128,21 @@ export default function ProviderApp() {
 
   const handleDeclineBanner = (job) => {
     window.__stopProviderHorn?.();
-    setIncomingJob(null);
+    // Remove da fila e avança para o próximo (se houver)
+    setJobQueue(prev => {
+      const next = prev.filter(j => j.id !== job?.id);
+      if (next.length > 0) {
+        // Reinicia buzina para o próximo chamado
+        setTimeout(() => {
+          window.__stopProviderHorn?.();
+          import('../hooks/useNewJobAlert').then(m => {
+            const stop = m.startHornLoop();
+            window.__stopProviderHorn = stop;
+          });
+        }, 500);
+      }
+      return next;
+    });
   };
 
   const updateJobStatus = useMutation({
