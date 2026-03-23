@@ -29,10 +29,13 @@ const URGENCY_LABELS = { agora: "🔥 Urgente", hoje: "⏰ Hoje", esta_semana: "
 export default function ProviderApp() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const [incomingJob, setIncomingJob] = useState(null);
+  const [jobQueue, setJobQueue] = useState([]); // fila de jobs para o banner
   const [showChecklist, setShowChecklist] = useState(false);
   const [showAdditionalPoint, setShowAdditionalPoint] = useState(false);
   const [activeTab, setActiveTab] = useState('chamados');
+
+  // Job atual no banner = primeiro da fila
+  const incomingJob = jobQueue[0] || null;
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
