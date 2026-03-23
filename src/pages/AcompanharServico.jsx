@@ -166,7 +166,7 @@ export default function AcompanharServico() {
                     isCurrent ? "bg-primary/20 text-primary ring-2 ring-primary animate-pulse" :
                     "bg-muted text-muted-foreground"
                   )}>
-                    {isCompleted ? "✓" : i + 1}
+                    {isCompleted ? "✓" : stepIdx + 1}
                   </div>
                   <span className={cn("text-sm font-medium", isCurrent ? "text-foreground" : isCompleted ? "text-foreground" : "text-muted-foreground")}>
                     {labels[step]}
