@@ -175,8 +175,28 @@ export default function AcompanharServico() {
         </div>
       )}
 
-      {/* Map Link */}
-      {['aguardando', 'aceito', 'a_caminho'].includes(request?.status) && (
+      {/* Prestador a caminho - destaque */}
+      {request.status === 'a_caminho' && (
+        <div className="bg-orange-50 border border-orange-200 rounded-3xl p-4 mb-5 flex items-center gap-3">
+          <div className="w-10 h-10 bg-orange-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <span className="text-xl">🚗</span>
+          </div>
+          <div className="flex-1">
+            <p className="font-bold text-orange-800 text-sm">Prestador a caminho!</p>
+            <p className="text-xs text-orange-600">Acompanhe a localização em tempo real</p>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => navigate(`/rastreamento/${id}`)}
+            className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold flex-shrink-0"
+          >
+            📍 Ver
+          </Button>
+        </div>
+      )}
+
+      {/* Map Link para estados iniciais */}
+      {['aguardando', 'aceito'].includes(request?.status) && (
         <Button
           onClick={() => navigate(`/mapa/${id}`)}
           variant="outline"
