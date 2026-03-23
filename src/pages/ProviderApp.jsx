@@ -221,17 +221,31 @@ export default function ProviderApp() {
               <Phone className="w-3.5 h-3.5" /> {activeJob.client_name} · {activeJob.client_phone}
             </p>
             {activeJob.security_password && (
-              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-3 grid grid-cols-2 gap-2">
-                <div className="text-center">
-                  <p className="text-xs text-amber-700 font-semibold">Sua senha</p>
-                  <p className="text-xl font-mono font-black text-amber-900 tracking-widest">{activeJob.security_password}</p>
-                  <p className="text-xs text-amber-600">Mostre ao cliente</p>
+              <div className="mt-3 space-y-3">
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-center">
+                  <p className="text-xs text-amber-700 font-semibold">Sua senha de identificação</p>
+                  <p className="text-2xl font-mono font-black text-amber-900 tracking-widest mt-1">{activeJob.security_password}</p>
+                  <p className="text-xs text-amber-600 mt-1">Mostre esta senha ao cliente antes de entrar</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-xs text-amber-700 font-semibold">Senha do cliente</p>
-                  <p className="text-xl font-mono font-black text-amber-900 tracking-widest">{activeJob.validation_password}</p>
-                  <p className="text-xs text-amber-600">Cliente informa a você</p>
-                </div>
+                {activeJob.status === 'aceito' && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3">
+                    <p className="text-xs text-blue-700 font-semibold mb-2 flex items-center gap-1">
+                      <KeyRound className="w-3.5 h-3.5" /> Digite a senha informada pelo cliente
+                    </p>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="000000"
+                      value={validationInput}
+                      onChange={e => setValidationInput(e.target.value.replace(/\D/g, ''))}
+                      className="rounded-xl text-center font-mono text-xl tracking-widest h-12"
+                    />
+                    {validationInput.length === 6 && validationInput !== activeJob.validation_password && (
+                      <p className="text-xs text-red-600 mt-1 text-center">Senha incorreta. Peça novamente ao cliente.</p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
