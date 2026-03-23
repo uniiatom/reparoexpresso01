@@ -1,25 +1,40 @@
 import { useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 
-// Gera som de alerta usando Web Audio API (3 bipes ascendentes)
+// Gera som de buzina de carro usando Web Audio API
 export function playAlertSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const playBeep = (freq, start, dur) => {
-      const osc = ctx.createOscillator();
+
+    const playHorn = (startTime, duration) => {
+      // Oscilador principal — onda sawtooth grave simula buzina
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain);
+
+      osc1.type = 'sawtooth';
+      osc1.frequency.value = 220; // nota base da buzina
+      osc2.type = 'sawtooth';
+      osc2.frequency.value = 277; // nota harmônica (cria "bitonalidade" de buzina)
+
+      osc1.connect(gain);
+      osc2.connect(gain);
       gain.connect(ctx.destination);
-      osc.frequency.value = freq;
-      osc.type = 'sine';
-      gain.gain.setValueAtTime(0.5, ctx.currentTime + start);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
-      osc.start(ctx.currentTime + start);
-      osc.stop(ctx.currentTime + start + dur);
+
+      gain.gain.setValueAtTime(0, ctx.currentTime + startTime);
+      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + startTime + 0.02);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime + startTime + duration - 0.04);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + startTime + duration);
+
+      osc1.start(ctx.currentTime + startTime);
+      osc1.stop(ctx.currentTime + startTime + duration);
+      osc2.start(ctx.currentTime + startTime);
+      osc2.stop(ctx.currentTime + startTime + duration);
     };
-    playBeep(660, 0.0, 0.18);
-    playBeep(880, 0.22, 0.18);
-    playBeep(1100, 0.44, 0.30);
+
+    // Dois "biiip" de buzina: curto + longo
+    playHorn(0.0, 0.25);
+    playHorn(0.35, 0.55);
   } catch (e) {
     console.warn('Web Audio não disponível:', e);
   }
