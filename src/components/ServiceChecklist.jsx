@@ -255,20 +255,6 @@ export default function ServiceChecklist({ job, onClose }) {
             <p className="text-xs text-muted-foreground">Fotografe o antes, durante e depois do serviço (máx. 8)</p>
           </div>
 
-          {/* Descrição do serviço realizado - pelo prestador */}
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-foreground">Descrição do serviço realizado *</p>
-            <Textarea
-              value={serviceDescription}
-              onChange={e => setServiceDescription(e.target.value)}
-              placeholder="Descreva detalhadamente o que foi executado, materiais utilizados, peças trocadas..."
-              className="rounded-2xl min-h-[100px]"
-            />
-            {serviceDescription.trim().length < 6 && serviceDescription.length > 0 && (
-              <p className="text-xs text-orange-500">Descreva com mais detalhes o que foi realizado</p>
-            )}
-          </div>
-
           {/* Assinatura final do cliente */}
           <div className="space-y-3 bg-green-50 rounded-2xl p-4 border border-green-200">
             <p className="text-sm font-bold text-green-900">✅ Assinatura final do cliente</p>
