@@ -326,7 +326,7 @@ export default function SolicitarServico() {
       {step === 1 && (
         <div>
           <h2 className="text-2xl font-bold text-foreground mb-1">Qual serviço?</h2>
-          <p className="text-muted-foreground mb-4">Selecione um tipo de serviço</p>
+          <p className="text-muted-foreground mb-4">Selecione um ou mais serviços</p>
           <div className="flex gap-2 mb-5">
             <button onClick={() => setServiceTab('casa')}
               className={cn("flex-1 py-2 rounded-xl text-sm font-semibold transition-all",
