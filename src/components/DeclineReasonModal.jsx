@@ -70,7 +70,7 @@ export default function DeclineReasonModal({ onConfirm, onCancel }) {
           )}
         </div>
 
-        <div className="px-5 pb-5 flex gap-2">
+        <div className="px-5 pb-5 flex gap-2 flex-shrink-0">
           <Button variant="outline" className="flex-1 rounded-2xl" onClick={onCancel}>
             Voltar
           </Button>
