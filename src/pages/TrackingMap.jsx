@@ -58,15 +58,22 @@ export default function TrackingMap() {
   const { requestId } = useParams();
   const navigate = useNavigate();
 
-  const { data: request } = useQuery({
-    queryKey: ['tracking-request', requestId],
-    queryFn: async () => {
-      const list = await base44.entities.ServiceRequest.list();
-      return list.find(r => r.id === requestId) || null;
-    },
-    refetchInterval: 4000,
-    enabled: !!requestId,
-  });
+  const [request, setRequest] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!requestId) return;
+    // Carrega inicial
+    base44.entities.ServiceRequest.filter({ id: requestId }).then(list => {
+      if (list[0]) setRequest(list[0]);
+    });
+    // Atualização em tempo real via subscribe
+    const unsubscribe = base44.entities.ServiceRequest.subscribe((event) => {
+      if (event.id === requestId && event.data) {
+        setRequest(event.data);
+      }
+    });
+    return unsubscribe;
+  }, [requestId]);
 
   const hasProvider = request?.provider_latitude && request?.provider_longitude;
   // Prioriza coordenadas em tempo real do cliente, depois usa as coordenadas fixas do endereço
