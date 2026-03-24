@@ -70,11 +70,11 @@ export default function RatingModal({ requestId, onClose }) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 60 }}
         transition={{ type: "spring", damping: 25, stiffness: 400 }}
-        className="bg-card rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
+        className="bg-card rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
       >
         <AnimatePresence mode="wait">
           {!done ? (
-            <motion.div key="form" exit={{ opacity: 0 }} className="p-6">
+            <motion.div key="form" exit={{ opacity: 0 }} className="p-6 overflow-y-auto flex-1">
               {/* Header */}
               <div className="text-center mb-6">
                 {request?.provider_name && (
