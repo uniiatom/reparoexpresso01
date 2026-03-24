@@ -399,9 +399,9 @@ export default function ProviderApp() {
         <AdditionalPointModal job={activeJob} onClose={() => { setShowAdditionalPoint(false); queryClient.invalidateQueries({ queryKey: ['my-jobs'] }); }} />
       )}
 
-      {/* Banner de novo chamado com alerta sonoro */}
+      {/* Banner de novo chamado com alerta sonoro - só aparece quando não há job ativo */}
       <NewJobBanner
-        job={incomingJob}
+        job={shouldShowBanner ? incomingJob : null}
         queueCount={jobQueue.length}
         onAccept={handleAcceptBanner}
         onDecline={() => handleDeclineBanner(incomingJob)}
