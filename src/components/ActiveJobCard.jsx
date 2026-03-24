@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   MapPin, Phone, BellRing, KeyRound,
-  Navigation, Wrench, CheckCircle2, ClipboardList, PlusCircle
+  Navigation, Wrench, CheckCircle2, ClipboardList, PlusCircle, ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
