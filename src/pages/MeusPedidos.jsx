@@ -53,7 +53,7 @@ export default function MeusPedidos() {
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['meus-pedidos', user?.email],
-    queryFn: () => user?.email ? base44.entities.ServiceRequest.filter({ client_name: user.full_name || user.email }, '-created_date', 100) : [],
+    queryFn: () => user?.email ? base44.entities.ServiceRequest.filter({ created_by: user.email }, '-created_date', 100) : [],
     enabled: !!user?.email,
   });
 
