@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, CheckCircle2, Loader2, X, ClipboardList, Plus } from "lucide-react";
+import { MapPin, CheckCircle2, Loader2, X, ClipboardList, Plus, Video, Play, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SignaturePad from './SignaturePad';
 
@@ -26,6 +26,8 @@ export default function ServiceChecklist({ job, onClose }) {
   const [authorizationItems, setAuthorizationItems] = useState({});
   const [photos, setPhotos] = useState([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [videos, setVideos] = useState([]);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [location, setLocation] = useState(null);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [notes, setNotes] = useState('');
@@ -58,6 +60,21 @@ export default function ServiceChecklist({ job, onClose }) {
     setPhotos(prev => prev.filter((_, i) => i !== idx));
   };
 
+  const handleVideoUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploadingVideo(true);
+    const urls = await Promise.all(
+      files.map(f => base44.integrations.Core.UploadFile({ file: f }).then(r => r.file_url))
+    );
+    setVideos(prev => [...prev, ...urls]);
+    setUploadingVideo(false);
+  };
+
+  const removeVideo = (idx) => {
+    setVideos(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const getLocation = () => {
     if (!navigator.geolocation) return;
     setGettingLocation(true);
@@ -85,6 +102,7 @@ export default function ServiceChecklist({ job, onClose }) {
       items: DEFAULT_ITEMS.map(item => ({ label: item, checked: !!checkedItems[item] })),
       authorizations: AUTHORIZATION_ITEMS.map(item => ({ label: item, checked: !!authorizationItems[item] })),
       photos,
+      videos,
       notes,
       service_description: serviceDescription,
       pre_auth_signature: preAuthSignature,
@@ -253,6 +271,39 @@ export default function ServiceChecklist({ job, onClose }) {
               )}
             </div>
             <p className="text-xs text-muted-foreground">Fotografe o antes, durante e depois do serviço (máx. 8)</p>
+          </div>
+
+          {/* Vídeos */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Vídeos do serviço (opcional)</p>
+            <div className="flex flex-wrap gap-2">
+              {videos.map((url, idx) => (
+                <div key={idx} className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-border bg-black">
+                  <video src={url} className="w-full h-full object-cover opacity-80" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Play className="w-7 h-7 text-white drop-shadow" />
+                  </div>
+                  <button
+                    onClick={() => removeVideo(idx)}
+                    className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center"
+                  >
+                    <X className="w-3.5 h-3.5 text-white" />
+                  </button>
+                </div>
+              ))}
+              {videos.length < 3 && (
+                <label className={cn(
+                  "w-24 h-24 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors",
+                  uploadingVideo && "opacity-50 pointer-events-none"
+                )}>
+                  {uploadingVideo
+                    ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+                    : <><Video className="w-6 h-6 text-muted-foreground" /><span className="text-xs text-muted-foreground mt-1">Vídeo</span></>}
+                  <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} capture="environment" />
+                </label>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">Grave ou escolha vídeos do serviço (máx. 3, direto da câmera)</p>
           </div>
 
           {/* Assinatura final do cliente */}
