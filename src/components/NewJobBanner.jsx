@@ -22,7 +22,7 @@ const URGENCY_COLORS = {
  * Banner que aparece na parte inferior da tela quando chega um novo chamado.
  * Auto-dismiss após 30s.
  */
-export default function NewJobBanner({ job, onAccept, onDecline }) {
+export default function NewJobBanner({ job, queueCount = 1, onAccept, onDecline }) {
 
   return (
     <AnimatePresence>
