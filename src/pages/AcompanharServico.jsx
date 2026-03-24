@@ -187,25 +187,29 @@ export default function AcompanharServico() {
       {request.status !== 'cancelado' && (
         <div className="bg-card rounded-3xl p-5 border border-border mb-5">
           <div className="space-y-4">
-            {["aguardando", "aceito", "a_caminho", "em_andamento", "concluido"].map((step, i) => {
+            {["aguardando", "aceito", "a_caminho", "em_andamento", "concluido"].map((step) => {
               const statusOrder = ["aguardando", "aceito", "a_caminho", "em_andamento", "concluido"];
               const currentIdx = statusOrder.indexOf(request.status);
               const stepIdx = statusOrder.indexOf(step);
-              const isCompleted = currentIdx > stepIdx;
+              const isCompleted = currentIdx >= stepIdx;
               const isCurrent = currentIdx === stepIdx;
-              const labels = { aguardando: "Aguardando prestador", aceito: "Prestador confirmado", a_caminho: "🚗 A caminho", em_andamento: "Em execução", concluido: "Concluído" };
+              const labels = { aguardando: "Aguardando prestador", aceito: "Prestador confirmado", a_caminho: "Prestador a caminho", em_andamento: "Em execução", concluido: "Concluído" };
               return (
                 <div key={step} className="flex items-center gap-3">
                   <div className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold transition-all",
-                    isCompleted ? "bg-primary text-primary-foreground" :
-                    isCurrent ? "bg-primary/20 text-primary ring-2 ring-primary animate-pulse" :
-                    "bg-muted text-muted-foreground"
+                    isCompleted ? "bg-green-500 text-white" : "bg-muted text-muted-foreground"
                   )}>
-                    {isCompleted ? "✓" : stepIdx + 1}
+                    {isCompleted ? "✓" : <span className="text-xs">{stepIdx + 1}</span>}
                   </div>
-                  <span className={cn("text-sm font-medium", isCurrent ? "text-foreground" : isCompleted ? "text-foreground" : "text-muted-foreground")}>
+                  <span className={cn(
+                    "text-sm font-medium",
+                    isCompleted ? "text-green-700 font-semibold" : "text-muted-foreground"
+                  )}>
                     {labels[step]}
+                    {isCurrent && !['concluido'].includes(step) && (
+                      <span className="ml-2 inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    )}
                   </span>
                 </div>
               );
