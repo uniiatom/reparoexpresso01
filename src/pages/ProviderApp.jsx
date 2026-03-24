@@ -400,6 +400,7 @@ export default function ProviderApp() {
       {/* Banner de novo chamado com alerta sonoro */}
       <NewJobBanner
         job={incomingJob}
+        queueCount={jobQueue.length}
         onAccept={handleAcceptBanner}
         onDecline={() => handleDeclineBanner(incomingJob)}
       />
