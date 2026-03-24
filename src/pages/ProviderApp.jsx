@@ -180,6 +180,8 @@ export default function ProviderApp() {
   }
 
   const activeJob = myJobs.find(j => ['aceito', 'a_caminho', 'em_andamento'].includes(j.status));
+  // Só mostra o banner se não houver um job ativo em andamento
+  const shouldShowBanner = !activeJob;
   const completedJobs = myJobs.filter(j => j.status === 'concluido');
 
   return (
