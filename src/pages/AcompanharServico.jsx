@@ -36,6 +36,28 @@ export default function AcompanharServico() {
   const [showPixPayment, setShowPixPayment] = useState(false);
   const [previousStatus, setPreviousStatus] = useState(null);
   const previousStatusRef = useRef(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => {});
+  }, []);
+
+  const { data: allRequests = [] } = useQuery({
+    queryKey: ['all-requests', user?.email],
+    queryFn: () => base44.entities.ServiceRequest.filter({ created_by: user.email }, '-created_date', 50),
+    enabled: !!user?.email,
+  });
+
+  const handleRatingClose = () => {
+    setShowRating(false);
+    // Busca próximo serviço ativo (diferente do atual)
+    const next = allRequests.find(r => r.id !== id && !['concluido', 'cancelado'].includes(r.status));
+    if (next) {
+      navigate(`/acompanhar/${next.id}`);
+    } else {
+      navigate('/');
+    }
+  };
 
   const { data: request } = useQuery({
     queryKey: ['service-request', id],
@@ -410,7 +432,7 @@ export default function AcompanharServico() {
         requestId={id}
         active={['aguardando','aceito','a_caminho','em_andamento'].includes(request?.status)}
       />
-      {showRating && <RatingModal requestId={id} onClose={() => setShowRating(false)} />}
+      {showRating && <RatingModal requestId={id} onClose={handleRatingClose} />}
       {request.final_price && (
         <>
           <PaymentModal
