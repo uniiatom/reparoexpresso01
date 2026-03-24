@@ -43,7 +43,11 @@ export default function AcompanharServico() {
       const list = await base44.entities.ServiceRequest.filter({ id });
       return list[0];
     },
-    refetchInterval: 5000,
+    // Polling mais rápido enquanto as senhas ainda não foram geradas, depois relaxa
+    refetchInterval: (data) => {
+      if (!data?.security_password) return 2000;
+      return 5000;
+    },
     enabled: !!id,
   });
 
@@ -130,6 +134,15 @@ export default function AcompanharServico() {
       </div>
 
       {/* Senhas de segurança */}
+      {!request.security_password && request.status === 'aguardando' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 mb-5 flex items-center gap-3">
+          <div className="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin flex-shrink-0" style={{borderWidth: '3px'}} />
+          <div>
+            <p className="text-xs font-bold text-amber-800">🔐 Gerando senhas de segurança...</p>
+            <p className="text-xs text-amber-600 mt-0.5">Aguarde alguns instantes</p>
+          </div>
+        </div>
+      )}
       {request.security_password && (
         <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 mb-5 space-y-3">
           <p className="text-xs font-bold text-amber-800 uppercase tracking-wide">🔐 Senhas de segurança</p>
