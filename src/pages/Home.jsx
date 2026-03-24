@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck, Smartphone, Waves, Layers, HardHat, Thermometer, ChefHat, Truck, ShowerHead, Pipette, Gift, Heart, Store, Minimize2, Maximize2, Sparkles, DoorOpen, Phone, Gauge, ShieldAlert, Video } from "lucide-react";
+import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck, Smartphone, Waves, Layers, HardHat, Thermometer, ChefHat, Truck, ShowerHead, Pipette, Gift, Heart, Store, Minimize2, Maximize2, Sparkles, DoorOpen, Phone, Gauge, ShieldAlert, Video, LogIn, UserPlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReferralCard from "@/components/ReferralCard";
 import FavoritesList from "@/components/FavoritesList";
@@ -607,6 +607,27 @@ export default function Home() {
                         </>
                       )}
                     </AnimatePresence>
+
+                    {/* Botões de acesso para cliente */}
+                    {!user && (
+                      <div className="mt-6 pt-5 border-t border-border">
+                        <p className="text-xs text-muted-foreground text-center mb-3">Para solicitar serviços, acesse sua conta</p>
+                        <div className="flex gap-3">
+                          <Button
+                            variant="outline"
+                            className="flex-1 h-11 rounded-2xl font-semibold text-sm"
+                            onClick={() => base44.auth.redirectToLogin(window.location.pathname)}
+                          >
+                            <LogIn className="w-4 h-4 mr-1" /> Entrar
+                          </Button>
+                          <Link to="/cadastro" className="flex-1">
+                            <Button className="w-full h-11 rounded-2xl font-bold text-sm">
+                              <UserPlus className="w-4 h-4 mr-1" /> Cadastrar
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    )}
 
                     {serviceTab === 'veiculo' && (
                       <div>
