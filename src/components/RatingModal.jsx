@@ -127,13 +127,33 @@ export default function RatingModal({ requestId, onClose }) {
                 </motion.p>
               </div>
 
+              {/* Critérios específicos */}
+              <div className="space-y-3 mb-4 pb-4 border-b border-border">
+                {[
+                  { key: 'punctuality', label: '⏰ Pontualidade', rating: punctualityRating, setRating: setPunctualityRating },
+                  { key: 'quality', label: '✨ Qualidade do Trabalho', rating: qualityRating, setRating: setQualityRating },
+                  { key: 'behavior', label: '😊 Comportamento', rating: behaviorRating, setRating: setBehaviorRating },
+                ].map(criterion => (
+                  <div key={criterion.key} className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground font-semibold">{criterion.label}</p>
+                    <div className="flex gap-1 items-center">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <button key={s} onClick={() => criterion.setRating(s)} className="focus:outline-none">
+                          <Star className={cn("w-5 h-5 transition-all", s <= criterion.rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground/20")} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               {/* Comentário */}
               <div className="mb-4">
                 <Textarea
                   placeholder="Deixe um comentário (opcional)..."
                   value={comment}
                   onChange={e => setComment(e.target.value)}
-                  className="rounded-2xl min-h-[70px] resize-none"
+                  className="rounded-2xl min-h-[60px] resize-none"
                   maxLength={300}
                 />
               </div>
