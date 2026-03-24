@@ -47,7 +47,9 @@ export default function NewJobBanner({ job, queueCount = 1, onAccept, onDecline 
                   </div>
                   <div>
                     <p className="text-xs font-bold text-primary uppercase tracking-wide">Novo chamado!</p>
-                    <p className="text-xs text-muted-foreground">Aguardando sua resposta...</p>
+                    <p className="text-xs text-muted-foreground">
+                      {queueCount > 1 ? `${queueCount} chamados na fila` : 'Aguardando sua resposta...'}
+                    </p>
                   </div>
                 </div>
                 <div className={`px-2 py-1 rounded-lg text-white text-xs font-bold ${URGENCY_COLORS[job.urgency] || 'bg-primary'}`}>
