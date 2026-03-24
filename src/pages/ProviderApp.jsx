@@ -184,7 +184,7 @@ export default function ProviderApp() {
   const shouldShowBanner = !activeJob;
 
   // Para a buzina automaticamente se o prestador já tem um job ativo
-  React.useEffect(() => {
+  useEffect(() => {
     if (activeJob) {
       window.__stopProviderHorn?.();
     }
