@@ -23,8 +23,8 @@ export default function DeclineReasonModal({ onConfirm, onCancel }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4">
-      <div className="bg-background w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+      <div className="bg-background w-full max-w-sm rounded-3xl shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-2">
             <XCircle className="w-5 h-5 text-destructive" />
             <h2 className="font-bold text-foreground">Motivo da recusa</h2>
@@ -34,7 +34,7 @@ export default function DeclineReasonModal({ onConfirm, onCancel }) {
           </button>
         </div>
 
-        <div className="px-5 py-4 space-y-2">
+        <div className="px-5 py-4 space-y-2 overflow-y-auto flex-1">
           <p className="text-sm text-muted-foreground mb-3">Selecione o motivo (opcional)</p>
           {REASONS.map(r => (
             <button
