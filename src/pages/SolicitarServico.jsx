@@ -264,7 +264,6 @@ export default function SolicitarServico() {
       const hasDelivery = !isTow || (form.delivery_address.length > 3 && form.delivery_latitude && form.delivery_longitude);
       return form.address.length > 3 && hasDelivery;
     }
-    if (step === 3.5) return !!selectedProvider;
     if (step === 4) {
       if (form.modality === 'agendado') return !!form.scheduled_date && !!form.scheduled_time;
       return true;
@@ -686,23 +685,30 @@ export default function SolicitarServico() {
             </div>
           )}
 
-          {form.modality === 'agendado' && selectedProvider && (
-            <ClientScheduleSelector 
-              providerId={selectedProvider.id}
-              onScheduleSelect={(schedule) => {
-                set('scheduled_date', schedule.scheduled_date);
-                set('scheduled_time', schedule.scheduled_time);
-              }}
-              compact={false}
-            />
-          )}
-
-          {form.modality === 'agendado' && !selectedProvider && (
-            <div className="bg-yellow-50 rounded-2xl p-4 border border-yellow-200 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-yellow-700">
-                Volte à etapa anterior e selecione um prestador para agendar um horário específico.
-              </p>
+          {form.modality === 'agendado' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Data preferida</Label>
+                <Input
+                  type="date"
+                  value={form.scheduled_date}
+                  onChange={e => set('scheduled_date', e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="rounded-2xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><Clock className="w-4 h-4" /> Horário preferido</Label>
+                <div className="grid grid-cols-4 gap-2">
+                  {TIME_SLOTS.map(slot => (
+                    <button key={slot} onClick={() => set('scheduled_time', slot)}
+                      className={cn("py-2.5 rounded-xl text-sm font-semibold border-2 transition-all",
+                        form.scheduled_time === slot ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/40")}>
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
