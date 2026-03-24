@@ -79,6 +79,13 @@ export function useNewJobAlert({ enabled, onNewJob }) {
       if (!enabledRef.current) return;
       // Detecta novo chamado tanto por criação quanto por atualização para 'aguardando'
       const isNewJob = (event.type === 'create' || event.type === 'update') && event.data?.status === 'aguardando';
+      const isRemoved = event.type === 'update' && event.data?.status !== 'aguardando';
+
+      if (isRemoved) {
+        // Remove da lista de vistos para permitir re-enfileirar se voltar a aguardando
+        seenIds.current.delete(event.id);
+      }
+
       if (isNewJob) {
         // Rastreia apenas pelo ID do serviço para não duplicar o mesmo chamado
         if (!seenIds.current.has(event.id)) {
