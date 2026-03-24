@@ -326,7 +326,7 @@ export default function SolicitarServico() {
       {step === 1 && (
         <div>
           <h2 className="text-2xl font-bold text-foreground mb-1">Qual serviço?</h2>
-          <p className="text-muted-foreground mb-4">Selecione um ou mais serviços</p>
+          <p className="text-muted-foreground mb-4">Selecione um ou mais serviços — cada um gera uma OS com senha própria</p>
           <div className="flex gap-2 mb-5">
             <button onClick={() => setServiceTab('casa')}
               className={cn("flex-1 py-2 rounded-xl text-sm font-semibold transition-all",
@@ -342,18 +342,33 @@ export default function SolicitarServico() {
           <div className="grid grid-cols-3 gap-3">
             {SERVICE_TYPES.filter(s => s.group === serviceTab).map(s => {
               const Icon = s.icon;
+              const selected = form.service_type.includes(s.value);
               return (
                 <button key={s.value} onClick={() => {
-                  set('service_type', [s.value]);
-                  setStep(2);
+                  set('service_type', selected
+                    ? form.service_type.filter(t => t !== s.value)
+                    : [...form.service_type, s.value]
+                  );
                 }}
-                  className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-border hover:border-primary hover:bg-primary/5 active:scale-95 transition-all">
-                  <Icon className="w-7 h-7 text-muted-foreground" />
-                  <span className="text-xs font-medium text-center text-foreground">{s.label}</span>
+                  className={cn("flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all active:scale-95",
+                    selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40")}>
+                  <Icon className={cn("w-7 h-7", selected ? "text-primary" : "text-muted-foreground")} />
+                  <span className={cn("text-xs font-medium text-center", selected ? "text-primary" : "text-foreground")}>{s.label}</span>
+                  {selected && <span className="w-4 h-4 bg-primary rounded-full flex items-center justify-center"><span className="text-white text-[9px] font-black">✓</span></span>}
                 </button>
               );
             })}
           </div>
+          {form.service_type.length > 0 && (
+            <div className="mt-4 bg-primary/5 rounded-2xl p-3 border border-primary/20">
+              <p className="text-xs font-semibold text-primary mb-1">
+                {form.service_type.length} serviço(s) selecionado(s) — cada um gerará uma OS com senha separada
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {form.service_type.map(t => SERVICE_TYPES.find(s => s.value === t)?.label).join(' • ')}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
