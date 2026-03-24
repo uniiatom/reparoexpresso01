@@ -216,6 +216,31 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
         <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
           <Phone className="w-3.5 h-3.5" /> {job.client_name} · {job.client_phone}
         </p>
+
+        {/* Localização em tempo real do cliente */}
+        {job.client_latitude && job.client_longitude ? (
+          <a
+            href={`/rastreamento/${job.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 flex items-center gap-2 px-3 py-2 rounded-2xl bg-green-50 border border-green-200 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
+          >
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-ping flex-shrink-0" />
+            📡 Cliente compartilhando localização ao vivo
+            <ExternalLink className="w-3.5 h-3.5 ml-auto flex-shrink-0" />
+          </a>
+        ) : (job.latitude && job.longitude) ? (
+          <a
+            href={`/rastreamento/${job.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 flex items-center gap-2 px-3 py-2 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold hover:bg-blue-100 transition-colors"
+          >
+            <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+            Ver localização do cliente no mapa
+            <ExternalLink className="w-3.5 h-3.5 ml-auto flex-shrink-0" />
+          </a>
+        ) : null}
       </div>
 
       {/* Senha de identificação */}
