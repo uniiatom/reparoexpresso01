@@ -312,8 +312,8 @@ export default function AcompanharServico() {
         </div>
       )}
 
-      {request.status === 'aguardando' && (() => {
-        // For scheduled services, only allow cancellation up to 30 min before start
+      {['aguardando', 'aceito', 'a_caminho'].includes(request.status) && (() => {
+        // Para serviços agendados, só permite cancelar até 30 min antes do horário
         if (request.modality === 'agendado' && request.scheduled_date && request.scheduled_time) {
           const scheduledDateTime = new Date(`${request.scheduled_date}T${request.scheduled_time}`);
           const minutesUntilStart = (scheduledDateTime - new Date()) / 60000;
@@ -336,15 +336,41 @@ export default function AcompanharServico() {
             </div>
           );
         }
+
+        // Para serviços imediatos com prestador a caminho, bloqueia se faltam ≤ 30 min para chegada
+        if (['aceito', 'a_caminho'].includes(request.status) && request.estimated_arrival_minutes != null) {
+          const canCancel = request.estimated_arrival_minutes > 30;
+          return (
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                className="w-full rounded-2xl text-destructive border-destructive/30 hover:bg-destructive/10"
+                onClick={() => cancelRequest.mutate()}
+                disabled={cancelRequest.isPending || !canCancel}
+              >
+                Cancelar atendimento
+              </Button>
+              {!canCancel && (
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  ⚠️ Cancelamento não permitido — o prestador chegará em menos de 30 minutos.
+                </p>
+              )}
+            </div>
+          );
+        }
+
+        // Serviço imediato ainda aguardando ou aceito sem previsão: cancela livremente
         return (
-          <Button
-            variant="outline"
-            className="w-full rounded-2xl text-destructive border-destructive/30 hover:bg-destructive/10"
-            onClick={() => cancelRequest.mutate()}
-            disabled={cancelRequest.isPending}
-          >
-            Cancelar pedido
-          </Button>
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              className="w-full rounded-2xl text-destructive border-destructive/30 hover:bg-destructive/10"
+              onClick={() => cancelRequest.mutate()}
+              disabled={cancelRequest.isPending}
+            >
+              Cancelar pedido
+            </Button>
+          </div>
         );
       })()}
 
