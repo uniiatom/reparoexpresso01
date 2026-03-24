@@ -161,6 +161,17 @@ export default function ProviderApp() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-jobs'] }),
   });
 
+  const activeJob = myJobs.find(j => ['aceito', 'a_caminho', 'em_andamento'].includes(j.status));
+  const shouldShowBanner = !activeJob;
+  const completedJobs = myJobs.filter(j => j.status === 'concluido');
+
+  // Para a buzina automaticamente se o prestador já tem um job ativo
+  useEffect(() => {
+    if (activeJob) {
+      window.__stopProviderHorn?.();
+    }
+  }, [activeJob?.id]);
+
   if (!provider) {
     return <ProviderSetupModal user={user} onCreated={() => queryClient.invalidateQueries({ queryKey: ['my-provider'] })} />;
   }
@@ -178,18 +189,6 @@ export default function ProviderApp() {
       </div>
     );
   }
-
-  const activeJob = myJobs.find(j => ['aceito', 'a_caminho', 'em_andamento'].includes(j.status));
-  // Só mostra o banner se não houver um job ativo em andamento
-  const shouldShowBanner = !activeJob;
-
-  // Para a buzina automaticamente se o prestador já tem um job ativo
-  useEffect(() => {
-    if (activeJob) {
-      window.__stopProviderHorn?.();
-    }
-  }, [activeJob?.id]);
-  const completedJobs = myJobs.filter(j => j.status === 'concluido');
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
