@@ -88,11 +88,14 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <Link to="/cadastro" className="ml-1">
-              <Button size="sm" variant="outline" className="rounded-xl font-semibold">
+            <div className="flex items-center gap-1 ml-1">
+              <Button size="sm" variant="outline" className="rounded-xl font-semibold" onClick={() => base44.auth.redirectToLogin('/cadastro')}>
                 <User className="w-3.5 h-3.5 mr-1.5" /> Criar conta
               </Button>
-            </Link>
+              <Button size="sm" variant="ghost" className="rounded-xl font-semibold" onClick={() => base44.auth.redirectToLogin('/')}>
+                Entrar
+              </Button>
+            </div>
           )}
 
           <Link to="/solicitar">
@@ -137,11 +140,14 @@ export default function Navbar() {
               </Link>
             </>
           ) : (
-            <Link to="/cadastro" onClick={() => setOpen(false)}>
-              <Button variant="outline" className="w-full rounded-xl font-semibold gap-2">
-                <User className="w-4 h-4" /> Criar conta / Entrar
+            <div className="space-y-1">
+              <Button variant="outline" className="w-full rounded-xl font-semibold gap-2" onClick={() => { setOpen(false); base44.auth.redirectToLogin('/cadastro'); }}>
+                <User className="w-4 h-4" /> Criar conta
               </Button>
-            </Link>
+              <Button variant="ghost" className="w-full rounded-xl font-semibold gap-2" onClick={() => { setOpen(false); base44.auth.redirectToLogin('/'); }}>
+                Entrar / Login
+              </Button>
+            </div>
           )}
           <Link to="/prestador" onClick={() => setOpen(false)}>
             <Button variant="ghost" className="w-full justify-start rounded-xl">Sou Prestador</Button>
