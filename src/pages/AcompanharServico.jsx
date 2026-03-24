@@ -312,16 +312,41 @@ export default function AcompanharServico() {
         </div>
       )}
 
-      {request.status === 'aguardando' && (
-        <Button
-          variant="outline"
-          className="w-full rounded-2xl text-destructive border-destructive/30 hover:bg-destructive/10"
-          onClick={() => cancelRequest.mutate()}
-          disabled={cancelRequest.isPending}
-        >
-          Cancelar pedido
-        </Button>
-      )}
+      {request.status === 'aguardando' && (() => {
+        // For scheduled services, only allow cancellation up to 30 min before start
+        if (request.modality === 'agendado' && request.scheduled_date && request.scheduled_time) {
+          const scheduledDateTime = new Date(`${request.scheduled_date}T${request.scheduled_time}`);
+          const minutesUntilStart = (scheduledDateTime - new Date()) / 60000;
+          const canCancel = minutesUntilStart > 30;
+          return (
+            <div>
+              <Button
+                variant="outline"
+                className="w-full rounded-2xl text-destructive border-destructive/30 hover:bg-destructive/10"
+                onClick={() => cancelRequest.mutate()}
+                disabled={cancelRequest.isPending || !canCancel}
+              >
+                Cancelar agendamento
+              </Button>
+              {!canCancel && (
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  ⚠️ Cancelamentos só são permitidos até 30 minutos antes do horário agendado.
+                </p>
+              )}
+            </div>
+          );
+        }
+        return (
+          <Button
+            variant="outline"
+            className="w-full rounded-2xl text-destructive border-destructive/30 hover:bg-destructive/10"
+            onClick={() => cancelRequest.mutate()}
+            disabled={cancelRequest.isPending}
+          >
+            Cancelar pedido
+          </Button>
+        );
+      })()}
 
       {request.status === 'concluido' && (
         <div className="space-y-3">
