@@ -345,10 +345,7 @@ export default function SolicitarServico() {
               const selected = form.service_type.includes(s.value);
               return (
                 <button key={s.value} onClick={() => {
-                  set('service_type', selected 
-                    ? form.service_type.filter(t => t !== s.value)
-                    : [...form.service_type, s.value]
-                  );
+                  set('service_type', selected ? [] : [s.value]);
                 }}
                   className={cn("flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all",
                     selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40")}>
