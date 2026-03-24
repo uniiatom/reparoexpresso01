@@ -50,10 +50,7 @@ export default function ServiceHistory({ serviceRequests }) {
         <ServiceHistoryItem
           key={service.id}
           service={service}
-          isExpanded={expandedId === service.id}
-          onToggle={() => toggleExpanded(service.id)}
           serviceLabel={SERVICE_LABELS[service.service_type] || service.service_type}
-          statusConfig={STATUS_CONFIG[service.status]}
         />
       ))}
     </div>
