@@ -74,7 +74,7 @@ export default function ProviderApp() {
   useNewJobAlert({
     enabled: !!(provider?.is_online && provider?.is_approved && !activeJob),
     onNewJob: handleNewJob,
-  });
+  }); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!provider?.id) return;

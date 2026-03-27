@@ -91,6 +91,13 @@ export function useNewJobAlert({ enabled, onNewJob }) {
   }, []);
 
   useEffect(() => {
+    if (!enabled) {
+      // Se desabilitado, para qualquer buzina tocando
+      stopHornRef.current?.();
+      stopHornRef.current = null;
+      return;
+    }
+
     const unsubscribe = base44.entities.ServiceRequest.subscribe((event) => {
       if (!enabledRef.current) return;
       // Detecta novo chamado tanto por criação quanto por atualização para 'aguardando'
@@ -116,5 +123,5 @@ export function useNewJobAlert({ enabled, onNewJob }) {
     });
 
     return unsubscribe;
-  }, []);
+  }, [enabled]);
 }
