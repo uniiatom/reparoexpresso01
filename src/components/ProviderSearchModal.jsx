@@ -48,6 +48,21 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
+    // Se já é agendado com data/hora definidos, confirma direto sem buscar prestador
+    if (form.modality === 'agendado' && form.scheduled_date && form.scheduled_time) {
+      // Calcular sobretaxas inline (getSurcharges ainda não está disponível aqui via closure, então inline)
+      const date = form.scheduled_date;
+      const time = form.scheduled_time;
+      const [hours] = time.split(':');
+      const night_surcharge = parseInt(hours) >= 18;
+      const dateObj = new Date(date + 'T00:00:00');
+      const weekend_surcharge = dateObj.getDay() === 6;
+      const monthDay = `${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+      const HOLIDAYS = ["01-01","04-21","05-01","09-07","10-12","11-02","11-15","12-25"];
+      const holiday_surcharge = dateObj.getDay() === 0 || HOLIDAYS.includes(monthDay);
+      onConfirm({ ...form, night_surcharge, weekend_surcharge, holiday_surcharge });
+      return;
+    }
     searchProviders();
   }, []);
 
