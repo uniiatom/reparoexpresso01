@@ -58,7 +58,7 @@ export default function ProviderApp() {
   }, []);
 
   useNewJobAlert({
-    enabled: !!(provider?.is_online && provider?.is_approved),
+    enabled: !!(provider?.is_online && provider?.is_approved && !activeJob),
     onNewJob: handleNewJob,
   });
 
