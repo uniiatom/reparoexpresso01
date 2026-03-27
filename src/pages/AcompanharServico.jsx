@@ -46,6 +46,7 @@ export default function AcompanharServico() {
     queryKey: ['all-requests', user?.email],
     queryFn: () => base44.entities.ServiceRequest.filter({ created_by: user.email }, '-created_date', 50),
     enabled: !!user?.email,
+    refetchInterval: 5000,
   });
 
   const handleRatingClose = () => {
@@ -123,6 +124,14 @@ export default function AcompanharServico() {
     );
   }
 
+  // OS do mesmo lote: criadas no mesmo dia pela mesma pessoa, exceto canceladas
+  const batchRequests = allRequests.filter(r => {
+    if (!request?.created_date) return false;
+    const sameDay = r.created_date?.slice(0, 10) === request.created_date?.slice(0, 10);
+    return sameDay && r.status !== 'cancelado';
+  });
+  const otherBatchRequests = batchRequests.filter(r => r.id !== id);
+
   const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === request.status);
 
   const statusColor = {
@@ -154,6 +163,84 @@ export default function AcompanharServico() {
           <MapPin className="w-3 h-3" /> {request.address}
         </p>
       </div>
+
+      {/* Painel de OS do mesmo lote */}
+      {otherBatchRequests.length > 0 && (
+        <div className="mb-5 space-y-3">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide px-1">
+            📋 Outras OS do mesmo pedido ({otherBatchRequests.length + 1} no total)
+          </p>
+          {/* Card da OS atual resumido */}
+          <div className="rounded-2xl border-2 border-primary bg-primary/5 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <span className="text-xs font-mono font-bold text-primary">{request.service_number || 'Esta OS'}</span>
+                <p className="text-sm font-semibold text-foreground">{SERVICE_LABELS[request.service_type] || request.service_type}</p>
+              </div>
+              <span className={cn("text-xs font-bold px-2 py-1 rounded-xl", {
+                'bg-yellow-100 text-yellow-700': request.status === 'aguardando',
+                'bg-blue-100 text-blue-700': request.status === 'aceito',
+                'bg-orange-100 text-orange-700': request.status === 'a_caminho',
+                'bg-primary/10 text-primary': request.status === 'em_andamento',
+                'bg-green-100 text-green-700': request.status === 'concluido',
+              })}>
+                {{ aguardando: 'Aguardando', aceito: 'Aceito', a_caminho: 'A caminho', em_andamento: 'Em andamento', concluido: 'Concluído' }[request.status] || request.status}
+              </span>
+            </div>
+            {request.security_password && (
+              <div className="flex gap-2 mt-2">
+                <div className="flex-1 bg-white rounded-xl p-2 border border-amber-100 text-center">
+                  <p className="text-[10px] text-amber-700 font-semibold">Senha prestador</p>
+                  <p className="text-lg font-mono font-black text-amber-900 tracking-widest">{request.security_password}</p>
+                </div>
+                <div className="flex-1 bg-white rounded-xl p-2 border border-amber-100 text-center">
+                  <p className="text-[10px] text-amber-700 font-semibold">Sua senha</p>
+                  <p className="text-lg font-mono font-black text-amber-900 tracking-widest">{request.validation_password}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          {/* Cards das outras OS */}
+          {otherBatchRequests.map(r => (
+            <button key={r.id} onClick={() => navigate(`/acompanhar/${r.id}`)}
+              className="w-full text-left rounded-2xl border border-border bg-card p-3 hover:border-primary/40 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <span className="text-xs font-mono font-bold text-muted-foreground">{r.service_number || r.id.slice(0,8)}</span>
+                  <p className="text-sm font-semibold text-foreground">{SERVICE_LABELS[r.service_type] || r.service_type}</p>
+                </div>
+                <span className={cn("text-xs font-bold px-2 py-1 rounded-xl", {
+                  'bg-yellow-100 text-yellow-700': r.status === 'aguardando',
+                  'bg-blue-100 text-blue-700': r.status === 'aceito',
+                  'bg-orange-100 text-orange-700': r.status === 'a_caminho',
+                  'bg-primary/10 text-primary': r.status === 'em_andamento',
+                  'bg-green-100 text-green-700': r.status === 'concluido',
+                })}>
+                  {{ aguardando: 'Aguardando', aceito: 'Aceito', a_caminho: 'A caminho', em_andamento: 'Em andamento', concluido: 'Concluído' }[r.status] || r.status}
+                </span>
+              </div>
+              {r.security_password && (
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-amber-50 rounded-xl p-2 border border-amber-100 text-center">
+                    <p className="text-[10px] text-amber-700 font-semibold">Senha prestador</p>
+                    <p className="text-lg font-mono font-black text-amber-900 tracking-widest">{r.security_password}</p>
+                  </div>
+                  <div className="flex-1 bg-amber-50 rounded-xl p-2 border border-amber-100 text-center">
+                    <p className="text-[10px] text-amber-700 font-semibold">Sua senha</p>
+                    <p className="text-lg font-mono font-black text-amber-900 tracking-widest">{r.validation_password}</p>
+                  </div>
+                </div>
+              )}
+              {r.provider_name && (
+                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                  <User className="w-3 h-3" /> {r.provider_name}
+                </p>
+              )}
+              <p className="text-xs text-primary font-semibold mt-1">Toque para acompanhar →</p>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Senhas de segurança */}
       {!request.security_password && request.status === 'aguardando' && (
