@@ -15,10 +15,11 @@ export function useScheduleAvailability(providerId, selectedDate) {
       const services = await base44.entities.ServiceRequest.filter({
         provider_id: providerId,
       });
+      const ACTIVE_STATUSES = ['agendado', 'aceito', 'a_caminho', 'em_andamento'];
       return services.filter(s => 
         s.scheduled_date && 
-        s.status !== 'cancelado' &&
-        format(new Date(s.scheduled_date), 'yyyy-MM-dd') === selectedDate
+        ACTIVE_STATUSES.includes(s.status) &&
+        format(new Date(s.scheduled_date + 'T12:00:00'), 'yyyy-MM-dd') === selectedDate
       ) || [];
     },
     enabled: !!providerId && !!selectedDate,

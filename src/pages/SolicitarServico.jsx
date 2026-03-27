@@ -18,6 +18,7 @@ import { useNearbyProviders } from "@/hooks/useNearbyProviders";
 import MapView from "@/components/MapView";
 import ProviderSearchModal from "@/components/ProviderSearchModal";
 import ClientScheduleSelector from "@/components/ClientScheduleSelector";
+import { useScheduleAvailability } from "@/hooks/useScheduleAvailability";
 
 const SERVICE_TYPES = [
   { value: "eletrica", label: "Elétrica", icon: Zap, group: "casa" },
@@ -51,11 +52,11 @@ const URGENCY = [
   { value: "esta_semana", label: "Esta semana", desc: "Sem pressa" },
 ];
 
-const TIME_PERIODS = [
-  { value: "manha", label: "☀️ Manhã", desc: "07:00 – 12:00", time: "08:00" },
-  { value: "tarde", label: "🌤️ Tarde", desc: "12:00 – 18:00", time: "14:00" },
-  { value: "noite", label: "🌙 Noite", desc: "18:00 – 22:00", time: "19:00" },
-];
+// Horários de 1 em 1h — das 07:00 às 17:00
+const HOUR_SLOTS = Array.from({ length: 11 }, (_, i) => {
+  const hour = 7 + i;
+  return `${String(hour).padStart(2, '0')}:00`;
+});
 
 export default function SolicitarServico() {
   const navigate = useNavigate();
@@ -229,6 +230,30 @@ export default function SolicitarServico() {
   };
 
   const { data: nearbyProviders = [] } = useNearbyProviders(location?.latitude, location?.longitude, form.service_type);
+
+  // Para verificar disponibilidade de horários quando agendado (sem provider definido ainda, usa lógica global)
+  const [scheduledAvailableSlots, setScheduledAvailableSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  const fetchAvailableSlotsForDate = async (date) => {
+    if (!date) return;
+    setLoadingSlots(true);
+    setScheduledAvailableSlots([]);
+    try {
+      // Busca todas as OS agendadas para essa data
+      const allServices = await base44.entities.ServiceRequest.filter({ modality: 'agendado' });
+      const ACTIVE_STATUSES = ['agendado', 'aceito', 'a_caminho', 'em_andamento'];
+      const servicesOnDate = allServices.filter(s =>
+        s.scheduled_date === date && ACTIVE_STATUSES.includes(s.status)
+      );
+      const occupiedSlots = new Set(servicesOnDate.map(s => s.scheduled_time));
+      const available = HOUR_SLOTS.filter(slot => !occupiedSlots.has(slot));
+      setScheduledAvailableSlots(available);
+    } catch {
+      setScheduledAvailableSlots(HOUR_SLOTS);
+    }
+    setLoadingSlots(false);
+  };
 
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
@@ -841,27 +866,47 @@ export default function SolicitarServico() {
                 <Input
                   type="date"
                   value={form.scheduled_date}
-                  onChange={e => set('scheduled_date', e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
+                  onChange={e => {
+                    set('scheduled_date', e.target.value);
+                    set('scheduled_time', '');
+                    fetchAvailableSlotsForDate(e.target.value);
+                  }}
+                  min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
                   className="rounded-2xl"
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Clock className="w-4 h-4" /> Período preferido</Label>
-                <div className="grid grid-cols-3 gap-3">
-                  {TIME_PERIODS.map(period => (
-                    <button key={period.value} onClick={() => set('scheduled_time', period.time)}
-                      className={cn("flex flex-col items-center gap-1 py-4 rounded-2xl border-2 transition-all",
-                        form.scheduled_time === period.time ? "border-primary bg-primary/5" : "border-border hover:border-primary/40")}>
-                      <span className="text-2xl">{period.label.split(' ')[0]}</span>
-                      <span className={cn("text-sm font-semibold", form.scheduled_time === period.time ? "text-primary" : "text-foreground")}>
-                        {period.label.split(' ')[1]}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{period.desc}</span>
-                    </button>
-                  ))}
+
+              {form.scheduled_date && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" /> Horário disponível
+                    {loadingSlots && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+                  </Label>
+                  {!loadingSlots && scheduledAvailableSlots.length === 0 && (
+                    <div className="p-4 bg-red-50 rounded-2xl border border-red-200 text-sm text-red-700">
+                      ⚠️ Nenhum horário disponível nesta data. Escolha outro dia.
+                    </div>
+                  )}
+                  {!loadingSlots && scheduledAvailableSlots.length > 0 && (
+                    <div className="grid grid-cols-4 gap-2">
+                      {scheduledAvailableSlots.map(slot => (
+                        <button
+                          key={slot}
+                          onClick={() => set('scheduled_time', slot)}
+                          className={cn(
+                            "py-3 rounded-2xl border-2 text-sm font-semibold transition-all",
+                            form.scheduled_time === slot
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-border hover:border-primary/40 text-foreground"
+                          )}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>

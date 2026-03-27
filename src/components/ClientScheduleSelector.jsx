@@ -8,10 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { addDays, format, startOfDay, isBefore, getDay, addMinutes } from 'date-fns';
 
-const TIME_SLOTS = Array.from({ length: 20 }, (_, i) => {
-  const hour = 7 + Math.floor(i / 2);
-  const minute = (i % 2) * 30;
-  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+// Slots de 1 em 1 hora, das 07:00 às 17:00 (último início = 17:00)
+const TIME_SLOTS = Array.from({ length: 11 }, (_, i) => {
+  const hour = 7 + i;
+  return `${String(hour).padStart(2, '0')}:00`;
 });
 
 export default function ClientScheduleSelector({ providerId, onScheduleSelect, compact = false }) {
@@ -51,20 +51,22 @@ export default function ClientScheduleSelector({ providerId, onScheduleSelect, c
 
     if (timeNum < startNum || timeNum >= endNum) return false;
 
-    // Check if slot is already booked (count active bookings for that time)
     const dateStr = format(date, 'yyyy-MM-dd');
-    const bookedCount = bookedServices.filter(s => {
-      const bookedDate = s.scheduled_date && format(new Date(s.scheduled_date), 'yyyy-MM-dd') === dateStr;
-      return bookedDate && s.scheduled_time === time;
-    }).length;
+    const ACTIVE_STATUSES = ['agendado', 'aceito', 'a_caminho', 'em_andamento'];
 
-    // Respect max slots per day
+    // Cada slot é 1h — horário está ocupado se já existe serviço ativo naquele horário
+    const slotOccupied = bookedServices.filter(s => {
+      const bookedDate = s.scheduled_date && format(new Date(s.scheduled_date + 'T12:00:00'), 'yyyy-MM-dd') === dateStr;
+      return bookedDate && s.scheduled_time === time && ACTIVE_STATUSES.includes(s.status);
+    }).length > 0;
+
+    // Respeitar limite máximo de serviços por dia
     const bookedForDay = bookedServices.filter(s => {
-      const bookedDate = s.scheduled_date && format(new Date(s.scheduled_date), 'yyyy-MM-dd') === dateStr;
-      return bookedDate;
+      const bookedDate = s.scheduled_date && format(new Date(s.scheduled_date + 'T12:00:00'), 'yyyy-MM-dd') === dateStr;
+      return bookedDate && ACTIVE_STATUSES.includes(s.status);
     }).length;
 
-    return bookedCount === 0 && bookedForDay < (dayAvailability.max_slots_per_day || 5);
+    return !slotOccupied && bookedForDay < (dayAvailability.max_slots_per_day || 8);
   };
 
   const isDateAvailable = (date) => {
