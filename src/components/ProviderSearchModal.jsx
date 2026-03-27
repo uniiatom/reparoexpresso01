@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, AlertCircle, MapPin, Star, Calendar, Zap, X } from "lucide-react";
@@ -46,6 +46,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
   const [confirming, setConfirming] = useState(false);
+  const processingRef = useRef(false);
 
   useEffect(() => {
     // Se já é agendado com data/hora definidos, confirma direto sem buscar prestador
@@ -121,7 +122,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   const handleConfirmImmediate = () => {
-    if (confirming) return;
+    if (confirming || processingRef.current) return;
+    processingRef.current = true;
     setConfirming(true);
     // Se o form já veio com modality agendado (step 4), respeita a escolha do usuário
     if (form.modality === 'agendado') {
@@ -137,7 +139,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   const handleConfirmSchedule = () => {
-    if (confirming) return;
+    if (confirming || processingRef.current) return;
+    processingRef.current = true;
     setConfirming(true);
     const surcharges = getSurcharges(scheduledDate, scheduledTime);
     onSchedule({ ...form, modality: 'agendado', scheduled_date: scheduledDate, scheduled_time: scheduledTime, ...surcharges });
