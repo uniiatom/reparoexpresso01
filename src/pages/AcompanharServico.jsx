@@ -185,6 +185,12 @@ export default function AcompanharServico() {
           </p>
           {/* Card da OS atual resumido */}
           <div className="rounded-2xl border-2 border-primary bg-primary/5 p-3">
+            {!request.security_password && request.status === 'aguardando' && (
+              <div className="flex items-center gap-2 mb-3 p-2 bg-amber-50 rounded-xl border border-amber-200">
+                <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                <p className="text-xs text-amber-700 font-semibold">Gerando senhas de segurança...</p>
+              </div>
+            )}
             <div className="flex items-center justify-between mb-2">
               <div>
                 <span className="text-xs font-mono font-bold text-primary">{request.service_number || 'Esta OS'}</span>
@@ -255,8 +261,8 @@ export default function AcompanharServico() {
         </div>
       )}
 
-      {/* Senhas de segurança */}
-      {!request.security_password && request.status === 'aguardando' && (
+      {/* Senhas de segurança — ocultar quando painel de lote já as exibe */}
+      {!request.security_password && request.status === 'aguardando' && otherBatchRequests.length === 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 mb-5 flex items-center gap-3">
           <div className="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin flex-shrink-0" style={{borderWidth: '3px'}} />
           <div>
@@ -265,7 +271,7 @@ export default function AcompanharServico() {
           </div>
         </div>
       )}
-      {request.security_password && (
+      {request.security_password && otherBatchRequests.length === 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 mb-5 space-y-3">
           <p className="text-xs font-bold text-amber-800 uppercase tracking-wide">🔐 Senhas de segurança</p>
           <div className="grid grid-cols-2 gap-3">
