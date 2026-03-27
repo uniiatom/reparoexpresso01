@@ -86,6 +86,8 @@ export default function SolicitarServico() {
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [showProviderSearch, setShowProviderSearch] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
+  const [showCaixaDaguaModal, setShowCaixaDaguaModal] = useState(false);
+  const [caixaDaguaTipo, setCaixaDaguaTipo] = useState(null); // 'residencia' | 'condominio'
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
   
   const [sharingLocation, setSharingLocation] = useState(false);
@@ -465,6 +467,13 @@ export default function SolicitarServico() {
               const selected = form.service_type.includes(s.value);
               return (
                 <button key={s.value} onClick={() => {
+                  if (s.value === 'limpeza_caixa_dagua' && !selected) {
+                    setShowCaixaDaguaModal(true);
+                    return;
+                  }
+                  if (s.value === 'limpeza_caixa_dagua' && selected) {
+                    setCaixaDaguaTipo(null);
+                  }
                   set('service_type', selected
                     ? form.service_type.filter(t => t !== s.value)
                     : [...form.service_type, s.value]
@@ -473,12 +482,55 @@ export default function SolicitarServico() {
                   className={cn("flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all active:scale-95",
                     selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40")}>
                   <Icon className={cn("w-7 h-7", selected ? "text-primary" : "text-muted-foreground")} />
-                  <span className={cn("text-xs font-medium text-center", selected ? "text-primary" : "text-foreground")}>{s.label}</span>
+                  <span className={cn("text-xs font-medium text-center leading-tight", selected ? "text-primary" : "text-foreground")}>
+                    {s.value === 'limpeza_caixa_dagua' && caixaDaguaTipo ? (
+                      <><span>Caixa d'Água</span><br /><span className="text-[10px] opacity-75">({caixaDaguaTipo === 'residencia' ? 'Residência' : 'Condomínio'})</span></>
+                    ) : s.label}
+                  </span>
                   {selected && <span className="w-4 h-4 bg-primary rounded-full flex items-center justify-center"><span className="text-white text-[9px] font-black">✓</span></span>}
                 </button>
               );
             })}
           </div>
+
+          {/* Modal subtipo Caixa d'Água */}
+          {showCaixaDaguaModal && (
+            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowCaixaDaguaModal(false)}>
+              <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+                <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+                <h3 className="text-lg font-bold text-foreground mb-1 text-center">Limpeza de Caixa d'Água</h3>
+                <p className="text-sm text-muted-foreground text-center mb-5">Selecione o tipo do local</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: 'residencia', label: 'Residência', emoji: '🏠', desc: 'Casa ou apartamento' },
+                    { value: 'condominio', label: 'Condomínio', emoji: '🏢', desc: 'Prédio ou condomínio' },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        setCaixaDaguaTipo(opt.value);
+                        set('service_type', [...form.service_type, 'limpeza_caixa_dagua']);
+                        // Pré-preenche a descrição com o tipo
+                        setDescriptionsPerService(prev => ({
+                          ...prev,
+                          limpeza_caixa_dagua: {
+                            ...prev.limpeza_caixa_dagua,
+                            description: `Limpeza de caixa d'água em ${opt.label.toLowerCase()}.`,
+                          }
+                        }));
+                        setShowCaixaDaguaModal(false);
+                      }}
+                      className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+                    >
+                      <span className="text-3xl">{opt.emoji}</span>
+                      <p className="font-bold text-foreground text-sm">{opt.label}</p>
+                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
           {form.service_type.length > 0 && (
             <div className="mt-4 bg-primary/5 rounded-2xl p-3 border border-primary/20">
               <p className="text-xs font-semibold text-primary mb-1">
