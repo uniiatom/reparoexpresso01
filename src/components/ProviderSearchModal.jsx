@@ -45,6 +45,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [nearestProvider, setNearestProvider] = useState(null);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     searchProviders();
@@ -105,6 +106,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   const handleConfirmImmediate = () => {
+    if (confirming) return;
+    setConfirming(true);
     const now = new Date();
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const currentDate = now.toISOString().split('T')[0];
@@ -113,6 +116,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   const handleConfirmSchedule = () => {
+    if (confirming) return;
+    setConfirming(true);
     const surcharges = getSurcharges(scheduledDate, scheduledTime);
     onSchedule({ ...form, modality: 'agendado', scheduled_date: scheduledDate, scheduled_time: scheduledTime, ...surcharges });
   };
@@ -201,8 +206,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                   </div>
                 </div>
               )}
-              <Button onClick={handleConfirmImmediate} className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground mb-3">
-                <Zap className="w-4 h-4 mr-2" /> Confirmar atendimento agora
+              <Button onClick={handleConfirmImmediate} disabled={confirming} className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground mb-3">
+                {confirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4 mr-2" /> Confirmar atendimento agora</>}
               </Button>
               <button
                 onClick={() => setPhase('none')}
@@ -257,10 +262,10 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
               </div>
               <Button
                 onClick={handleConfirmSchedule}
-                disabled={!scheduledDate || !scheduledTime}
+                disabled={!scheduledDate || !scheduledTime || confirming}
                 className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground"
               >
-                <Calendar className="w-4 h-4 mr-2" /> Confirmar agendamento
+                {confirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Calendar className="w-4 h-4 mr-2" /> Confirmar agendamento</>}
               </Button>
               <button onClick={onClose} className="w-full text-sm text-muted-foreground hover:text-foreground text-center py-1">
                 Cancelar
