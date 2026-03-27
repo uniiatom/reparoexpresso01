@@ -122,6 +122,7 @@ export default function ProviderApp() {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['available-requests'] });
       // Limpa TODA a fila ao aceitar
+      window.__clearSeenJobIds?.();
       setJobQueue([]);
       toast.success("Chamado aceito! Vá até o cliente.");
     },
@@ -130,6 +131,7 @@ export default function ProviderApp() {
   const handleAcceptBanner = (job) => {
     if (!job) return;
     window.__stopProviderHorn?.();
+    window.__clearSeenJobIds?.();
     setJobQueue([]);
     acceptJob.mutate(job.id);
   };

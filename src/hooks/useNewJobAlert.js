@@ -75,13 +75,19 @@ export function useNewJobAlert({ enabled, onNewJob }) {
   useEffect(() => { enabledRef.current = enabled; }, [enabled]);
   useEffect(() => { onNewJobRef.current = onNewJob; }, [onNewJob]);
 
-  // Expõe função global para parar a buzina
+  // Expõe funções globais para parar a buzina e limpar IDs vistos
   useEffect(() => {
     window.__stopProviderHorn = () => {
       stopHornRef.current?.();
       stopHornRef.current = null;
     };
-    return () => { delete window.__stopProviderHorn; };
+    window.__clearSeenJobIds = () => {
+      seenIds.current.clear();
+    };
+    return () => { 
+      delete window.__stopProviderHorn;
+      delete window.__clearSeenJobIds;
+    };
   }, []);
 
   useEffect(() => {
