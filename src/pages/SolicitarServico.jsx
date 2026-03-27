@@ -51,9 +51,10 @@ const URGENCY = [
   { value: "esta_semana", label: "Esta semana", desc: "Sem pressa" },
 ];
 
-const TIME_SLOTS = [
-  "07:00","08:00","09:00","10:00","11:00",
-  "13:00","14:00","15:00","16:00","17:00","18:00",
+const TIME_PERIODS = [
+  { value: "manha", label: "☀️ Manhã", desc: "07:00 – 12:00", time: "08:00" },
+  { value: "tarde", label: "🌤️ Tarde", desc: "12:00 – 18:00", time: "14:00" },
+  { value: "noite", label: "🌙 Noite", desc: "18:00 – 22:00", time: "19:00" },
 ];
 
 export default function SolicitarServico() {
@@ -698,13 +699,17 @@ export default function SolicitarServico() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Clock className="w-4 h-4" /> Horário preferido</Label>
-                <div className="grid grid-cols-4 gap-2">
-                  {TIME_SLOTS.map(slot => (
-                    <button key={slot} onClick={() => set('scheduled_time', slot)}
-                      className={cn("py-2.5 rounded-xl text-sm font-semibold border-2 transition-all",
-                        form.scheduled_time === slot ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/40")}>
-                      {slot}
+                <Label className="flex items-center gap-2"><Clock className="w-4 h-4" /> Período preferido</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  {TIME_PERIODS.map(period => (
+                    <button key={period.value} onClick={() => set('scheduled_time', period.time)}
+                      className={cn("flex flex-col items-center gap-1 py-4 rounded-2xl border-2 transition-all",
+                        form.scheduled_time === period.time ? "border-primary bg-primary/5" : "border-border hover:border-primary/40")}>
+                      <span className="text-2xl">{period.label.split(' ')[0]}</span>
+                      <span className={cn("text-sm font-semibold", form.scheduled_time === period.time ? "text-primary" : "text-foreground")}>
+                        {period.label.split(' ')[1]}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{period.desc}</span>
                     </button>
                   ))}
                 </div>
