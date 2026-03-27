@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
 import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck, Smartphone, Waves, Layers, HardHat, Thermometer, ChefHat, Truck, ShowerHead, Pipette, Gift, Heart, Store, Minimize2, Maximize2, Sparkles, DoorOpen, Phone, Gauge, ShieldAlert, Video } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReferralCard from "@/components/ReferralCard";
@@ -70,7 +69,6 @@ export default function Home() {
   const [mainTab, setMainTab] = useState('cliente');
   const [serviceTab, setServiceTab] = useState('casa');
   const [user, setUser] = useState(null);
-  const [clientProfile, setClientProfile] = useState(undefined); // undefined = loading
   const [showElectricalModal, setShowElectricalModal] = useState(false);
   const [selectedElectricalService, setSelectedElectricalService] = useState(null);
   const [showHydraulicModal, setShowHydraulicModal] = useState(false);
@@ -87,14 +85,7 @@ export default function Home() {
   const [showVasoMonoblocoModal, setShowVasoMonoblocoModal] = useState(false);
 
   useEffect(() => {
-    base44.auth.me().then(u => {
-      setUser(u);
-      if (u?.id) {
-        base44.entities.Client.filter({ user_id: u.id }).then(list => setClientProfile(list[0] || null)).catch(() => setClientProfile(null));
-      } else {
-        setClientProfile(null);
-      }
-    }).catch(() => { setClientProfile(null); });
+    base44.auth.me().then(u => setUser(u)).catch(() => {});
   }, []);
 
   const { data: pricingList = [] } = useQuery({
@@ -203,21 +194,6 @@ export default function Home() {
                  {/* ── CLIENTE ── */}
                  {mainTab === 'cliente' && (
                    <motion.div key="cliente" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                     {/* Banner de cadastro para novos usuários */}
-                     {clientProfile === null && (
-                       <Link to="/cadastro">
-                         <div className="flex items-center gap-3 bg-primary/10 border border-primary/30 rounded-2xl p-4 mb-5 hover:bg-primary/15 transition-colors">
-                           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center flex-shrink-0">
-                             <UserPlus className="w-5 h-5 text-primary-foreground" />
-                           </div>
-                           <div className="flex-1">
-                             <p className="text-sm font-bold text-foreground">Crie sua conta de cliente</p>
-                             <p className="text-xs text-muted-foreground">Cadastre-se para solicitar serviços</p>
-                           </div>
-                           <span className="text-primary font-bold text-sm">→</span>
-                         </div>
-                       </Link>
-                     )}
                      <div className="flex gap-2 mb-8">
                       <button
                         onClick={() => setServiceTab('casa')}

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import {
   ArrowLeft, MapPin, Zap, Droplets, Paintbrush, Wrench,
   Settings, Hammer, Lock, Wind, ChevronRight, Calendar,
-  Clock, Camera, X, Navigation, Loader2, Car
+  Clock, Camera, X, Navigation, Loader2, Car, UserPlus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AlertCircle } from "lucide-react";
@@ -67,13 +67,20 @@ export default function SolicitarServico() {
     base44.auth.me().then(u => { setCurrentUser(u); setUserLoaded(true); }).catch(() => setUserLoaded(true));
   }, []);
 
+  // Define step inicial após carregar dados do cliente
+  useEffect(() => {
+    if (userLoaded && !clientLoading && step === -1) {
+      setStep(clientProfile ? 1 : 0);
+    }
+  }, [userLoaded, clientLoading, clientProfile, step]);
+
   const { data: clientProfile, isLoading: clientLoading } = useQuery({
     queryKey: ['client-profile', currentUser?.id],
     queryFn: () => base44.entities.Client.filter({ user_id: currentUser.id }),
     enabled: !!currentUser?.id,
     select: (data) => data[0] || null,
   });
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(-1); // -1 = ainda determinando
   const [serviceTab, setServiceTab] = useState(urlParams.get('tipo') && ['troca_pneu','recarga_bateria','conserto_pneu','veiculo_outros'].includes(urlParams.get('tipo')) ? 'veiculo' : 'casa');
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [showProviderSearch, setShowProviderSearch] = useState(false);
@@ -229,6 +236,24 @@ export default function SolicitarServico() {
     if (location) applyGeolocation();
   }, [location]);
 
+  const [registerForm, setRegisterForm] = useState({
+    name: currentUser?.full_name || '',
+    phone: '',
+  });
+
+  const createClientMutation = useMutation({
+    mutationFn: () => base44.entities.Client.create({
+      name: registerForm.name,
+      phone: registerForm.phone,
+      user_id: currentUser?.id || '',
+    }),
+    onSuccess: (newClient) => {
+      // preenche dados do form com o que foi cadastrado
+      setForm(prev => ({ ...prev, client_name: registerForm.name, client_phone: registerForm.phone }));
+      setStep(1);
+    },
+  });
+
   const createRequest = useMutation({
     mutationFn: async (formData) => {
       const serviceTypes = Array.isArray(formData.service_type) && formData.service_type.length > 0
@@ -259,6 +284,7 @@ export default function SolicitarServico() {
   };
 
   const canNext = () => {
+    if (step === 0) return registerForm.name.length > 2 && registerForm.phone.length > 7;
     if (step === 1) return form.service_type.length > 0;
     if (step === 2) return form.description.length > 5;
     if (step === 3) {
@@ -273,36 +299,16 @@ export default function SolicitarServico() {
     return true;
   };
 
-  const totalSteps = 6;
+  // Se não tem perfil, começa no step 0 (cadastro rápido)
+  const needsRegister = userLoaded && !clientProfile;
+  const totalSteps = needsRegister ? 7 : 6;
+  const displayStep = needsRegister ? step + 1 : step + 1; // step 0 = passo 1 para o usuário
 
-  // Aguarda carregar dados do usuário e perfil de cliente
-  if (!userLoaded || clientLoading) {
+  // Aguarda carregar dados do usuário e perfil de cliente, ou determinar step inicial
+  if (!userLoaded || clientLoading || step === -1) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  // Se não tem cadastro de cliente, bloqueia e pede para se cadastrar
-  if (userLoaded && !clientProfile) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center max-w-lg mx-auto">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-          <span className="text-4xl">👤</span>
-        </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Cadastro necessário</h2>
-        <p className="text-muted-foreground text-sm max-w-xs mb-8">
-          Para solicitar um serviço você precisa criar sua conta de cliente primeiro. É rápido!
-        </p>
-        <Link to="/cadastro" className="w-full max-w-xs">
-          <Button className="w-full h-14 rounded-2xl font-bold text-base">
-            Criar minha conta
-          </Button>
-        </Link>
-        <button onClick={() => navigate('/')} className="mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Voltar ao início
-        </button>
       </div>
     );
   }
@@ -311,16 +317,56 @@ export default function SolicitarServico() {
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
       {/* Progress */}
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => step > 1 ? setStep(s => s - 1) : navigate('/')} className="p-2 hover:bg-accent rounded-xl">
+        <button onClick={() => step > (needsRegister ? 0 : 1) ? setStep(s => s - 1) : navigate('/')} className="p-2 hover:bg-accent rounded-xl">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
-          <p className="text-xs text-muted-foreground mb-1">Passo {step} de {totalSteps}</p>
+          <p className="text-xs text-muted-foreground mb-1">Passo {step + (needsRegister ? 1 : 0)} de {totalSteps}</p>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full transition-all duration-300" style={{ width: `${(step / totalSteps) * 100}%` }} />
+            <div className="h-full bg-primary rounded-full transition-all duration-300" style={{ width: `${((step + (needsRegister ? 1 : 0)) / totalSteps) * 100}%` }} />
           </div>
         </div>
       </div>
+
+      {/* Step 0: Cadastro rápido (apenas quando não tem perfil) */}
+      {step === 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
+              <UserPlus className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">Seus dados</h2>
+              <p className="text-muted-foreground text-sm">Rápido! Só para entrar em contato</p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">Nome completo *</label>
+              <input
+                type="text"
+                placeholder="Como você se chama?"
+                value={registerForm.name}
+                onChange={e => setRegisterForm(p => ({ ...p, name: e.target.value }))}
+                className="w-full h-12 px-4 rounded-2xl border border-input bg-transparent text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">WhatsApp / Telefone *</label>
+              <input
+                type="tel"
+                placeholder="(11) 99999-9999"
+                value={registerForm.phone}
+                onChange={e => setRegisterForm(p => ({ ...p, phone: e.target.value }))}
+                className="w-full h-12 px-4 rounded-2xl border border-input bg-transparent text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
+          </div>
+          <div className="bg-muted/50 rounded-2xl p-4 text-xs text-muted-foreground">
+            Seus dados ficam salvos para facilitar os próximos pedidos.
+          </div>
+        </div>
+      )}
 
       {/* Step 1: Tipo de serviço */}
       {step === 1 && (
@@ -761,10 +807,18 @@ export default function SolicitarServico() {
       )}
 
       <div className="mt-8">
-        {step < totalSteps ? (
-          <Button onClick={() => setStep(s => s + 1)} disabled={!canNext()}
+        {step < (needsRegister ? totalSteps - 1 : totalSteps) ? (
+          <Button
+            onClick={() => {
+              if (step === 0) {
+                createClientMutation.mutate();
+              } else {
+                setStep(s => s + 1);
+              }
+            }}
+            disabled={!canNext() || createClientMutation.isPending}
             className="w-full h-14 rounded-2xl font-bold text-base bg-primary text-primary-foreground">
-            Continuar <ChevronRight className="ml-2 w-5 h-5" />
+            {createClientMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Continuar <ChevronRight className="ml-2 w-5 h-5" /></>}
           </Button>
         ) : (
           <Button onClick={() => setShowProviderSearch(true)} disabled={!canNext() || createRequest.isPending}
