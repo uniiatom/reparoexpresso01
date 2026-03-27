@@ -54,6 +54,7 @@ const electricalServices = [
   { label: "Quadro de Distribuição", type: "eletrica_qdc", price: "R$ 100 - R$ 200" },
   { label: "Curto-circuito", type: "eletrica_curto", price: "R$ 120 - R$ 250" },
   { label: "Troca de Lâmpada", type: "eletrica_lampada", price: "R$ 40 - R$ 80" },
+  { label: "Ventilador de Teto", type: "eletrica_ventilador_teto", price: "R$ 80 - R$ 180" },
 ];
 
 const hydraulicServices = [
