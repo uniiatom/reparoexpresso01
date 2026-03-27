@@ -108,6 +108,11 @@ export default function Navbar() {
         {/* Mobile right */}
         <div className="flex items-center gap-2 sm:hidden">
           <NotificationCenter />
+          {!user && (
+            <Button size="sm" className="rounded-xl text-xs font-semibold px-3 h-8" onClick={() => base44.auth.redirectToLogin('/')}>
+              Entrar
+            </Button>
+          )}
           <button className="p-2 rounded-xl hover:bg-accent" onClick={() => setOpen(!open)}>
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
