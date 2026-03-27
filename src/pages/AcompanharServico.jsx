@@ -172,6 +172,13 @@ export default function AcompanharServico() {
         {request.service_number && (
           <p className="text-xs font-mono font-bold text-primary/80 mt-1">Nº {request.service_number}</p>
         )}
+        {request.modality === 'agendado' && request.scheduled_date && (
+          <div className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full text-blue-700 text-sm font-semibold">
+            <span>📅</span>
+            {new Date(request.scheduled_date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
+            {request.scheduled_time && <><span>·</span><span>🕐 {request.scheduled_time}</span></>}
+          </div>
+        )}
         <p className="text-muted-foreground text-sm mt-1 flex items-center justify-center gap-1">
           <MapPin className="w-3 h-3" /> {request.address}
         </p>
