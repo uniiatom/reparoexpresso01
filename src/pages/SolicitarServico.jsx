@@ -492,45 +492,6 @@ export default function SolicitarServico() {
               );
             })}
           </div>
-
-          {/* Modal subtipo Caixa d'Água */}
-          {showCaixaDaguaModal && (
-            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowCaixaDaguaModal(false)}>
-              <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
-                <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-                <h3 className="text-lg font-bold text-foreground mb-1 text-center">Limpeza de Caixa d'Água</h3>
-                <p className="text-sm text-muted-foreground text-center mb-5">Selecione o tipo do local</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { value: 'residencia', label: 'Residência', emoji: '🏠', desc: 'Casa ou apartamento' },
-                    { value: 'condominio', label: 'Condomínio', emoji: '🏢', desc: 'Prédio ou condomínio' },
-                  ].map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => {
-                        setCaixaDaguaTipo(opt.value);
-                        set('service_type', [...form.service_type, 'limpeza_caixa_dagua']);
-                        // Pré-preenche a descrição com o tipo
-                        setDescriptionsPerService(prev => ({
-                          ...prev,
-                          limpeza_caixa_dagua: {
-                            ...prev.limpeza_caixa_dagua,
-                            description: `Limpeza de caixa d'água em ${opt.label.toLowerCase()}.`,
-                          }
-                        }));
-                        setShowCaixaDaguaModal(false);
-                      }}
-                      className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
-                    >
-                      <span className="text-3xl">{opt.emoji}</span>
-                      <p className="font-bold text-foreground text-sm">{opt.label}</p>
-                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
           {form.service_type.length > 0 && (
             <div className="mt-4 bg-primary/5 rounded-2xl p-3 border border-primary/20">
               <p className="text-xs font-semibold text-primary mb-1">
@@ -541,10 +502,47 @@ export default function SolicitarServico() {
               </p>
             </div>
           )}
-        </div>
-      )}
+          </div>
 
-      {/* Step 2: Descrição + Fotos */}
+          {/* Modal subtipo Caixa d'Água */}
+          {showCaixaDaguaModal && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowCaixaDaguaModal(false)}>
+            <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+              <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+              <h3 className="text-lg font-bold text-foreground mb-1 text-center">Limpeza de Caixa d'Água</h3>
+              <p className="text-sm text-muted-foreground text-center mb-5">Selecione o tipo do local</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { value: 'residencia', label: 'Residência', emoji: '🏠', desc: 'Casa ou apartamento' },
+                  { value: 'condominio', label: 'Condomínio', emoji: '🏢', desc: 'Prédio ou condomínio' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setCaixaDaguaTipo(opt.value);
+                      set('service_type', [...form.service_type, 'limpeza_caixa_dagua']);
+                      setDescriptionsPerService(prev => ({
+                        ...prev,
+                        limpeza_caixa_dagua: {
+                          ...prev.limpeza_caixa_dagua,
+                          description: `Limpeza de caixa d'água em ${opt.label.toLowerCase()}.`,
+                        }
+                      }));
+                      setShowCaixaDaguaModal(false);
+                    }}
+                    className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+                  >
+                    <span className="text-3xl">{opt.emoji}</span>
+                    <p className="font-bold text-foreground text-sm">{opt.label}</p>
+                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          )}
+
+          {/* Step 2: Descrição + Fotos */}
       {step === 2 && (
         <div className="space-y-5">
           <div>
