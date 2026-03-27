@@ -8,6 +8,22 @@ import {
 import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
 import ServiceChat from './ServiceChat';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix leaflet default icon
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({ iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png', iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png' });
+
+const clientIcon = L.divIcon({ html: '<div style="background:#22c55e;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 3px #22c55e55;animation:ping 1s infinite;"></div>', className: '', iconAnchor: [8, 8] });
+const providerIcon = L.divIcon({ html: '<div style="background:#3b82f6;width:14px;height:14px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>', className: '', iconAnchor: [7, 7] });
+
+function RecenterOnChange({ lat, lng }) {
+  const map = useMap();
+  useEffect(() => { map.setView([lat, lng], map.getZoom()); }, [lat, lng]);
+  return null;
+}
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -217,30 +233,39 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           <Phone className="w-3.5 h-3.5" /> {job.client_name} · {job.client_phone}
         </p>
 
-        {/* Localização em tempo real do cliente */}
-        {job.client_latitude && job.client_longitude ? (
-          <a
-            href={`/rastreamento/${job.id}`}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-3 flex items-center gap-2 px-3 py-2 rounded-2xl bg-green-50 border border-green-200 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
-          >
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-ping flex-shrink-0" />
-            📡 Cliente compartilhando localização ao vivo
-            <ExternalLink className="w-3.5 h-3.5 ml-auto flex-shrink-0" />
-          </a>
-        ) : (job.latitude && job.longitude) ? (
-          <a
-            href={`/rastreamento/${job.id}`}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-3 flex items-center gap-2 px-3 py-2 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold hover:bg-blue-100 transition-colors"
-          >
-            <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-            Ver localização do cliente no mapa
-            <ExternalLink className="w-3.5 h-3.5 ml-auto flex-shrink-0" />
-          </a>
-        ) : null}
+        {/* Localização em tempo real do cliente — mapa inline */}
+        {(job.client_latitude && job.client_longitude) || (job.latitude && job.longitude) ? (() => {
+          const lat = job.client_latitude || job.latitude;
+          const lng = job.client_longitude || job.longitude;
+          const isLive = !!(job.client_latitude && job.client_longitude);
+          return (
+            <div className="mt-3 rounded-2xl overflow-hidden border border-border">
+              <div className={cn("flex items-center gap-2 px-3 py-2 text-xs font-semibold", isLive ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700")}>
+                {isLive
+                  ? <><span className="w-2 h-2 rounded-full bg-green-500 animate-ping flex-shrink-0" /> 📡 Localização ao vivo do cliente</>
+                  : <><MapPin className="w-3 h-3 flex-shrink-0" /> Localização do cliente</>
+                }
+                <a href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`} target="_blank" rel="noreferrer" className="ml-auto underline flex items-center gap-1">
+                  Rota <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+              <div style={{ height: 200 }}>
+                <MapContainer center={[lat, lng]} zoom={15} style={{ height: '100%', width: '100%' }} zoomControl={false} scrollWheelZoom={false}>
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <Marker position={[lat, lng]} icon={clientIcon}>
+                    <Popup>Cliente</Popup>
+                  </Marker>
+                  {job.provider_latitude && job.provider_longitude && (
+                    <Marker position={[job.provider_latitude, job.provider_longitude]} icon={providerIcon}>
+                      <Popup>Você</Popup>
+                    </Marker>
+                  )}
+                  {isLive && <RecenterOnChange lat={lat} lng={lng} />}
+                </MapContainer>
+              </div>
+            </div>
+          );
+        })() : null}
       </div>
 
       {/* Senha de identificação */}
