@@ -85,8 +85,10 @@ export default function ProviderApp() {
       if (event.data?.provider_id !== provider.id && event.type !== 'delete') return;
       setMyJobs(prev => {
         if (event.type === 'delete') return prev.filter(j => j.id !== event.id);
-        if (event.type === 'create') return [...prev.filter(j => j.id !== event.id), event.data];
-        return prev.map(j => j.id === event.id ? event.data : j);
+        // Para create e update: upsert — adiciona se não existir, atualiza se existir
+        const exists = prev.some(j => j.id === event.id);
+        if (exists) return prev.map(j => j.id === event.id ? event.data : j);
+        return [...prev, event.data];
       });
     });
     return unsub;
