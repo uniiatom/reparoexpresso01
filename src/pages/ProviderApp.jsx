@@ -64,7 +64,11 @@ export default function ProviderApp() {
 
   const { data: requests = [] } = useQuery({
     queryKey: ['available-requests'],
-    queryFn: () => base44.entities.ServiceRequest.filter({ status: 'aguardando' }),
+    queryFn: async () => {
+      const all = await base44.entities.ServiceRequest.filter({ status: 'aguardando' });
+      // Exclui OS já atribuídas a este prestador (essas aparecem na fila de OS)
+      return all.filter(r => !r.provider_id || r.provider_id !== provider?.id);
+    },
     refetchInterval: 8000,
     enabled: !!provider?.is_online && !!provider?.is_approved,
   });
@@ -164,6 +168,8 @@ export default function ProviderApp() {
   const activeJob = myJobs.find(j => ['aceito', 'a_caminho', 'em_andamento'].includes(j.status));
   const shouldShowBanner = !activeJob;
   const completedJobs = myJobs.filter(j => j.status === 'concluido');
+  // OS na fila: atribuídas ao prestador mas ainda aguardando (não ativas nem concluídas)
+  const queuedJobs = myJobs.filter(j => j.status === 'aguardando');
 
   // Para a buzina automaticamente se o prestador já tem um job ativo
   useEffect(() => {
@@ -250,6 +256,62 @@ export default function ProviderApp() {
           onShowAdditionalPoint={() => setShowAdditionalPoint(true)}
           isPending={updateJobStatus.isPending}
         />
+      )}
+
+      {/* ── FILA DE OS ATRIBUÍDAS ── */}
+      {queuedJobs.length > 0 && (
+        <div className="mb-5">
+          <h2 className="font-bold text-foreground mb-3 flex items-center gap-2">
+            <ClipboardList className="w-4 h-4 text-primary" />
+            Fila de OS
+            <Badge className="bg-orange-500 text-white text-xs">{queuedJobs.length}</Badge>
+          </h2>
+          <div className="relative">
+            {/* Linha vertical da timeline */}
+            <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-border" />
+            <div className="space-y-3">
+              {queuedJobs.map((job, idx) => (
+                <div key={job.id} className="flex gap-4 relative">
+                  {/* Bolinha da timeline */}
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 ${idx === 0 ? 'bg-primary border-primary text-primary-foreground' : 'bg-card border-border text-muted-foreground'}`}>
+                    <span className="text-xs font-bold">{idx + 1}</span>
+                  </div>
+                  <div className={`flex-1 bg-card rounded-2xl p-4 border ${idx === 0 ? 'border-primary/40 shadow-sm' : 'border-border'}`}>
+                    <div className="flex items-start justify-between mb-1">
+                      <span className="font-bold text-foreground text-sm">{SERVICE_LABELS[job.service_type] || job.service_type}</span>
+                      {idx === 0 && <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Próxima</span>}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-1 line-clamp-2">{job.description}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <MapPin className="w-3 h-3" /> {job.address}{job.city ? `, ${job.city}` : ''}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                      <Phone className="w-3 h-3" /> {job.client_name} · {job.client_phone}
+                    </p>
+                    <div className="flex gap-2 mt-3">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 rounded-xl border-destructive text-destructive hover:bg-destructive/5 text-xs"
+                        onClick={() => handleDeclineList(job)}
+                      >
+                        <X className="w-3 h-3 mr-1" /> Recusar
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="flex-1 rounded-xl bg-primary text-primary-foreground font-semibold text-xs"
+                        onClick={() => acceptJob.mutate(job.id)}
+                        disabled={acceptJob.isPending || !!activeJob}
+                      >
+                        <Check className="w-3 h-3 mr-1" /> {activeJob ? 'Aguardar' : 'Aceitar'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Chamados disponíveis - sempre mostra quando online */}
