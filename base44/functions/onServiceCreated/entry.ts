@@ -28,6 +28,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'entity_id ausente' }, { status: 400 });
     }
 
+    // Verificar se a OS já tem senhas geradas (evita duplicação por race condition)
+    const existing = await base44.asServiceRole.entities.ServiceRequest.get(requestId);
+    if (existing?.security_password) {
+      console.log(`OS ${requestId} já tem senhas geradas, pulando.`);
+      return Response.json({ skipped: true });
+    }
+
     const securityPassword = generatePassword();
     const validationPassword = generatePassword();
     const serviceNumber = await generateServiceNumber(base44);

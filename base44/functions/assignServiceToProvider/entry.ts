@@ -12,6 +12,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid event' }, { status: 400 });
     }
 
+    // Se a OS já tem prestador atribuído ou status diferente de aguardando, não processar
+    if (serviceRequest.provider_id || serviceRequest.status !== 'aguardando') {
+      console.log(`Skipping: OS ${serviceRequest.id} já tem prestador ou status ${serviceRequest.status}`);
+      return Response.json({ skipped: true });
+    }
+
     // Buscar prestadores online ou aprovados
     let providers = await base44.asServiceRole.entities.Provider.list();
 
