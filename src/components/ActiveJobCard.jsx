@@ -233,17 +233,23 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           <Phone className="w-3.5 h-3.5" /> {job.client_name} · {job.client_phone}
         </p>
 
-        {/* Localização em tempo real do cliente — mapa inline */}
-        {(job.client_latitude && job.client_longitude) || (job.latitude && job.longitude) ? (() => {
+        {/* Localização do cliente — disponível apenas a partir do deslocamento */}
+        {['a_caminho', 'em_andamento', 'concluido'].includes(job.status) && (() => {
           const lat = job.client_latitude || job.latitude;
           const lng = job.client_longitude || job.longitude;
+          if (!lat || !lng) return (
+            <div className="mt-3 bg-orange-50 border border-orange-200 rounded-2xl p-3 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-orange-500 flex-shrink-0" />
+              <p className="text-xs text-orange-700 font-semibold">Localização do cliente não disponível ainda.</p>
+            </div>
+          );
           const isLive = !!(job.client_latitude && job.client_longitude);
           return (
             <div className="mt-3 rounded-2xl overflow-hidden border border-border">
               <div className={cn("flex items-center gap-2 px-3 py-2 text-xs font-semibold", isLive ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700")}>
                 {isLive
                   ? <><span className="w-2 h-2 rounded-full bg-green-500 animate-ping flex-shrink-0" /> 📡 Localização ao vivo do cliente</>
-                  : <><MapPin className="w-3 h-3 flex-shrink-0" /> Localização do cliente</>
+                  : <><MapPin className="w-3 h-3 flex-shrink-0" /> Localização do endereço</>
                 }
                 <a href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`} target="_blank" rel="noreferrer" className="ml-auto underline flex items-center gap-1">
                   Rota <ExternalLink className="w-3 h-3" />
@@ -265,7 +271,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
               </div>
             </div>
           );
-        })() : null}
+        })()}
       </div>
 
       {/* Senha de identificação */}
