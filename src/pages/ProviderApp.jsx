@@ -121,8 +121,8 @@ export default function ProviderApp() {
     }),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['available-requests'] });
-      // Remove da fila se tiver chegado via banner
-      setJobQueue(prev => prev.filter(j => j.id !== result.id));
+      // Limpa TODA a fila ao aceitar
+      setJobQueue([]);
       toast.success("Chamado aceito! Vá até o cliente.");
     },
   });
@@ -130,7 +130,7 @@ export default function ProviderApp() {
   const handleAcceptBanner = (job) => {
     if (!job) return;
     window.__stopProviderHorn?.();
-    setJobQueue(prev => prev.filter(j => j.id !== job.id));
+    setJobQueue([]);
     acceptJob.mutate(job.id);
   };
 
