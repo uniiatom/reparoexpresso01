@@ -119,8 +119,10 @@ export default function ProviderApp() {
       provider_name: provider?.name,
       provider_phone: provider?.phone,
     }),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['available-requests'] });
+      // Remove da fila se tiver chegado via banner
+      setJobQueue(prev => prev.filter(j => j.id !== result.id));
       toast.success("Chamado aceito! Vá até o cliente.");
     },
   });
