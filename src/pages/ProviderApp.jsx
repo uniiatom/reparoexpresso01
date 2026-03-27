@@ -36,9 +36,6 @@ export default function ProviderApp() {
   const [activeTab, setActiveTab] = useState('chamados');
   const [declineTarget, setDeclineTarget] = useState(null); // { job, source: 'banner' | 'list' }
 
-  // Job atual no banner = primeiro da fila
-  const incomingJob = jobQueue[0] || null;
-
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
     queryFn: async () => {
@@ -74,6 +71,10 @@ export default function ProviderApp() {
   });
 
   const [myJobs, setMyJobs] = useState([]);
+  const activeJob = myJobs.find(j => ['aceito', 'a_caminho', 'em_andamento'].includes(j.status));
+
+  // Job atual no banner = primeiro da fila
+  const incomingJob = jobQueue[0] || null;
 
   useEffect(() => {
     if (!provider?.id) return;
@@ -181,7 +182,6 @@ export default function ProviderApp() {
     mutationFn: ({ id, status, final_price }) => base44.entities.ServiceRequest.update(id, { status, ...(final_price && { final_price }) }),
   });
 
-  const activeJob = myJobs.find(j => ['aceito', 'a_caminho', 'em_andamento'].includes(j.status));
   const shouldShowBanner = !activeJob;
   const completedJobs = myJobs.filter(j => j.status === 'concluido');
   // OS na fila: atribuídas ao prestador mas ainda aguardando (não ativas nem concluídas nem agendadas)
