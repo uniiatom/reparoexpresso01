@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock, User, Phone, Star, MapPin, Wrench, AlertCircle, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -30,7 +30,6 @@ const SERVICE_LABELS = {
 export default function AcompanharServico() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [showRating, setShowRating] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [showPixPayment, setShowPixPayment] = useState(false);
@@ -42,12 +41,21 @@ export default function AcompanharServico() {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
-  const { data: allRequests = [] } = useQuery({
-    queryKey: ['all-requests', user?.email],
-    queryFn: () => base44.entities.ServiceRequest.filter({ created_by: user.email }, '-created_date', 50),
-    enabled: !!user?.email,
-    refetchInterval: 15000,
-  });
+  const [allRequests, setAllRequests] = useState([]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    base44.entities.ServiceRequest.filter({ created_by: user.email }, '-created_date', 50)
+      .then(setAllRequests);
+    const unsub = base44.entities.ServiceRequest.subscribe((event) => {
+      if (event.type === 'update') {
+        setAllRequests(prev => prev.map(r => r.id === event.id ? event.data : r));
+      } else if (event.type === 'create' && event.data?.created_by === user.email) {
+        setAllRequests(prev => [event.data, ...prev]);
+      }
+    });
+    return unsub;
+  }, [user?.email]);
 
   const handleRatingClose = () => {
     setShowRating(false);
@@ -60,19 +68,24 @@ export default function AcompanharServico() {
     }
   };
 
-  const { data: request } = useQuery({
-    queryKey: ['service-request', id],
-    queryFn: async () => {
-      const list = await base44.entities.ServiceRequest.filter({ id });
-      return list[0];
-    },
-    // Polling mais rápido enquanto as senhas ainda não foram geradas, depois relaxa
-    refetchInterval: (data) => {
-      if (!data?.security_password) return 4000;
-      return 8000;
-    },
-    enabled: !!id,
-  });
+  const [request, setRequest] = useState(null);
+
+  useEffect(() => {
+    if (!id) return;
+    // Carga inicial
+    base44.entities.ServiceRequest.filter({ id }).then(list => {
+      if (list[0]) setRequest(list[0]);
+    });
+    // Atualização em tempo real
+    const unsub = base44.entities.ServiceRequest.subscribe((event) => {
+      if (event.id === id) {
+        if (event.type === 'update' || event.type === 'create') {
+          setRequest(event.data);
+        }
+      }
+    });
+    return unsub;
+  }, [id]);
 
   // Setup notifications for status changes
   useServiceNotifications(request, previousStatus);
@@ -539,7 +552,7 @@ export default function AcompanharServico() {
             requestId={id}
             finalPrice={request.final_price}
             serviceName={SERVICE_LABELS[request.service_type] || request.service_type}
-            onPaymentConfirmed={() => queryClient.invalidateQueries({ queryKey: ['service-request', id] })}
+            onPaymentConfirmed={() => base44.entities.ServiceRequest.filter({ id }).then(list => { if (list[0]) setRequest(list[0]); })}
           />
         </>
       )}
