@@ -301,9 +301,9 @@ export default function ProviderApp() {
                         size="sm"
                         className="flex-1 rounded-xl bg-primary text-primary-foreground font-semibold text-xs"
                         onClick={() => acceptJob.mutate(job.id)}
-                        disabled={acceptJob.isPending || !!activeJob}
+                        disabled={acceptJob.isPending}
                       >
-                        <Check className="w-3 h-3 mr-1" /> {activeJob ? 'Aguardar' : 'Aceitar'}
+                        <Check className="w-3 h-3 mr-1" /> Aceitar
                       </Button>
                     </div>
                   </div>
