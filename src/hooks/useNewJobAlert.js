@@ -1,61 +1,65 @@
 import { useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 
-// Toca uma buzina de navio (grave, longa, com vibrato) e retorna função para parar
+// Toca uma buzina de caminhão (grave, potente) e retorna função para parar
 export function startHornLoop() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
     let stopped = false;
     let intervalId = null;
 
-    const playShipHorn = () => {
+    const playTruckHorn = () => {
       if (stopped) return;
 
       const now = ctx.currentTime;
 
-      // Frequências graves típicas de buzina de navio (~80-110 Hz)
-      const frequencies = [82, 98, 110];
-      const oscillators = [];
+      // Frequências graves de buzina de caminhão (~100-150 Hz)
+      const frequencies = [100, 120, 135];
       const masterGain = ctx.createGain();
       masterGain.connect(ctx.destination);
+      // Volume ALTO para garantir que oiça
+      masterGain.gain.setValueAtTime(0, now);
+      masterGain.gain.linearRampToValueAtTime(0.9, now + 0.1);   // ataque rápido
+      masterGain.gain.setValueAtTime(0.9, now + 1.8);             // sustain longo
+      masterGain.gain.linearRampToValueAtTime(0, now + 2.0);      // decay rápido
 
       frequencies.forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const oscGain = ctx.createGain();
 
-        osc.type = 'sawtooth';
+        osc.type = 'square'; // Square é mais "buzzy" que sawtooth
         osc.frequency.setValueAtTime(freq, now);
-        // Pequeno vibrato grave (efeito navio)
-        osc.frequency.linearRampToValueAtTime(freq * 0.995, now + 0.3);
-        osc.frequency.linearRampToValueAtTime(freq * 1.005, now + 0.8);
-        osc.frequency.linearRampToValueAtTime(freq, now + 2.5);
+        // Vibrato mais pronunciado para soar como caminhão
+        osc.frequency.linearRampToValueAtTime(freq * 0.98, now + 0.3);
+        osc.frequency.linearRampToValueAtTime(freq * 1.02, now + 0.6);
+        osc.frequency.linearRampToValueAtTime(freq, now + 1.8);
 
-        oscGain.gain.value = i === 0 ? 0.5 : 0.25;
+        oscGain.gain.value = i === 0 ? 0.6 : 0.3;
         osc.connect(oscGain);
         oscGain.connect(masterGain);
         osc.start(now);
-        osc.stop(now + 3.2);
-        oscillators.push(osc);
+        osc.stop(now + 2.0);
       });
-
-      // Envelope: ataque lento, sustain longo, decay lento — característico de navio
-      masterGain.gain.setValueAtTime(0, now);
-      masterGain.gain.linearRampToValueAtTime(0.7, now + 0.4);   // ataque
-      masterGain.gain.setValueAtTime(0.7, now + 2.6);             // sustain
-      masterGain.gain.linearRampToValueAtTime(0, now + 3.2);      // fade out
     };
 
-    // Toca imediatamente e repete a cada 4.5s (padrão de buzina de navio)
-    playShipHorn();
-    intervalId = setInterval(playShipHorn, 4500);
+    // Toca imediatamente e repete a cada 2.5s
+    playTruckHorn();
+    intervalId = setInterval(playTruckHorn, 2500);
 
     return () => {
       stopped = true;
       clearInterval(intervalId);
-      ctx.close();
+      try {
+        ctx.close();
+      } catch (e) {
+        console.warn('Erro ao fechar contexto de áudio:', e);
+      }
     };
   } catch (e) {
-    console.warn('Web Audio não disponível:', e);
+    console.error('Erro ao tocar buzina:', e);
     return () => {};
   }
 }
