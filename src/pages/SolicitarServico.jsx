@@ -115,6 +115,43 @@ export default function SolicitarServico() {
 
   React.useEffect(() => () => { if (liveWatchId !== null) navigator.geolocation.clearWatch(liveWatchId); }, [liveWatchId]);
 
+  // descriptions_per_service: { [service_type]: { description, photos } }
+  const [descriptionsPerService, setDescriptionsPerService] = useState({});
+
+  const setServiceDesc = (serviceType, field, value) => {
+    setDescriptionsPerService(prev => ({
+      ...prev,
+      [serviceType]: { ...prev[serviceType], [field]: value }
+    }));
+  };
+
+  const [uploadingPhotosFor, setUploadingPhotosFor] = useState(null);
+
+  const handlePhotoUploadFor = async (e, serviceType) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploadingPhotosFor(serviceType);
+    const urls = await Promise.all(files.map(f => base44.integrations.Core.UploadFile({ file: f }).then(r => r.file_url)));
+    setDescriptionsPerService(prev => ({
+      ...prev,
+      [serviceType]: {
+        ...prev[serviceType],
+        photos: [...(prev[serviceType]?.photos || []), ...urls]
+      }
+    }));
+    setUploadingPhotosFor(null);
+  };
+
+  const removePhotoFor = (serviceType, idx) => {
+    setDescriptionsPerService(prev => ({
+      ...prev,
+      [serviceType]: {
+        ...prev[serviceType],
+        photos: (prev[serviceType]?.photos || []).filter((_, i) => i !== idx)
+      }
+    }));
+  };
+
   const [form, setForm] = useState({
    service_type: urlParams.get('tipo') ? [urlParams.get('tipo')] : [],
    description: '',
@@ -219,6 +256,12 @@ export default function SolicitarServico() {
     setForm(prev => ({ ...prev, problem_photos: prev.problem_photos.filter((_, i) => i !== idx) }));
   };
 
+  // Verifica se todas as descrições por serviço estão preenchidas (quando múltiplos serviços)
+  const allDescriptionsFilled = () => {
+    if (form.service_type.length <= 1) return form.description.length > 5;
+    return form.service_type.every(t => (descriptionsPerService[t]?.description || '').length > 5);
+  };
+
   const applyGeolocation = () => {
     if (location) {
       setForm(prev => ({
@@ -271,7 +314,13 @@ export default function SolicitarServico() {
       }
 
       const results = await Promise.all(
-        serviceTypes.map(type => base44.entities.ServiceRequest.create({ ...baseData, service_type: type }))
+        serviceTypes.map(type => {
+          // Se há múltiplos serviços, usa descrição/fotos individuais por OS
+          const hasPerService = serviceTypes.length > 1 && descriptionsPerService[type];
+          const description = hasPerService ? (descriptionsPerService[type]?.description || '') : baseData.description;
+          const problem_photos = hasPerService ? (descriptionsPerService[type]?.photos || []) : baseData.problem_photos;
+          return base44.entities.ServiceRequest.create({ ...baseData, service_type: type, description, problem_photos });
+        })
       );
       return results[0]; // retorna o primeiro para redirecionar
     },
@@ -286,7 +335,7 @@ export default function SolicitarServico() {
   const canNext = () => {
     if (step === 0) return registerForm.name.length > 2 && registerForm.phone.length > 7;
     if (step === 1) return form.service_type.length > 0;
-    if (step === 2) return form.description.length > 5;
+    if (step === 2) return allDescriptionsFilled();
     if (step === 3) {
       const hasDelivery = !isTow || (form.delivery_address.length > 3 && form.delivery_latitude && form.delivery_longitude);
       return form.address.length > 3 && hasDelivery;
@@ -423,45 +472,98 @@ export default function SolicitarServico() {
         <div className="space-y-5">
           <div>
             <h2 className="text-2xl font-bold text-foreground mb-1">Descreva o problema</h2>
-            <p className="text-muted-foreground mb-4">Quanto mais detalhes, melhor</p>
-          </div>
-          <div className="space-y-2">
-            <Label>O que está acontecendo?</Label>
-            <Textarea
-              placeholder="Ex: Tomada não funciona no quarto, chuveiro vazando..."
-              value={form.description}
-              onChange={e => set('description', e.target.value)}
-              className="min-h-[110px] rounded-2xl"
-            />
+            <p className="text-muted-foreground mb-4">
+              {form.service_type.length > 1
+                ? `Preencha a descrição para cada uma das ${form.service_type.length} OS`
+                : 'Quanto mais detalhes, melhor'}
+            </p>
           </div>
 
-
-          {/* Fotos do problema */}
-           <div className="space-y-2">
-             <Label className="flex items-center gap-2"><Camera className="w-4 h-4" /> Fotos do problema (opcional)</Label>
-            <div className="flex flex-wrap gap-2">
-              {form.problem_photos.map((url, idx) => (
-                <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
-                  <img src={url} alt="" className="w-full h-full object-cover" />
-                  <button onClick={() => removePhoto(idx)}
-                    className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center">
-                    <X className="w-3 h-3 text-white" />
-                  </button>
+          {form.service_type.length <= 1 ? (
+            // Serviço único — campo único
+            <>
+              <div className="space-y-2">
+                <Label>O que está acontecendo?</Label>
+                <Textarea
+                  placeholder="Ex: Tomada não funciona no quarto, chuveiro vazando..."
+                  value={form.description}
+                  onChange={e => set('description', e.target.value)}
+                  className="min-h-[110px] rounded-2xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><Camera className="w-4 h-4" /> Fotos do problema (opcional)</Label>
+                <div className="flex flex-wrap gap-2">
+                  {form.problem_photos.map((url, idx) => (
+                    <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <button onClick={() => removePhoto(idx)} className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center">
+                        <X className="w-3 h-3 text-white" />
+                      </button>
+                    </div>
+                  ))}
+                  {form.problem_photos.length < 4 && (
+                    <label className={cn("w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors", uploadingPhotos && "opacity-50 pointer-events-none")}>
+                      {uploadingPhotos ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" /> : <Camera className="w-6 h-6 text-muted-foreground" />}
+                      <span className="text-xs text-muted-foreground mt-1">{uploadingPhotos ? "..." : "Adicionar"}</span>
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} capture="environment" />
+                    </label>
+                  )}
                 </div>
-              ))}
-              {form.problem_photos.length < 4 && (
-                <label className={cn(
-                  "w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors",
-                  uploadingPhotos && "opacity-50 pointer-events-none"
-                )}>
-                  {uploadingPhotos ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" /> : <Camera className="w-6 h-6 text-muted-foreground" />}
-                  <span className="text-xs text-muted-foreground mt-1">{uploadingPhotos ? "..." : "Adicionar"}</span>
-                  <input type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} capture="environment" />
-                </label>
-              )}
+                <p className="text-xs text-muted-foreground">Tire fotos diretamente com a câmera ou escolha da galeria (máx. 4)</p>
+              </div>
+            </>
+          ) : (
+            // Múltiplos serviços — campo individual por OS
+            <div className="space-y-6">
+              {form.service_type.map((serviceType, idx) => {
+                const serviceLabel = SERVICE_TYPES.find(s => s.value === serviceType)?.label || serviceType;
+                const Icon = SERVICE_TYPES.find(s => s.value === serviceType)?.icon || Wrench;
+                const desc = descriptionsPerService[serviceType]?.description || '';
+                const photos = descriptionsPerService[serviceType]?.photos || [];
+                const isUploading = uploadingPhotosFor === serviceType;
+                return (
+                  <div key={serviceType} className="rounded-2xl border-2 border-border p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-foreground">OS {idx + 1} — {serviceLabel}</p>
+                        <p className="text-xs text-muted-foreground">Descreva o problema específico deste serviço</p>
+                      </div>
+                    </div>
+                    <Textarea
+                      placeholder={`Ex: problema de ${serviceLabel.toLowerCase()}...`}
+                      value={desc}
+                      onChange={e => setServiceDesc(serviceType, 'description', e.target.value)}
+                      className="min-h-[90px] rounded-xl"
+                    />
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-xs"><Camera className="w-3 h-3" /> Fotos (opcional)</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {photos.map((url, pidx) => (
+                          <div key={pidx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-border">
+                            <img src={url} alt="" className="w-full h-full object-cover" />
+                            <button onClick={() => removePhotoFor(serviceType, pidx)} className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center">
+                              <X className="w-2.5 h-2.5 text-white" />
+                            </button>
+                          </div>
+                        ))}
+                        {photos.length < 4 && (
+                          <label className={cn("w-16 h-16 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors", isUploading && "opacity-50 pointer-events-none")}>
+                            {isUploading ? <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" /> : <Camera className="w-5 h-5 text-muted-foreground" />}
+                            <span className="text-[10px] text-muted-foreground mt-0.5">{isUploading ? "..." : "Foto"}</span>
+                            <input type="file" accept="image/*" multiple className="hidden" onChange={e => handlePhotoUploadFor(e, serviceType)} capture="environment" />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <p className="text-xs text-muted-foreground">Tire fotos diretamente com a câmera ou escolha da galeria (máx. 4)</p>
-          </div>
+          )}
         </div>
       )}
 
@@ -785,7 +887,13 @@ export default function SolicitarServico() {
           {/* Resumo */}
           <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20 space-y-1">
             <p className="text-sm font-semibold text-foreground mb-2">Resumo do pedido</p>
-            <p className="text-sm text-muted-foreground">🔧 {form.service_type.map(t => SERVICE_TYPES.find(s => s.value === t)?.label).join(', ')}</p>
+            {form.service_type.length > 1 ? (
+              form.service_type.map((t, i) => (
+                <p key={t} className="text-sm text-muted-foreground">🔧 OS {i+1}: {SERVICE_TYPES.find(s => s.value === t)?.label} — {(descriptionsPerService[t]?.description || '').slice(0, 40)}{(descriptionsPerService[t]?.description || '').length > 40 ? '...' : ''}</p>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">🔧 {form.service_type.map(t => SERVICE_TYPES.find(s => s.value === t)?.label).join(', ')}</p>
+            )}
             <p className="text-sm text-muted-foreground">📍 {form.address}{form.number ? `, ${form.number}` : ''}{form.neighborhood ? ` - ${form.neighborhood}` : ''}{form.city ? `, ${form.city}` : ''}</p>
             {form.latitude && <p className="text-sm text-muted-foreground">📡 Localização GPS ativada</p>}
             {form.client_latitude && <p className="text-sm text-green-600 font-semibold">🟢 Localização em tempo real ativa</p>}
