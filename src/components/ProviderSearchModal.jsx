@@ -108,11 +108,17 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const handleConfirmImmediate = () => {
     if (confirming) return;
     setConfirming(true);
-    const now = new Date();
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const currentDate = now.toISOString().split('T')[0];
-    const surcharges = getSurcharges(currentDate, currentTime);
-    onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges });
+    // Se o form já veio com modality agendado (step 4), respeita a escolha do usuário
+    if (form.modality === 'agendado') {
+      const surcharges = getSurcharges(form.scheduled_date, form.scheduled_time);
+      onConfirm({ ...form, ...surcharges });
+    } else {
+      const now = new Date();
+      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const currentDate = now.toISOString().split('T')[0];
+      const surcharges = getSurcharges(currentDate, currentTime);
+      onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges });
+    }
   };
 
   const handleConfirmSchedule = () => {
@@ -207,14 +213,21 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                 </div>
               )}
               <Button onClick={handleConfirmImmediate} disabled={confirming} className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground mb-3">
-                {confirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4 mr-2" /> Confirmar atendimento agora</>}
+                {confirming
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : form.modality === 'agendado'
+                    ? <><Calendar className="w-4 h-4 mr-2" /> Confirmar agendamento</>
+                    : <><Zap className="w-4 h-4 mr-2" /> Confirmar atendimento agora</>
+                }
               </Button>
-              <button
-                onClick={() => setPhase('none')}
-                className="w-full text-sm text-muted-foreground hover:text-foreground text-center py-1"
-              >
-                Prefiro agendar para outro horário
-              </button>
+              {form.modality !== 'agendado' && (
+                <button
+                  onClick={() => setPhase('none')}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground text-center py-1"
+                >
+                  Prefiro agendar para outro horário
+                </button>
+              )}
             </div>
           </div>
         )}
