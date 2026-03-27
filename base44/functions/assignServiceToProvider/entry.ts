@@ -110,13 +110,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Atualizar a solicitação com o prestador sugerido — status permanece 'aguardando' até o prestador aceitar
+    // Serviços agendados ficam com status 'agendado' — não disparam alerta imediato
+    const isScheduled = serviceRequest.modality === 'agendado';
     const updateData = {
       provider_id: nearestProvider.id,
       provider_name: nearestProvider.name,
       provider_phone: nearestProvider.phone,
-      status: 'aguardando'
+      status: isScheduled ? 'agendado' : 'aguardando'
     };
+    if (isScheduled) {
+      console.log(`Service ${serviceRequest.id} is scheduled for ${serviceRequest.scheduled_date} — setting status to agendado`);
+    }
     
     if (nearestProvider.latitude) updateData.provider_latitude = nearestProvider.latitude;
     if (nearestProvider.longitude) updateData.provider_longitude = nearestProvider.longitude;

@@ -78,7 +78,8 @@ export function useNewJobAlert({ enabled, onNewJob }) {
     const unsubscribe = base44.entities.ServiceRequest.subscribe((event) => {
       if (!enabledRef.current) return;
       // Detecta novo chamado tanto por criação quanto por atualização para 'aguardando'
-      const isNewJob = (event.type === 'create' || event.type === 'update') && event.data?.status === 'aguardando';
+      // Serviços agendados NÃO disparam buzina — só aparecem na aba Agenda
+      const isNewJob = (event.type === 'create' || event.type === 'update') && event.data?.status === 'aguardando' && event.data?.modality !== 'agendado';
       const isRemoved = event.type === 'update' && event.data?.status !== 'aguardando';
 
       if (isRemoved) {

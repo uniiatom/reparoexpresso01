@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, X, Check, ClipboardList } from "lucide-react";
+import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, X, Check, ClipboardList, Calendar } from "lucide-react";
 import GoogleReviewQRCode from '../components/GoogleReviewQRCode';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -177,8 +177,12 @@ export default function ProviderApp() {
   const activeJob = myJobs.find(j => ['aceito', 'a_caminho', 'em_andamento'].includes(j.status));
   const shouldShowBanner = !activeJob;
   const completedJobs = myJobs.filter(j => j.status === 'concluido');
-  // OS na fila: atribuídas ao prestador mas ainda aguardando (não ativas nem concluídas)
+  // OS na fila: atribuídas ao prestador mas ainda aguardando (não ativas nem concluídas nem agendadas)
   const queuedJobs = myJobs.filter(j => j.status === 'aguardando');
+  // Serviços agendados — ordenados por data
+  const scheduledJobs = myJobs
+    .filter(j => j.status === 'agendado')
+    .sort((a, b) => (a.scheduled_date || '').localeCompare(b.scheduled_date || ''));
 
   // Para a buzina automaticamente se o prestador já tem um job ativo
   useEffect(() => {
@@ -231,22 +235,33 @@ export default function ProviderApp() {
       </div>
 
       {/* Abas de navegação */}
-      <div className="flex gap-2 mb-5 bg-muted rounded-2xl p-1">
+      <div className="flex gap-1 mb-5 bg-muted rounded-2xl p-1">
         <button
           onClick={() => setActiveTab('chamados')}
-          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'chamados' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'chamados' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
           🔔 Chamados
         </button>
         <button
+          onClick={() => setActiveTab('agenda')}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all relative ${activeTab === 'agenda' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          📅 Agenda
+          {scheduledJobs.length > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+              {scheduledJobs.length}
+            </span>
+          )}
+        </button>
+        <button
           onClick={() => setActiveTab('checklist')}
-          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'checklist' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'checklist' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
           ✅ Check-list
         </button>
         <button
           onClick={() => setActiveTab('historico')}
-          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'historico' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'historico' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
           📋 Histórico
         </button>
@@ -389,6 +404,58 @@ export default function ProviderApp() {
       </div>
 
       </> /* fim aba chamados */}
+
+      {/* ── ABA AGENDA ── */}
+      {activeTab === 'agenda' && (
+        <div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Serviços agendados confirmados para você. Apareça no local na data e horário combinados.
+          </p>
+          {scheduledJobs.length === 0 ? (
+            <div className="bg-card rounded-3xl p-10 border border-border text-center">
+              <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="font-semibold text-foreground">Nenhum agendamento</p>
+              <p className="text-sm text-muted-foreground mt-1">Serviços agendados aparecerão aqui</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {scheduledJobs.map(job => {
+                const dateStr = job.scheduled_date
+                  ? new Date(job.scheduled_date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })
+                  : '—';
+                return (
+                  <div key={job.id} className="bg-card rounded-2xl p-4 border border-blue-200 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-bold text-foreground text-sm">{SERVICE_LABELS[job.service_type] || job.service_type}</span>
+                      <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-1 rounded-lg flex items-center gap-1">
+                        <Calendar className="w-3 h-3" /> {dateStr}{job.scheduled_time ? ` · ${job.scheduled_time}` : ''}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-1 line-clamp-2">{job.description}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <MapPin className="w-3 h-3" /> {job.address}{job.neighborhood ? `, ${job.neighborhood}` : ''}{job.city ? ` — ${job.city}` : ''}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                      <Phone className="w-3 h-3" /> {job.client_name} · {job.client_phone}
+                    </p>
+                    {job.service_number && (
+                      <p className="text-xs font-mono text-primary/70 mt-1">{job.service_number}</p>
+                    )}
+                    <Button
+                      size="sm"
+                      className="w-full mt-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs"
+                      onClick={() => acceptJob.mutate(job.id)}
+                      disabled={acceptJob.isPending}
+                    >
+                      <Check className="w-3 h-3 mr-1" /> Confirmar presença e iniciar
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── ABA CHECK-LIST ── */}
       {activeTab === 'checklist' && (

@@ -1,0 +1,342 @@
+{
+  "name": "ServiceRequest",
+  "type": "object",
+  "properties": {
+    "service_number": {
+      "type": "string",
+      "description": "N\u00famero \u00fanico de atendimento (ex: ATD-000123)"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "ID do cliente"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Nome do cliente"
+    },
+    "client_phone": {
+      "type": "string",
+      "description": "Telefone do cliente"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "eletrica",
+        "hidraulica",
+        "pintura",
+        "montagem",
+        "reparo_geral",
+        "alvenaria",
+        "fechadura",
+        "ar_condicionado",
+        "limpeza_caixa_dagua",
+        "limpeza_calha",
+        "substituicao_telha",
+        "limpeza_telhado",
+        "instalacao_coifa_parede",
+        "instalacao_coifa_ilha",
+        "conversao_vaso_coplado",
+        "instalacao_vaso_monobloco",
+        "reparo_forro_gesso",
+        "desentupimento",
+        "troca_pneu",
+        "recarga_bateria",
+        "conserto_pneu",
+        "reboque",
+        "veiculo_outros",
+        "caca_vazamento",
+        "checkup",
+        "portao_eletronico",
+        "interfone",
+        "rejunte",
+        "pressurizador",
+        "alarme_cerca_eletrica",
+        "concertina",
+        "camera_cftv",
+        "outros"
+      ],
+      "description": "Tipo de servi\u00e7o"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o detalhada do problema"
+    },
+    "client_suggested_price": {
+      "type": "number",
+      "description": "Valor sugerido pelo cliente"
+    },
+    "problem_photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs das fotos do problema"
+    },
+    "address": {
+      "type": "string",
+      "description": "Rua"
+    },
+    "number": {
+      "type": "string",
+      "description": "N\u00famero do endere\u00e7o"
+    },
+    "neighborhood": {
+      "type": "string",
+      "description": "Bairro"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "cep": {
+      "type": "string",
+      "description": "CEP"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude do cliente"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude do cliente"
+    },
+    "client_latitude": {
+      "type": "number",
+      "description": "Latitude em tempo real do cliente"
+    },
+    "client_longitude": {
+      "type": "number",
+      "description": "Longitude em tempo real do cliente"
+    },
+    "delivery_address": {
+      "type": "string",
+      "description": "Rua de entrega do ve\u00edculo (para reboque)"
+    },
+    "delivery_number": {
+      "type": "string",
+      "description": "N\u00famero de entrega (para reboque)"
+    },
+    "delivery_neighborhood": {
+      "type": "string",
+      "description": "Bairro de entrega (para reboque)"
+    },
+    "delivery_city": {
+      "type": "string",
+      "description": "Cidade de entrega (para reboque)"
+    },
+    "delivery_state": {
+      "type": "string",
+      "description": "Estado de entrega (para reboque)"
+    },
+    "delivery_cep": {
+      "type": "string",
+      "description": "CEP de entrega (para reboque)"
+    },
+    "delivery_latitude": {
+      "type": "number",
+      "description": "Latitude do local de entrega (para reboque)"
+    },
+    "delivery_longitude": {
+      "type": "number",
+      "description": "Longitude do local de entrega (para reboque)"
+    },
+    "tow_distance_km": {
+      "type": "number",
+      "description": "Dist\u00e2ncia em km para reboque (calculada)"
+    },
+    "modality": {
+      "type": "string",
+      "enum": [
+        "imediato",
+        "agendado"
+      ],
+      "default": "imediato"
+    },
+    "scheduled_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "scheduled_time": {
+      "type": "string"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": [
+        "agora",
+        "hoje",
+        "esta_semana"
+      ],
+      "default": "agora"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "aguardando",
+        "agendado",
+        "aceito",
+        "a_caminho",
+        "em_andamento",
+        "concluido",
+        "cancelado"
+      ],
+      "default": "aguardando",
+      "description": "Status da OS. 'agendado' = servi\u00e7o futuro confirmado com prestador"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "provider_phone": {
+      "type": "string"
+    },
+    "provider_latitude": {
+      "type": "number",
+      "description": "Latitude em tempo real do prestador"
+    },
+    "provider_longitude": {
+      "type": "number",
+      "description": "Longitude em tempo real do prestador"
+    },
+    "estimated_arrival_minutes": {
+      "type": "number",
+      "description": "Previs\u00e3o de chegada em minutos"
+    },
+    "estimated_price": {
+      "type": "number"
+    },
+    "final_price": {
+      "type": "number"
+    },
+    "night_surcharge": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se aplicada taxa de 30% para hor\u00e1rio ap\u00f3s 18:00"
+    },
+    "weekend_surcharge": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se aplicada taxa de 40% para s\u00e1bados"
+    },
+    "holiday_surcharge": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se aplicada taxa de 70% para domingos e feriados"
+    },
+    "rating_client": {
+      "type": "number"
+    },
+    "rating_comment": {
+      "type": "string"
+    },
+    "security_password": {
+      "type": "string",
+      "description": "Senha de seguran\u00e7a gerada para verifica\u00e7\u00e3o de entrada"
+    },
+    "validation_password": {
+      "type": "string",
+      "description": "Senha de valida\u00e7\u00e3o informada pelo cliente ao prestador"
+    },
+    "passwords_generated_at": {
+      "type": "string",
+      "description": "Data/hora de gera\u00e7\u00e3o das senhas"
+    },
+    "decline_reason": {
+      "type": "string",
+      "description": "Motivo da recusa informado pelo prestador"
+    },
+    "additional_points": {
+      "type": "array",
+      "description": "Pontos adicionais registrados pelo prestador",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "extra_cost": {
+            "type": "number"
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              }
+            }
+          },
+          "created_at": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "checklist": {
+      "type": "object",
+      "description": "Checklist preenchido pelo prestador",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "checked": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "photos": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "latitude": {
+              "type": "number"
+            },
+            "longitude": {
+              "type": "number"
+            },
+            "accuracy": {
+              "type": "number"
+            }
+          }
+        },
+        "completed_at": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "client_name",
+    "service_type",
+    "description",
+    "address"
+  ]
+}
