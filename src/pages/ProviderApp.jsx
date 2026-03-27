@@ -54,11 +54,6 @@ export default function ProviderApp() {
     });
   }, []);
 
-  useNewJobAlert({
-    enabled: !!(provider?.is_online && provider?.is_approved && !activeJob),
-    onNewJob: handleNewJob,
-  });
-
   const { data: requests = [] } = useQuery({
     queryKey: ['available-requests'],
     queryFn: async () => {
@@ -75,6 +70,11 @@ export default function ProviderApp() {
 
   // Job atual no banner = primeiro da fila
   const incomingJob = jobQueue[0] || null;
+
+  useNewJobAlert({
+    enabled: !!(provider?.is_online && provider?.is_approved && !activeJob),
+    onNewJob: handleNewJob,
+  });
 
   useEffect(() => {
     if (!provider?.id) return;
