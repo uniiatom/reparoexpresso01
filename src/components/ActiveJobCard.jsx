@@ -51,7 +51,7 @@ function useProviderLocationBroadcast(jobId, active) {
         });
       },
       null,
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+      { enableHighAccuracy: true, maximumAge: 15000, timeout: 15000 }
     );
     return () => {
       if (watchRef.current != null) navigator.geolocation.clearWatch(watchRef.current);

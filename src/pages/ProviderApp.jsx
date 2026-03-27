@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
@@ -73,12 +73,24 @@ export default function ProviderApp() {
     enabled: !!provider?.is_online && !!provider?.is_approved,
   });
 
-  const { data: myJobs = [] } = useQuery({
-    queryKey: ['my-jobs', provider?.id],
-    queryFn: () => base44.entities.ServiceRequest.filter({ provider_id: provider.id }),
-    enabled: !!provider?.id,
-    refetchInterval: 10000,
-  });
+  const [myJobs, setMyJobs] = useState([]);
+
+  useEffect(() => {
+    if (!provider?.id) return;
+    // Carga inicial
+    base44.entities.ServiceRequest.filter({ provider_id: provider.id }).then(setMyJobs);
+    // Real-time via subscribe
+    const unsub = base44.entities.ServiceRequest.subscribe((event) => {
+      if (!['create', 'update', 'delete'].includes(event.type)) return;
+      if (event.data?.provider_id !== provider.id && event.type !== 'delete') return;
+      setMyJobs(prev => {
+        if (event.type === 'delete') return prev.filter(j => j.id !== event.id);
+        if (event.type === 'create') return [...prev.filter(j => j.id !== event.id), event.data];
+        return prev.map(j => j.id === event.id ? event.data : j);
+      });
+    });
+    return unsub;
+  }, [provider?.id]);
 
   const toggleOnline = useMutation({
     mutationFn: (val) => {
@@ -107,7 +119,6 @@ export default function ProviderApp() {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['available-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['my-jobs'] });
       toast.success("Chamado aceito! Vá até o cliente.");
     },
   });
@@ -153,7 +164,6 @@ export default function ProviderApp() {
     if (reason) updateData.decline_reason = reason;
     base44.entities.ServiceRequest.update(job.id, updateData).then(() => {
       queryClient.invalidateQueries({ queryKey: ['available-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['my-jobs'] });
     });
 
     toast.info(reason ? `Chamado recusado: ${reason}` : "Chamado recusado.");
@@ -162,7 +172,6 @@ export default function ProviderApp() {
 
   const updateJobStatus = useMutation({
     mutationFn: ({ id, status, final_price }) => base44.entities.ServiceRequest.update(id, { status, ...(final_price && { final_price }) }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-jobs'] }),
   });
 
   const activeJob = myJobs.find(j => ['aceito', 'a_caminho', 'em_andamento'].includes(j.status));

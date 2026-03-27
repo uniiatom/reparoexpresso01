@@ -19,7 +19,7 @@ export default function LocationTracker({ requestId, active }) {
         });
       },
       null,
-      { enableHighAccuracy: true, maximumAge: 15000, timeout: 10000 }
+      { enableHighAccuracy: true, maximumAge: 20000, timeout: 15000 }
     );
 
     return () => {

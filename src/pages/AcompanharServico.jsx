@@ -46,7 +46,7 @@ export default function AcompanharServico() {
     queryKey: ['all-requests', user?.email],
     queryFn: () => base44.entities.ServiceRequest.filter({ created_by: user.email }, '-created_date', 50),
     enabled: !!user?.email,
-    refetchInterval: 5000,
+    refetchInterval: 15000,
   });
 
   const handleRatingClose = () => {
@@ -68,8 +68,8 @@ export default function AcompanharServico() {
     },
     // Polling mais rápido enquanto as senhas ainda não foram geradas, depois relaxa
     refetchInterval: (data) => {
-      if (!data?.security_password) return 2000;
-      return 5000;
+      if (!data?.security_password) return 4000;
+      return 8000;
     },
     enabled: !!id,
   });
