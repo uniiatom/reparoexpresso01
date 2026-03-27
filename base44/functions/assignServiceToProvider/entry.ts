@@ -104,12 +104,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Atualizar a solicitação com o prestador atribuído
+    // Atualizar a solicitação com o prestador sugerido — status permanece 'aguardando' até o prestador aceitar
     const updateData = {
       provider_id: nearestProvider.id,
       provider_name: nearestProvider.name,
       provider_phone: nearestProvider.phone,
-      status: 'aceito'
+      status: 'aguardando'
     };
     
     if (nearestProvider.latitude) updateData.provider_latitude = nearestProvider.latitude;
