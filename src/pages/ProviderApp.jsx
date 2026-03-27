@@ -128,6 +128,7 @@ export default function ProviderApp() {
   });
 
   const handleAcceptBanner = (job) => {
+    if (!job) return;
     window.__stopProviderHorn?.();
     setJobQueue(prev => prev.filter(j => j.id !== job.id));
     acceptJob.mutate(job.id);
@@ -328,7 +329,11 @@ export default function ProviderApp() {
                       <Button
                         size="sm"
                         className="flex-1 rounded-xl bg-primary text-primary-foreground font-semibold text-xs"
-                        onClick={() => acceptJob.mutate(job.id)}
+                        onClick={() => {
+                          window.__stopProviderHorn?.();
+                          setJobQueue(prev => prev.filter(j => j.id !== job.id));
+                          acceptJob.mutate(job.id);
+                        }}
                         disabled={acceptJob.isPending}
                       >
                         <Check className="w-3 h-3 mr-1" /> Aceitar
@@ -379,7 +384,11 @@ export default function ProviderApp() {
                     </Button>
                     <Button
                       className="flex-1 rounded-xl bg-primary text-primary-foreground font-semibold"
-                      onClick={() => acceptJob.mutate(req.id)}
+                      onClick={() => {
+                        window.__stopProviderHorn?.();
+                        setJobQueue(prev => prev.filter(j => j.id !== req.id));
+                        acceptJob.mutate(req.id);
+                      }}
                       disabled={acceptJob.isPending}
                     >
                       <Check className="w-4 h-4 mr-1" /> Aceitar
@@ -448,7 +457,11 @@ export default function ProviderApp() {
                     <Button
                       size="sm"
                       className="w-full mt-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs"
-                      onClick={() => acceptJob.mutate(job.id)}
+                      onClick={() => {
+                        window.__stopProviderHorn?.();
+                        setJobQueue(prev => prev.filter(j => j.id !== job.id));
+                        acceptJob.mutate(job.id);
+                      }}
                       disabled={acceptJob.isPending}
                     >
                       <Check className="w-3 h-3 mr-1" /> Confirmar presença e iniciar
