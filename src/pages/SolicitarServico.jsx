@@ -67,20 +67,20 @@ export default function SolicitarServico() {
     base44.auth.me().then(u => { setCurrentUser(u); setUserLoaded(true); }).catch(() => setUserLoaded(true));
   }, []);
 
-  // Define step inicial após carregar dados do cliente
-  useEffect(() => {
-    if (userLoaded && !clientLoading && step === -1) {
-      setStep(clientProfile ? 1 : 0);
-    }
-  }, [userLoaded, clientLoading, clientProfile, step]);
-
   const { data: clientProfile, isLoading: clientLoading } = useQuery({
     queryKey: ['client-profile', currentUser?.id],
     queryFn: () => base44.entities.Client.filter({ user_id: currentUser.id }),
     enabled: !!currentUser?.id,
     select: (data) => data[0] || null,
   });
-  const [step, setStep] = useState(-1); // -1 = ainda determinando
+  const [step, setStep] = useState(-1);
+
+  // Define step inicial após carregar dados do cliente
+  useEffect(() => {
+    if (userLoaded && !clientLoading && step === -1) {
+      setStep(clientProfile ? 1 : 0);
+    }
+  }, [userLoaded, clientLoading, clientProfile, step]); // -1 = ainda determinando
   const [serviceTab, setServiceTab] = useState(urlParams.get('tipo') && ['troca_pneu','recarga_bateria','conserto_pneu','veiculo_outros'].includes(urlParams.get('tipo')) ? 'veiculo' : 'casa');
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [showProviderSearch, setShowProviderSearch] = useState(false);
