@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -67,6 +67,7 @@ const hydraulicServices = [
 
 export default function Home() {
   const [splashDone, setSplashDone] = useState(false);
+  const [userLoaded, setUserLoaded] = useState(false);
   const [mainTab, setMainTab] = useState('cliente');
   const [serviceTab, setServiceTab] = useState('casa');
   const [user, setUser] = useState(null);
@@ -86,7 +87,7 @@ export default function Home() {
   const [showVasoMonoblocoModal, setShowVasoMonoblocoModal] = useState(false);
 
   useEffect(() => {
-    base44.auth.me().then(u => setUser(u)).catch(() => {});
+    base44.auth.me().then(u => { setUser(u); setUserLoaded(true); }).catch(() => setUserLoaded(true));
   }, []);
 
   const { data: pricingList = [] } = useQuery({
@@ -195,6 +196,20 @@ export default function Home() {
                  {/* ── CLIENTE ── */}
                  {mainTab === 'cliente' && (
                    <motion.div key="cliente" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                     {/* Banner de login para usuários não autenticados */}
+                     {userLoaded && !user && (
+                       <div className="mb-6 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex flex-col gap-3">
+                         <p className="text-sm font-semibold text-foreground">👋 Faça login ou crie sua conta para solicitar serviços</p>
+                         <div className="flex gap-2">
+                           <Button size="sm" className="flex-1 rounded-xl font-semibold" onClick={() => base44.auth.redirectToLogin('/')}>
+                             Entrar
+                           </Button>
+                           <Button size="sm" variant="outline" className="flex-1 rounded-xl font-semibold" onClick={() => base44.auth.redirectToLogin('/')}>
+                             Criar conta
+                           </Button>
+                         </div>
+                       </div>
+                     )}
                      <div className="flex gap-2 mb-8">
                       <button
                         onClick={() => setServiceTab('casa')}
