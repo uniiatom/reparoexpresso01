@@ -38,6 +38,64 @@ const STEPS = [
   { status: 'concluido',    label: 'Concluído',         icon: CheckCircle2, color: 'text-green-600 bg-green-100' },
 ];
 
+// Toca beep de alerta urgente (três apitos curtos)
+function playAlertBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    [0, 0.35, 0.7].forEach((delay) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+      gain.gain.linearRampToValueAtTime(0.7, ctx.currentTime + delay + 0.03);
+      gain.gain.setValueAtTime(0.7, ctx.currentTime + delay + 0.2);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + delay + 0.28);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.3);
+    });
+    setTimeout(() => ctx.close(), 1500);
+  } catch (e) { /* silencia erro de áudio */ }
+}
+
+// Hook para alertar quando o prazo de chegada estimada está vencendo
+function useArrivalAlert(job) {
+  const alertedRef = useRef(false);
+
+  useEffect(() => {
+    // Só monitora quando está "a_caminho" e tem previsão de chegada
+    if (job.status !== 'a_caminho' || !job.estimated_arrival_minutes || !job.updated_date) {
+      alertedRef.current = false;
+      return;
+    }
+
+    const checkAlert = () => {
+      const startedAt = new Date(job.updated_date).getTime();
+      const totalMs = job.estimated_arrival_minutes * 60 * 1000;
+      const elapsedMs = Date.now() - startedAt;
+      const remainingMs = totalMs - elapsedMs;
+      const remainingMin = remainingMs / 60000;
+
+      // Alerta quando restar ≤ 2 minutos e ainda não alertou
+      if (remainingMin <= 2 && remainingMin > 0 && !alertedRef.current) {
+        alertedRef.current = true;
+        playAlertBeep();
+      }
+      // Reseta se ainda tem tempo (caso o tempo estimado seja atualizado)
+      if (remainingMin > 2) {
+        alertedRef.current = false;
+      }
+    };
+
+    checkAlert();
+    const interval = setInterval(checkAlert, 30000); // verifica a cada 30s
+    return () => clearInterval(interval);
+  }, [job.status, job.estimated_arrival_minutes, job.updated_date]);
+}
+
 // Hook para enviar GPS do prestador em tempo real quando a_caminho
 function useProviderLocationBroadcast(jobId, active) {
   const watchRef = useRef(null);
@@ -64,6 +122,8 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
 
   // Transmite localização GPS apenas quando a_caminho
   useProviderLocationBroadcast(job.id, job.status === 'a_caminho');
+  // Alerta sonoro quando prazo de chegada está vencendo
+  useArrivalAlert(job);
 
   const currentStepIndex = STEPS.findIndex(s => s.status === job.status);
   const currentStep = STEPS[currentStepIndex];
