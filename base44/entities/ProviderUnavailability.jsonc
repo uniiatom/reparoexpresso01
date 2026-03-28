@@ -16,6 +16,14 @@
       "format": "date",
       "description": "Data de fim da indisponibilidade (inclusive)"
     },
+    "start_time": {
+      "type": "string",
+      "description": "Hora de in\u00edcio (HH:MM) \u2014 deixe vazio para dia inteiro"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "Hora de fim (HH:MM) \u2014 deixe vazio para dia inteiro"
+    },
     "reason": {
       "type": "string",
       "description": "Motivo da indisponibilidade (opcional)"

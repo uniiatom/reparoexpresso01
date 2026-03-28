@@ -10,6 +10,8 @@ export default function ProviderUnavailabilitySection({ providerId }) {
   const [showForm, setShowForm] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [reason, setReason] = useState('');
 
   const { data: unavailabilities = [] } = useQuery({
@@ -23,6 +25,8 @@ export default function ProviderUnavailabilitySection({ providerId }) {
       provider_id: providerId,
       start_date: startDate,
       end_date: endDate,
+      start_time: startTime || undefined,
+      end_time: endTime || undefined,
       reason: reason || undefined,
     }),
     onSuccess: () => {
@@ -30,6 +34,8 @@ export default function ProviderUnavailabilitySection({ providerId }) {
       setShowForm(false);
       setStartDate('');
       setEndDate('');
+      setStartTime('');
+      setEndTime('');
       setReason('');
       toast.success('Indisponibilidade registrada!');
     },
@@ -109,6 +115,26 @@ export default function ProviderUnavailabilitySection({ providerId }) {
               />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1 block">Hora início (opcional)</label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1 block">Hora fim (opcional)</label>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm"
+              />
+            </div>
+          </div>
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">Motivo (opcional)</label>
             <input
@@ -143,6 +169,11 @@ export default function ProviderUnavailabilitySection({ providerId }) {
                 <p className="font-semibold text-foreground text-sm">
                   {formatDate(u.start_date)}{u.start_date !== u.end_date ? ` → ${formatDate(u.end_date)}` : ''}
                 </p>
+                {(u.start_time || u.end_time) && (
+                  <p className="text-xs text-primary font-medium mt-0.5">
+                    🕐 {u.start_time || '--:--'} às {u.end_time || '--:--'}
+                  </p>
+                )}
                 {u.reason && <p className="text-xs text-muted-foreground mt-0.5">{u.reason}</p>}
               </div>
               <button
@@ -168,6 +199,9 @@ export default function ProviderUnavailabilitySection({ providerId }) {
                   <p className="font-medium text-foreground text-sm">
                     {formatDate(u.start_date)}{u.start_date !== u.end_date ? ` → ${formatDate(u.end_date)}` : ''}
                   </p>
+                  {(u.start_time || u.end_time) && (
+                    <p className="text-xs text-muted-foreground mt-0.5">🕐 {u.start_time || '--:--'} às {u.end_time || '--:--'}</p>
+                  )}
                   {u.reason && <p className="text-xs text-muted-foreground">{u.reason}</p>}
                 </div>
                 <button onClick={() => deleteMutation.mutate(u.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
