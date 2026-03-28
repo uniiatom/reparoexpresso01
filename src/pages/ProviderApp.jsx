@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, X, Check, ClipboardList, Calendar } from "lucide-react";
+import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, X, Check, ClipboardList, Calendar, CalendarOff } from "lucide-react";
+import ProviderUnavailabilitySection from '../components/ProviderUnavailabilitySection';
 import GoogleReviewQRCode from '../components/GoogleReviewQRCode';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -271,6 +272,12 @@ export default function ProviderApp() {
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'historico' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
           📋 Histórico
+        </button>
+        <button
+          onClick={() => setActiveTab('indisponibilidade')}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'indisponibilidade' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          🚫 Folgas
         </button>
       </div>
 
@@ -550,6 +557,11 @@ export default function ProviderApp() {
             </div>
           )}
         </div>
+      )}
+
+      {/* ── ABA INDISPONIBILIDADE ── */}
+      {activeTab === 'indisponibilidade' && (
+        <ProviderUnavailabilitySection providerId={provider.id} />
       )}
 
       {/* Checklist modal */}
