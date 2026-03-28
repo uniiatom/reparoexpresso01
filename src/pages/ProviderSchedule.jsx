@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import ProviderUnavailabilitySection from '../components/ProviderUnavailabilitySection';
 
 const DAYS = [
   { name: 'Domingo', value: 0 },
@@ -169,6 +170,8 @@ export default function ProviderSchedule() {
           );
         })}
       </div>
+
+      <ProviderUnavailabilitySection providerId={provider.id} />
     </div>
   );
 }

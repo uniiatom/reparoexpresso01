@@ -1,0 +1,29 @@
+{
+  "name": "ProviderUnavailability",
+  "type": "object",
+  "properties": {
+    "provider_id": {
+      "type": "string",
+      "description": "ID do prestador"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de in\u00edcio da indisponibilidade"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de fim da indisponibilidade (inclusive)"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Motivo da indisponibilidade (opcional)"
+    }
+  },
+  "required": [
+    "provider_id",
+    "start_date",
+    "end_date"
+  ]
+}
