@@ -289,8 +289,8 @@ export default function ProviderApp() {
         </div>
       </div>
 
-      {/* Abas de navegação */}
-      <div className="flex gap-1 mb-5 bg-muted rounded-2xl p-1">
+      {/* Abas de navegação - linha 1 */}
+      <div className="flex gap-1 mb-1 bg-muted rounded-2xl p-1">
         <button
           onClick={() => setActiveTab('chamados')}
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'chamados' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
@@ -312,8 +312,11 @@ export default function ProviderApp() {
           onClick={() => setActiveTab('checklist')}
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'checklist' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
-          ✅ Check-list
+          ✅ Checklist
         </button>
+      </div>
+      {/* Abas de navegação - linha 2 */}
+      <div className="flex gap-1 mb-5 bg-muted rounded-2xl p-1">
         <button
           onClick={() => setActiveTab('historico')}
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'historico' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
@@ -330,7 +333,7 @@ export default function ProviderApp() {
           onClick={() => setActiveTab('fotos')}
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'fotos' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
-          📷 Fotos
+          📷 Minhas Fotos
         </button>
       </div>
 
