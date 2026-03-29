@@ -334,6 +334,7 @@ export default function SolicitarServico() {
         ...formData,
         client_suggested_price: formData.client_suggested_price ? Number(formData.client_suggested_price) : null,
         status: 'aguardando',
+        estimated_arrival_minutes: formData.estimated_arrival_minutes ?? null,
       };
 
       if (isTow && form.latitude && form.delivery_latitude) {

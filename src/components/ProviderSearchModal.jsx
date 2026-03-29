@@ -157,7 +157,6 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     if (confirming || processingRef.current) return;
     processingRef.current = true;
     setConfirming(true);
-    // Se o form já veio com modality agendado (step 4), respeita a escolha do usuário
     if (form.modality === 'agendado') {
       const surcharges = getSurcharges(form.scheduled_date, form.scheduled_time);
       onConfirm({ ...form, ...surcharges });
@@ -166,9 +165,9 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       const currentDate = now.toISOString().split('T')[0];
       const surcharges = getSurcharges(currentDate, currentTime);
-      // Inclui previsão de chegada calculada com base na distância do prestador
-      const estimatedArrival = estMin !== null ? estMin : undefined;
-      onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges, ...(estimatedArrival != null && { estimated_arrival_minutes: estimatedArrival }) });
+      // estMin pode ser null se provider sem GPS — usa 30 min como padrão
+      const estimatedArrival = estMin != null ? estMin : 30;
+      onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges, estimated_arrival_minutes: estimatedArrival });
     }
   };
 
