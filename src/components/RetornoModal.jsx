@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { X, RotateCcw, AlertTriangle, ChevronRight } from "lucide-react";
-import { base44 } from '@/api/base44Client';
-import { toast } from 'sonner';
+import { X, RotateCcw, ShieldCheck, ChevronRight } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 
 const TIPOS = [
@@ -15,12 +13,12 @@ const TIPOS = [
     description: 'O serviço ficou incompleto e preciso que o prestador retorne para finalizar.',
   },
   {
-    id: 'problema_atendimento',
-    label: 'Problema no atendimento',
-    icon: AlertTriangle,
+    id: 'retorno_garantia',
+    label: 'Retorno em garantia',
+    icon: ShieldCheck,
     color: 'border-orange-200 bg-orange-50 text-orange-700',
     iconColor: 'text-orange-500',
-    description: 'Tive um problema com o serviço prestado ou com o comportamento do profissional.',
+    description: 'O serviço foi concluído, mas apresentou um problema e preciso acionar a garantia.',
   },
 ];
 
@@ -34,36 +32,16 @@ export default function RetornoModal({ request, onClose }) {
     if (!tipo || !descricao.trim()) return;
     setLoading(true);
 
-    if (tipo === 'retorno_conclusao') {
-      // Abre nova OS do mesmo tipo já com a descrição preenchida
-      const params = new URLSearchParams({
-        tipo: request.service_type,
-        retorno_de: request.id,
-        descricao: `RETORNO - ${descricao}`,
-        provider_id: request.provider_id || '',
-      });
-      navigate(`/solicitar?${params.toString()}`);
-      onClose();
-      return;
-    }
-
-    // Para reclamação: salva uma nota no registro original e notifica admin
-    try {
-      await base44.entities.ServiceRequest.update(request.id, {
-        decline_reason: `[RECLAMAÇÃO] ${descricao}`,
-      });
-      await base44.integrations.Core.SendEmail({
-        to: 'suporte@escolapratica.com.br',
-        subject: `⚠️ Reclamação - OS ${request.service_number || request.id}`,
-        body: `Cliente ${request.client_name} registrou uma reclamação sobre o atendimento.\n\nOS: ${request.service_number || request.id}\nPrestador: ${request.provider_name || '—'}\nDescrição: ${descricao}`,
-      });
-      toast.success('Reclamação registrada! Entraremos em contato em breve.');
-      onClose();
-    } catch (e) {
-      toast.error('Erro ao registrar. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
+    // Ambos os tipos abrem uma nova OS de retorno
+    const label = tipo === 'retorno_conclusao' ? 'RETORNO CONCLUSÃO' : 'RETORNO GARANTIA';
+    const params = new URLSearchParams({
+      tipo: request.service_type,
+      retorno_de: request.id,
+      descricao: `${label} - ${descricao}`,
+      provider_id: request.provider_id || '',
+    });
+    navigate(`/solicitar?${params.toString()}`);
+    onClose();
   };
 
   return (
@@ -71,7 +49,7 @@ export default function RetornoModal({ request, onClose }) {
       <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-foreground">Solicitar Retorno</h2>
+          <h2 className="text-lg font-bold text-foreground">Solicitar Retorno do Prestador</h2>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted">
             <X className="w-4 h-4" />
           </button>
@@ -119,7 +97,7 @@ export default function RetornoModal({ request, onClose }) {
           disabled={!tipo || !descricao.trim() || loading}
           onClick={handleSubmit}
         >
-          {loading ? 'Enviando...' : tipo === 'retorno_conclusao' ? '📋 Abrir OS de Retorno' : '📩 Enviar Reclamação'}
+          📋 Abrir OS de Retorno
         </Button>
       </div>
     </div>

@@ -551,7 +551,7 @@ export default function AcompanharServico() {
             onClick={() => setShowRetorno(true)}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Solicitar Retorno / Reclamar
+            Solicitar Retorno
           </Button>
           <Button 
             variant="outline"
