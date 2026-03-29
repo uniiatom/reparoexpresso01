@@ -26,15 +26,13 @@ export default function ClientScheduleSelector({ providerId, onScheduleSelect, c
     enabled: !!providerId,
   });
 
-  // Fetch booked services for this provider
+  // Fetch booked services for this provider (all active statuses)
   const { data: bookedServices = [] } = useQuery({
     queryKey: ['provider-booked-services', providerId],
     queryFn: async () => {
-      const services = await base44.entities.ServiceRequest.filter({
-        provider_id: providerId,
-        status: 'aceito',
-      });
-      return services || [];
+      const all = await base44.entities.ServiceRequest.filter({ provider_id: providerId });
+      const ACTIVE = ['agendado', 'aceito', 'a_caminho', 'em_andamento'];
+      return (all || []).filter(s => ACTIVE.includes(s.status));
     },
     enabled: !!providerId,
   });
@@ -50,13 +48,12 @@ export default function ClientScheduleSelector({ providerId, onScheduleSelect, c
   const isBlockedByUnavailability = (date, time) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     return unavailabilities.some(u => {
+      // Fora do intervalo de datas
       if (dateStr < u.start_date || dateStr > u.end_date) return false;
-      // Dia inteiro bloqueado se não tem horário definido
-      if (!u.start_time && !u.end_time) return true;
-      // Bloqueia se o horário cai no intervalo
-      if (time && u.start_time && u.end_time) {
-        return time >= u.start_time && time < u.end_time;
-      }
+      // Dia inteiro bloqueado (sem horário definido)
+      if (!u.start_time || !u.end_time) return true;
+      // Bloqueia se o horário cai dentro do intervalo de tempo
+      if (time) return time >= u.start_time && time < u.end_time;
       return true;
     });
   };
