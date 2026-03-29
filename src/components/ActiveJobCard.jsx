@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   MapPin, Phone, BellRing, KeyRound,
-  Navigation, Wrench, CheckCircle2, ClipboardList, PlusCircle, ExternalLink
+  Navigation, Wrench, CheckCircle2, ClipboardList, PlusCircle, ExternalLink, PauseCircle, PlayCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
@@ -37,6 +37,9 @@ const STEPS = [
   { status: 'em_andamento', label: 'Em execução',       icon: Wrench,       color: 'text-primary bg-primary/10' },
   { status: 'concluido',    label: 'Concluído',         icon: CheckCircle2, color: 'text-green-600 bg-green-100' },
 ];
+
+// Status de espera — não faz parte do fluxo linear de STEPS
+const WAITING_STATUS = 'em_espera';
 
 // Toca beep de alerta urgente (três apitos curtos)
 function playAlertBeep() {
@@ -180,8 +183,11 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
   // Alerta sonoro quando prazo de chegada está vencendo
   useArrivalAlert(job);
 
-  const currentStepIndex = STEPS.findIndex(s => s.status === job.status);
-  const currentStep = STEPS[currentStepIndex];
+  const isWaiting = job.status === WAITING_STATUS;
+  const currentStepIndex = isWaiting ? 2 : STEPS.findIndex(s => s.status === job.status); // em_espera = parado no em_andamento
+  const currentStep = isWaiting
+    ? { label: 'Em Espera', icon: PauseCircle, color: 'text-yellow-700 bg-yellow-100' }
+    : STEPS[currentStepIndex];
   const StepIcon = currentStep?.icon || BellRing;
 
   const handleNextStep = () => {
@@ -270,11 +276,41 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           >
             <PlusCircle className="w-4 h-4 mr-1" /> Ponto adicional
           </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full rounded-xl border-yellow-500 text-yellow-700 hover:bg-yellow-50"
+            disabled={isPending}
+            onClick={() => onUpdateStatus({ id: job.id, status: WAITING_STATUS })}
+          >
+            <PauseCircle className="w-4 h-4 mr-1" /> Colocar em Espera (cliente buscar peça)
+          </Button>
           {job.additional_points?.length > 0 && (
             <p className="text-xs text-muted-foreground text-center">
               {job.additional_points.length} ponto(s) adicional(is) registrado(s)
             </p>
           )}
+        </div>
+      );
+    }
+
+    // Serviço em espera — aguardando cliente buscar peça
+    if (job.status === WAITING_STATUS) {
+      return (
+        <div className="space-y-3">
+          <div className="bg-yellow-50 border border-yellow-300 rounded-2xl p-4 text-center space-y-1">
+            <p className="text-sm font-bold text-yellow-800 flex items-center justify-center gap-2">
+              <PauseCircle className="w-4 h-4" /> Serviço em espera
+            </p>
+            <p className="text-xs text-yellow-700">Aguardando o cliente adquirir as peças necessárias.<br />Você pode atender outro chamado e retornar depois.</p>
+          </div>
+          <Button
+            className="w-full rounded-2xl bg-primary text-primary-foreground font-bold h-12"
+            disabled={isPending}
+            onClick={() => onUpdateStatus({ id: job.id, status: 'em_andamento' })}
+          >
+            <PlayCircle className="w-4 h-4 mr-2" /> Retomar Execução
+          </Button>
         </div>
       );
     }

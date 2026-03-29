@@ -182,11 +182,12 @@
         "aceito",
         "a_caminho",
         "em_andamento",
+        "em_espera",
         "concluido",
         "cancelado"
       ],
       "default": "aguardando",
-      "description": "Status da OS. 'agendado' = servi\u00e7o futuro confirmado com prestador"
+      "description": "Status da OS. 'agendado' = servi\u00e7o futuro confirmado com prestador. 'em_espera' = pausado aguardando cliente buscar pe\u00e7as"
     },
     "provider_id": {
       "type": "string"

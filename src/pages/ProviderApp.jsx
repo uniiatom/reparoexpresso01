@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, X, Check, ClipboardList, Calendar, CalendarOff } from "lucide-react";
+import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, X, Check, ClipboardList, Calendar, CalendarOff, PauseCircle } from "lucide-react";
 import ProviderUnavailabilitySection from '../components/ProviderUnavailabilitySection';
 import GoogleReviewQRCode from '../components/GoogleReviewQRCode';
 import { cn } from "@/lib/utils";
@@ -70,7 +70,10 @@ export default function ProviderApp() {
   });
 
   const [myJobs, setMyJobs] = useState([]);
-  const activeJob = myJobs.find(j => ['aceito', 'a_caminho', 'em_andamento'].includes(j.status));
+  // em_espera: job pausado (não bloqueia aceitar novos chamados)
+  const activeJob = myJobs.find(j => ['aceito', 'a_caminho', 'em_andamento', 'em_espera'].includes(j.status));
+  const waitingJob = myJobs.find(j => j.status === 'em_espera');
+  const realActiveJob = myJobs.find(j => ['aceito', 'a_caminho', 'em_andamento'].includes(j.status));
 
   // Job atual no banner = primeiro da fila
   const incomingJob = jobQueue[0] || null;
@@ -232,7 +235,8 @@ export default function ProviderApp() {
     mutationFn: ({ id, status, final_price }) => base44.entities.ServiceRequest.update(id, { status, ...(final_price && { final_price }) }),
   });
 
-  const shouldShowBanner = !activeJob;
+  // Banner só bloqueia se há job realmente ativo (não em espera)
+  const shouldShowBanner = !realActiveJob;
   const completedJobs = myJobs.filter(j => j.status === 'concluido');
   // OS na fila: atribuídas ao prestador mas ainda aguardando (não ativas nem concluídas nem agendadas)
   const queuedJobs = myJobs.filter(j => j.status === 'aguardando');
@@ -241,12 +245,12 @@ export default function ProviderApp() {
     .filter(j => j.status === 'agendado')
     .sort((a, b) => (a.scheduled_date || '').localeCompare(b.scheduled_date || ''));
 
-  // Para a buzina automaticamente se o prestador já tem um job ativo
+  // Para a buzina automaticamente se o prestador já tem um job realmente ativo (não em espera)
   useEffect(() => {
-    if (activeJob) {
+    if (realActiveJob) {
       window.__stopProviderHorn?.();
     }
-  }, [activeJob?.id]);
+  }, [realActiveJob?.id]);
 
   if (!provider) {
     return <ProviderSetupModal user={user} onCreated={() => queryClient.invalidateQueries({ queryKey: ['my-provider'] })} />;
@@ -342,10 +346,33 @@ export default function ProviderApp() {
       {/* ── ABA CHAMADOS ── */}
       {activeTab === 'chamados' && <>
 
-      {/* Job ativo */}
-      {activeJob && (
+      {/* Job em espera (pausado) — sempre visível, mesmo com outro job ativo */}
+      {waitingJob && !realActiveJob && (
         <ActiveJobCard
-          job={activeJob}
+          job={waitingJob}
+          providerName={provider.name}
+          onUpdateStatus={updateJobStatus.mutate}
+          onShowChecklist={() => setShowChecklist(true)}
+          onShowAdditionalPoint={() => setShowAdditionalPoint(true)}
+          isPending={updateJobStatus.isPending}
+        />
+      )}
+
+      {/* Job em espera — banner de aviso quando há outro job ativo */}
+      {waitingJob && realActiveJob && (
+        <div className="mb-4 bg-yellow-50 border border-yellow-300 rounded-2xl p-3 flex items-center gap-3">
+          <PauseCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-yellow-800">Serviço em espera</p>
+            <p className="text-xs text-yellow-700 truncate">{waitingJob.client_name} · {waitingJob.address}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Job ativo */}
+      {realActiveJob && (
+        <ActiveJobCard
+          job={realActiveJob}
           providerName={provider.name}
           onUpdateStatus={updateJobStatus.mutate}
           onShowChecklist={() => setShowChecklist(true)}
