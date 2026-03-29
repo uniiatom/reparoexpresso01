@@ -244,7 +244,13 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                     <span className="text-xs text-muted-foreground">
                       {nearestProvider.distance !== null
                         ? `${nearestProvider.distance.toFixed(1)} km`
-                        : 'Distância não disponível'}
+                        : 'Localização não informada'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-primary" />
+                    <span className="text-xs font-semibold text-primary">
+                      ~{estMin != null ? estMin : 30} min de chegada
                     </span>
                   </div>
                 </div>
