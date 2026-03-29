@@ -12,6 +12,7 @@ import Analytics from '../components/admin/Analytics';
 import ScheduledServicesOptimizer from '../components/admin/ScheduledServicesOptimizer';
 import ChecklistsAdmin from '../components/admin/ChecklistsAdmin';
 import AdditionalPointsAdmin from '../components/admin/AdditionalPointsAdmin';
+import ProviderPhotosApproval from '../components/admin/ProviderPhotosApproval';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -64,6 +65,8 @@ export default function AdminPanel() {
     queryFn: () => base44.entities.Provider.list(),
   });
 
+  const pendingPhotoProviders = providers.filter(p => p.photos_pending_review);
+
   const approveProvider = useMutation({
     mutationFn: ({ id, approved }) => base44.entities.Provider.update(id, { is_approved: approved }),
     onSuccess: (_, { approved }) => {
@@ -108,8 +111,13 @@ export default function AdminPanel() {
       </div>
 
       {pendingProviders.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-3">
           <p className="font-semibold text-yellow-800 text-sm">⚠️ {pendingProviders.length} prestador(es) aguardando aprovação</p>
+        </div>
+      )}
+      {pendingPhotoProviders.length > 0 && (
+        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-6">
+          <p className="font-semibold text-orange-800 text-sm">📷 {pendingPhotoProviders.length} prestador(es) com fotos aguardando aprovação</p>
         </div>
       )}
 
@@ -129,6 +137,9 @@ export default function AdminPanel() {
           </TabsTrigger>
           <TabsTrigger value="checklists">✅ Checklists</TabsTrigger>
           <TabsTrigger value="additional">➕ Pontos Adicionais</TabsTrigger>
+          <TabsTrigger value="photos">
+            📷 Fotos {pendingPhotoProviders.length > 0 && `(${pendingPhotoProviders.length})`}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics">
@@ -265,6 +276,10 @@ export default function AdminPanel() {
 
         <TabsContent value="additional">
           <AdditionalPointsAdmin />
+        </TabsContent>
+
+        <TabsContent value="photos">
+          <ProviderPhotosApproval />
         </TabsContent>
       </Tabs>
     </div>

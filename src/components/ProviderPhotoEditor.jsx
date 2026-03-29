@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
-import { Camera, Loader2, CheckCircle2, User, UserCheck } from "lucide-react";
+import { Camera, Loader2, CheckCircle2, User, UserCheck, Clock } from "lucide-react";
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-function PhotoUploadCard({ label, icon: Icon, currentUrl, onUploaded, description }) {
+function PhotoUploadCard({ label, icon: Icon, currentUrl, pendingUrl, onUploaded, description }) {
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef(null);
 
@@ -16,7 +16,6 @@ function PhotoUploadCard({ label, icon: Icon, currentUrl, onUploaded, descriptio
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     onUploaded(file_url);
     setUploading(false);
-    toast.success(`${label} atualizada!`);
   };
 
   return (
@@ -28,16 +27,24 @@ function PhotoUploadCard({ label, icon: Icon, currentUrl, onUploaded, descriptio
       <p className="text-xs text-muted-foreground mb-3">{description}</p>
 
       {/* Preview */}
-      <div className="w-full h-48 rounded-xl bg-muted overflow-hidden mb-3 flex items-center justify-center">
-        {currentUrl ? (
-          <img src={currentUrl} alt={label} className="w-full h-full object-cover" />
+      <div className="w-full h-48 rounded-xl bg-muted overflow-hidden mb-2 flex items-center justify-center relative">
+        {(pendingUrl || currentUrl) ? (
+          <img src={pendingUrl || currentUrl} alt={label} className="w-full h-full object-cover" />
         ) : (
           <div className="text-center text-muted-foreground">
             <Icon className="w-10 h-10 mx-auto mb-2 opacity-30" />
             <p className="text-xs">Nenhuma foto</p>
           </div>
         )}
+        {pendingUrl && (
+          <div className="absolute bottom-2 left-2 right-2 bg-orange-500/90 text-white text-xs font-semibold rounded-lg px-2 py-1 flex items-center gap-1">
+            <Clock className="w-3 h-3" /> Aguardando aprovação do admin
+          </div>
+        )}
       </div>
+      {pendingUrl && currentUrl && (
+        <p className="text-xs text-muted-foreground mb-2">Foto atual ainda visível até aprovação</p>
+      )}
 
       <input
         ref={inputRef}
@@ -65,58 +72,69 @@ function PhotoUploadCard({ label, icon: Icon, currentUrl, onUploaded, descriptio
 export default function ProviderPhotoEditor({ provider, onUpdate }) {
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
-  const [photos, setPhotos] = useState({
-    photo_url: provider.photo_url || '',
-    photo_body_url: provider.photo_body_url || '',
+  const [pendingPhotos, setPendingPhotos] = useState({
+    photo_url_pending: '',
+    photo_body_url_pending: '',
   });
 
   const handleSave = async () => {
     setSaving(true);
-    await base44.entities.Provider.update(provider.id, photos);
+    const updateData = { photos_pending_review: true };
+    if (pendingPhotos.photo_url_pending) updateData.photo_url_pending = pendingPhotos.photo_url_pending;
+    if (pendingPhotos.photo_body_url_pending) updateData.photo_body_url_pending = pendingPhotos.photo_body_url_pending;
+    await base44.entities.Provider.update(provider.id, updateData);
     queryClient.invalidateQueries({ queryKey: ['my-provider'] });
-    onUpdate?.(photos);
+    onUpdate?.();
     setSaving(false);
-    toast.success('Fotos salvas com sucesso!');
+    setPendingPhotos({ photo_url_pending: '', photo_body_url_pending: '' });
+    toast.success('Fotos enviadas! Aguarde aprovação do administrador.');
   };
 
-  const hasChanges =
-    photos.photo_url !== (provider.photo_url || '') ||
-    photos.photo_body_url !== (provider.photo_body_url || '');
+  const hasNewPhotos = !!(pendingPhotos.photo_url_pending || pendingPhotos.photo_body_url_pending);
 
   return (
     <div className="space-y-4">
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3">
         <p className="text-xs text-amber-800 font-semibold">
-          📸 Suas fotos são exibidas para os clientes antes de aceitar o serviço. Use fotos nítidas e profissionais.
+          📸 As fotos precisam ser aprovadas pelo administrador antes de ficarem visíveis para os clientes.
         </p>
       </div>
+
+      {provider.photos_pending_review && (
+        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-3 flex items-center gap-2">
+          <Clock className="w-4 h-4 text-orange-600 flex-shrink-0" />
+          <p className="text-xs text-orange-800 font-semibold">Você tem fotos aguardando aprovação do admin.</p>
+        </div>
+      )}
 
       <PhotoUploadCard
         label="Foto de rosto"
         icon={User}
-        currentUrl={photos.photo_url}
+        currentUrl={provider.photo_url}
+        pendingUrl={pendingPhotos.photo_url_pending || provider.photo_url_pending}
         description="Foto clara do seu rosto, preferencialmente fundo neutro."
-        onUploaded={(url) => setPhotos(p => ({ ...p, photo_url: url }))}
+        onUploaded={(url) => setPendingPhotos(p => ({ ...p, photo_url_pending: url }))}
       />
 
       <PhotoUploadCard
         label="Foto de corpo inteiro"
         icon={UserCheck}
-        currentUrl={photos.photo_body_url}
+        currentUrl={provider.photo_body_url}
+        pendingUrl={pendingPhotos.photo_body_url_pending || provider.photo_body_url_pending}
         description="Foto com uniforme ou roupa de trabalho, corpo inteiro visível."
-        onUploaded={(url) => setPhotos(p => ({ ...p, photo_body_url: url }))}
+        onUploaded={(url) => setPendingPhotos(p => ({ ...p, photo_body_url_pending: url }))}
       />
 
-      {hasChanges && (
+      {hasNewPhotos && (
         <Button
           className="w-full rounded-2xl h-12 font-bold bg-primary text-primary-foreground"
           onClick={handleSave}
           disabled={saving}
         >
           {saving ? (
-            <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Salvando...</>
+            <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Enviando...</>
           ) : (
-            <><CheckCircle2 className="w-4 h-4 mr-2" /> Salvar fotos</>
+            <><CheckCircle2 className="w-4 h-4 mr-2" /> Enviar para aprovação</>
           )}
         </Button>
       )}

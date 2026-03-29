@@ -1,0 +1,120 @@
+{
+  "name": "Provider",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID do usu\u00e1rio vinculado"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nome completo"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "description": "E-mail do prestador"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de nascimento"
+    },
+    "cpf": {
+      "type": "string",
+      "description": "CPF do prestador"
+    },
+    "rg": {
+      "type": "string",
+      "description": "RG / Identidade do prestador"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "Foto de rosto (aprovada)"
+    },
+    "photo_body_url": {
+      "type": "string",
+      "description": "Foto de corpo inteiro (aprovada)"
+    },
+    "photo_url_pending": {
+      "type": "string",
+      "description": "Foto de rosto aguardando aprova\u00e7\u00e3o"
+    },
+    "photo_body_url_pending": {
+      "type": "string",
+      "description": "Foto de corpo inteiro aguardando aprova\u00e7\u00e3o"
+    },
+    "photos_pending_review": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se h\u00e1 fotos aguardando aprova\u00e7\u00e3o do admin"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Especialidades do prestador"
+    },
+    "address": {
+      "type": "string",
+      "description": "Rua e n\u00famero"
+    },
+    "neighborhood": {
+      "type": "string",
+      "description": "Bairro"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "zip_code": {
+      "type": "string",
+      "description": "CEP"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o profissional"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude atual do prestador"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude atual do prestador"
+    },
+    "is_online": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se est\u00e1 dispon\u00edvel agora"
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Aprovado pelo admin"
+    },
+    "rating": {
+      "type": "number",
+      "default": 5
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0
+    },
+    "total_jobs": {
+      "type": "number",
+      "default": 0
+    },
+    "experience_years": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
