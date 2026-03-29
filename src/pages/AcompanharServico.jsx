@@ -398,6 +398,22 @@ export default function AcompanharServico() {
           </div>
           <p className="font-semibold text-foreground">Procurando prestadores próximos...</p>
           <p className="text-sm text-muted-foreground mt-1">Normalmente leva menos de 5 minutos</p>
+          {request.estimated_arrival_minutes != null && (
+            <div className="mt-4 inline-flex items-center gap-2 bg-primary/10 text-primary font-bold px-4 py-2 rounded-2xl text-sm">
+              🚗 Prestador a ~{request.estimated_arrival_minutes} min de você
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Previsão de chegada quando aceito */}
+      {request.status === 'aceito' && request.estimated_arrival_minutes != null && (
+        <div className="bg-blue-50 border border-blue-200 rounded-3xl p-4 mb-5 flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-100 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl">🚗</div>
+          <div>
+            <p className="font-bold text-blue-800 text-sm">Prestador a ~{request.estimated_arrival_minutes} min de você</p>
+            <p className="text-xs text-blue-600">Baseado na localização no momento da aceitação</p>
+          </div>
         </div>
       )}
 

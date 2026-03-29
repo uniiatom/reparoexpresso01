@@ -156,7 +156,9 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       const currentDate = now.toISOString().split('T')[0];
       const surcharges = getSurcharges(currentDate, currentTime);
-      onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges });
+      // Inclui previsão de chegada calculada com base na distância do prestador
+      const estimatedArrival = estMin !== null ? estMin : undefined;
+      onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges, ...(estimatedArrival != null && { estimated_arrival_minutes: estimatedArrival }) });
     }
   };
 
