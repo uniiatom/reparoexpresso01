@@ -138,27 +138,35 @@ function useProviderLocationBroadcast(job, active) {
 }
 
 // Hook que calcula tempo de chegada local usando GPS atual (sem depender do valor no banco)
+// Retorna: número de minutos, ou 0 se já chegou (<50m), ou null se sem dados
 function useLocalArrivalMinutes(job, active) {
   const [localMinutes, setLocalMinutes] = useState(null);
   useEffect(() => {
     if (!active || !navigator.geolocation) { setLocalMinutes(null); return; }
     const clientLat = job.client_latitude || job.latitude;
     const clientLon = job.client_longitude || job.longitude;
-    if (!clientLat || !clientLon) { setLocalMinutes(null); return; }
 
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
+        // Se não há coordenadas do cliente, calcula só com base no banco de estimated_arrival
+        if (!clientLat || !clientLon) {
+          // Sem coordenadas do cliente, não conseguimos calcular — usa valor do banco
+          setLocalMinutes(null);
+          return;
+        }
         const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
-        const mins = distKm != null
-          ? (distKm < 0.05 ? 1 : Math.max(1, Math.round((distKm / 30) * 60)))
-          : null;
+        if (distKm === null) { setLocalMinutes(null); return; }
+        // < 50 metros = "chegando" = 1 min
+        // < 200 metros = 1 min
+        // Resto: velocidade média urbana 30km/h
+        const mins = distKm < 0.2 ? 1 : Math.max(1, Math.round((distKm / 30) * 60));
         setLocalMinutes(mins);
       },
       () => setLocalMinutes(null),
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
     );
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [job?.id, active, job?.client_latitude, job?.latitude]);
+  }, [job?.id, active, job?.client_latitude, job?.latitude, job?.client_longitude, job?.longitude]);
   return localMinutes;
 }
 

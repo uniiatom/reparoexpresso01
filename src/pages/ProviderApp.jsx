@@ -124,33 +124,46 @@ export default function ProviderApp() {
       };
 
       // Captura GPS atual do prestador para calcular tempo real de chegada
-      if (navigator.geolocation) {
-        await new Promise((resolve) => {
-          navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-              try {
-                // Busca o pedido para pegar coordenadas do cliente
-                const [req] = await base44.entities.ServiceRequest.filter({ id: reqId });
-                const clientLat = req?.client_latitude || req?.latitude;
-                const clientLon = req?.client_longitude || req?.longitude;
-                if (clientLat && clientLon) {
-                  const R = 6371;
-                  const dLat = (clientLat - pos.coords.latitude) * Math.PI / 180;
-                  const dLon = (clientLon - pos.coords.longitude) * Math.PI / 180;
-                  const a = Math.sin(dLat/2)**2 + Math.cos(pos.coords.latitude*Math.PI/180)*Math.cos(clientLat*Math.PI/180)*Math.sin(dLon/2)**2;
-                  const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                  updateData.estimated_arrival_minutes = distKm < 0.1 ? 1 : Math.round((distKm / 50) * 60);
-                }
-                updateData.provider_latitude = pos.coords.latitude;
-                updateData.provider_longitude = pos.coords.longitude;
-              } catch(e) { /* ignora erro de fetch */ }
-              resolve();
-            },
-            () => resolve(),
-            { enableHighAccuracy: true, timeout: 6000 }
-          );
-        });
-      }
+      const calcDist = (lat1, lon1, lat2, lon2) => {
+        if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      };
+      const distToMins = (distKm) => distKm < 0.2 ? 1 : Math.max(1, Math.round((distKm / 30) * 60));
+
+      await new Promise((resolve) => {
+        const fallback = () => {
+          // Sem GPS: usa localização salva do prestador vs localização do pedido
+          const pLat = provider?.latitude;
+          const pLon = provider?.longitude;
+          resolve({ pLat, pLon });
+        };
+
+        if (!navigator.geolocation) { fallback(); return; }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ pLat: pos.coords.latitude, pLon: pos.coords.longitude }),
+          fallback,
+          { enableHighAccuracy: true, timeout: 5000 }
+        );
+      }).then(async ({ pLat, pLon }) => {
+        if (pLat && pLon) {
+          updateData.provider_latitude = pLat;
+          updateData.provider_longitude = pLon;
+        }
+        try {
+          const [req] = await base44.entities.ServiceRequest.filter({ id: reqId });
+          const clientLat = req?.client_latitude || req?.latitude;
+          const clientLon = req?.client_longitude || req?.longitude;
+          const dist = calcDist(pLat, pLon, clientLat, clientLon);
+          // Sempre salva o estimated_arrival_minutes — nunca deixa o valor antigo (30 min)
+          updateData.estimated_arrival_minutes = dist != null ? distToMins(dist) : 5;
+        } catch(e) {
+          updateData.estimated_arrival_minutes = 5;
+        }
+      });
 
       return base44.entities.ServiceRequest.update(reqId, updateData);
     },
