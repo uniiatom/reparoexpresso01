@@ -185,6 +185,7 @@ export default function SolicitarServico() {
    scheduled_time: '',
    client_name: clientProfile?.name || '',
    client_phone: clientProfile?.phone || '',
+   referral_code: urlParams.get('ref') || '',
   });
 
   const [loadingCep, setLoadingCep] = useState(false);
@@ -980,6 +981,10 @@ export default function SolicitarServico() {
             <div className="space-y-2">
               <Label>WhatsApp / Telefone</Label>
               <Input placeholder="(11) 99999-9999" value={form.client_phone} onChange={e => set('client_phone', e.target.value)} className="rounded-2xl" />
+            </div>
+            <div className="space-y-2">
+              <Label>Código de indicação <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+              <Input placeholder="Ex: AMIGO123" value={form.referral_code} onChange={e => set('referral_code', e.target.value.toUpperCase())} className="rounded-2xl" />
             </div>
           </div>
           {/* Resumo */}
