@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock, User, Phone, Star, MapPin, Wrench, AlertCircle, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import RatingModal from '../components/RatingModal';
+import RetornoModal from '../components/RetornoModal';
 import LocationTracker from '../components/LocationTracker';
 import ServiceChat from '../components/ServiceChat';
 import PaymentModal from '../components/PaymentModal';
@@ -33,6 +34,7 @@ export default function AcompanharServico() {
   const [showRating, setShowRating] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [showPixPayment, setShowPixPayment] = useState(false);
+  const [showRetorno, setShowRetorno] = useState(false);
   const [previousStatus, setPreviousStatus] = useState(null);
   const previousStatusRef = useRef(null);
   const [user, setUser] = useState(null);
@@ -546,10 +548,10 @@ export default function AcompanharServico() {
         <div className="space-y-3">
           <Button 
             className="w-full rounded-2xl bg-primary text-primary-foreground font-semibold h-11"
-            onClick={() => navigate(`/solicitar?tipo=${request.service_type}`)}
+            onClick={() => setShowRetorno(true)}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Abrir Retorno
+            Solicitar Retorno / Reclamar
           </Button>
           <Button 
             variant="outline"
@@ -566,6 +568,7 @@ export default function AcompanharServico() {
         active={['aguardando','aceito','a_caminho','em_andamento'].includes(request?.status)}
       />
       {showRating && <RatingModal requestId={id} onClose={handleRatingClose} />}
+      {showRetorno && <RetornoModal request={request} onClose={() => setShowRetorno(false)} />}
       {request.final_price && (
         <>
           <PaymentModal
