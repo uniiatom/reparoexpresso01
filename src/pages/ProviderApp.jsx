@@ -115,12 +115,45 @@ export default function ProviderApp() {
   });
 
   const acceptJob = useMutation({
-    mutationFn: (reqId) => base44.entities.ServiceRequest.update(reqId, {
-      status: 'aceito',
-      provider_id: provider?.id,
-      provider_name: provider?.name,
-      provider_phone: provider?.phone,
-    }),
+    mutationFn: async (reqId) => {
+      const updateData = {
+        status: 'aceito',
+        provider_id: provider?.id,
+        provider_name: provider?.name,
+        provider_phone: provider?.phone,
+      };
+
+      // Captura GPS atual do prestador para calcular tempo real de chegada
+      if (navigator.geolocation) {
+        await new Promise((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+              try {
+                // Busca o pedido para pegar coordenadas do cliente
+                const [req] = await base44.entities.ServiceRequest.filter({ id: reqId });
+                const clientLat = req?.client_latitude || req?.latitude;
+                const clientLon = req?.client_longitude || req?.longitude;
+                if (clientLat && clientLon) {
+                  const R = 6371;
+                  const dLat = (clientLat - pos.coords.latitude) * Math.PI / 180;
+                  const dLon = (clientLon - pos.coords.longitude) * Math.PI / 180;
+                  const a = Math.sin(dLat/2)**2 + Math.cos(pos.coords.latitude*Math.PI/180)*Math.cos(clientLat*Math.PI/180)*Math.sin(dLon/2)**2;
+                  const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                  updateData.estimated_arrival_minutes = Math.max(1, Math.round((distKm / 30) * 60));
+                }
+                updateData.provider_latitude = pos.coords.latitude;
+                updateData.provider_longitude = pos.coords.longitude;
+              } catch(e) { /* ignora erro de fetch */ }
+              resolve();
+            },
+            () => resolve(),
+            { enableHighAccuracy: true, timeout: 6000 }
+          );
+        });
+      }
+
+      return base44.entities.ServiceRequest.update(reqId, updateData);
+    },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['available-requests'] });
       // Limpa TODA a fila ao aceitar
