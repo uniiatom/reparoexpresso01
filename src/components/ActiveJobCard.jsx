@@ -116,7 +116,9 @@ function useProviderLocationBroadcast(job, active) {
         const clientLat = job.client_latitude || job.latitude;
         const clientLon = job.client_longitude || job.longitude;
         const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
-        const estimatedMinutes = distKm != null ? (distKm < 0.1 ? 1 : Math.round((distKm / 50) * 60)) : null;
+        const estimatedMinutes = distKm != null
+          ? (distKm < 0.05 ? 1 : Math.max(1, Math.round((distKm / 30) * 60)))
+          : null;
 
         const updateData = {
           provider_latitude: pos.coords.latitude,
@@ -127,7 +129,7 @@ function useProviderLocationBroadcast(job, active) {
         base44.entities.ServiceRequest.update(job.id, updateData);
       },
       null,
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
     );
     return () => {
       if (watchRef.current != null) navigator.geolocation.clearWatch(watchRef.current);
@@ -135,11 +137,38 @@ function useProviderLocationBroadcast(job, active) {
   }, [job?.id, active]);
 }
 
+// Hook que calcula tempo de chegada local usando GPS atual (sem depender do valor no banco)
+function useLocalArrivalMinutes(job, active) {
+  const [localMinutes, setLocalMinutes] = useState(null);
+  useEffect(() => {
+    if (!active || !navigator.geolocation) { setLocalMinutes(null); return; }
+    const clientLat = job.client_latitude || job.latitude;
+    const clientLon = job.client_longitude || job.longitude;
+    if (!clientLat || !clientLon) { setLocalMinutes(null); return; }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
+        const mins = distKm != null
+          ? (distKm < 0.05 ? 1 : Math.max(1, Math.round((distKm / 30) * 60)))
+          : null;
+        setLocalMinutes(mins);
+      },
+      () => setLocalMinutes(null),
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [job?.id, active, job?.client_latitude, job?.latitude]);
+  return localMinutes;
+}
+
 export default function ActiveJobCard({ job, providerName, onUpdateStatus, onShowChecklist, onShowAdditionalPoint, isPending }) {
   const [validationInput, setValidationInput] = useState('');
 
   // Transmite localização GPS e recalcula tempo de chegada em tempo real quando a_caminho
   useProviderLocationBroadcast(job, job.status === 'a_caminho');
+  // Calcula tempo de chegada localmente via GPS (exibido no card sem depender do banco)
+  const localArrivalMinutes = useLocalArrivalMinutes(job, ['aceito', 'a_caminho'].includes(job.status));
   // Alerta sonoro quando prazo de chegada está vencendo
   useArrivalAlert(job);
 
@@ -311,12 +340,12 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           <Phone className="w-3.5 h-3.5" /> {job.client_name} · {job.client_phone}
         </p>
 
-        {/* Tempo estimado de chegada — atualizado em tempo real */}
-        {job.status === 'a_caminho' && job.estimated_arrival_minutes != null && (
+        {/* Tempo estimado de chegada — calculado localmente em tempo real */}
+        {['aceito', 'a_caminho'].includes(job.status) && localArrivalMinutes != null && (
           <div className="mt-3 bg-orange-50 border border-orange-200 rounded-2xl p-3 flex items-center gap-3">
             <span className="text-2xl">🚗</span>
             <div>
-              <p className="text-sm font-bold text-orange-800">~{job.estimated_arrival_minutes} min até o cliente</p>
+              <p className="text-sm font-bold text-orange-800">~{localArrivalMinutes} min até o cliente</p>
               <p className="text-xs text-orange-600">Calculado com base na sua localização atual</p>
             </div>
           </div>
