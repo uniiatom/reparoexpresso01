@@ -10,7 +10,7 @@ const TIPOS = [
     icon: RotateCcw,
     color: 'border-blue-200 bg-blue-50 text-blue-700',
     iconColor: 'text-blue-500',
-    description: 'O serviço ficou incompleto e preciso que o prestador retorne para finalizar.',
+    description: 'Já providenciei as peças solicitadas pelo prestador.',
   },
   {
     id: 'retorno_garantia',
