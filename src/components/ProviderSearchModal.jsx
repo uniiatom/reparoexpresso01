@@ -47,6 +47,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [scheduledTime, setScheduledTime] = useState('');
   const [confirming, setConfirming] = useState(false);
   const processingRef = useRef(false);
+  const [allUnavailabilities, setAllUnavailabilities] = useState([]);
 
   useEffect(() => {
     // Se já é agendado com data/hora definidos, confirma direto sem buscar prestador
@@ -74,6 +75,9 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     const providers = await base44.entities.Provider.filter({ is_online: true, is_approved: true });
 
     if (!providers.length) {
+      // Busca todas as indisponibilidades para bloquear agenda
+      const unavails = await base44.entities.ProviderUnavailability.list();
+      setAllUnavailabilities(unavails || []);
       setPhase('none');
       return;
     }
@@ -98,6 +102,24 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     const best = withDistance[0];
     setNearestProvider(best);
     setPhase('found');
+  };
+
+  // Verifica se uma data+hora está bloqueada para TODOS os prestadores (todos com indisponibilidade)
+  const isSlotBlockedForAll = (date, time) => {
+    if (!allUnavailabilities.length) return false;
+    return allUnavailabilities.some(u => {
+      if (!date || date < u.start_date || date > u.end_date) return false;
+      if (!u.start_time && !u.end_time) return true;
+      if (time && u.start_time && u.end_time) return time >= u.start_time && time < u.end_time;
+      return true;
+    });
+  };
+
+  const isDateBlockedForAll = (date) => {
+    if (!date) return false;
+    return allUnavailabilities.some(u =>
+      date >= u.start_date && date <= u.end_date && !u.start_time && !u.end_time
+    );
   };
 
   const getSurcharges = (date, time) => {
@@ -271,16 +293,26 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                   type="date"
                   value={scheduledDate}
                   min={new Date().toISOString().split('T')[0]}
-                  onChange={e => setScheduledDate(e.target.value)}
+                  onChange={e => {
+                    const d = e.target.value;
+                    if (isDateBlockedForAll(d)) return; // data completamente bloqueada
+                    setScheduledDate(d);
+                    setScheduledTime('');
+                  }}
                   className="w-full border border-border rounded-2xl px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                 />
+                {scheduledDate && isDateBlockedForAll(scheduledDate) && (
+                  <p className="text-xs text-red-600 mt-1">Nenhum prestador disponível nesta data.</p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-foreground">Horário</label>
                 <div className="flex flex-wrap gap-2">
                     {TIME_SLOTS.map(t => {
+                      const blocked = isSlotBlockedForAll(scheduledDate, t);
                       const surcharges = getSurcharges(scheduledDate, t);
                       const totalSurcharge = (surcharges.holiday_surcharge ? 70 : surcharges.weekend_surcharge ? 40 : 0) + (surcharges.night_surcharge ? 30 : 0);
+                      if (blocked) return null;
                       return (
                         <button key={t} onClick={() => setScheduledTime(t)}
                           className={cn("px-3 py-1.5 rounded-xl text-xs font-medium border-2 transition-all",

@@ -39,6 +39,28 @@ export default function ClientScheduleSelector({ providerId, onScheduleSelect, c
     enabled: !!providerId,
   });
 
+  // Fetch unavailability periods for this provider
+  const { data: unavailabilities = [] } = useQuery({
+    queryKey: ['provider-unavailability', providerId],
+    queryFn: () => base44.entities.ProviderUnavailability.filter({ provider_id: providerId }),
+    enabled: !!providerId,
+  });
+
+  // Checa se uma data+hora está bloqueada por indisponibilidade
+  const isBlockedByUnavailability = (date, time) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return unavailabilities.some(u => {
+      if (dateStr < u.start_date || dateStr > u.end_date) return false;
+      // Dia inteiro bloqueado se não tem horário definido
+      if (!u.start_time && !u.end_time) return true;
+      // Bloqueia se o horário cai no intervalo
+      if (time && u.start_time && u.end_time) {
+        return time >= u.start_time && time < u.end_time;
+      }
+      return true;
+    });
+  };
+
   const isTimeAvailable = (date, time) => {
     const dayOfWeek = getDay(date);
     const dayAvailability = availability.find(a => a.day_of_week === dayOfWeek && a.is_available);
@@ -66,12 +88,23 @@ export default function ClientScheduleSelector({ providerId, onScheduleSelect, c
       return bookedDate && ACTIVE_STATUSES.includes(s.status);
     }).length;
 
+    if (isBlockedByUnavailability(date, time)) return false;
+
     return !slotOccupied && bookedForDay < (dayAvailability.max_slots_per_day || 8);
   };
 
   const isDateAvailable = (date) => {
     const dayOfWeek = getDay(date);
-    return availability.some(a => a.day_of_week === dayOfWeek && a.is_available);
+    const hasAvailability = availability.some(a => a.day_of_week === dayOfWeek && a.is_available);
+    if (!hasAvailability) return false;
+    // Dia inteiro bloqueado se existe indisponibilidade de dia inteiro para essa data
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const fullyBlocked = unavailabilities.some(u =>
+      dateStr >= u.start_date && dateStr <= u.end_date && !u.start_time && !u.end_time
+    );
+    if (fullyBlocked) return false;
+    // Verifica se ao menos um slot de horário está disponível no dia
+    return TIME_SLOTS.some(time => isTimeAvailable(date, time));
   };
 
   const handleConfirm = () => {
