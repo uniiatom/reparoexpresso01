@@ -96,32 +96,50 @@ function useArrivalAlert(job) {
   }, [job.status, job.estimated_arrival_minutes, job.updated_date]);
 }
 
+function calcDistance(lat1, lon1, lat2, lon2) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
 // Hook para enviar GPS do prestador em tempo real quando a_caminho
-function useProviderLocationBroadcast(jobId, active) {
+// Também recalcula estimated_arrival_minutes com base na distância atual até o cliente
+function useProviderLocationBroadcast(job, active) {
   const watchRef = useRef(null);
   useEffect(() => {
-    if (!active || !jobId || !navigator.geolocation) return;
+    if (!active || !job?.id || !navigator.geolocation) return;
     watchRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        base44.entities.ServiceRequest.update(jobId, {
+        const clientLat = job.client_latitude || job.latitude;
+        const clientLon = job.client_longitude || job.longitude;
+        const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
+        const estimatedMinutes = distKm != null ? Math.max(1, Math.round((distKm / 30) * 60)) : null;
+
+        const updateData = {
           provider_latitude: pos.coords.latitude,
           provider_longitude: pos.coords.longitude,
-        });
+        };
+        if (estimatedMinutes != null) updateData.estimated_arrival_minutes = estimatedMinutes;
+
+        base44.entities.ServiceRequest.update(job.id, updateData);
       },
       null,
-      { enableHighAccuracy: true, maximumAge: 15000, timeout: 15000 }
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
     );
     return () => {
       if (watchRef.current != null) navigator.geolocation.clearWatch(watchRef.current);
     };
-  }, [jobId, active]);
+  }, [job?.id, active]);
 }
 
 export default function ActiveJobCard({ job, providerName, onUpdateStatus, onShowChecklist, onShowAdditionalPoint, isPending }) {
   const [validationInput, setValidationInput] = useState('');
 
-  // Transmite localização GPS apenas quando a_caminho
-  useProviderLocationBroadcast(job.id, job.status === 'a_caminho');
+  // Transmite localização GPS e recalcula tempo de chegada em tempo real quando a_caminho
+  useProviderLocationBroadcast(job, job.status === 'a_caminho');
   // Alerta sonoro quando prazo de chegada está vencendo
   useArrivalAlert(job);
 
@@ -292,6 +310,17 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
         <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
           <Phone className="w-3.5 h-3.5" /> {job.client_name} · {job.client_phone}
         </p>
+
+        {/* Tempo estimado de chegada — atualizado em tempo real */}
+        {job.status === 'a_caminho' && job.estimated_arrival_minutes != null && (
+          <div className="mt-3 bg-orange-50 border border-orange-200 rounded-2xl p-3 flex items-center gap-3">
+            <span className="text-2xl">🚗</span>
+            <div>
+              <p className="text-sm font-bold text-orange-800">~{job.estimated_arrival_minutes} min até o cliente</p>
+              <p className="text-xs text-orange-600">Calculado com base na sua localização atual</p>
+            </div>
+          </div>
+        )}
 
         {/* Localização do cliente — disponível apenas a partir do deslocamento */}
         {['a_caminho', 'em_andamento', 'concluido'].includes(job.status) && (() => {
