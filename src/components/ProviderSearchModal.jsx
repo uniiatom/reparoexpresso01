@@ -72,36 +72,46 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     setPhase('searching');
     await new Promise(r => setTimeout(r, 2000)); // Feedback visual de busca
 
-    const providers = await base44.entities.Provider.filter({ is_online: true, is_approved: true });
-
-    if (!providers.length) {
-      // Busca todas as indisponibilidades para bloquear agenda
-      const unavails = await base44.entities.ProviderUnavailability.list();
-      setAllUnavailabilities(unavails || []);
-      setPhase('none');
-      return;
-    }
-
-    // Calcular distância de cada prestador ao cliente
     const clientLat = form.latitude;
     const clientLon = form.longitude;
 
-    const withDistance = providers.map(p => {
-      const dist = calcDistance(clientLat, clientLon, p.latitude, p.longitude);
-      return { ...p, distance: dist };
-    });
+    const sortByDistance = (providers) => {
+      const withDist = providers.map(p => ({
+        ...p,
+        distance: calcDistance(clientLat, clientLon, p.latitude, p.longitude),
+      }));
+      withDist.sort((a, b) => {
+        if (a.distance === null && b.distance === null) return 0;
+        if (a.distance === null) return 1;
+        if (b.distance === null) return -1;
+        return a.distance - b.distance;
+      });
+      return withDist;
+    };
 
-    // Ordenar por distância (null vai pro final)
-    withDistance.sort((a, b) => {
-      if (a.distance === null && b.distance === null) return 0;
-      if (a.distance === null) return 1;
-      if (b.distance === null) return -1;
-      return a.distance - b.distance;
-    });
+    // Busca providers online primeiro
+    const onlineProviders = await base44.entities.Provider.filter({ is_online: true, is_approved: true });
 
-    const best = withDistance[0];
-    setNearestProvider(best);
-    setPhase('found');
+    if (onlineProviders.length > 0) {
+      const sorted = sortByDistance(onlineProviders);
+      setNearestProvider(sorted[0]);
+      setPhase('found');
+      return;
+    }
+
+    // Nenhum online — busca todos aprovados para calcular distância do mais próximo (estimativa)
+    const [allProviders, unavails] = await Promise.all([
+      base44.entities.Provider.filter({ is_approved: true }),
+      base44.entities.ProviderUnavailability.list(),
+    ]);
+    setAllUnavailabilities(unavails || []);
+
+    if (allProviders.length > 0) {
+      const sorted = sortByDistance(allProviders);
+      setNearestProvider(sorted[0]); // usado só para calcular distância/tempo estimado
+    }
+
+    setPhase('none');
   };
 
   // Verifica se uma data+hora está bloqueada para TODOS os prestadores (todos com indisponibilidade)
