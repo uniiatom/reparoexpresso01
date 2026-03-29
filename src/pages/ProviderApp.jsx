@@ -19,6 +19,7 @@ import ServiceChecklist from '../components/ServiceChecklist';
 import AdditionalPointModal from '../components/AdditionalPointModal';
 import ActiveJobCard from '../components/ActiveJobCard';
 import DeclineReasonModal from '../components/DeclineReasonModal';
+import ProviderPhotoEditor from '../components/ProviderPhotoEditor';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -325,6 +326,12 @@ export default function ProviderApp() {
         >
           🚫 Folgas
         </button>
+        <button
+          onClick={() => setActiveTab('fotos')}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'fotos' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          📷 Fotos
+        </button>
       </div>
 
       {/* ── ABA CHAMADOS ── */}
@@ -608,6 +615,14 @@ export default function ProviderApp() {
       {/* ── ABA INDISPONIBILIDADE ── */}
       {activeTab === 'indisponibilidade' && (
         <ProviderUnavailabilitySection providerId={provider.id} />
+      )}
+
+      {/* ── ABA FOTOS ── */}
+      {activeTab === 'fotos' && (
+        <ProviderPhotoEditor
+          provider={provider}
+          onUpdate={() => queryClient.invalidateQueries({ queryKey: ['my-provider'] })}
+        />
       )}
 
       {/* Checklist modal */}
