@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,8 @@ export default function ProviderApp() {
   const [jobQueue, setJobQueue] = useState([]); // fila de jobs para o banner
   const [showChecklist, setShowChecklist] = useState(false);
   const [showAdditionalPoint, setShowAdditionalPoint] = useState(false);
-  const [activeTab, setActiveTab] = useState('chamados');
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.tab || 'chamados');
   const [declineTarget, setDeclineTarget] = useState(null); // { job, source: 'banner' | 'list' }
 
   const { data: provider } = useQuery({

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, LogOut, MapPin, Phone, Calendar, Gift } from "lucide-react";
+import { ArrowLeft, LogOut, Calendar, Gift, Camera, Wrench } from "lucide-react";
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import ServiceHistory from '@/components/ServiceHistory';
@@ -25,6 +25,16 @@ export default function UserProfile() {
     };
     fetchUser();
   }, [navigate]);
+
+  const { data: provider } = useQuery({
+    queryKey: ['my-provider-profile'],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const list = await base44.entities.Provider.filter({ user_id: user.id });
+      return list[0] || null;
+    },
+    enabled: !!user?.id,
+  });
 
   const { data: serviceRequests = [], isLoading: servicesLoading } = useQuery({
     queryKey: ['user-service-history'],
@@ -118,6 +128,23 @@ export default function UserProfile() {
 
       {/* Actions */}
       <div className="space-y-2">
+        {provider && (
+          <>
+            <Link to="/prestador" className="block">
+              <Button variant="outline" className="w-full rounded-2xl h-12 font-semibold border-primary/30 text-primary hover:bg-primary/10">
+                <Wrench className="w-4 h-4 mr-2" /> Painel do Prestador
+              </Button>
+            </Link>
+            <Link to="/prestador" state={{ tab: 'fotos' }} className="block">
+              <Button variant="outline" className="w-full rounded-2xl h-12 font-semibold border-orange-300 text-orange-600 hover:bg-orange-50">
+                <Camera className="w-4 h-4 mr-2" /> Editar minhas fotos
+                {provider.photos_pending_review && (
+                  <span className="ml-2 text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Pendente</span>
+                )}
+              </Button>
+            </Link>
+          </>
+        )}
         <Link to="/recompensas" className="block">
           <Button variant="outline" className="w-full rounded-2xl h-12 font-semibold border-primary/30 text-primary hover:bg-primary/10">
             <Gift className="w-4 h-4 mr-2" /> Meu Programa de Fidelidade
