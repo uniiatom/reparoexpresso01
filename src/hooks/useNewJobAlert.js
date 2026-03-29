@@ -3,65 +3,62 @@ import { base44 } from '@/api/base44Client';
 
 // Toca uma buzina de caminhão (grave, potente) e retorna função para parar
 export function startHornLoop() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (ctx.state === 'suspended') {
-      ctx.resume();
-    }
-    let stopped = false;
-    let intervalId = null;
+  let stopped = false;
+  let intervalId = null;
+  let ctx = null;
 
-    const playTruckHorn = () => {
-      if (stopped) return;
-
-      const now = ctx.currentTime;
-
-      // Frequências graves de buzina de caminhão (~100-150 Hz)
-      const frequencies = [100, 120, 135];
-      const masterGain = ctx.createGain();
-      masterGain.connect(ctx.destination);
-      // Volume ALTO para garantir que oiça
-      masterGain.gain.setValueAtTime(0, now);
-      masterGain.gain.linearRampToValueAtTime(0.9, now + 0.1);   // ataque rápido
-      masterGain.gain.setValueAtTime(0.9, now + 1.8);             // sustain longo
-      masterGain.gain.linearRampToValueAtTime(0, now + 2.0);      // decay rápido
-
-      frequencies.forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const oscGain = ctx.createGain();
-
-        osc.type = 'square'; // Square é mais "buzzy" que sawtooth
-        osc.frequency.setValueAtTime(freq, now);
-        // Vibrato mais pronunciado para soar como caminhão
-        osc.frequency.linearRampToValueAtTime(freq * 0.98, now + 0.3);
-        osc.frequency.linearRampToValueAtTime(freq * 1.02, now + 0.6);
-        osc.frequency.linearRampToValueAtTime(freq, now + 1.8);
-
-        oscGain.gain.value = i === 0 ? 0.6 : 0.3;
-        osc.connect(oscGain);
-        oscGain.connect(masterGain);
-        osc.start(now);
-        osc.stop(now + 2.0);
-      });
-    };
-
-    // Toca imediatamente e repete a cada 2.5s
-    playTruckHorn();
-    intervalId = setInterval(playTruckHorn, 2500);
-
-    return () => {
-      stopped = true;
-      clearInterval(intervalId);
-      try {
-        ctx.close();
-      } catch (e) {
-        console.warn('Erro ao fechar contexto de áudio:', e);
+  const doStart = async () => {
+    try {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // Aguarda o contexto ficar ativo (necessário por política do navegador)
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
       }
-    };
-  } catch (e) {
-    console.error('Erro ao tocar buzina:', e);
-    return () => {};
-  }
+
+      const playTruckHorn = () => {
+        if (stopped || !ctx || ctx.state === 'closed') return;
+
+        const now = ctx.currentTime;
+        const frequencies = [100, 120, 135];
+        const masterGain = ctx.createGain();
+        masterGain.connect(ctx.destination);
+        masterGain.gain.setValueAtTime(0, now);
+        masterGain.gain.linearRampToValueAtTime(0.9, now + 0.1);
+        masterGain.gain.setValueAtTime(0.9, now + 1.8);
+        masterGain.gain.linearRampToValueAtTime(0, now + 2.0);
+
+        frequencies.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const oscGain = ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(freq, now);
+          osc.frequency.linearRampToValueAtTime(freq * 0.98, now + 0.3);
+          osc.frequency.linearRampToValueAtTime(freq * 1.02, now + 0.6);
+          osc.frequency.linearRampToValueAtTime(freq, now + 1.8);
+          oscGain.gain.value = i === 0 ? 0.6 : 0.3;
+          osc.connect(oscGain);
+          oscGain.connect(masterGain);
+          osc.start(now);
+          osc.stop(now + 2.0);
+        });
+      };
+
+      if (!stopped) {
+        playTruckHorn();
+        intervalId = setInterval(playTruckHorn, 2500);
+      }
+    } catch (e) {
+      console.error('Erro ao tocar buzina:', e);
+    }
+  };
+
+  doStart();
+
+  return () => {
+    stopped = true;
+    clearInterval(intervalId);
+    try { ctx?.close(); } catch (e) {}
+  };
 }
 
 /**
