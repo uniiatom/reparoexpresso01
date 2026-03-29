@@ -159,7 +159,7 @@ function useLocalArrivalMinutes(job, active) {
         // < 50 metros = "chegando" = 1 min
         // < 200 metros = 1 min
         // Resto: velocidade média urbana 30km/h
-        const mins = distKm < 0.2 ? 1 : Math.max(1, Math.round((distKm / 30) * 60));
+        const mins = distKm < 0.2 ? 1 : distKm < 5 ? 5 : Math.max(5, Math.round((distKm / 30) * 60));
         setLocalMinutes(mins);
       },
       () => setLocalMinutes(null),

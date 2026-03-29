@@ -132,7 +132,7 @@ export default function ProviderApp() {
         const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       };
-      const distToMins = (distKm) => distKm < 0.2 ? 1 : Math.max(1, Math.round((distKm / 30) * 60));
+      const distToMins = (distKm) => distKm < 0.2 ? 1 : distKm < 5 ? 5 : Math.max(5, Math.round((distKm / 30) * 60));
 
       await new Promise((resolve) => {
         const fallback = () => {
