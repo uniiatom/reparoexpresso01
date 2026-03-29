@@ -116,7 +116,7 @@ function useProviderLocationBroadcast(job, active) {
         const clientLat = job.client_latitude || job.latitude;
         const clientLon = job.client_longitude || job.longitude;
         const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
-        const estimatedMinutes = distKm != null ? Math.max(1, Math.round((distKm / 30) * 60)) : null;
+        const estimatedMinutes = distKm != null ? (distKm < 0.1 ? 1 : Math.round((distKm / 50) * 60)) : null;
 
         const updateData = {
           provider_latitude: pos.coords.latitude,

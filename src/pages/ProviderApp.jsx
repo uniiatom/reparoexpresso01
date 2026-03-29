@@ -139,7 +139,7 @@ export default function ProviderApp() {
                   const dLon = (clientLon - pos.coords.longitude) * Math.PI / 180;
                   const a = Math.sin(dLat/2)**2 + Math.cos(pos.coords.latitude*Math.PI/180)*Math.cos(clientLat*Math.PI/180)*Math.sin(dLon/2)**2;
                   const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                  updateData.estimated_arrival_minutes = Math.max(1, Math.round((distKm / 30) * 60));
+                  updateData.estimated_arrival_minutes = distKm < 0.1 ? 1 : Math.round((distKm / 50) * 60);
                 }
                 updateData.provider_latitude = pos.coords.latitude;
                 updateData.provider_longitude = pos.coords.longitude;

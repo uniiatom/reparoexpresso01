@@ -15,7 +15,8 @@ function calcDistance(lat1, lon1, lat2, lon2) {
 
 function estMinutes(distKm) {
   if (distKm === null) return null;
-  return Math.round((distKm / 30) * 60); // ~30km/h média urbana
+  if (distKm < 0.1) return 1;
+  return Math.round((distKm / 50) * 60); // ~50km/h média urbana
 }
 
 const TIME_SLOTS = ["07:00","08:00","09:00","10:00","11:00","13:00","14:00","15:00","16:00","17:00","18:00"];
