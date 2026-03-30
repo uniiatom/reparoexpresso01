@@ -69,56 +69,60 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     searchProviders();
   }, []);
 
-  // Converte CEP em coordenadas usando ViaCEP + código IBGE do município
-  const coordsFromCep = async (cep) => {
-    if (!cep) return null;
-    const clean = cep.replace(/\D/g, '');
-    if (clean.length !== 8) return null;
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
-      const data = await res.json();
-      if (data.erro) return null;
-      // Usa API do IBGE para obter coords do município pelo código ibge
-      const ibgeRes = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${data.ibge}`);
-      const ibgeData = await ibgeRes.json();
-      const lat = ibgeData?.microrregiao?.mesorregiao?.UF?.regiao ? null : null;
-      // IBGE municipios endpoint não retorna coords — usa Nominatim com cidade
-      const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(data.logradouro + ', ' + data.bairro + ', ' + data.localidade + ', ' + data.uf + ', Brasil')}&limit=1&countrycodes=br`, {
-        headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'ServiceApp/1.0' }
-      });
-      const nomData = await nomRes.json();
-      if (nomData?.length > 0) {
-        console.log('[cep->coords] OK:', clean, '->', nomData[0].lat, nomData[0].lon);
-        return { lat: parseFloat(nomData[0].lat), lon: parseFloat(nomData[0].lon) };
+  // Obtém coords do cliente via CEP (ViaCEP) + cidade no Nominatim
+  const getClientCoords = async () => {
+    // 1. Coords diretas já capturadas no formulário
+    if (form.latitude && form.longitude) {
+      console.log('[client] coords diretas:', form.latitude, form.longitude);
+      return { lat: form.latitude, lon: form.longitude };
+    }
+    // 2. Resolve CEP via ViaCEP para obter cidade/UF
+    if (form.cep) {
+      const clean = form.cep.replace(/\D/g, '');
+      try {
+        const cepRes = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+        const cepData = await cepRes.json();
+        if (!cepData.erro) {
+          const cidade = cepData.localidade;
+          const uf = cepData.uf;
+          console.log('[client] CEP resolvido:', cidade, uf);
+          // Busca coords da cidade via Nominatim
+          const nomRes = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&city=${encodeURIComponent(cidade)}&state=${encodeURIComponent(uf)}&country=Brazil&limit=1`,
+            { headers: { 'Accept-Language': 'pt-BR' } }
+          );
+          const nomData = await nomRes.json();
+          if (nomData?.length > 0) {
+            console.log('[client] coords cidade:', parseFloat(nomData[0].lat), parseFloat(nomData[0].lon));
+            return { lat: parseFloat(nomData[0].lat), lon: parseFloat(nomData[0].lon) };
+          }
+        }
+      } catch(e) {
+        console.error('[client] erro CEP:', e.message);
       }
-      // Fallback: só cidade
-      const nomRes2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(data.localidade + ', ' + data.uf + ', Brasil')}&limit=1&countrycodes=br`, {
-        headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'ServiceApp/1.0' }
-      });
-      const nomData2 = await nomRes2.json();
-      if (nomData2?.length > 0) {
-        console.log('[cep->cidade] OK:', data.localidade, '->', nomData2[0].lat, nomData2[0].lon);
-        return { lat: parseFloat(nomData2[0].lat), lon: parseFloat(nomData2[0].lon) };
-      }
-    } catch(e) {
-      console.error('[coordsFromCep] erro:', e.message);
+    }
+    // 3. Fallback: cidade do formulário diretamente
+    if (form.city) {
+      try {
+        const nomRes = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&city=${encodeURIComponent(form.city)}&country=Brazil&limit=1`,
+          { headers: { 'Accept-Language': 'pt-BR' } }
+        );
+        const nomData = await nomRes.json();
+        if (nomData?.length > 0) {
+          return { lat: parseFloat(nomData[0].lat), lon: parseFloat(nomData[0].lon) };
+        }
+      } catch(e) {}
     }
     return null;
   };
 
-  // Coordenadas do prestador: usa GPS salvo no banco (atualizado quando fica online)
+  // Coords do prestador: GPS salvo quando ele ficou online
   const getProviderCoords = (p) => {
     if (p.latitude && p.longitude) {
-      console.log('[provider coords] GPS:', p.name, p.latitude, p.longitude);
+      console.log('[provider] GPS:', p.name, p.latitude, p.longitude);
       return { lat: p.latitude, lon: p.longitude };
     }
-    return null;
-  };
-
-  // Coordenadas do cliente: usa CEP informado no formulário
-  const getClientCoords = async () => {
-    if (form.latitude && form.longitude) return { lat: form.latitude, lon: form.longitude };
-    if (form.cep) return await coordsFromCep(form.cep);
     return null;
   };
 
