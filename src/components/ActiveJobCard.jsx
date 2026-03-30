@@ -112,10 +112,17 @@ function calcDistance(lat1, lon1, lat2, lon2) {
 // Também recalcula estimated_arrival_minutes com base na distância atual até o cliente
 function useProviderLocationBroadcast(job, active) {
   const watchRef = useRef(null);
+  const lastUpdateRef = useRef(0);
+  const UPDATE_INTERVAL_MS = 10000; // máximo 1 atualização a cada 10 segundos
+
   useEffect(() => {
     if (!active || !job?.id || !navigator.geolocation) return;
     watchRef.current = navigator.geolocation.watchPosition(
       (pos) => {
+        const now = Date.now();
+        if (now - lastUpdateRef.current < UPDATE_INTERVAL_MS) return;
+        lastUpdateRef.current = now;
+
         const clientLat = job.client_latitude || job.latitude;
         const clientLon = job.client_longitude || job.longitude;
         const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
@@ -133,7 +140,7 @@ function useProviderLocationBroadcast(job, active) {
         base44.entities.ServiceRequest.update(job.id, updateData);
       },
       null,
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
     );
     return () => {
       if (watchRef.current != null) navigator.geolocation.clearWatch(watchRef.current);
