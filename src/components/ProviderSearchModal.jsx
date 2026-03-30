@@ -69,51 +69,61 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     searchProviders();
   }, []);
 
-  // Obtém coords do cliente via CEP (ViaCEP) + cidade no Nominatim
+  // Geocodifica uma query via Nominatim
+  const nominatim = async (query) => {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br`,
+      { headers: { 'Accept-Language': 'pt-BR' } }
+    );
+    const data = await res.json();
+    if (data?.length > 0) return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+    return null;
+  };
+
+  // Obtém coords do cliente: endereço completo > bairro+cidade > cidade
   const getClientCoords = async () => {
-    // 1. Coords diretas já capturadas no formulário
-    if (form.latitude && form.longitude) {
-      console.log('[client] coords diretas:', form.latitude, form.longitude);
-      return { lat: form.latitude, lon: form.longitude };
-    }
-    // 2. Resolve CEP via ViaCEP para obter cidade/UF
+    if (form.latitude && form.longitude) return { lat: form.latitude, lon: form.longitude };
+
+    // Resolve CEP via ViaCEP para ter logradouro e bairro precisos
+    let logradouro = form.address || '';
+    let bairro = form.neighborhood || '';
+    let cidade = form.city || '';
+    let uf = form.state || '';
+
     if (form.cep) {
       const clean = form.cep.replace(/\D/g, '');
       try {
         const cepRes = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
         const cepData = await cepRes.json();
         if (!cepData.erro) {
-          const cidade = cepData.localidade;
-          const uf = cepData.uf;
-          console.log('[client] CEP resolvido:', cidade, uf);
-          // Busca coords da cidade via Nominatim
-          const nomRes = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&city=${encodeURIComponent(cidade)}&state=${encodeURIComponent(uf)}&country=Brazil&limit=1`,
-            { headers: { 'Accept-Language': 'pt-BR' } }
-          );
-          const nomData = await nomRes.json();
-          if (nomData?.length > 0) {
-            console.log('[client] coords cidade:', parseFloat(nomData[0].lat), parseFloat(nomData[0].lon));
-            return { lat: parseFloat(nomData[0].lat), lon: parseFloat(nomData[0].lon) };
-          }
+          logradouro = cepData.logradouro || logradouro;
+          bairro = cepData.bairro || bairro;
+          cidade = cepData.localidade || cidade;
+          uf = cepData.uf || uf;
+          console.log('[client] CEP resolvido:', logradouro, bairro, cidade, uf);
         }
-      } catch(e) {
-        console.error('[client] erro CEP:', e.message);
-      }
+      } catch(e) { console.error('[client] erro CEP:', e.message); }
     }
-    // 3. Fallback: cidade do formulário diretamente
-    if (form.city) {
-      try {
-        const nomRes = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&city=${encodeURIComponent(form.city)}&country=Brazil&limit=1`,
-          { headers: { 'Accept-Language': 'pt-BR' } }
-        );
-        const nomData = await nomRes.json();
-        if (nomData?.length > 0) {
-          return { lat: parseFloat(nomData[0].lat), lon: parseFloat(nomData[0].lon) };
-        }
-      } catch(e) {}
+
+    // Tenta endereço completo (mais preciso)
+    if (logradouro && cidade) {
+      const q1 = [logradouro, form.number, bairro, cidade, uf, 'Brasil'].filter(Boolean).join(', ');
+      const r1 = await nominatim(q1);
+      if (r1) { console.log('[client] endereço completo:', r1); return r1; }
     }
+
+    // Fallback: bairro + cidade
+    if (bairro && cidade) {
+      const r2 = await nominatim(`${bairro}, ${cidade}, ${uf}, Brasil`);
+      if (r2) { console.log('[client] bairro+cidade:', r2); return r2; }
+    }
+
+    // Fallback: só cidade
+    if (cidade) {
+      const r3 = await nominatim(`${cidade}, ${uf}, Brasil`);
+      if (r3) { console.log('[client] cidade:', r3); return r3; }
+    }
+
     return null;
   };
 
