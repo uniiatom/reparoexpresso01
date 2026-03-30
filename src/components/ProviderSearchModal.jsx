@@ -247,12 +247,14 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                         : 'Localização não informada'}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-primary" />
-                    <span className="text-xs font-semibold text-primary">
-                      ~{estMin != null ? estMin : 5} min de chegada
-                    </span>
-                  </div>
+                  {estMin != null && (
+                    <div className="flex items-center gap-1">
+                      <Zap className="w-3 h-3 text-primary" />
+                      <span className="text-xs font-semibold text-primary">
+                        ~{estMin} min de chegada
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -264,7 +266,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                     <Zap className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-foreground">~{estMin != null ? estMin : 5} min de chegada</p>
+                    <p className="text-sm font-bold text-foreground">~{estMin} min de chegada</p>
                     <p className="text-xs text-muted-foreground">Baseado na distância atual</p>
                   </div>
                 </div>
