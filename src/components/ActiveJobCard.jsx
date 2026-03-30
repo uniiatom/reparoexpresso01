@@ -384,8 +384,26 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           <Phone className="w-3.5 h-3.5" /> {job.client_name} · {job.client_phone}
         </p>
 
-        {/* Tempo estimado de chegada — calculado localmente em tempo real */}
-        {['aceito', 'a_caminho'].includes(job.status) && localArrivalMinutes != null && (
+        {/* Distância/ETA — tempo real via GPS quando a_caminho, estático quando aceito */}
+        {job.status === 'aceito' && (() => {
+          const pLat = job.provider_latitude;
+          const pLon = job.provider_longitude;
+          const cLat = job.client_latitude || job.latitude;
+          const cLon = job.client_longitude || job.longitude;
+          const dist = calcDistance(pLat, pLon, cLat, cLon);
+          if (dist === null) return null;
+          const mins = dist < 0.2 ? 1 : dist < 5 ? 5 : Math.max(5, Math.round((dist / 30) * 60));
+          return (
+            <div className="mt-3 bg-blue-50 border border-blue-200 rounded-2xl p-3 flex items-center gap-3">
+              <span className="text-2xl">📍</span>
+              <div>
+                <p className="text-sm font-bold text-blue-800">{dist.toFixed(1)} km · ~{mins} min até o cliente</p>
+                <p className="text-xs text-blue-600">Distância estimada com base na sua última localização</p>
+              </div>
+            </div>
+          );
+        })()}
+        {job.status === 'a_caminho' && localArrivalMinutes != null && (
           <div className="mt-3 bg-orange-50 border border-orange-200 rounded-2xl p-3 flex items-center gap-3">
             <span className="text-2xl">🚗</span>
             <div>
