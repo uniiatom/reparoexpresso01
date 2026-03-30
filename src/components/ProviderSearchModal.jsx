@@ -166,9 +166,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       const currentDate = now.toISOString().split('T')[0];
       const surcharges = getSurcharges(currentDate, currentTime);
-      // estMin pode ser null se provider sem GPS — usa 30 min como padrão
-      const estimatedArrival = estMin != null ? estMin : 5;
-      onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges, estimated_arrival_minutes: estimatedArrival });
+      // Não define estimated_arrival_minutes aqui — será calculado pelo prestador ao aceitar
+      onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges });
     }
   };
 
