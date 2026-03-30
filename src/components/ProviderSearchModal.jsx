@@ -87,17 +87,19 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   const geocodeProvider = async (p) => {
-    if (p.latitude && p.longitude) return { lat: p.latitude, lon: p.longitude };
-    // Tenta cidade+estado primeiro (mais rápido e confiável)
+    // Sempre geocodifica pelo endereço cadastrado (coords GPS podem estar desatualizadas)
+    // Tenta endereço completo primeiro (mais preciso)
+    if (p.address && p.city) {
+      const r = await geocodeAddress([p.address, p.neighborhood, p.city, p.state, 'Brasil'].filter(Boolean).join(', '));
+      if (r) return r;
+    }
+    // Fallback: só cidade
     if (p.city) {
       const r = await geocodeAddress(`${p.city}, ${p.state || ''}, Brasil`);
       if (r) return r;
     }
-    // Tenta endereço completo
-    if (p.address) {
-      const r = await geocodeAddress([p.address, p.city, p.state, 'Brasil'].filter(Boolean).join(', '));
-      if (r) return r;
-    }
+    // Último recurso: coords salvas no banco
+    if (p.latitude && p.longitude) return { lat: p.latitude, lon: p.longitude };
     return null;
   };
 
