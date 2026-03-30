@@ -34,7 +34,7 @@ const SERVICE_LABELS = {
 const STEPS = [
   { status: 'aceito',       label: 'Aceito',            icon: BellRing,     color: 'text-blue-600 bg-blue-100' },
   { status: 'a_caminho',    label: 'A caminho',         icon: Navigation,   color: 'text-orange-600 bg-orange-100' },
-  { status: 'em_andamento', label: 'Em execução',       icon: Wrench,       color: 'text-primary bg-primary/10' },
+  { status: 'em_andamento', label: 'Em Execução',       icon: Wrench,       color: 'text-primary bg-primary/10' },
   { status: 'concluido',    label: 'Concluído',         icon: CheckCircle2, color: 'text-green-600 bg-green-100' },
 ];
 

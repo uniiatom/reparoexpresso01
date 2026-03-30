@@ -18,7 +18,7 @@ const STATUS_STEPS = [
   { key: "aguardando", label: "Aguardando prestador", icon: Clock },
   { key: "aceito", label: "Prestador a caminho", icon: User },
   { key: "a_caminho", label: "Prestador a caminho", icon: User },
-  { key: "em_andamento", label: "Serviço em andamento", icon: Wrench },
+  { key: "em_andamento", label: "Serviço em execução", icon: Wrench },
   { key: "concluido", label: "Serviço concluído!", icon: CheckCircle2 },
 ];
 
@@ -212,7 +212,7 @@ export default function AcompanharServico() {
                 'bg-primary/10 text-primary': request.status === 'em_andamento',
                 'bg-green-100 text-green-700': request.status === 'concluido',
               })}>
-                {{ aguardando: 'Aguardando', aceito: 'Aceito', a_caminho: 'A caminho', em_andamento: 'Em andamento', concluido: 'Concluído' }[request.status] || request.status}
+                {{ aguardando: 'Aguardando', aceito: 'Aceito', a_caminho: 'A caminho', em_andamento: 'Em execução', concluido: 'Concluído' }[request.status] || request.status}
               </span>
             </div>
             {request.security_password && (
@@ -244,7 +244,7 @@ export default function AcompanharServico() {
                   'bg-primary/10 text-primary': r.status === 'em_andamento',
                   'bg-green-100 text-green-700': r.status === 'concluido',
                 })}>
-                  {{ aguardando: 'Aguardando', aceito: 'Aceito', a_caminho: 'A caminho', em_andamento: 'Em andamento', concluido: 'Concluído' }[r.status] || r.status}
+                  {{ aguardando: 'Aguardando', aceito: 'Aceito', a_caminho: 'A caminho', em_andamento: 'Em execução', concluido: 'Concluído' }[r.status] || r.status}
                 </span>
               </div>
               {r.security_password && (
