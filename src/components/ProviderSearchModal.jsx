@@ -309,18 +309,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                     <span className="text-xs text-muted-foreground">({nearestProvider.total_reviews || 0} aval.)</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      {nearestProvider.distance !== null
-                        ? `${nearestProvider.distance.toFixed(1)} km`
-                        : 'Localização não informada'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
                     <Zap className="w-3 h-3 text-primary" />
-                    <span className="text-xs font-semibold text-primary">
-                      {estMin != null ? `~${estMin} min de chegada` : 'Disponível agora'}
-                    </span>
+                    <span className="text-xs font-semibold text-primary">Disponível agora</span>
                   </div>
                 </div>
               </div>
@@ -332,12 +322,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                   <Zap className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-foreground">
-                    {estMin != null ? `~${estMin} min de chegada` : 'Prestador disponível agora'}
-                  </p>
-                  {estMin != null && (
-                    <p className="text-xs text-muted-foreground">Baseado na distância atual</p>
-                  )}
+                  <p className="text-sm font-bold text-foreground">Prestador disponível agora</p>
+                  <p className="text-xs text-muted-foreground">O tempo de chegada será informado após a confirmação</p>
                 </div>
               </div>
               <Button onClick={handleConfirmImmediate} disabled={confirming} className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground mb-3">
