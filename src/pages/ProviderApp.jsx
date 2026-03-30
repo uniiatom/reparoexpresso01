@@ -153,9 +153,9 @@ export default function ProviderApp() {
       };
 
       const distToMins = (distKm) => {
-        if (distKm < 0.3) return 2;
-        if (distKm < 1) return Math.round(distKm * 10);
-        return Math.max(3, Math.round((distKm / 30) * 60));
+        const roadDist = distKm * 2.5;
+        if (roadDist < 0.2) return 1;
+        return Math.max(2, Math.round((roadDist / 40) * 60));
       };
 
       // Geocodifica endereço via Nominatim com múltiplos fallbacks
