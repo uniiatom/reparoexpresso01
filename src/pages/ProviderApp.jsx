@@ -138,38 +138,62 @@ export default function ProviderApp() {
         const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       };
-      const distToMins = (distKm) => distKm < 0.2 ? 1 : distKm < 5 ? 5 : Math.max(5, Math.round((distKm / 30) * 60));
+      const distToMins = (distKm) => {
+        if (distKm < 0.3) return 2;
+        if (distKm < 1) return Math.round(distKm * 10); // ~10 min/km em área densa
+        return Math.max(3, Math.round((distKm / 30) * 60)); // 30km/h velocidade urbana média
+      };
 
-      await new Promise((resolve) => {
-        const fallback = () => {
-          // Sem GPS: usa localização salva do prestador vs localização do pedido
-          const pLat = provider?.latitude;
-          const pLon = provider?.longitude;
-          resolve({ pLat, pLon });
-        };
+      // Geocodifica endereço para obter coordenadas quando não há GPS do cliente
+      const geocodeAddress = async (address, number, neighborhood, city, state) => {
+        try {
+          const query = [address, number, neighborhood, city, state].filter(Boolean).join(', ');
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br`);
+          const data = await res.json();
+          if (data && data.length > 0) {
+            return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+          }
+        } catch (e) { /* ignora erro de geocoding */ }
+        return null;
+      };
 
+      const providerCoords = await new Promise((resolve) => {
+        const fallback = () => resolve({ pLat: provider?.latitude, pLon: provider?.longitude });
         if (!navigator.geolocation) { fallback(); return; }
         navigator.geolocation.getCurrentPosition(
           (pos) => resolve({ pLat: pos.coords.latitude, pLon: pos.coords.longitude }),
           fallback,
           { enableHighAccuracy: true, timeout: 5000 }
         );
-      }).then(async ({ pLat, pLon }) => {
-        if (pLat && pLon) {
-          updateData.provider_latitude = pLat;
-          updateData.provider_longitude = pLon;
-        }
-        try {
-          const [req] = await base44.entities.ServiceRequest.filter({ id: reqId });
-          const clientLat = req?.client_latitude || req?.latitude;
-          const clientLon = req?.client_longitude || req?.longitude;
-          const dist = calcDist(pLat, pLon, clientLat, clientLon);
-          // Sempre salva o estimated_arrival_minutes — nunca deixa o valor antigo (30 min)
-          updateData.estimated_arrival_minutes = dist != null ? distToMins(dist) : 5;
-        } catch(e) {
-          updateData.estimated_arrival_minutes = 5;
-        }
       });
+
+      const { pLat, pLon } = providerCoords;
+      if (pLat && pLon) {
+        updateData.provider_latitude = pLat;
+        updateData.provider_longitude = pLon;
+      }
+
+      try {
+        const [req] = await base44.entities.ServiceRequest.filter({ id: reqId });
+        let clientLat = req?.client_latitude || req?.latitude;
+        let clientLon = req?.client_longitude || req?.longitude;
+
+        // Se não há coordenadas GPS do cliente, geocodifica o endereço
+        if ((!clientLat || !clientLon) && req?.address) {
+          const geocoded = await geocodeAddress(req.address, req.number, req.neighborhood, req.city, req.state);
+          if (geocoded) {
+            clientLat = geocoded.lat;
+            clientLon = geocoded.lon;
+            // Salva as coordenadas geocodificadas na OS para uso futuro (mapa, etc.)
+            await base44.entities.ServiceRequest.update(reqId, { latitude: clientLat, longitude: clientLon });
+          }
+        }
+
+        const dist = calcDist(pLat, pLon, clientLat, clientLon);
+        updateData.estimated_arrival_minutes = dist != null ? distToMins(dist) : null;
+      } catch(e) {
+        updateData.estimated_arrival_minutes = null;
+      }
 
       return base44.entities.ServiceRequest.update(reqId, updateData);
     },
