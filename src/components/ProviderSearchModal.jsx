@@ -308,10 +308,23 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                     <span className="text-sm text-foreground font-medium">{nearestProvider.rating?.toFixed(1) || '5.0'}</span>
                     <span className="text-xs text-muted-foreground">({nearestProvider.total_reviews || 0} aval.)</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-primary" />
-                    <span className="text-xs font-semibold text-primary">Disponível agora</span>
-                  </div>
+                  {nearestProvider.distance != null ? (
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{nearestProvider.distance.toFixed(1)} km</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Localização não informada</span>
+                    </div>
+                  )}
+                  {estMin != null && (
+                    <div className="flex items-center gap-1">
+                      <Zap className="w-3 h-3 text-primary" />
+                      <span className="text-xs font-semibold text-primary">~{estMin} min de chegada</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
