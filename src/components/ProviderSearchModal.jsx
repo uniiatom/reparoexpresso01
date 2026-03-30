@@ -69,6 +69,25 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     searchProviders();
   }, []);
 
+  // Geocodifica via CEP usando ViaCEP (sem restrições de CORS/iframe)
+  const geocodeByCep = async (cep) => {
+    if (!cep) return null;
+    const clean = cep.replace(/\D/g, '');
+    if (clean.length !== 8) return null;
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+      const data = await res.json();
+      if (data.erro) return null;
+      // ViaCEP não retorna coords, mas retorna cidade/estado para usar no Nominatim
+      // Usa ibge code para converter em coords via IBGE
+      console.log('[viacep] OK:', data.localidade, data.uf);
+      return { city: data.localidade, state: data.uf, logradouro: data.logradouro, bairro: data.bairro };
+    } catch(e) {
+      console.error('[viacep] erro:', e.message);
+    }
+    return null;
+  };
+
   const geocodeAddress = async (query) => {
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br`, {
@@ -87,26 +106,57 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   const geocodeProvider = async (p) => {
-    // Sempre geocodifica pelo endereço cadastrado (coords GPS podem estar desatualizadas)
-    // Tenta endereço completo primeiro (mais preciso)
+    // 1. Tenta coords salvas se forem recentes/GPS (prestador online tem coords atualizadas)
+    if (p.is_online && p.latitude && p.longitude) {
+      console.log('[provider] usando GPS salvo:', p.name, p.latitude, p.longitude);
+      return { lat: p.latitude, lon: p.longitude };
+    }
+    // 2. Tenta CEP cadastrado via ViaCEP + Nominatim
+    if (p.zip_code) {
+      const viaCep = await geocodeByCep(p.zip_code);
+      if (viaCep) {
+        const q = [p.address, viaCep.bairro || p.neighborhood, viaCep.city, viaCep.state, 'Brasil'].filter(Boolean).join(', ');
+        const r = await geocodeAddress(q);
+        if (r) return r;
+        // Fallback só cidade
+        const r2 = await geocodeAddress(`${viaCep.city}, ${viaCep.state}, Brasil`);
+        if (r2) return r2;
+      }
+    }
+    // 3. Tenta endereço completo via Nominatim
     if (p.address && p.city) {
       const r = await geocodeAddress([p.address, p.neighborhood, p.city, p.state, 'Brasil'].filter(Boolean).join(', '));
       if (r) return r;
     }
-    // Fallback: só cidade
+    // 4. Só cidade
     if (p.city) {
       const r = await geocodeAddress(`${p.city}, ${p.state || ''}, Brasil`);
       if (r) return r;
     }
-    // Último recurso: coords salvas no banco
+    // 5. Último recurso: coords salvas
     if (p.latitude && p.longitude) return { lat: p.latitude, lon: p.longitude };
     return null;
   };
 
   const geocodeClient = async () => {
-    if (form.latitude && form.longitude) return { lat: form.latitude, lon: form.longitude };
+    if (form.latitude && form.longitude) {
+      console.log('[client] usando coords do form:', form.latitude, form.longitude);
+      return { lat: form.latitude, lon: form.longitude };
+    }
+    // Tenta CEP via ViaCEP + Nominatim
+    if (form.cep) {
+      const viaCep = await geocodeByCep(form.cep);
+      if (viaCep) {
+        const q = [form.address, form.number, viaCep.bairro || form.neighborhood, viaCep.city, viaCep.state, 'Brasil'].filter(Boolean).join(', ');
+        const r = await geocodeAddress(q);
+        if (r) { console.log('[client] geocode CEP OK:', r); return r; }
+        const r2 = await geocodeAddress(`${viaCep.city}, ${viaCep.state}, Brasil`);
+        if (r2) { console.log('[client] geocode cidade OK:', r2); return r2; }
+      }
+    }
+    // Fallback: endereço direto
     if (form.city) {
-      const r = await geocodeAddress(`${form.address || ''}, ${form.neighborhood || ''}, ${form.city}, ${form.state || ''}, Brasil`);
+      const r = await geocodeAddress([form.address, form.number, form.neighborhood, form.city, form.state, 'Brasil'].filter(Boolean).join(', '));
       if (r) return r;
       const r2 = await geocodeAddress(`${form.city}, ${form.state || ''}, Brasil`);
       if (r2) return r2;
