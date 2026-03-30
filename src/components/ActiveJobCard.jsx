@@ -114,16 +114,17 @@ async function getRoadDurationMinutes(lat1, lon1, lat2, lon2) {
   try {
     const res = await fetch(
       `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`,
-      { signal: AbortSignal.timeout(5000) }
+      { signal: AbortSignal.timeout(8000) }
     );
     const data = await res.json();
     if (data?.routes?.[0]?.duration) {
       return Math.max(1, Math.round(data.routes[0].duration / 60));
     }
   } catch (e) { /* fallback abaixo */ }
+  // Fallback: distância reta + 30% de tortuosidade de estrada / velocidade média urbana 50 km/h
   const distKm = calcDistance(lat1, lon1, lat2, lon2);
   if (distKm === null) return null;
-  return Math.max(2, Math.round((distKm * 2.5 / 40) * 60));
+  return Math.max(2, Math.round((distKm * 1.3 / 50) * 60));
 }
 
 // Hook para enviar GPS do prestador em tempo real quando a_caminho

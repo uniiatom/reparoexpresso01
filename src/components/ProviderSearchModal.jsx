@@ -25,13 +25,13 @@ async function estMinutesOSRM(lat1, lon1, lat2, lon2) {
       return Math.max(1, Math.round(data.routes[0].duration / 60));
     }
   } catch (e) { /* fallback abaixo */ }
-  // Fallback haversine
+  // Fallback: distância reta + 30% de tortuosidade / velocidade média urbana 50 km/h
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
   const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return Math.max(2, Math.round((distKm * 2.5 / 40) * 60));
+  return Math.max(2, Math.round((distKm * 1.3 / 50) * 60));
 }
 
 const TIME_SLOTS = ["07:00","08:00","09:00","10:00","11:00","13:00","14:00","15:00","16:00","17:00","18:00"];
