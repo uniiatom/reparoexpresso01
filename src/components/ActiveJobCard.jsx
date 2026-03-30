@@ -403,22 +403,23 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           <Phone className="w-3.5 h-3.5" /> {job.client_name} · {job.client_phone}
         </p>
 
-        {/* Distância/ETA — tempo real via GPS quando a_caminho, estático quando aceito */}
+        {/* ETA quando aceito — usa o valor OSRM calculado no momento do aceite */}
         {job.status === 'aceito' && (() => {
+          const mins = localArrivalMinutes ?? job.estimated_arrival_minutes;
+          if (!mins) return null;
           const pLat = job.provider_latitude;
           const pLon = job.provider_longitude;
           const cLat = job.client_latitude || job.latitude;
           const cLon = job.client_longitude || job.longitude;
           const dist = calcDistance(pLat, pLon, cLat, cLon);
-          if (dist === null) return null;
-          const roadDist = dist * 2.5;
-          const mins = roadDist < 0.2 ? 1 : Math.max(2, Math.round((roadDist / 40) * 60));
           return (
             <div className="mt-3 bg-blue-50 border border-blue-200 rounded-2xl p-3 flex items-center gap-3">
               <span className="text-2xl">📍</span>
               <div>
-                <p className="text-sm font-bold text-blue-800">{dist.toFixed(1)} km · ~{mins} min até o cliente</p>
-                <p className="text-xs text-blue-600">Distância estimada com base na sua última localização</p>
+                <p className="text-sm font-bold text-blue-800">
+                  {dist != null ? `${dist.toFixed(1)} km · ` : ''}~{mins} min até o cliente
+                </p>
+                <p className="text-xs text-blue-600">Estimativa baseada no trajeto real por estradas</p>
               </div>
             </div>
           );
