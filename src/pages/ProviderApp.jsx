@@ -198,26 +198,27 @@ export default function ProviderApp() {
         updateData.provider_longitude = pLon;
       }
 
-      try {
-        const [req] = await base44.entities.ServiceRequest.filter({ id: reqId });
-        let clientLat = req?.client_latitude || req?.latitude;
-        let clientLon = req?.client_longitude || req?.longitude;
+      // Busca a OS pelo ID usando get()
+      const req = await base44.entities.ServiceRequest.get(reqId);
+      console.log('[acceptJob] req:', req?.id, 'cep:', req?.cep, 'lat:', req?.latitude, 'lon:', req?.longitude, 'pLat:', pLat, 'pLon:', pLon);
+
+      if (req) {
+        let clientLat = req.client_latitude || req.latitude;
+        let clientLon = req.client_longitude || req.longitude;
 
         // Se não há coordenadas GPS do cliente, geocodifica via CEP ou endereço
-        if ((!clientLat || !clientLon) && (req?.cep || req?.address)) {
+        if ((!clientLat || !clientLon) && (req.cep || req.address)) {
           const geocoded = await geocodeByLocation(req.cep, req.address, req.number, req.neighborhood, req.city, req.state);
           if (geocoded) {
             clientLat = geocoded.lat;
             clientLon = geocoded.lon;
-            // Salva as coordenadas geocodificadas na OS para uso futuro (mapa, etc.)
             await base44.entities.ServiceRequest.update(reqId, { latitude: clientLat, longitude: clientLon });
           }
         }
 
         const dist = calcDist(pLat, pLon, clientLat, clientLon);
+        console.log('[acceptJob] pLat:', pLat, 'pLon:', pLon, 'clientLat:', clientLat, 'clientLon:', clientLon, 'dist:', dist);
         updateData.estimated_arrival_minutes = dist != null ? distToMins(dist) : null;
-      } catch(e) {
-        updateData.estimated_arrival_minutes = null;
       }
 
       return base44.entities.ServiceRequest.update(reqId, updateData);
