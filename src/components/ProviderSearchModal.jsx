@@ -14,7 +14,7 @@ function calcDistance(lat1, lon1, lat2, lon2) {
 }
 
 // Fator de correção: distância em linha reta → distância real por vias (~1.8x)
-const ROAD_FACTOR = 1.8;
+const ROAD_FACTOR = 2.5;
 
 function estMinutes(distKm) {
   if (distKm === null) return null;

@@ -119,7 +119,7 @@ function useProviderLocationBroadcast(job, active) {
         const clientLat = job.client_latitude || job.latitude;
         const clientLon = job.client_longitude || job.longitude;
         const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
-        const roadDist = distKm != null ? distKm * 1.8 : null;
+        const roadDist = distKm != null ? distKm * 2.5 : null;
         const estimatedMinutes = roadDist != null
           ? (roadDist < 0.1 ? 1 : Math.max(1, Math.round((roadDist / 40) * 60)))
           : null;
@@ -160,7 +160,7 @@ function useLocalArrivalMinutes(job, active) {
         }
         const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
         if (distKm === null) { setLocalMinutes(null); return; }
-        const roadDist = distKm * 1.8;
+        const roadDist = distKm * 2.5;
         const mins = roadDist < 0.2 ? 1 : Math.max(2, Math.round((roadDist / 40) * 60));
         setLocalMinutes(mins);
       },
@@ -391,7 +391,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           const cLon = job.client_longitude || job.longitude;
           const dist = calcDistance(pLat, pLon, cLat, cLon);
           if (dist === null) return null;
-          const roadDist = dist * 1.8;
+          const roadDist = dist * 2.5;
           const mins = roadDist < 0.2 ? 1 : Math.max(2, Math.round((roadDist / 40) * 60));
           return (
             <div className="mt-3 bg-blue-50 border border-blue-200 rounded-2xl p-3 flex items-center gap-3">
