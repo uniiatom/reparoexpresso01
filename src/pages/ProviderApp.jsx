@@ -144,10 +144,35 @@ export default function ProviderApp() {
         return Math.max(3, Math.round((distKm / 30) * 60)); // 30km/h velocidade urbana média
       };
 
-      // Geocodifica endereço para obter coordenadas quando não há GPS do cliente
-      const geocodeAddress = async (address, number, neighborhood, city, state) => {
+      // Geocodifica pelo CEP (mais preciso) e fallback para endereço completo
+      const geocodeByLocation = async (cep, address, number, neighborhood, city, state) => {
         try {
-          const query = [address, number, neighborhood, city, state].filter(Boolean).join(', ');
+          // 1ª tentativa: CEP via ViaCEP → coordenadas via Nominatim
+          if (cep) {
+            const cleanCep = cep.replace(/\D/g, '');
+            if (cleanCep.length === 8) {
+              // Busca o endereço completo pelo CEP para ter mais precisão no geocoding
+              const cepRes = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+              const cepData = await cepRes.json();
+              if (!cepData.erro) {
+                const cepQuery = `${cepData.logradouro || ''}, ${number || ''}, ${cepData.bairro || ''}, ${cepData.localidade}, ${cepData.uf}, Brasil`;
+                const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cepQuery)}&limit=1&countrycodes=br`);
+                const geoData = await geoRes.json();
+                if (geoData && geoData.length > 0) {
+                  return { lat: parseFloat(geoData[0].lat), lon: parseFloat(geoData[0].lon) };
+                }
+                // Fallback: apenas CEP + cidade
+                const simpleCepQuery = `${cleanCep}, Brasil`;
+                const geoRes2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(simpleCepQuery)}&limit=1&countrycodes=br`);
+                const geoData2 = await geoRes2.json();
+                if (geoData2 && geoData2.length > 0) {
+                  return { lat: parseFloat(geoData2[0].lat), lon: parseFloat(geoData2[0].lon) };
+                }
+              }
+            }
+          }
+          // 2ª tentativa: endereço completo sem CEP
+          const query = [address, number, neighborhood, city, state, 'Brasil'].filter(Boolean).join(', ');
           const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br`);
           const data = await res.json();
           if (data && data.length > 0) {
@@ -178,9 +203,9 @@ export default function ProviderApp() {
         let clientLat = req?.client_latitude || req?.latitude;
         let clientLon = req?.client_longitude || req?.longitude;
 
-        // Se não há coordenadas GPS do cliente, geocodifica o endereço
-        if ((!clientLat || !clientLon) && req?.address) {
-          const geocoded = await geocodeAddress(req.address, req.number, req.neighborhood, req.city, req.state);
+        // Se não há coordenadas GPS do cliente, geocodifica via CEP ou endereço
+        if ((!clientLat || !clientLon) && (req?.cep || req?.address)) {
+          const geocoded = await geocodeByLocation(req.cep, req.address, req.number, req.neighborhood, req.city, req.state);
           if (geocoded) {
             clientLat = geocoded.lat;
             clientLon = geocoded.lon;
