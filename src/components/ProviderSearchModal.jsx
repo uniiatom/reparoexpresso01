@@ -13,10 +13,14 @@ function calcDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+// Fator de correção: distância em linha reta → distância real por vias (~1.8x)
+const ROAD_FACTOR = 1.8;
+
 function estMinutes(distKm) {
   if (distKm === null) return null;
   if (distKm < 0.1) return 1;
-  return Math.round((distKm / 50) * 60); // ~50km/h média urbana
+  const roadDist = distKm * ROAD_FACTOR;
+  return Math.round((roadDist / 40) * 60); // ~40km/h média urbana
 }
 
 const TIME_SLOTS = ["07:00","08:00","09:00","10:00","11:00","13:00","14:00","15:00","16:00","17:00","18:00"];

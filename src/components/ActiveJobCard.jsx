@@ -119,8 +119,9 @@ function useProviderLocationBroadcast(job, active) {
         const clientLat = job.client_latitude || job.latitude;
         const clientLon = job.client_longitude || job.longitude;
         const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
-        const estimatedMinutes = distKm != null
-          ? (distKm < 0.05 ? 1 : Math.max(1, Math.round((distKm / 30) * 60)))
+        const roadDist = distKm != null ? distKm * 1.8 : null;
+        const estimatedMinutes = roadDist != null
+          ? (roadDist < 0.1 ? 1 : Math.max(1, Math.round((roadDist / 40) * 60)))
           : null;
 
         const updateData = {
@@ -159,10 +160,8 @@ function useLocalArrivalMinutes(job, active) {
         }
         const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
         if (distKm === null) { setLocalMinutes(null); return; }
-        // < 50 metros = "chegando" = 1 min
-        // < 200 metros = 1 min
-        // Resto: velocidade média urbana 30km/h
-        const mins = distKm < 0.2 ? 1 : distKm < 5 ? 5 : Math.max(5, Math.round((distKm / 30) * 60));
+        const roadDist = distKm * 1.8;
+        const mins = roadDist < 0.2 ? 1 : Math.max(2, Math.round((roadDist / 40) * 60));
         setLocalMinutes(mins);
       },
       () => setLocalMinutes(null),
@@ -392,7 +391,8 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           const cLon = job.client_longitude || job.longitude;
           const dist = calcDistance(pLat, pLon, cLat, cLon);
           if (dist === null) return null;
-          const mins = dist < 0.2 ? 1 : dist < 5 ? 5 : Math.max(5, Math.round((dist / 30) * 60));
+          const roadDist = dist * 1.8;
+          const mins = roadDist < 0.2 ? 1 : Math.max(2, Math.round((roadDist / 40) * 60));
           return (
             <div className="mt-3 bg-blue-50 border border-blue-200 rounded-2xl p-3 flex items-center gap-3">
               <span className="text-2xl">📍</span>
