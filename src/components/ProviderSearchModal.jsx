@@ -266,9 +266,9 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                   <p className="text-sm font-bold text-foreground">
                     {estMin != null ? `~${estMin} min de chegada` : 'Prestador disponível agora'}
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    {estMin != null ? 'Baseado na distância atual' : 'O prestador entrará em contato'}
-                  </p>
+                  {estMin != null && (
+                    <p className="text-xs text-muted-foreground">Baseado na distância atual</p>
+                  )}
                 </div>
               </div>
               <Button onClick={handleConfirmImmediate} disabled={confirming} className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground mb-3">
