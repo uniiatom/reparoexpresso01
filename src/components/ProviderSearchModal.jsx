@@ -13,14 +13,25 @@ function calcDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// Fator de correção: distância em linha reta → distância real por vias (~1.8x)
-const ROAD_FACTOR = 2.5;
-
-function estMinutes(distKm) {
-  if (distKm === null) return null;
-  if (distKm < 0.1) return 1;
-  const roadDist = distKm * ROAD_FACTOR;
-  return Math.round((roadDist / 40) * 60); // ~40km/h média urbana
+async function estMinutesOSRM(lat1, lon1, lat2, lon2) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+  try {
+    const res = await fetch(
+      `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    const data = await res.json();
+    if (data?.routes?.[0]?.duration) {
+      return Math.max(1, Math.round(data.routes[0].duration / 60));
+    }
+  } catch (e) { /* fallback abaixo */ }
+  // Fallback haversine
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return Math.max(2, Math.round((distKm * 2.5 / 40) * 60));
 }
 
 const TIME_SLOTS = ["07:00","08:00","09:00","10:00","11:00","13:00","14:00","15:00","16:00","17:00","18:00"];
@@ -48,6 +59,7 @@ const isHolidayOrSunday = (date) => {
 export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClose }) {
   const [phase, setPhase] = useState('searching'); // searching | found | none
   const [nearestProvider, setNearestProvider] = useState(null);
+  const [estMin, setEstMin] = useState(null);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
   const [confirming, setConfirming] = useState(false);
@@ -168,8 +180,14 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
 
     if (onlineProviders.length > 0) {
       const sorted = enrichWithDistance(onlineProviders);
-      setNearestProvider(sorted[0]);
+      const best = sorted[0];
+      setNearestProvider(best);
       setPhase('found');
+      // Calcula ETA via OSRM assincronamente
+      const pCoords = getProviderCoords(best);
+      if (pCoords && clientLat && clientLon) {
+        estMinutesOSRM(pCoords.lat, pCoords.lon, clientLat, clientLon).then(setEstMin);
+      }
       return;
     }
 
@@ -251,8 +269,6 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     const surcharges = getSurcharges(scheduledDate, scheduledTime);
     onSchedule({ ...form, modality: 'agendado', scheduled_date: scheduledDate, scheduled_time: scheduledTime, ...surcharges });
   };
-
-  const estMin = nearestProvider ? estMinutes(nearestProvider.distance) : null;
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4">

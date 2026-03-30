@@ -108,34 +108,49 @@ function calcDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+// Busca duração real por estradas via OSRM (como Google Maps), com fallback haversine
+async function getRoadDurationMinutes(lat1, lon1, lat2, lon2) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+  try {
+    const res = await fetch(
+      `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    const data = await res.json();
+    if (data?.routes?.[0]?.duration) {
+      return Math.max(1, Math.round(data.routes[0].duration / 60));
+    }
+  } catch (e) { /* fallback abaixo */ }
+  const distKm = calcDistance(lat1, lon1, lat2, lon2);
+  if (distKm === null) return null;
+  return Math.max(2, Math.round((distKm * 2.5 / 40) * 60));
+}
+
 // Hook para enviar GPS do prestador em tempo real quando a_caminho
 // Também recalcula estimated_arrival_minutes com base na distância atual até o cliente
 function useProviderLocationBroadcast(job, active) {
   const watchRef = useRef(null);
   const lastUpdateRef = useRef(0);
-  const UPDATE_INTERVAL_MS = 10000; // máximo 1 atualização a cada 10 segundos
+  const UPDATE_INTERVAL_MS = 15000; // máximo 1 atualização a cada 15 segundos
 
   useEffect(() => {
     if (!active || !job?.id || !navigator.geolocation) return;
     watchRef.current = navigator.geolocation.watchPosition(
-      (pos) => {
+      async (pos) => {
         const now = Date.now();
         if (now - lastUpdateRef.current < UPDATE_INTERVAL_MS) return;
         lastUpdateRef.current = now;
 
         const clientLat = job.client_latitude || job.latitude;
         const clientLon = job.client_longitude || job.longitude;
-        const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
-        const roadDist = distKm != null ? distKm * 2.5 : null;
-        const estimatedMinutes = roadDist != null
-          ? (roadDist < 0.1 ? 1 : Math.max(1, Math.round((roadDist / 40) * 60)))
-          : null;
 
         const updateData = {
           provider_latitude: pos.coords.latitude,
           provider_longitude: pos.coords.longitude,
         };
-        if (estimatedMinutes != null) updateData.estimated_arrival_minutes = estimatedMinutes;
+
+        const eta = await getRoadDurationMinutes(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
+        if (eta != null) updateData.estimated_arrival_minutes = eta;
 
         base44.entities.ServiceRequest.update(job.id, updateData);
       },
@@ -152,27 +167,25 @@ function useProviderLocationBroadcast(job, active) {
 // Retorna: número de minutos, ou 0 se já chegou (<50m), ou null se sem dados
 function useLocalArrivalMinutes(job, active) {
   const [localMinutes, setLocalMinutes] = useState(null);
+  const lastCalcRef = useRef(0);
+  const CALC_INTERVAL_MS = 15000;
+
   useEffect(() => {
     if (!active || !navigator.geolocation) { setLocalMinutes(null); return; }
     const clientLat = job.client_latitude || job.latitude;
     const clientLon = job.client_longitude || job.longitude;
+    if (!clientLat || !clientLon) { setLocalMinutes(null); return; }
 
     const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        // Se não há coordenadas do cliente, calcula só com base no banco de estimated_arrival
-        if (!clientLat || !clientLon) {
-          // Sem coordenadas do cliente, não conseguimos calcular — usa valor do banco
-          setLocalMinutes(null);
-          return;
-        }
-        const distKm = calcDistance(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
-        if (distKm === null) { setLocalMinutes(null); return; }
-        const roadDist = distKm * 2.5;
-        const mins = roadDist < 0.2 ? 1 : Math.max(2, Math.round((roadDist / 40) * 60));
-        setLocalMinutes(mins);
+      async (pos) => {
+        const now = Date.now();
+        if (now - lastCalcRef.current < CALC_INTERVAL_MS) return;
+        lastCalcRef.current = now;
+        const eta = await getRoadDurationMinutes(pos.coords.latitude, pos.coords.longitude, clientLat, clientLon);
+        setLocalMinutes(eta);
       },
       () => setLocalMinutes(null),
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
     );
     return () => navigator.geolocation.clearWatch(watchId);
   }, [job?.id, active, job?.client_latitude, job?.latitude, job?.client_longitude, job?.longitude]);

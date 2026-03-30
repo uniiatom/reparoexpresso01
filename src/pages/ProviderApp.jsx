@@ -143,19 +143,28 @@ export default function ProviderApp() {
         provider_phone: provider?.phone,
       };
 
-      const calcDist = (lat1, lon1, lat2, lon2) => {
+      // Usa OSRM para calcular duração real por estradas (como Google Maps)
+      const getRoadDurationMinutes = async (lat1, lon1, lat2, lon2) => {
         if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+        try {
+          const res = await fetch(
+            `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`,
+            { signal: AbortSignal.timeout(5000) }
+          );
+          const data = await res.json();
+          if (data?.routes?.[0]?.duration) {
+            return Math.max(1, Math.round(data.routes[0].duration / 60));
+          }
+        } catch (e) {
+          console.warn('[OSRM] fallback to haversine:', e.message);
+        }
+        // Fallback haversine caso OSRM falhe
         const R = 6371;
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      };
-
-      const distToMins = (distKm) => {
-        const roadDist = distKm * 2.5;
-        if (roadDist < 0.2) return 1;
-        return Math.max(2, Math.round((roadDist / 40) * 60));
+        const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return Math.max(2, Math.round((distKm * 2.5 / 40) * 60));
       };
 
       // Geocodifica endereço via Nominatim com múltiplos fallbacks
@@ -246,14 +255,13 @@ export default function ProviderApp() {
 
         console.log('[acceptJob] pLat:', pLat, 'pLon:', pLon, '| clientLat:', clientLat, 'clientLon:', clientLon);
 
-        const dist = calcDist(pLat, pLon, clientLat, clientLon);
-        console.log('[acceptJob] distância:', dist, 'km');
+        const eta = await getRoadDurationMinutes(pLat, pLon, clientLat, clientLon);
+        console.log('[acceptJob] ETA OSRM:', eta, 'min');
 
-        if (dist != null) {
-          updateData.estimated_arrival_minutes = distToMins(dist);
-          console.log('[acceptJob] ETA calculado:', updateData.estimated_arrival_minutes, 'min');
+        if (eta != null) {
+          updateData.estimated_arrival_minutes = eta;
         } else {
-          console.warn('[acceptJob] não foi possível calcular distância — sem coordenadas suficientes');
+          console.warn('[acceptJob] não foi possível calcular ETA — sem coordenadas suficientes');
         }
       }
 
