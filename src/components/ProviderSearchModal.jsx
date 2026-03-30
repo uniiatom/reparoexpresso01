@@ -69,8 +69,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     searchProviders();
   }, []);
 
-  // Geocodifica via CEP usando ViaCEP (sem restrições de CORS/iframe)
-  const geocodeByCep = async (cep) => {
+  // Converte CEP em coordenadas usando ViaCEP + código IBGE do município
+  const coordsFromCep = async (cep) => {
     if (!cep) return null;
     const clean = cep.replace(/\D/g, '');
     if (clean.length !== 8) return null;
@@ -78,98 +78,55 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
       const data = await res.json();
       if (data.erro) return null;
-      // ViaCEP não retorna coords, mas retorna cidade/estado para usar no Nominatim
-      // Usa ibge code para converter em coords via IBGE
-      console.log('[viacep] OK:', data.localidade, data.uf);
-      return { city: data.localidade, state: data.uf, logradouro: data.logradouro, bairro: data.bairro };
-    } catch(e) {
-      console.error('[viacep] erro:', e.message);
-    }
-    return null;
-  };
-
-  const geocodeAddress = async (query) => {
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br`, {
+      // Usa API do IBGE para obter coords do município pelo código ibge
+      const ibgeRes = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${data.ibge}`);
+      const ibgeData = await ibgeRes.json();
+      const lat = ibgeData?.microrregiao?.mesorregiao?.UF?.regiao ? null : null;
+      // IBGE municipios endpoint não retorna coords — usa Nominatim com cidade
+      const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(data.logradouro + ', ' + data.bairro + ', ' + data.localidade + ', ' + data.uf + ', Brasil')}&limit=1&countrycodes=br`, {
         headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'ServiceApp/1.0' }
       });
-      const data = await res.json();
-      if (data?.length > 0) {
-        console.log('[geocode] OK:', query, '->', data[0].lat, data[0].lon);
-        return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+      const nomData = await nomRes.json();
+      if (nomData?.length > 0) {
+        console.log('[cep->coords] OK:', clean, '->', nomData[0].lat, nomData[0].lon);
+        return { lat: parseFloat(nomData[0].lat), lon: parseFloat(nomData[0].lon) };
       }
-      console.warn('[geocode] sem resultado para:', query);
+      // Fallback: só cidade
+      const nomRes2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(data.localidade + ', ' + data.uf + ', Brasil')}&limit=1&countrycodes=br`, {
+        headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'ServiceApp/1.0' }
+      });
+      const nomData2 = await nomRes2.json();
+      if (nomData2?.length > 0) {
+        console.log('[cep->cidade] OK:', data.localidade, '->', nomData2[0].lat, nomData2[0].lon);
+        return { lat: parseFloat(nomData2[0].lat), lon: parseFloat(nomData2[0].lon) };
+      }
     } catch(e) {
-      console.error('[geocode] erro:', e.message);
+      console.error('[coordsFromCep] erro:', e.message);
     }
     return null;
   };
 
-  const geocodeProvider = async (p) => {
-    // 1. Tenta coords salvas se forem recentes/GPS (prestador online tem coords atualizadas)
-    if (p.is_online && p.latitude && p.longitude) {
-      console.log('[provider] usando GPS salvo:', p.name, p.latitude, p.longitude);
+  // Coordenadas do prestador: usa GPS salvo no banco (atualizado quando fica online)
+  const getProviderCoords = (p) => {
+    if (p.latitude && p.longitude) {
+      console.log('[provider coords] GPS:', p.name, p.latitude, p.longitude);
       return { lat: p.latitude, lon: p.longitude };
     }
-    // 2. Tenta CEP cadastrado via ViaCEP + Nominatim
-    if (p.zip_code) {
-      const viaCep = await geocodeByCep(p.zip_code);
-      if (viaCep) {
-        const q = [p.address, viaCep.bairro || p.neighborhood, viaCep.city, viaCep.state, 'Brasil'].filter(Boolean).join(', ');
-        const r = await geocodeAddress(q);
-        if (r) return r;
-        // Fallback só cidade
-        const r2 = await geocodeAddress(`${viaCep.city}, ${viaCep.state}, Brasil`);
-        if (r2) return r2;
-      }
-    }
-    // 3. Tenta endereço completo via Nominatim
-    if (p.address && p.city) {
-      const r = await geocodeAddress([p.address, p.neighborhood, p.city, p.state, 'Brasil'].filter(Boolean).join(', '));
-      if (r) return r;
-    }
-    // 4. Só cidade
-    if (p.city) {
-      const r = await geocodeAddress(`${p.city}, ${p.state || ''}, Brasil`);
-      if (r) return r;
-    }
-    // 5. Último recurso: coords salvas
-    if (p.latitude && p.longitude) return { lat: p.latitude, lon: p.longitude };
     return null;
   };
 
-  const geocodeClient = async () => {
-    if (form.latitude && form.longitude) {
-      console.log('[client] usando coords do form:', form.latitude, form.longitude);
-      return { lat: form.latitude, lon: form.longitude };
-    }
-    // Tenta CEP via ViaCEP + Nominatim
-    if (form.cep) {
-      const viaCep = await geocodeByCep(form.cep);
-      if (viaCep) {
-        const q = [form.address, form.number, viaCep.bairro || form.neighborhood, viaCep.city, viaCep.state, 'Brasil'].filter(Boolean).join(', ');
-        const r = await geocodeAddress(q);
-        if (r) { console.log('[client] geocode CEP OK:', r); return r; }
-        const r2 = await geocodeAddress(`${viaCep.city}, ${viaCep.state}, Brasil`);
-        if (r2) { console.log('[client] geocode cidade OK:', r2); return r2; }
-      }
-    }
-    // Fallback: endereço direto
-    if (form.city) {
-      const r = await geocodeAddress([form.address, form.number, form.neighborhood, form.city, form.state, 'Brasil'].filter(Boolean).join(', '));
-      if (r) return r;
-      const r2 = await geocodeAddress(`${form.city}, ${form.state || ''}, Brasil`);
-      if (r2) return r2;
-    }
+  // Coordenadas do cliente: usa CEP informado no formulário
+  const getClientCoords = async () => {
+    if (form.latitude && form.longitude) return { lat: form.latitude, lon: form.longitude };
+    if (form.cep) return await coordsFromCep(form.cep);
     return null;
   };
 
   const searchProviders = async () => {
     setPhase('searching');
 
-    // Geocodifica cliente e inicia busca em paralelo
     const [clientCoords, onlineProviders] = await Promise.all([
-      geocodeClient(),
+      getClientCoords(),
       base44.entities.Provider.filter({ is_online: true, is_approved: true }),
     ]);
 
@@ -177,27 +134,22 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     const clientLon = clientCoords?.lon || null;
     console.log('[search] clientCoords:', clientLat, clientLon);
 
-    const enrichWithDistance = async (providers) => {
-      // Geocodifica prestadores sequencialmente para evitar rate limit
-      const withDist = [];
-      for (const p of providers) {
-        const coords = await geocodeProvider(p);
+    const enrichWithDistance = (providers) => {
+      return providers.map(p => {
+        const coords = getProviderCoords(p);
         const dist = calcDistance(clientLat, clientLon, coords?.lat, coords?.lon);
         console.log('[search] prestador:', p.name, '| coords:', coords, '| dist:', dist);
-        withDist.push({ ...p, latitude: coords?.lat, longitude: coords?.lon, distance: dist });
-        await new Promise(r => setTimeout(r, 300)); // evita rate limit Nominatim
-      }
-      withDist.sort((a, b) => {
+        return { ...p, distance: dist };
+      }).sort((a, b) => {
         if (a.distance === null && b.distance === null) return 0;
         if (a.distance === null) return 1;
         if (b.distance === null) return -1;
         return a.distance - b.distance;
       });
-      return withDist;
     };
 
     if (onlineProviders.length > 0) {
-      const sorted = await enrichWithDistance(onlineProviders);
+      const sorted = enrichWithDistance(onlineProviders);
       setNearestProvider(sorted[0]);
       setPhase('found');
       return;
@@ -211,7 +163,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     setAllUnavailabilities(unavails || []);
 
     if (allProviders.length > 0) {
-      const sorted = await enrichWithDistance(allProviders);
+      const sorted = enrichWithDistance(allProviders);
       setNearestProvider(sorted[0]);
     }
 
