@@ -129,7 +129,6 @@ export default function ProviderApp() {
         provider_phone: provider?.phone,
       };
 
-      // Captura GPS atual do prestador para calcular tempo real de chegada
       const calcDist = (lat1, lon1, lat2, lon2) => {
         if (!lat1 || !lon1 || !lat2 || !lon2) return null;
         const R = 6371;
@@ -138,57 +137,71 @@ export default function ProviderApp() {
         const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       };
+
       const distToMins = (distKm) => {
         if (distKm < 0.3) return 2;
-        if (distKm < 1) return Math.round(distKm * 10); // ~10 min/km em área densa
-        return Math.max(3, Math.round((distKm / 30) * 60)); // 30km/h velocidade urbana média
+        if (distKm < 1) return Math.round(distKm * 10);
+        return Math.max(3, Math.round((distKm / 30) * 60));
       };
 
-      // Geocodifica pelo CEP (mais preciso) e fallback para endereço completo
-      const geocodeByLocation = async (cep, address, number, neighborhood, city, state) => {
-        try {
-          // 1ª tentativa: CEP via ViaCEP → coordenadas via Nominatim
-          if (cep) {
-            const cleanCep = cep.replace(/\D/g, '');
-            if (cleanCep.length === 8) {
-              // Busca o endereço completo pelo CEP para ter mais precisão no geocoding
-              const cepRes = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
-              const cepData = await cepRes.json();
-              if (!cepData.erro) {
-                const cepQuery = `${cepData.logradouro || ''}, ${number || ''}, ${cepData.bairro || ''}, ${cepData.localidade}, ${cepData.uf}, Brasil`;
-                const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cepQuery)}&limit=1&countrycodes=br`);
-                const geoData = await geoRes.json();
-                if (geoData && geoData.length > 0) {
-                  return { lat: parseFloat(geoData[0].lat), lon: parseFloat(geoData[0].lon) };
-                }
-                // Fallback: apenas CEP + cidade
-                const simpleCepQuery = `${cleanCep}, Brasil`;
-                const geoRes2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(simpleCepQuery)}&limit=1&countrycodes=br`);
-                const geoData2 = await geoRes2.json();
-                if (geoData2 && geoData2.length > 0) {
-                  return { lat: parseFloat(geoData2[0].lat), lon: parseFloat(geoData2[0].lon) };
-                }
-              }
-            }
-          }
-          // 2ª tentativa: endereço completo sem CEP
-          const query = [address, number, neighborhood, city, state, 'Brasil'].filter(Boolean).join(', ');
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br`);
-          const data = await res.json();
-          if (data && data.length > 0) {
-            return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-          }
-        } catch (e) { /* ignora erro de geocoding */ }
+      // Geocodifica endereço via Nominatim com múltiplos fallbacks
+      const geocode = async (query) => {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br`, {
+          headers: { 'Accept-Language': 'pt-BR' }
+        });
+        const data = await res.json();
+        if (data?.length > 0) return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
         return null;
       };
 
+      const geocodeClient = async (req) => {
+        // Tenta 1: CEP via ViaCEP + endereço
+        if (req.cep) {
+          const cleanCep = req.cep.replace(/\D/g, '');
+          if (cleanCep.length === 8) {
+            const cepRes = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+            const cepData = await cepRes.json();
+            if (!cepData.erro) {
+              const q1 = `${cepData.logradouro || ''}, ${req.number || ''}, ${cepData.bairro || ''}, ${cepData.localidade}, ${cepData.uf}, Brasil`;
+              const r1 = await geocode(q1);
+              if (r1) { console.log('[geocode] CEP+endereço OK:', r1); return r1; }
+              // Tenta 2: só CEP
+              const r2 = await geocode(`${cleanCep}, Brasil`);
+              if (r2) { console.log('[geocode] CEP simples OK:', r2); return r2; }
+            }
+          }
+        }
+        // Tenta 3: endereço completo
+        if (req.address) {
+          const q3 = [req.address, req.number, req.neighborhood, req.city, req.state, 'Brasil'].filter(Boolean).join(', ');
+          const r3 = await geocode(q3);
+          if (r3) { console.log('[geocode] endereço completo OK:', r3); return r3; }
+        }
+        // Tenta 4: só cidade
+        if (req.city) {
+          const r4 = await geocode(`${req.city}, ${req.state || ''}, Brasil`);
+          if (r4) { console.log('[geocode] cidade OK:', r4); return r4; }
+        }
+        console.warn('[geocode] falhou em todas as tentativas');
+        return null;
+      };
+
+      // Captura GPS do prestador (timeout 8s, fallback para coords salvas no banco)
       const providerCoords = await new Promise((resolve) => {
-        const fallback = () => resolve({ pLat: provider?.latitude, pLon: provider?.longitude });
+        const fallback = () => {
+          console.log('[GPS prestador] usando coords salvas:', provider?.latitude, provider?.longitude);
+          resolve({ pLat: provider?.latitude || null, pLon: provider?.longitude || null });
+        };
         if (!navigator.geolocation) { fallback(); return; }
+        const timer = setTimeout(fallback, 8000);
         navigator.geolocation.getCurrentPosition(
-          (pos) => resolve({ pLat: pos.coords.latitude, pLon: pos.coords.longitude }),
-          fallback,
-          { enableHighAccuracy: true, timeout: 5000 }
+          (pos) => {
+            clearTimeout(timer);
+            console.log('[GPS prestador] obtido:', pos.coords.latitude, pos.coords.longitude);
+            resolve({ pLat: pos.coords.latitude, pLon: pos.coords.longitude });
+          },
+          () => { clearTimeout(timer); fallback(); },
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 15000 }
         );
       });
 
@@ -198,17 +211,18 @@ export default function ProviderApp() {
         updateData.provider_longitude = pLon;
       }
 
-      // Busca a OS pelo ID usando get()
+      // Busca dados da OS
       const req = await base44.entities.ServiceRequest.get(reqId);
-      console.log('[acceptJob] req:', req?.id, 'cep:', req?.cep, 'lat:', req?.latitude, 'lon:', req?.longitude, 'pLat:', pLat, 'pLon:', pLon);
+      console.log('[acceptJob] OS:', req?.id, '| cep:', req?.cep, '| address:', req?.address, '| city:', req?.city, '| lat salva:', req?.latitude, req?.longitude);
 
       if (req) {
         let clientLat = req.client_latitude || req.latitude;
         let clientLon = req.client_longitude || req.longitude;
 
-        // Se não há coordenadas GPS do cliente, geocodifica via CEP ou endereço
-        if ((!clientLat || !clientLon) && (req.cep || req.address)) {
-          const geocoded = await geocodeByLocation(req.cep, req.address, req.number, req.neighborhood, req.city, req.state);
+        // Geocodifica se não há coordenadas
+        if (!clientLat || !clientLon) {
+          console.log('[acceptJob] sem coords do cliente, geocodificando...');
+          const geocoded = await geocodeClient(req);
           if (geocoded) {
             clientLat = geocoded.lat;
             clientLon = geocoded.lon;
@@ -216,9 +230,17 @@ export default function ProviderApp() {
           }
         }
 
+        console.log('[acceptJob] pLat:', pLat, 'pLon:', pLon, '| clientLat:', clientLat, 'clientLon:', clientLon);
+
         const dist = calcDist(pLat, pLon, clientLat, clientLon);
-        console.log('[acceptJob] pLat:', pLat, 'pLon:', pLon, 'clientLat:', clientLat, 'clientLon:', clientLon, 'dist:', dist);
-        updateData.estimated_arrival_minutes = dist != null ? distToMins(dist) : null;
+        console.log('[acceptJob] distância:', dist, 'km');
+
+        if (dist != null) {
+          updateData.estimated_arrival_minutes = distToMins(dist);
+          console.log('[acceptJob] ETA calculado:', updateData.estimated_arrival_minutes, 'min');
+        } else {
+          console.warn('[acceptJob] não foi possível calcular distância — sem coordenadas suficientes');
+        }
       }
 
       return base44.entities.ServiceRequest.update(reqId, updateData);
