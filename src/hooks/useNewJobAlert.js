@@ -124,9 +124,10 @@ export function useNewJobAlert({ enabled, onNewJob }) {
         event.data?.status === 'aguardando' &&
         event.data?.modality !== 'agendado';
 
-      const isRemoved = event.type === 'update' && event.data?.status !== 'aguardando';
+      // Limpa apenas quando job é cancelado ou concluído (não apenas quando sai de "aguardando")
+      const isFinalizado = event.type === 'update' && ['cancelado', 'concluido'].includes(event.data?.status);
 
-      if (isRemoved) {
+      if (isFinalizado) {
         seenIds.current.delete(event.id);
       }
 
