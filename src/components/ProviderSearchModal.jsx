@@ -247,30 +247,30 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                         : 'Localização não informada'}
                     </span>
                   </div>
-                  {estMin != null && (
-                    <div className="flex items-center gap-1">
-                      <Zap className="w-3 h-3 text-primary" />
-                      <span className="text-xs font-semibold text-primary">
-                        ~{estMin} min de chegada
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-primary" />
+                    <span className="text-xs font-semibold text-primary">
+                      {estMin != null ? `~${estMin} min de chegada` : 'Disponível agora'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="px-6 py-4">
-              {estMin !== null && (
-                <div className="bg-primary/5 border border-primary/20 rounded-2xl p-3 flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Zap className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground">~{estMin} min de chegada</p>
-                    <p className="text-xs text-muted-foreground">Baseado na distância atual</p>
-                  </div>
+              <div className="bg-primary/5 border border-primary/20 rounded-2xl p-3 flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-5 h-5 text-primary" />
                 </div>
-              )}
+                <div>
+                  <p className="text-sm font-bold text-foreground">
+                    {estMin != null ? `~${estMin} min de chegada` : 'Prestador disponível agora'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {estMin != null ? 'Baseado na distância atual' : 'O prestador entrará em contato'}
+                  </p>
+                </div>
+              </div>
               <Button onClick={handleConfirmImmediate} disabled={confirming} className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground mb-3">
                 {confirming
                   ? <Loader2 className="w-4 h-4 animate-spin" />
