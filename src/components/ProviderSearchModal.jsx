@@ -69,40 +69,72 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     searchProviders();
   }, []);
 
-  const geocodeAddress = async (address, city, state) => {
-    const query = [address, city, state, 'Brasil'].filter(Boolean).join(', ');
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br`, {
-      headers: { 'Accept-Language': 'pt-BR' }
-    });
-    const data = await res.json();
-    if (data?.length > 0) return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+  const geocodeAddress = async (query) => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br`, {
+        headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'ServiceApp/1.0' }
+      });
+      const data = await res.json();
+      if (data?.length > 0) {
+        console.log('[geocode] OK:', query, '->', data[0].lat, data[0].lon);
+        return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+      }
+      console.warn('[geocode] sem resultado para:', query);
+    } catch(e) {
+      console.error('[geocode] erro:', e.message);
+    }
+    return null;
+  };
+
+  const geocodeProvider = async (p) => {
+    if (p.latitude && p.longitude) return { lat: p.latitude, lon: p.longitude };
+    // Tenta cidade+estado primeiro (mais rápido e confiável)
+    if (p.city) {
+      const r = await geocodeAddress(`${p.city}, ${p.state || ''}, Brasil`);
+      if (r) return r;
+    }
+    // Tenta endereço completo
+    if (p.address) {
+      const r = await geocodeAddress([p.address, p.city, p.state, 'Brasil'].filter(Boolean).join(', '));
+      if (r) return r;
+    }
+    return null;
+  };
+
+  const geocodeClient = async () => {
+    if (form.latitude && form.longitude) return { lat: form.latitude, lon: form.longitude };
+    if (form.city) {
+      const r = await geocodeAddress(`${form.address || ''}, ${form.neighborhood || ''}, ${form.city}, ${form.state || ''}, Brasil`);
+      if (r) return r;
+      const r2 = await geocodeAddress(`${form.city}, ${form.state || ''}, Brasil`);
+      if (r2) return r2;
+    }
     return null;
   };
 
   const searchProviders = async () => {
     setPhase('searching');
-    await new Promise(r => setTimeout(r, 2000)); // Feedback visual de busca
 
-    let clientLat = form.latitude;
-    let clientLon = form.longitude;
+    // Geocodifica cliente e inicia busca em paralelo
+    const [clientCoords, onlineProviders] = await Promise.all([
+      geocodeClient(),
+      base44.entities.Provider.filter({ is_online: true, is_approved: true }),
+    ]);
 
-    // Geocodifica endereço do cliente se não tiver coords
-    if (!clientLat || !clientLon) {
-      const coords = await geocodeAddress(form.address, form.city, form.state);
-      if (coords) { clientLat = coords.lat; clientLon = coords.lon; }
-    }
+    const clientLat = clientCoords?.lat || null;
+    const clientLon = clientCoords?.lon || null;
+    console.log('[search] clientCoords:', clientLat, clientLon);
 
     const enrichWithDistance = async (providers) => {
-      const withDist = await Promise.all(providers.map(async (p) => {
-        let pLat = p.latitude;
-        let pLon = p.longitude;
-        // Geocodifica endereço do prestador se não tiver coords
-        if ((!pLat || !pLon) && p.address) {
-          const coords = await geocodeAddress(p.address, p.city, p.state);
-          if (coords) { pLat = coords.lat; pLon = coords.lon; }
-        }
-        return { ...p, latitude: pLat, longitude: pLon, distance: calcDistance(clientLat, clientLon, pLat, pLon) };
-      }));
+      // Geocodifica prestadores sequencialmente para evitar rate limit
+      const withDist = [];
+      for (const p of providers) {
+        const coords = await geocodeProvider(p);
+        const dist = calcDistance(clientLat, clientLon, coords?.lat, coords?.lon);
+        console.log('[search] prestador:', p.name, '| coords:', coords, '| dist:', dist);
+        withDist.push({ ...p, latitude: coords?.lat, longitude: coords?.lon, distance: dist });
+        await new Promise(r => setTimeout(r, 300)); // evita rate limit Nominatim
+      }
       withDist.sort((a, b) => {
         if (a.distance === null && b.distance === null) return 0;
         if (a.distance === null) return 1;
@@ -111,9 +143,6 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       });
       return withDist;
     };
-
-    // Busca providers online primeiro
-    const onlineProviders = await base44.entities.Provider.filter({ is_online: true, is_approved: true });
 
     if (onlineProviders.length > 0) {
       const sorted = await enrichWithDistance(onlineProviders);
