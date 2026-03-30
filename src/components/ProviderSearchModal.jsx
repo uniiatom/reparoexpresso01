@@ -179,7 +179,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     onSchedule({ ...form, modality: 'agendado', scheduled_date: scheduledDate, scheduled_time: scheduledTime, ...surcharges });
   };
 
-  const estMin = nearestProvider ? estMinutes(nearestProvider.distance) : null;
+  const estMin = nearestProvider ? (estMinutes(nearestProvider.distance) ?? 30) : null;
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4">
