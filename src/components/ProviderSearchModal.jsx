@@ -328,23 +328,10 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                     <span className="text-sm text-foreground font-medium">{nearestProvider.rating?.toFixed(1) || '5.0'}</span>
                     <span className="text-xs text-muted-foreground">({nearestProvider.total_reviews || 0} aval.)</span>
                   </div>
-                  {nearestProvider.distance != null ? (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{nearestProvider.distance.toFixed(1)} km</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">Localização não informada</span>
-                    </div>
-                  )}
-                  {estMin != null && (
-                    <div className="flex items-center gap-1">
-                      <Zap className="w-3 h-3 text-primary" />
-                      <span className="text-xs font-semibold text-primary">~{estMin} min de chegada</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1 mt-1">
+                    <Zap className="w-3 h-3 text-primary" />
+                    <span className="text-xs font-semibold text-primary">Disponível agora</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -356,7 +343,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                 </div>
                 <div>
                   <p className="text-sm font-bold text-foreground">Prestador disponível agora</p>
-                  <p className="text-xs text-muted-foreground">O tempo de chegada será informado após a confirmação</p>
+                  <p className="text-xs text-muted-foreground">O tempo de chegada será calculado e informado automaticamente após a confirmação</p>
                 </div>
               </div>
               <Button onClick={handleConfirmImmediate} disabled={confirming} className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground mb-3">
