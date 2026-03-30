@@ -69,17 +69,39 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     searchProviders();
   }, []);
 
+  const geocodeAddress = async (address, city, state) => {
+    const query = [address, city, state, 'Brasil'].filter(Boolean).join(', ');
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br`, {
+      headers: { 'Accept-Language': 'pt-BR' }
+    });
+    const data = await res.json();
+    if (data?.length > 0) return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+    return null;
+  };
+
   const searchProviders = async () => {
     setPhase('searching');
     await new Promise(r => setTimeout(r, 2000)); // Feedback visual de busca
 
-    const clientLat = form.latitude;
-    const clientLon = form.longitude;
+    let clientLat = form.latitude;
+    let clientLon = form.longitude;
 
-    const sortByDistance = (providers) => {
-      const withDist = providers.map(p => ({
-        ...p,
-        distance: calcDistance(clientLat, clientLon, p.latitude, p.longitude),
+    // Geocodifica endereço do cliente se não tiver coords
+    if (!clientLat || !clientLon) {
+      const coords = await geocodeAddress(form.address, form.city, form.state);
+      if (coords) { clientLat = coords.lat; clientLon = coords.lon; }
+    }
+
+    const enrichWithDistance = async (providers) => {
+      const withDist = await Promise.all(providers.map(async (p) => {
+        let pLat = p.latitude;
+        let pLon = p.longitude;
+        // Geocodifica endereço do prestador se não tiver coords
+        if ((!pLat || !pLon) && p.address) {
+          const coords = await geocodeAddress(p.address, p.city, p.state);
+          if (coords) { pLat = coords.lat; pLon = coords.lon; }
+        }
+        return { ...p, latitude: pLat, longitude: pLon, distance: calcDistance(clientLat, clientLon, pLat, pLon) };
       }));
       withDist.sort((a, b) => {
         if (a.distance === null && b.distance === null) return 0;
@@ -94,13 +116,13 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     const onlineProviders = await base44.entities.Provider.filter({ is_online: true, is_approved: true });
 
     if (onlineProviders.length > 0) {
-      const sorted = sortByDistance(onlineProviders);
+      const sorted = await enrichWithDistance(onlineProviders);
       setNearestProvider(sorted[0]);
       setPhase('found');
       return;
     }
 
-    // Nenhum online — busca todos aprovados para calcular distância do mais próximo (estimativa)
+    // Nenhum online — busca todos aprovados
     const [allProviders, unavails] = await Promise.all([
       base44.entities.Provider.filter({ is_approved: true }),
       base44.entities.ProviderUnavailability.list(),
@@ -108,8 +130,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     setAllUnavailabilities(unavails || []);
 
     if (allProviders.length > 0) {
-      const sorted = sortByDistance(allProviders);
-      setNearestProvider(sorted[0]); // usado só para calcular distância/tempo estimado
+      const sorted = await enrichWithDistance(allProviders);
+      setNearestProvider(sorted[0]);
     }
 
     setPhase('none');
@@ -179,7 +201,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     onSchedule({ ...form, modality: 'agendado', scheduled_date: scheduledDate, scheduled_time: scheduledTime, ...surcharges });
   };
 
-  const estMin = nearestProvider ? (estMinutes(nearestProvider.distance) ?? 30) : null;
+  const estMin = nearestProvider ? estMinutes(nearestProvider.distance) : null;
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4">
