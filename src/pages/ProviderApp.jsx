@@ -58,16 +58,30 @@ export default function ProviderApp() {
     });
   }, []);
 
-  const { data: requests = [] } = useQuery({
-    queryKey: ['available-requests'],
-    queryFn: async () => {
-      const all = await base44.entities.ServiceRequest.filter({ status: 'aguardando' });
-      // Exclui OS já atribuídas a este prestador (essas aparecem na fila de OS)
-      return all.filter(r => !r.provider_id || r.provider_id !== provider?.id);
-    },
-    refetchInterval: 8000,
-    enabled: !!provider?.is_online && !!provider?.is_approved,
-  });
+  const [requests, setRequests] = useState([]);
+
+  useEffect(() => {
+    if (!provider?.is_online || !provider?.is_approved) {
+      setRequests([]);
+      return;
+    }
+    // Carga inicial
+    base44.entities.ServiceRequest.filter({ status: 'aguardando' }).then(all => {
+      setRequests(all.filter(r => !r.provider_id || r.provider_id !== provider?.id));
+    });
+    // Tempo real via subscribe
+    const unsub = base44.entities.ServiceRequest.subscribe((event) => {
+      setRequests(prev => {
+        if (event.type === 'delete') return prev.filter(r => r.id !== event.id);
+        const isAvailable = event.data?.status === 'aguardando' && (!event.data?.provider_id || event.data?.provider_id !== provider?.id);
+        if (!isAvailable) return prev.filter(r => r.id !== event.id);
+        const exists = prev.some(r => r.id === event.id);
+        if (exists) return prev.map(r => r.id === event.id ? event.data : r);
+        return [...prev, event.data];
+      });
+    });
+    return unsub;
+  }, [provider?.is_online, provider?.is_approved, provider?.id]);
 
   const [myJobs, setMyJobs] = useState([]);
   // em_espera: job pausado (não bloqueia aceitar novos chamados)
