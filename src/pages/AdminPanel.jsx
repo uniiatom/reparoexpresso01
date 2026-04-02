@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, DollarSign, KeyRound, Eye, EyeOff } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, DollarSign, KeyRound, Eye, EyeOff, FileText } from "lucide-react";
 import ServicePricing from '../components/admin/ServicePricing';
 import ProviderRepasse from '../components/admin/ProviderRepasse';
 import Analytics from '../components/admin/Analytics';
@@ -13,6 +13,7 @@ import ScheduledServicesOptimizer from '../components/admin/ScheduledServicesOpt
 import ChecklistsAdmin from '../components/admin/ChecklistsAdmin';
 import AdditionalPointsAdmin from '../components/admin/AdditionalPointsAdmin';
 import ProviderPhotosApproval from '../components/admin/ProviderPhotosApproval';
+import ProviderDetailsModal from '../components/admin/ProviderDetailsModal';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -40,6 +41,7 @@ export default function AdminPanel() {
   const queryClient = useQueryClient();
   const [revealedPasswords, setRevealedPasswords] = useState({});
   const [cancelConfirm, setCancelConfirm] = useState(null);
+  const [selectedProvider, setSelectedProvider] = useState(null);
 
   const togglePassword = (reqId) => {
     setRevealedPasswords(prev => ({ ...prev, [reqId]: !prev[reqId] }));
@@ -243,7 +245,10 @@ export default function AdminPanel() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
+                      <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setSelectedProvider(prov)}>
+                        <FileText className="w-4 h-4 mr-1" /> Ver ficha
+                      </Button>
                       {!prov.is_approved && (
                         <Button size="sm" className="rounded-xl bg-green-600 text-white hover:bg-green-700" onClick={() => approveProvider.mutate({ id: prov.id, approved: true })}>
                           <CheckCircle2 className="w-4 h-4 mr-1" /> Aprovar
@@ -282,6 +287,14 @@ export default function AdminPanel() {
           <ProviderPhotosApproval />
         </TabsContent>
       </Tabs>
+
+      {selectedProvider && (
+        <ProviderDetailsModal
+          provider={selectedProvider}
+          onClose={() => setSelectedProvider(null)}
+          onApprove={(id, approved) => approveProvider.mutate({ id, approved })}
+        />
+      )}
     </div>
   );
 }
