@@ -149,7 +149,7 @@ export default function ProviderApp() {
         try {
           const res = await fetch(
             `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`,
-            { signal: AbortSignal.timeout(5000) }
+            { signal: AbortSignal.timeout(8000) }
           );
           const data = await res.json();
           if (data?.routes?.[0]?.duration) {
@@ -158,13 +158,13 @@ export default function ProviderApp() {
         } catch (e) {
           console.warn('[OSRM] fallback to haversine:', e.message);
         }
-        // Fallback haversine caso OSRM falhe
+        // Fallback: distância reta + 30% de tortuosidade / velocidade média urbana 50 km/h
         const R = 6371;
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
         const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return Math.max(2, Math.round((distKm * 2.5 / 40) * 60));
+        return Math.max(2, Math.round((distKm * 1.3 / 50) * 60));
       };
 
       // Geocodifica endereço via Nominatim com múltiplos fallbacks
