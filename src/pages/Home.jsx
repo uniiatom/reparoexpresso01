@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
@@ -65,7 +65,16 @@ const hydraulicServices = [
   { label: "Descarga", type: "hidraulica_descarga", price: "R$ 100 - R$ 250" },
 ];
 
+const STATUS_LABEL = {
+  aguardando: { label: 'Procurando prestador...', color: 'bg-yellow-50 border-yellow-200 text-yellow-800', dot: 'bg-yellow-400' },
+  aceito:     { label: 'Prestador confirmado', color: 'bg-blue-50 border-blue-200 text-blue-800', dot: 'bg-blue-500' },
+  a_caminho:  { label: 'Prestador a caminho!', color: 'bg-orange-50 border-orange-200 text-orange-800', dot: 'bg-orange-500' },
+  em_andamento: { label: 'Em execução', color: 'bg-primary/5 border-primary/20 text-primary', dot: 'bg-primary' },
+  em_espera:  { label: 'Em espera (peças)', color: 'bg-yellow-50 border-yellow-300 text-yellow-800', dot: 'bg-yellow-500' },
+};
+
 export default function Home() {
+  const navigate = useNavigate();
   const [splashDone, setSplashDone] = useState(false);
   const [userLoaded, setUserLoaded] = useState(false);
   const [mainTab, setMainTab] = useState('cliente');
@@ -85,10 +94,30 @@ export default function Home() {
   const [electricalModalExpanded, setElectricalModalExpanded] = useState(true);
   const [hydraulicModalExpanded, setHydraulicModalExpanded] = useState(true);
   const [showVasoMonoblocoModal, setShowVasoMonoblocoModal] = useState(false);
+  const [activeRequests, setActiveRequests] = useState([]);
 
   useEffect(() => {
     base44.auth.me().then(u => { setUser(u); setUserLoaded(true); }).catch(() => setUserLoaded(true));
   }, []);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    const loadActive = () =>
+      base44.entities.ServiceRequest.filter({ created_by: user.email }).then(all =>
+        setActiveRequests(all.filter(r => !['concluido', 'cancelado'].includes(r.status)))
+      );
+    loadActive();
+    const unsub = base44.entities.ServiceRequest.subscribe((event) => {
+      if (event.data?.created_by !== user.email) return;
+      setActiveRequests(prev => {
+        if (['concluido', 'cancelado'].includes(event.data?.status)) return prev.filter(r => r.id !== event.id);
+        const exists = prev.some(r => r.id === event.id);
+        if (exists) return prev.map(r => r.id === event.id ? event.data : r);
+        return [...prev, event.data];
+      });
+    });
+    return unsub;
+  }, [user?.email]);
 
   const { data: pricingList = [] } = useQuery({
     queryKey: ['service-pricing'],
@@ -210,6 +239,34 @@ export default function Home() {
                          </div>
                        </div>
                      )}
+                     {/* Banner de OS ativas */}
+                     {activeRequests.length > 0 && (
+                       <div className="mb-5 space-y-2">
+                         {activeRequests.map(req => {
+                           const s = STATUS_LABEL[req.status] || STATUS_LABEL['aguardando'];
+                           return (
+                             <button
+                               key={req.id}
+                               onClick={() => navigate(`/acompanhar/${req.id}`)}
+                               className={`w-full text-left rounded-2xl border p-3 flex items-center gap-3 transition-all hover:opacity-90 ${s.color}`}
+                             >
+                               <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 animate-pulse ${s.dot}`} />
+                               <div className="flex-1 min-w-0">
+                                 <p className="text-xs font-bold">{s.label}</p>
+                                 {req.estimated_arrival_minutes != null && ['aceito','a_caminho'].includes(req.status) && (
+                                   <p className="text-xs font-semibold mt-0.5">🚗 Prestador chega em ~{req.estimated_arrival_minutes} min</p>
+                                 )}
+                                 {req.provider_name && (
+                                   <p className="text-xs opacity-80 truncate">{req.provider_name}</p>
+                                 )}
+                               </div>
+                               <span className="text-xs font-semibold opacity-70 flex-shrink-0">Ver →</span>
+                             </button>
+                           );
+                         })}
+                       </div>
+                     )}
+
                      <div className="flex gap-2 mb-8">
                       <button
                         onClick={() => setServiceTab('casa')}
