@@ -89,6 +89,8 @@ export default function SolicitarServico() {
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [showCaixaDaguaModal, setShowCaixaDaguaModal] = useState(false);
   const [caixaDaguaTipo, setCaixaDaguaTipo] = useState(null); // 'residencia' | 'condominio'
+  const [caixaDaguaLitragem, setCaixaDaguaLitragem] = useState(null);
+  const [caixaDaguaStep, setCaixaDaguaStep] = useState('tipo'); // 'tipo' | 'litragem'
   const [showTvSizeModal, setShowTvSizeModal] = useState(false);
   const [tvSize, setTvSize] = useState(null); // 'ate55' | 'acima55'
   const [showDesentupimentoModal, setShowDesentupimentoModal] = useState(false);
@@ -536,7 +538,7 @@ export default function SolicitarServico() {
                     {s.value === 'instalacao_suporte_tv' && tvSize ? (
                       <><span>Suporte de TV</span><br /><span className="text-[10px] opacity-75">({tvSize === 'ate55' ? 'até 55"' : 'acima 55"'})</span></>
                     ) : s.value === 'limpeza_caixa_dagua' && caixaDaguaTipo ? (
-                      <><span>Caixa d'Água</span><br /><span className="text-[10px] opacity-75">({caixaDaguaTipo === 'residencia' ? 'Residência' : 'Condomínio'})</span></>
+                      <><span>Caixa d'Água</span><br /><span className="text-[10px] opacity-75">({caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio'}{caixaDaguaLitragem && caixaDaguaLitragem !== 'Não sei' ? ` · ${caixaDaguaLitragem}` : ''})</span></>
                     ) : s.value === 'desentupimento' && desentupimentoTipo ? (
                       <><span>Desentupimento</span><br /><span className="text-[10px] opacity-75">({desentupimentoTipo})</span></>
                     ) : s.label}
@@ -580,39 +582,72 @@ export default function SolicitarServico() {
 
           {/* Modal subtipo Caixa d'Água */}
           {showCaixaDaguaModal && (
-            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowCaixaDaguaModal(false)}>
+            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => { setShowCaixaDaguaModal(false); setCaixaDaguaStep('tipo'); setCaixaDaguaTipo(null); }}>
               <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
                 <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-                <h3 className="text-lg font-bold text-foreground mb-1 text-center">Limpeza de Caixa d'Água</h3>
-                <p className="text-sm text-muted-foreground text-center mb-5">Selecione o tipo do local</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { value: 'residencia', label: 'Residência', emoji: '🏠', desc: 'Casa ou apartamento' },
-                    { value: 'condominio', label: 'Condomínio', emoji: '🏢', desc: 'Prédio ou condomínio' },
-                  ].map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => {
-                        setCaixaDaguaTipo(opt.value);
-                        set('service_type', [...form.service_type, 'limpeza_caixa_dagua']);
-                        // Pré-preenche a descrição com o tipo
-                        setDescriptionsPerService(prev => ({
-                          ...prev,
-                          limpeza_caixa_dagua: {
-                            ...prev.limpeza_caixa_dagua,
-                            description: `Limpeza de caixa d'água em ${opt.label.toLowerCase()}.`,
-                          }
-                        }));
-                        setShowCaixaDaguaModal(false);
-                      }}
-                      className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
-                    >
-                      <span className="text-3xl">{opt.emoji}</span>
-                      <p className="font-bold text-foreground text-sm">{opt.label}</p>
-                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
+
+                {/* Step 1: Tipo */}
+                {caixaDaguaStep === 'tipo' && (
+                  <>
+                    <h3 className="text-lg font-bold text-foreground mb-1 text-center">Limpeza de Caixa d'Água</h3>
+                    <p className="text-sm text-muted-foreground text-center mb-5">Selecione o tipo do local</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { value: 'residencia', label: 'Residencial', emoji: '🏠', desc: 'Casa ou apartamento' },
+                        { value: 'condominio', label: 'Condomínio', emoji: '🏢', desc: 'Prédio ou condomínio' },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          onClick={() => { setCaixaDaguaTipo(opt.value); setCaixaDaguaStep('litragem'); }}
+                          className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+                        >
+                          <span className="text-3xl">{opt.emoji}</span>
+                          <p className="font-bold text-foreground text-sm">{opt.label}</p>
+                          <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Step 2: Litragem */}
+                {caixaDaguaStep === 'litragem' && (
+                  <>
+                    <button onClick={() => setCaixaDaguaStep('tipo')} className="text-sm text-muted-foreground mb-3 flex items-center gap-1">
+                      ← Voltar
                     </button>
-                  ))}
-                </div>
+                    <h3 className="text-lg font-bold text-foreground mb-1 text-center">Qual a litragem da caixa?</h3>
+                    <p className="text-sm text-muted-foreground text-center mb-5">{caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio'}</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {(caixaDaguaTipo === 'residencia'
+                        ? ['500L', '1.000L', '1.500L', '2.000L', '3.000L', 'Não sei']
+                        : ['2.000L', '3.000L', '5.000L', '10.000L', '15.000L', 'Não sei']
+                      ).map(litro => (
+                        <button
+                          key={litro}
+                          onClick={() => {
+                            setCaixaDaguaLitragem(litro);
+                            const tipoLabel = caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio';
+                            const litDesc = litro === 'Não sei' ? '' : ` — ${litro}`;
+                            set('service_type', [...form.service_type, 'limpeza_caixa_dagua']);
+                            setDescriptionsPerService(prev => ({
+                              ...prev,
+                              limpeza_caixa_dagua: {
+                                ...prev.limpeza_caixa_dagua,
+                                description: `Limpeza de caixa d'água ${tipoLabel}${litDesc}.`,
+                              }
+                            }));
+                            setShowCaixaDaguaModal(false);
+                            setCaixaDaguaStep('tipo');
+                          }}
+                          className="flex items-center justify-center p-4 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95 font-bold text-foreground text-sm"
+                        >
+                          {litro}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
