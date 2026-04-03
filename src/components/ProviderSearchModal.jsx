@@ -353,8 +353,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                 </div>
               )}
               {form.requires_two_providers && !secondProvider && (
-                <div className="mt-3 pt-3 border-t border-green-200">
-                  <p className="text-xs text-orange-600 font-semibold">⚠️ Apenas 1 prestador disponível no momento para TV acima de 55".</p>
+                <div className="mt-3 pt-3 border-t border-orange-200">
+                  <p className="text-xs text-orange-700 font-semibold">⚠️ Apenas 1 prestador disponível agora. Para TV acima de 55" são necessários 2 profissionais — você precisará agendar.</p>
                 </div>
               )}
             </div>
@@ -369,21 +369,30 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                   <p className="text-xs text-muted-foreground">O tempo de chegada será calculado e informado automaticamente após a confirmação</p>
                 </div>
               </div>
-              <Button onClick={handleConfirmImmediate} disabled={confirming} className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground mb-3">
-                {confirming
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : form.modality === 'agendado'
-                    ? <><Calendar className="w-4 h-4 mr-2" /> Confirmar agendamento</>
-                    : <><Zap className="w-4 h-4 mr-2" /> Confirmar atendimento agora</>
-                }
-              </Button>
-              {form.modality !== 'agendado' && (
-                <button
-                  onClick={() => setPhase('none')}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground text-center py-1"
-                >
-                  Prefiro agendar para outro horário
-                </button>
+              {/* Se TV acima de 55" com só 1 prestador, força agendamento */}
+              {form.requires_two_providers && !secondProvider ? (
+                <Button onClick={() => setPhase('none')} className="w-full h-12 rounded-2xl font-bold bg-orange-500 hover:bg-orange-600 text-white mb-3">
+                  <Calendar className="w-4 h-4 mr-2" /> Agendar para outro horário
+                </Button>
+              ) : (
+                <>
+                  <Button onClick={handleConfirmImmediate} disabled={confirming} className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground mb-3">
+                    {confirming
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : form.modality === 'agendado'
+                        ? <><Calendar className="w-4 h-4 mr-2" /> Confirmar agendamento</>
+                        : <><Zap className="w-4 h-4 mr-2" /> Confirmar atendimento agora</>
+                    }
+                  </Button>
+                  {form.modality !== 'agendado' && (
+                    <button
+                      onClick={() => setPhase('none')}
+                      className="w-full text-sm text-muted-foreground hover:text-foreground text-center py-1"
+                    >
+                      Prefiro agendar para outro horário
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
