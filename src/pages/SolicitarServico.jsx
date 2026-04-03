@@ -698,11 +698,11 @@ export default function SolicitarServico() {
           {/* Modal subtipo Desentupimento */}
           {showDesentupimentoModal && (
             <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowDesentupimentoModal(false)}>
-              <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
-                <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-                <h3 className="text-lg font-bold text-foreground mb-1 text-center">Desentupimento</h3>
-                <p className="text-sm text-muted-foreground text-center mb-5">O que precisa ser desentupido?</p>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="bg-card w-full max-w-lg rounded-t-3xl p-4 pb-6" onClick={e => e.stopPropagation()}>
+                <div className="w-10 h-1 bg-border rounded-full mx-auto mb-3" />
+                <h3 className="text-base font-bold text-foreground mb-0.5 text-center">Desentupimento</h3>
+                <p className="text-xs text-muted-foreground text-center mb-3">O que precisa ser desentupido?</p>
+                <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
                   {[
                     { value: 'Pia de cozinha', emoji: '🍽️', preco: 'R$ 120 – 250' },
                     { value: 'Pia de banheiro', emoji: '🚿', preco: 'R$ 120 – 250' },
@@ -733,12 +733,12 @@ export default function SolicitarServico() {
                         }));
                         setShowDesentupimentoModal(false);
                       }}
-                      className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
                     >
-                      <span className="text-3xl">{opt.emoji}</span>
-                      <p className="font-bold text-foreground text-sm text-center">{opt.value}</p>
+                      <span className="text-2xl">{opt.emoji}</span>
+                      <p className="font-bold text-foreground text-xs text-center leading-tight">{opt.value}</p>
                       <p className="text-[10px] text-primary font-semibold text-center">{opt.preco}</p>
-                      {opt.taxaMola && <p className="text-[10px] text-orange-500 font-semibold text-center">+ R$70/m de mola</p>}
+                      {opt.taxaMola && <p className="text-[10px] text-orange-500 font-semibold text-center">+ R$70/m mola</p>}
                     </button>
                   ))}
                 </div>
