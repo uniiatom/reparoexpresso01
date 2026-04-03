@@ -39,7 +39,7 @@ const SERVICE_TYPES = [
   { value: "instalacao_vaso_monobloco", label: "Vaso Monobloco", icon: Droplets, group: "casa" },
   { value: "reparo_forro_gesso", label: "Reparo Forro de Gesso", icon: Hammer, group: "casa" },
   { value: "desentupimento", label: "Desentupimento", icon: Droplets, group: "casa" },
-  { value: "instalacao_suporte_tv", label: "Suporte de TV", icon: Monitor, group: "casa" },
+  { value: "instalacao_suporte_tv", label: "Suporte de TV", icon: Monitor, group: "casa", needsTvSize: true },
   { value: "outros", label: "Outros", icon: Wrench, group: "casa" },
   { value: "troca_pneu", label: "Troca de Pneu", icon: Car, group: "veiculo" },
   { value: "recarga_bateria", label: "Recarga de Bateria", icon: Zap, group: "veiculo" },
@@ -89,6 +89,8 @@ export default function SolicitarServico() {
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [showCaixaDaguaModal, setShowCaixaDaguaModal] = useState(false);
   const [caixaDaguaTipo, setCaixaDaguaTipo] = useState(null); // 'residencia' | 'condominio'
+  const [showTvSizeModal, setShowTvSizeModal] = useState(false);
+  const [tvSize, setTvSize] = useState(null); // 'ate55' | 'acima55'
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
   
   const [sharingLocation, setSharingLocation] = useState(false);
@@ -328,15 +330,16 @@ export default function SolicitarServico() {
 
   const createRequest = useMutation({
     mutationFn: async (formData) => {
-      const serviceTypes = Array.isArray(formData.service_type) && formData.service_type.length > 0
-        ? formData.service_type
-        : [formData.service_type];
+      const { _secondProvider, requires_two_providers, tv_size, ...cleanData } = formData;
+      const serviceTypes = Array.isArray(cleanData.service_type) && cleanData.service_type.length > 0
+        ? cleanData.service_type
+        : [cleanData.service_type];
 
       const baseData = {
-        ...formData,
-        client_suggested_price: formData.client_suggested_price ? Number(formData.client_suggested_price) : null,
+        ...cleanData,
+        client_suggested_price: cleanData.client_suggested_price ? Number(cleanData.client_suggested_price) : null,
         status: 'aguardando',
-        estimated_arrival_minutes: formData.estimated_arrival_minutes ?? null,
+        estimated_arrival_minutes: cleanData.estimated_arrival_minutes ?? null,
       };
 
       if (isTow && form.latitude && form.delivery_latitude) {
@@ -345,21 +348,48 @@ export default function SolicitarServico() {
 
       const results = await Promise.all(
         serviceTypes.map(type => {
-          // Se há múltiplos serviços, usa descrição/fotos individuais por OS
           const hasPerService = serviceTypes.length > 1 && descriptionsPerService[type];
           const description = hasPerService ? (descriptionsPerService[type]?.description || '') : baseData.description;
           const problem_photos = hasPerService ? (descriptionsPerService[type]?.photos || []) : baseData.problem_photos;
-          return base44.entities.ServiceRequest.create({ ...baseData, service_type: type, description, problem_photos });
+
+          // Para TV acima de 55", adiciona info no description e cria OS para o 2º prestador também
+          const isTvLarge = type === 'instalacao_suporte_tv' && tv_size === 'acima55';
+          const finalDescription = isTvLarge
+            ? `[TV acima de 55"] ${description}`
+            : type === 'instalacao_suporte_tv' && tv_size === 'ate55'
+            ? `[TV até 55"] ${description}`
+            : description;
+
+          return base44.entities.ServiceRequest.create({ ...baseData, service_type: type, description: finalDescription, problem_photos });
         })
       );
-      return results[0]; // retorna o primeiro para redirecionar
+
+      // Se TV acima de 55" e tem segundo prestador, cria OS adicional para ele
+      if (tv_size === 'acima55' && _secondProvider && serviceTypes.includes('instalacao_suporte_tv')) {
+        const firstResult = results.find((_, i) => serviceTypes[i] === 'instalacao_suporte_tv');
+        if (firstResult) {
+          const hasPerService = serviceTypes.length > 1 && descriptionsPerService['instalacao_suporte_tv'];
+          const description = hasPerService ? (descriptionsPerService['instalacao_suporte_tv']?.description || '') : baseData.description;
+          const problem_photos = hasPerService ? (descriptionsPerService['instalacao_suporte_tv']?.photos || []) : baseData.problem_photos;
+          await base44.entities.ServiceRequest.create({
+            ...baseData,
+            service_type: 'instalacao_suporte_tv',
+            description: `[TV acima de 55" - Prestador 2] ${description}`,
+            problem_photos,
+          });
+        }
+      }
+
+      return results[0];
     },
     onSuccess: (result) => navigate(`/acompanhar/${result.id}`),
   });
 
   const handleFinalConfirm = (formData) => {
     setShowProviderSearch(false);
-    createRequest.mutate(formData);
+    // Extrai o segundo prestador antes de passar para a mutation
+    const { _secondProvider, ...cleanFormData } = formData;
+    createRequest.mutate({ ...cleanFormData, _secondProvider });
   };
 
   const canNext = () => {
@@ -470,6 +500,13 @@ export default function SolicitarServico() {
               const selected = form.service_type.includes(s.value);
               return (
                 <button key={s.value} onClick={() => {
+                  if (s.value === 'instalacao_suporte_tv' && !selected) {
+                    setShowTvSizeModal(true);
+                    return;
+                  }
+                  if (s.value === 'instalacao_suporte_tv' && selected) {
+                    setTvSize(null);
+                  }
                   if (s.value === 'limpeza_caixa_dagua' && !selected) {
                     setShowCaixaDaguaModal(true);
                     return;
@@ -486,7 +523,9 @@ export default function SolicitarServico() {
                     selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40")}>
                   <Icon className={cn("w-7 h-7", selected ? "text-primary" : "text-muted-foreground")} />
                   <span className={cn("text-xs font-medium text-center leading-tight", selected ? "text-primary" : "text-foreground")}>
-                    {s.value === 'limpeza_caixa_dagua' && caixaDaguaTipo ? (
+                    {s.value === 'instalacao_suporte_tv' && tvSize ? (
+                      <><span>Suporte de TV</span><br /><span className="text-[10px] opacity-75">({tvSize === 'ate55' ? 'até 55"' : 'acima 55"'})</span></>
+                    ) : s.value === 'limpeza_caixa_dagua' && caixaDaguaTipo ? (
                       <><span>Caixa d'Água</span><br /><span className="text-[10px] opacity-75">({caixaDaguaTipo === 'residencia' ? 'Residência' : 'Condomínio'})</span></>
                     ) : s.label}
                   </span>
@@ -495,6 +534,37 @@ export default function SolicitarServico() {
               );
             })}
           </div>
+
+          {/* Modal tamanho TV */}
+          {showTvSizeModal && (
+            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowTvSizeModal(false)}>
+              <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+                <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+                <h3 className="text-lg font-bold text-foreground mb-1 text-center">Instalação de Suporte de TV</h3>
+                <p className="text-sm text-muted-foreground text-center mb-5">Qual o tamanho da sua TV?</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: 'ate55', label: 'Até 55"', emoji: '📺', desc: '1 prestador enviado' },
+                    { value: 'acima55', label: 'Acima de 55"', emoji: '🖥️', desc: '2 prestadores enviados' },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        setTvSize(opt.value);
+                        set('service_type', [...form.service_type, 'instalacao_suporte_tv']);
+                        setShowTvSizeModal(false);
+                      }}
+                      className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+                    >
+                      <span className="text-3xl">{opt.emoji}</span>
+                      <p className="font-bold text-foreground text-sm">{opt.label}</p>
+                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Modal subtipo Caixa d'Água */}
           {showCaixaDaguaModal && (
@@ -1044,7 +1114,11 @@ export default function SolicitarServico() {
 
       {showProviderSearch && (
         <ProviderSearchModal
-          form={form}
+          form={{
+            ...form,
+            tv_size: tvSize,
+            requires_two_providers: form.service_type.includes('instalacao_suporte_tv') && tvSize === 'acima55',
+          }}
           onConfirm={handleFinalConfirm}
           onSchedule={handleFinalConfirm}
           onClose={() => setShowProviderSearch(false)}

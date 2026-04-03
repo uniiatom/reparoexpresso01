@@ -56,9 +56,47 @@ const isHolidayOrSunday = (date) => {
   return dayOfWeek === 0 || FIXED_HOLIDAYS.includes(monthDay);
 };
 
+function ProviderCard({ provider, label }) {
+  return (
+    <div className="flex gap-3">
+      <div className="flex flex-col items-center gap-1">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center border-2 border-primary/20 flex-shrink-0">
+          {provider.photo_url ? (
+            <img src={provider.photo_url} alt="rosto" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-xl font-bold text-primary">{provider.name?.charAt(0)}</span>
+          )}
+        </div>
+        {label && <span className="text-[10px] text-primary font-bold">{label}</span>}
+      </div>
+      {provider.photo_body_url && (
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-16 h-16 rounded-2xl bg-muted overflow-hidden border-2 border-border flex-shrink-0">
+            <img src={provider.photo_body_url} alt="corpo" className="w-full h-full object-cover" />
+          </div>
+          <span className="text-[10px] text-muted-foreground">Corpo</span>
+        </div>
+      )}
+      <div className="flex flex-col justify-center gap-1 flex-1">
+        <p className="font-bold text-foreground text-sm">{provider.name}</p>
+        <div className="flex items-center gap-1">
+          <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+          <span className="text-sm text-foreground font-medium">{provider.rating?.toFixed(1) || '5.0'}</span>
+          <span className="text-xs text-muted-foreground">({provider.total_reviews || 0} aval.)</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Zap className="w-3 h-3 text-primary" />
+          <span className="text-xs font-semibold text-primary">Disponível agora</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClose }) {
   const [phase, setPhase] = useState('searching'); // searching | found | none
   const [nearestProvider, setNearestProvider] = useState(null);
+  const [secondProvider, setSecondProvider] = useState(null);
   const [estMin, setEstMin] = useState(null);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
@@ -182,6 +220,10 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       const sorted = enrichWithDistance(onlineProviders);
       const best = sorted[0];
       setNearestProvider(best);
+      // Se precisa de 2 prestadores, pega o segundo também
+      if (form.requires_two_providers && sorted.length > 1) {
+        setSecondProvider(sorted[1]);
+      }
       setPhase('found');
       // Calcula ETA via OSRM assincronamente
       const pCoords = getProviderCoords(best);
@@ -251,14 +293,13 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     setConfirming(true);
     if (form.modality === 'agendado') {
       const surcharges = getSurcharges(form.scheduled_date, form.scheduled_time);
-      onConfirm({ ...form, ...surcharges });
+      onConfirm({ ...form, ...surcharges, _secondProvider: secondProvider });
     } else {
       const now = new Date();
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       const currentDate = now.toISOString().split('T')[0];
       const surcharges = getSurcharges(currentDate, currentTime);
-      // Não define estimated_arrival_minutes aqui — será calculado pelo prestador ao aceitar
-      onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges });
+      onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges, _secondProvider: secondProvider });
     }
   };
 
@@ -299,41 +340,23 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
             <div className="bg-green-50 px-6 pt-6 pb-4 border-b border-border">
               <div className="flex items-center gap-2 text-green-700 mb-3">
                 <CheckCircle2 className="w-5 h-5" />
-                <span className="font-bold text-base">Prestador disponível!</span>
+                <span className="font-bold text-base">
+                  {form.requires_two_providers ? 'Prestadores disponíveis!' : 'Prestador disponível!'}
+                </span>
               </div>
-              {/* Fotos do prestador */}
-              <div className="flex gap-3 mb-3">
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-20 h-20 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center border-2 border-primary/20 flex-shrink-0">
-                    {nearestProvider.photo_url ? (
-                      <img src={nearestProvider.photo_url} alt="rosto" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-2xl font-bold text-primary">{nearestProvider.name?.charAt(0)}</span>
-                    )}
-                  </div>
-                  <span className="text-xs text-muted-foreground">Rosto</span>
+              {/* Prestador 1 */}
+              <ProviderCard provider={nearestProvider} label={form.requires_two_providers ? 'Prestador 1' : null} />
+              {/* Prestador 2 (apenas quando necessário) */}
+              {form.requires_two_providers && secondProvider && (
+                <div className="mt-3 pt-3 border-t border-green-200">
+                  <ProviderCard provider={secondProvider} label="Prestador 2" />
                 </div>
-                {nearestProvider.photo_body_url && (
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-20 h-20 rounded-2xl bg-muted overflow-hidden border-2 border-border flex-shrink-0">
-                      <img src={nearestProvider.photo_body_url} alt="corpo" className="w-full h-full object-cover" />
-                    </div>
-                    <span className="text-xs text-muted-foreground">Corpo inteiro</span>
-                  </div>
-                )}
-                <div className="flex flex-col justify-center gap-1 flex-1">
-                  <p className="font-bold text-foreground">{nearestProvider.name}</p>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-                    <span className="text-sm text-foreground font-medium">{nearestProvider.rating?.toFixed(1) || '5.0'}</span>
-                    <span className="text-xs text-muted-foreground">({nearestProvider.total_reviews || 0} aval.)</span>
-                  </div>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Zap className="w-3 h-3 text-primary" />
-                    <span className="text-xs font-semibold text-primary">Disponível agora</span>
-                  </div>
+              )}
+              {form.requires_two_providers && !secondProvider && (
+                <div className="mt-3 pt-3 border-t border-green-200">
+                  <p className="text-xs text-orange-600 font-semibold">⚠️ Apenas 1 prestador disponível no momento para TV acima de 55".</p>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="px-6 py-4">
