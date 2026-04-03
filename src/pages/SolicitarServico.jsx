@@ -94,7 +94,6 @@ export default function SolicitarServico() {
   const [showDesentupimentoModal, setShowDesentupimentoModal] = useState(false);
   const [desentupimentoTipo, setDesentupimentoTipo] = useState(null);
   const [showMolaAlert, setShowMolaAlert] = useState(null); // nome do tipo que tem taxa de mola
-  const [precisaMola, setPrecisaMola] = useState(null); // true | false | null (ainda não respondeu)
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
   
   const [sharingLocation, setSharingLocation] = useState(false);
@@ -667,81 +666,46 @@ export default function SolicitarServico() {
 
           {/* Modal aviso taxa de mola */}
           {showMolaAlert && (
-            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => { setShowMolaAlert(null); setPrecisaMola(null); }}>
+            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowMolaAlert(null)}>
               <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
                 <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
                 <div className="text-center mb-5">
-                  <span className="text-4xl mb-3 block">🔧</span>
+                  <span className="text-4xl mb-3 block">⚠️</span>
                   <h3 className="text-lg font-bold text-foreground mb-2">{showMolaAlert}</h3>
-                  <p className="text-sm text-muted-foreground">Será necessário o uso de mola para este serviço?</p>
-                </div>
-
-                {precisaMola === null && (
-                  <div className="flex gap-3 mb-4">
-                    <button
-                      onClick={() => setPrecisaMola(false)}
-                      className="flex-1 py-4 rounded-2xl border-2 border-border text-sm font-bold text-foreground hover:border-primary/40 transition-all"
-                    >
-                      Não sei / Não
-                    </button>
-                    <button
-                      onClick={() => setPrecisaMola(true)}
-                      className="flex-1 py-4 rounded-2xl border-2 border-orange-400 bg-orange-50 text-sm font-bold text-orange-700 hover:bg-orange-100 transition-all"
-                    >
-                      Sim, vai precisar
-                    </button>
-                  </div>
-                )}
-
-                {precisaMola === true && (
-                  <div className="mb-4 bg-orange-50 border border-orange-200 rounded-2xl p-4 text-center">
-                    <p className="text-sm text-orange-700 mb-1 font-semibold">⚠️ Cobrança adicional</p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Dependendo da avaliação do técnico no local, poderá ser necessário o uso de mola. Neste caso, será cobrado:
+                  </p>
+                  <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
                     <p className="text-2xl font-black text-orange-600">R$ 70,00 <span className="text-base font-semibold">por metro de mola</span></p>
-                    <p className="text-xs text-orange-700 mt-1">O valor será calculado conforme a metragem necessária</p>
+                    <p className="text-xs text-orange-700 mt-1">Valor adicional à taxa de saída, calculado conforme a metragem necessária</p>
                   </div>
-                )}
-
-                {precisaMola === false && (
-                  <div className="mb-4 bg-green-50 border border-green-200 rounded-2xl p-3 text-center">
-                    <p className="text-sm text-green-700">✅ Sem cobrança adicional de mola. Caso seja necessário no local, o prestador informará.</p>
-                  </div>
-                )}
-
-                {precisaMola !== null && (
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => setPrecisaMola(null)}
-                      className="flex-1 py-3 rounded-2xl border-2 border-border text-sm font-semibold text-muted-foreground hover:bg-muted transition-all"
-                    >
-                      Voltar
-                    </button>
-                    <button
-                      onClick={() => {
-                        const tipo = showMolaAlert;
-                        const descMola = precisaMola
-                          ? `Desentupimento de ${tipo.toLowerCase()}. Uso de mola necessário — será cobrado R$70,00 por metro.`
-                          : `Desentupimento de ${tipo.toLowerCase()}.`;
-                        setDesentupimentoTipo(tipo);
-                        set('service_type', [...form.service_type, 'desentupimento']);
-                        setDescriptionsPerService(prev => ({
-                          ...prev,
-                          desentupimento: { ...prev.desentupimento, description: descMola }
-                        }));
-                        setShowMolaAlert(null);
-                        setPrecisaMola(null);
-                      }}
-                      className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-bold transition-all"
-                    >
-                      Confirmar
-                    </button>
-                  </div>
-                )}
-
-                {precisaMola === null && (
-                  <button onClick={() => { setShowMolaAlert(null); setPrecisaMola(null); }} className="w-full text-sm text-muted-foreground text-center py-2">
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowMolaAlert(null)}
+                    className="flex-1 py-3 rounded-2xl border-2 border-border text-sm font-semibold text-muted-foreground hover:bg-muted transition-all"
+                  >
                     Cancelar
                   </button>
-                )}
+                  <button
+                    onClick={() => {
+                      const tipo = showMolaAlert;
+                      setDesentupimentoTipo(tipo);
+                      set('service_type', [...form.service_type, 'desentupimento']);
+                      setDescriptionsPerService(prev => ({
+                        ...prev,
+                        desentupimento: {
+                          ...prev.desentupimento,
+                          description: `Desentupimento de ${tipo.toLowerCase()}. Se necessário o uso de mola, será cobrado R$70,00 por metro (avaliado pelo técnico no local).`,
+                        }
+                      }));
+                      setShowMolaAlert(null);
+                    }}
+                    className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-bold transition-all"
+                  >
+                    Entendi, continuar
+                  </button>
+                </div>
               </div>
             </div>
           )}
