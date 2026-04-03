@@ -91,6 +91,8 @@ export default function SolicitarServico() {
   const [caixaDaguaTipo, setCaixaDaguaTipo] = useState(null); // 'residencia' | 'condominio'
   const [showTvSizeModal, setShowTvSizeModal] = useState(false);
   const [tvSize, setTvSize] = useState(null); // 'ate55' | 'acima55'
+  const [showDesentupimentoModal, setShowDesentupimentoModal] = useState(false);
+  const [desentupimentoTipo, setDesentupimentoTipo] = useState(null);
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
   
   const [sharingLocation, setSharingLocation] = useState(false);
@@ -507,6 +509,13 @@ export default function SolicitarServico() {
                   if (s.value === 'instalacao_suporte_tv' && selected) {
                     setTvSize(null);
                   }
+                  if (s.value === 'desentupimento' && !selected) {
+                    setShowDesentupimentoModal(true);
+                    return;
+                  }
+                  if (s.value === 'desentupimento' && selected) {
+                    setDesentupimentoTipo(null);
+                  }
                   if (s.value === 'limpeza_caixa_dagua' && !selected) {
                     setShowCaixaDaguaModal(true);
                     return;
@@ -527,6 +536,8 @@ export default function SolicitarServico() {
                       <><span>Suporte de TV</span><br /><span className="text-[10px] opacity-75">({tvSize === 'ate55' ? 'até 55"' : 'acima 55"'})</span></>
                     ) : s.value === 'limpeza_caixa_dagua' && caixaDaguaTipo ? (
                       <><span>Caixa d'Água</span><br /><span className="text-[10px] opacity-75">({caixaDaguaTipo === 'residencia' ? 'Residência' : 'Condomínio'})</span></>
+                    ) : s.value === 'desentupimento' && desentupimentoTipo ? (
+                      <><span>Desentupimento</span><br /><span className="text-[10px] opacity-75">({desentupimentoTipo})</span></>
                     ) : s.label}
                   </span>
                   {selected && <span className="w-4 h-4 bg-primary rounded-full flex items-center justify-center"><span className="text-white text-[9px] font-black">✓</span></span>}
@@ -604,6 +615,47 @@ export default function SolicitarServico() {
               </div>
             </div>
           )}
+          {/* Modal subtipo Desentupimento */}
+          {showDesentupimentoModal && (
+            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowDesentupimentoModal(false)}>
+              <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+                <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+                <h3 className="text-lg font-bold text-foreground mb-1 text-center">Desentupimento</h3>
+                <p className="text-sm text-muted-foreground text-center mb-5">O que precisa ser desentupido?</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: 'Pia de cozinha', emoji: '🍽️' },
+                    { value: 'Pia de banheiro', emoji: '🚿' },
+                    { value: 'Ralo', emoji: '🌀' },
+                    { value: 'Tanque', emoji: '🪣' },
+                    { value: 'Caixa de gordura', emoji: '🔧' },
+                    { value: 'Caixa de esgoto', emoji: '🕳️' },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        setDesentupimentoTipo(opt.value);
+                        set('service_type', [...form.service_type, 'desentupimento']);
+                        setDescriptionsPerService(prev => ({
+                          ...prev,
+                          desentupimento: {
+                            ...prev.desentupimento,
+                            description: `Desentupimento de ${opt.value.toLowerCase()}.`,
+                          }
+                        }));
+                        setShowDesentupimentoModal(false);
+                      }}
+                      className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+                    >
+                      <span className="text-3xl">{opt.emoji}</span>
+                      <p className="font-bold text-foreground text-sm text-center">{opt.value}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {form.service_type.length > 0 && (
             <div className="mt-4 bg-primary/5 rounded-2xl p-3 border border-primary/20">
               <p className="text-xs font-semibold text-primary mb-1">
