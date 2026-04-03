@@ -353,8 +353,9 @@ export default function SolicitarServico() {
 
       const results = await Promise.all(
         serviceTypes.map(type => {
-          const hasPerService = serviceTypes.length > 1 && descriptionsPerService[type];
-          const description = hasPerService ? (descriptionsPerService[type]?.description || '') : baseData.description;
+          // Para caixa d'água, sempre usa descriptionsPerService pois a descrição é preenchida automaticamente
+          const hasPerService = descriptionsPerService[type]?.description;
+          const description = hasPerService ? descriptionsPerService[type].description : baseData.description;
           const problem_photos = hasPerService ? (descriptionsPerService[type]?.photos || []) : baseData.problem_photos;
 
           // Para TV acima de 55", adiciona info no description e cria OS para o 2º prestador também
@@ -370,15 +371,14 @@ export default function SolicitarServico() {
       );
 
       // Se caixa d'água de condomínio e tem segundo prestador, cria OS adicional para ele
-      if (cleanData._caixaCondominio && _secondProvider) {
-        const hasPerService = serviceTypes.length > 1 && descriptionsPerService['limpeza_caixa_dagua'];
-        const description = hasPerService ? (descriptionsPerService['limpeza_caixa_dagua']?.description || '') : baseData.description;
-        const problem_photos = hasPerService ? (descriptionsPerService['limpeza_caixa_dagua']?.photos || []) : baseData.problem_photos;
+      if (_caixaCondominio && _secondProvider && serviceTypes.includes('limpeza_caixa_dagua')) {
+        const descCondominio = descriptionsPerService['limpeza_caixa_dagua']?.description || baseData.description;
+        const photosCondominio = descriptionsPerService['limpeza_caixa_dagua']?.photos || baseData.problem_photos;
         await base44.entities.ServiceRequest.create({
           ...baseData,
           service_type: 'limpeza_caixa_dagua',
-          description: `[Prestador 2] ${description}`,
-          problem_photos,
+          description: `[Prestador 2] ${descCondominio}`,
+          problem_photos: photosCondominio,
         });
       }
 
