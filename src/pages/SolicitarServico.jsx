@@ -633,11 +633,11 @@ export default function SolicitarServico() {
                     <div className="grid grid-cols-2 gap-3">
                       {(caixaDaguaTipo === 'residencia'
                         ? [
-                            { litro: '500L', preco: null },
-                            { litro: '1.000L', preco: null },
-                            { litro: '1.500L', preco: null },
-                            { litro: '2.000L', preco: null },
-                            { litro: '3.000L', preco: null },
+                            { litro: '500L', preco: 'R$ 150,00' },
+                            { litro: '1.000L', preco: 'R$ 200,00' },
+                            { litro: '1.500L', preco: 'R$ 250,00' },
+                            { litro: '2.000L', preco: 'R$ 300,00' },
+                            { litro: '3.000L', preco: 'R$ 380,00' },
                             { litro: 'Não sei', preco: null },
                           ]
                         : [
