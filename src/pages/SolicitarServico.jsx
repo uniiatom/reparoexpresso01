@@ -704,12 +704,14 @@ export default function SolicitarServico() {
                 <p className="text-sm text-muted-foreground text-center mb-5">O que precisa ser desentupido?</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { value: 'Pia de cozinha', emoji: '🍽️' },
-                    { value: 'Pia de banheiro', emoji: '🚿' },
-                    { value: 'Ralo', emoji: '🌀' },
-                    { value: 'Tanque', emoji: '🪣' },
-                    { value: 'Caixa de gordura', emoji: '🔧', taxaMola: true },
-                    { value: 'Caixa de esgoto', emoji: '🕳️', taxaMola: true },
+                    { value: 'Pia de cozinha', emoji: '🍽️', preco: 'R$ 120 – 250' },
+                    { value: 'Pia de banheiro', emoji: '🚿', preco: 'R$ 120 – 250' },
+                    { value: 'Ralo', emoji: '🌀', preco: 'R$ 100 – 200' },
+                    { value: 'Tanque', emoji: '🪣', preco: 'R$ 120 – 250' },
+                    { value: 'Vaso sanitário', emoji: '🚽', preco: 'R$ 150 – 300' },
+                    { value: 'Caixa de gordura', emoji: '🔧', preco: 'R$ 250 – 500', taxaMola: true },
+                    { value: 'Caixa de esgoto', emoji: '🕳️', preco: 'R$ 300 – 600', taxaMola: true },
+                    { value: 'Coluna de esgoto', emoji: '🏗️', preco: 'R$ 350 – 700', taxaMola: true },
                   ].map(opt => (
                     <button
                       key={opt.value}
@@ -726,7 +728,7 @@ export default function SolicitarServico() {
                           ...prev,
                           desentupimento: {
                             ...prev.desentupimento,
-                            description: `Desentupimento de ${opt.value.toLowerCase()}.`,
+                            description: `Desentupimento de ${opt.value.toLowerCase()}. Valor estimado: ${opt.preco}.`,
                           }
                         }));
                         setShowDesentupimentoModal(false);
@@ -735,6 +737,7 @@ export default function SolicitarServico() {
                     >
                       <span className="text-3xl">{opt.emoji}</span>
                       <p className="font-bold text-foreground text-sm text-center">{opt.value}</p>
+                      <p className="text-[10px] text-primary font-semibold text-center">{opt.preco}</p>
                       {opt.taxaMola && <p className="text-[10px] text-orange-500 font-semibold text-center">+ R$70/m de mola</p>}
                     </button>
                   ))}
@@ -775,7 +778,11 @@ export default function SolicitarServico() {
                         ...prev,
                         desentupimento: {
                           ...prev.desentupimento,
-                          description: `Desentupimento de ${tipo.toLowerCase()}. Se necessário o uso de mola, será cobrado R$70,00 por metro (avaliado pelo técnico no local).`,
+                          description: `Desentupimento de ${tipo.toLowerCase()}. Valor estimado: ${[
+                        { value: 'Caixa de gordura', preco: 'R$ 250 – 500' },
+                        { value: 'Caixa de esgoto', preco: 'R$ 300 – 600' },
+                        { value: 'Coluna de esgoto', preco: 'R$ 350 – 700' },
+                      ].find(o => o.value === tipo)?.preco || ''}. Se necessário o uso de mola, será cobrado R$70,00 por metro (avaliado pelo técnico no local).`,
                         }
                       }));
                       setShowMolaAlert(null);
