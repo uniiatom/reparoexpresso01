@@ -335,7 +335,7 @@ export default function SolicitarServico() {
 
   const createRequest = useMutation({
     mutationFn: async (formData) => {
-      const { _secondProvider, requires_two_providers, tv_size, ...cleanData } = formData;
+      const { _secondProvider, requires_two_providers, tv_size, _caixaCondominio, ...cleanData } = formData;
       const serviceTypes = Array.isArray(cleanData.service_type) && cleanData.service_type.length > 0
         ? cleanData.service_type
         : [cleanData.service_type];
@@ -370,9 +370,7 @@ export default function SolicitarServico() {
       );
 
       // Se caixa d'água de condomínio e tem segundo prestador, cria OS adicional para ele
-      const isCaixaCondominio = serviceTypes.includes('limpeza_caixa_dagua') && cleanData.description?.includes('Condomínio') || 
-        (serviceTypes.length > 1 && descriptionsPerService['limpeza_caixa_dagua']?.description?.includes('Condomínio'));
-      if (isCaixaCondominio && _secondProvider) {
+      if (cleanData._caixaCondominio && _secondProvider) {
         const hasPerService = serviceTypes.length > 1 && descriptionsPerService['limpeza_caixa_dagua'];
         const description = hasPerService ? (descriptionsPerService['limpeza_caixa_dagua']?.description || '') : baseData.description;
         const problem_photos = hasPerService ? (descriptionsPerService['limpeza_caixa_dagua']?.photos || []) : baseData.problem_photos;
@@ -407,9 +405,8 @@ export default function SolicitarServico() {
 
   const handleFinalConfirm = (formData) => {
     setShowProviderSearch(false);
-    // Extrai o segundo prestador antes de passar para a mutation
     const { _secondProvider, ...cleanFormData } = formData;
-    createRequest.mutate({ ...cleanFormData, _secondProvider });
+    createRequest.mutate({ ...cleanFormData, _secondProvider, _caixaCondominio: caixaDaguaTipo === 'condominio' });
   };
 
   const canNext = () => {
@@ -662,12 +659,18 @@ export default function SolicitarServico() {
                             const tipoLabel = caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio';
                             const litDesc = litro === 'Não sei' ? '' : ` — ${litro}`;
                             const precoDesc = preco ? ` (${preco})` : '';
-                            set('service_type', [...form.service_type, 'limpeza_caixa_dagua']);
+                            const autoDesc = `Limpeza de caixa d'água ${tipoLabel}${litDesc}${precoDesc}.`;
+                            const newTypes = [...form.service_type, 'limpeza_caixa_dagua'];
+                            set('service_type', newTypes);
+                            // Se vai ser o único serviço, preenche description diretamente
+                            if (newTypes.length === 1) {
+                              set('description', autoDesc);
+                            }
                             setDescriptionsPerService(prev => ({
                               ...prev,
                               limpeza_caixa_dagua: {
                                 ...prev.limpeza_caixa_dagua,
-                                description: `Limpeza de caixa d'água ${tipoLabel}${litDesc}${precoDesc}.`,
+                                description: autoDesc,
                               }
                             }));
                             setShowCaixaDaguaModal(false);
