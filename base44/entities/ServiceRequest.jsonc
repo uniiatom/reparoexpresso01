@@ -57,6 +57,7 @@
         "alarme_cerca_eletrica",
         "concertina",
         "camera_cftv",
+        "instalacao_suporte_tv",
         "outros"
       ],
       "description": "Tipo de servi\u00e7o"
