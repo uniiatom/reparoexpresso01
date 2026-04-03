@@ -620,31 +620,51 @@ export default function SolicitarServico() {
                     <p className="text-sm text-muted-foreground text-center mb-5">{caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio'}</p>
                     <div className="grid grid-cols-2 gap-3">
                       {(caixaDaguaTipo === 'residencia'
-                        ? ['500L', '1.000L', '1.500L', '2.000L', '3.000L', 'Não sei']
-                        : ['10.000L', '15.000L', '20.000L', '30.000L', '50.000L', 'Não sei']
-                      ).map(litro => (
+                        ? [
+                            { litro: '500L', preco: null },
+                            { litro: '1.000L', preco: null },
+                            { litro: '1.500L', preco: null },
+                            { litro: '2.000L', preco: null },
+                            { litro: '3.000L', preco: null },
+                            { litro: 'Não sei', preco: null },
+                          ]
+                        : [
+                            { litro: '10.000L', preco: 'R$ 600,00' },
+                            { litro: '15.000L', preco: 'R$ 800,00' },
+                            { litro: '20.000L', preco: 'R$ 900,00' },
+                            { litro: '30.000L', preco: 'R$ 1.000,00' },
+                            { litro: '50.000L', preco: 'R$ 1.400,00' },
+                            { litro: 'Não sei', preco: null },
+                          ]
+                      ).map(opt => {
+                        const litro = typeof opt === 'string' ? opt : opt.litro;
+                        const preco = typeof opt === 'string' ? null : opt.preco;
+                        return (
                         <button
                           key={litro}
                           onClick={() => {
                             setCaixaDaguaLitragem(litro);
                             const tipoLabel = caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio';
                             const litDesc = litro === 'Não sei' ? '' : ` — ${litro}`;
+                            const precoDesc = preco ? ` (${preco})` : '';
                             set('service_type', [...form.service_type, 'limpeza_caixa_dagua']);
                             setDescriptionsPerService(prev => ({
                               ...prev,
                               limpeza_caixa_dagua: {
                                 ...prev.limpeza_caixa_dagua,
-                                description: `Limpeza de caixa d'água ${tipoLabel}${litDesc}.`,
+                                description: `Limpeza de caixa d'água ${tipoLabel}${litDesc}${precoDesc}.`,
                               }
                             }));
                             setShowCaixaDaguaModal(false);
                             setCaixaDaguaStep('tipo');
                           }}
-                          className="flex items-center justify-center p-4 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95 font-bold text-foreground text-sm"
+                          className="flex flex-col items-center justify-center gap-1 p-4 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
                         >
-                          {litro}
+                          <span className="font-bold text-foreground text-sm">{litro}</span>
+                          {preco && <span className="text-xs text-primary font-semibold">{preco}</span>}
                         </button>
-                      ))}
+                        );
+                      })}
                     </div>
                   </>
                 )}
