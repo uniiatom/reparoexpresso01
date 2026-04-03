@@ -97,6 +97,8 @@ export default function SolicitarServico() {
   const [desentupimentoTipo, setDesentupimentoTipo] = useState(null);
   const [showMolaAlert, setShowMolaAlert] = useState(null); // nome do tipo que tem taxa de mola
   const [showNaoSeiAlert, setShowNaoSeiAlert] = useState(false);
+  const [showForroGessoModal, setShowForroGessoModal] = useState(false);
+  const [forroGessoTipo, setForroGessoTipo] = useState(null);
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
   
   const [sharingLocation, setSharingLocation] = useState(false);
@@ -525,6 +527,13 @@ export default function SolicitarServico() {
                   if (s.value === 'instalacao_suporte_tv' && selected) {
                     setTvSize(null);
                   }
+                  if (s.value === 'reparo_forro_gesso' && !selected) {
+                    setShowForroGessoModal(true);
+                    return;
+                  }
+                  if (s.value === 'reparo_forro_gesso' && selected) {
+                    setForroGessoTipo(null);
+                  }
                   if (s.value === 'desentupimento' && !selected) {
                     setShowDesentupimentoModal(true);
                     return;
@@ -552,6 +561,8 @@ export default function SolicitarServico() {
                       <><span>Suporte de TV</span><br /><span className="text-[10px] opacity-75">({tvSize === 'ate55' ? 'até 55"' : 'acima 55"'})</span></>
                     ) : s.value === 'limpeza_caixa_dagua' && caixaDaguaTipo ? (
                       <><span>Caixa d'Água</span><br /><span className="text-[10px] opacity-75">({caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio'}{caixaDaguaLitragem && caixaDaguaLitragem !== 'Não sei' ? ` · ${caixaDaguaLitragem}` : ''})</span></>
+                    ) : s.value === 'reparo_forro_gesso' && forroGessoTipo ? (
+                      <><span>Forro de Gesso</span><br /><span className="text-[10px] opacity-75">({forroGessoTipo})</span></>
                     ) : s.value === 'desentupimento' && desentupimentoTipo ? (
                       <><span>Desentupimento</span><br /><span className="text-[10px] opacity-75">({desentupimentoTipo})</span></>
                     ) : s.label}
@@ -739,6 +750,48 @@ export default function SolicitarServico() {
                       <p className="font-bold text-foreground text-xs text-center leading-tight">{opt.value}</p>
                       <p className="text-[10px] text-primary font-semibold text-center">{opt.preco}</p>
                       {opt.taxaMola && <p className="text-[10px] text-orange-500 font-semibold text-center">+ R$70/m mola</p>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal subtipo Forro de Gesso */}
+          {showForroGessoModal && (
+            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowForroGessoModal(false)}>
+              <div className="bg-card w-full max-w-lg rounded-t-3xl p-4 pb-6" onClick={e => e.stopPropagation()}>
+                <div className="w-10 h-1 bg-border rounded-full mx-auto mb-3" />
+                <h3 className="text-base font-bold text-foreground mb-0.5 text-center">Reparo Forro de Gesso</h3>
+                <p className="text-xs text-muted-foreground text-center mb-3">Qual tipo de reparo é necessário?</p>
+                <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
+                  {[
+                    { value: 'Rachadura', emoji: '🔍', preco: 'R$ 120 – 250' },
+                    { value: 'Buraco pequeno', emoji: '🕳️', preco: 'R$ 150 – 300' },
+                    { value: 'Buraco grande', emoji: '🔨', preco: 'R$ 300 – 600' },
+                    { value: 'Infiltração / mancha', emoji: '💧', preco: 'R$ 200 – 450' },
+                    { value: 'Descolamento', emoji: '📋', preco: 'R$ 180 – 400' },
+                    { value: 'Troca de placa', emoji: '🔧', preco: 'R$ 250 – 550' },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        setForroGessoTipo(opt.value);
+                        set('service_type', [...form.service_type, 'reparo_forro_gesso']);
+                        setDescriptionsPerService(prev => ({
+                          ...prev,
+                          reparo_forro_gesso: {
+                            ...prev.reparo_forro_gesso,
+                            description: `Reparo de forro de gesso — ${opt.value.toLowerCase()}. Valor estimado: ${opt.preco}.`,
+                          }
+                        }));
+                        setShowForroGessoModal(false);
+                      }}
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+                    >
+                      <span className="text-2xl">{opt.emoji}</span>
+                      <p className="font-bold text-foreground text-xs text-center leading-tight">{opt.value}</p>
+                      <p className="text-[10px] text-primary font-semibold text-center">{opt.preco}</p>
                     </button>
                   ))}
                 </div>
