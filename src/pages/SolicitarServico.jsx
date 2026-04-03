@@ -641,11 +641,12 @@ export default function SolicitarServico() {
                             { litro: 'Não sei', preco: null },
                           ]
                         : [
-                            { litro: '10.000L', preco: 'R$ 600,00' },
-                            { litro: '15.000L', preco: 'R$ 800,00' },
-                            { litro: '20.000L', preco: 'R$ 900,00' },
-                            { litro: '30.000L', preco: 'R$ 1.000,00' },
-                            { litro: '50.000L', preco: 'R$ 1.400,00' },
+                            { litro: '10.000L', preco: 'R$ 550,00' },
+                            { litro: '15.000L', preco: 'R$ 700,00' },
+                            { litro: '20.000L', preco: 'R$ 850,00' },
+                            { litro: '30.000L', preco: 'R$ 1.100,00' },
+                            { litro: '50.000L', preco: 'R$ 1.600,00' },
+                            { litro: '100.000L+', preco: 'R$ 2.500,00' },
                             { litro: 'Não sei', preco: null },
                           ]
                       ).map(opt => {
