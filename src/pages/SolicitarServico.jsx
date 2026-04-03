@@ -93,6 +93,7 @@ export default function SolicitarServico() {
   const [tvSize, setTvSize] = useState(null); // 'ate55' | 'acima55'
   const [showDesentupimentoModal, setShowDesentupimentoModal] = useState(false);
   const [desentupimentoTipo, setDesentupimentoTipo] = useState(null);
+  const [showMolaAlert, setShowMolaAlert] = useState(null); // nome do tipo que tem taxa de mola
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
   
   const [sharingLocation, setSharingLocation] = useState(false);
@@ -628,12 +629,18 @@ export default function SolicitarServico() {
                     { value: 'Pia de banheiro', emoji: '🚿' },
                     { value: 'Ralo', emoji: '🌀' },
                     { value: 'Tanque', emoji: '🪣' },
-                    { value: 'Caixa de gordura', emoji: '🔧' },
-                    { value: 'Caixa de esgoto', emoji: '🕳️' },
+                    { value: 'Caixa de gordura', emoji: '🔧', taxaMola: true },
+                    { value: 'Caixa de esgoto', emoji: '🕳️', taxaMola: true },
                   ].map(opt => (
                     <button
                       key={opt.value}
                       onClick={() => {
+                        if (opt.taxaMola) {
+                          setDesentupimentoTipo(opt.value);
+                          setShowDesentupimentoModal(false);
+                          setShowMolaAlert(opt.value);
+                          return;
+                        }
                         setDesentupimentoTipo(opt.value);
                         set('service_type', [...form.service_type, 'desentupimento']);
                         setDescriptionsPerService(prev => ({
@@ -649,8 +656,55 @@ export default function SolicitarServico() {
                     >
                       <span className="text-3xl">{opt.emoji}</span>
                       <p className="font-bold text-foreground text-sm text-center">{opt.value}</p>
+                      {opt.taxaMola && <p className="text-[10px] text-orange-500 font-semibold text-center">+ R$70/m de mola</p>}
                     </button>
                   ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal aviso taxa de mola */}
+          {showMolaAlert && (
+            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowMolaAlert(null)}>
+              <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+                <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+                <div className="text-center mb-5">
+                  <span className="text-4xl mb-3 block">⚠️</span>
+                  <h3 className="text-lg font-bold text-foreground mb-2">Atenção — Cobrança adicional</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Para <span className="font-semibold text-foreground">{showMolaAlert}</span>, além da taxa de saída do prestador, será cobrado:
+                  </p>
+                  <div className="mt-4 bg-orange-50 border border-orange-200 rounded-2xl p-4">
+                    <p className="text-2xl font-black text-orange-600">R$ 70,00 <span className="text-base font-semibold">por metro de mola</span></p>
+                    <p className="text-xs text-orange-700 mt-1">O valor será calculado conforme a metragem necessária</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowMolaAlert(null)}
+                    className="flex-1 py-3 rounded-2xl border-2 border-border text-sm font-semibold text-muted-foreground hover:bg-muted transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => {
+                      const tipo = showMolaAlert;
+                      setDesentupimentoTipo(tipo);
+                      set('service_type', [...form.service_type, 'desentupimento']);
+                      setDescriptionsPerService(prev => ({
+                        ...prev,
+                        desentupimento: {
+                          ...prev.desentupimento,
+                          description: `Desentupimento de ${tipo.toLowerCase()}. Ciente da cobrança adicional de R$70,00 por metro de mola.`,
+                        }
+                      }));
+                      setShowMolaAlert(null);
+                    }}
+                    className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-bold transition-all"
+                  >
+                    Entendi, continuar
+                  </button>
                 </div>
               </div>
             </div>
