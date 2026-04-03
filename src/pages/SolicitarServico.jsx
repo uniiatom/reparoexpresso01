@@ -369,6 +369,21 @@ export default function SolicitarServico() {
         })
       );
 
+      // Se caixa d'água de condomínio e tem segundo prestador, cria OS adicional para ele
+      const isCaixaCondominio = serviceTypes.includes('limpeza_caixa_dagua') && cleanData.description?.includes('Condomínio') || 
+        (serviceTypes.length > 1 && descriptionsPerService['limpeza_caixa_dagua']?.description?.includes('Condomínio'));
+      if (isCaixaCondominio && _secondProvider) {
+        const hasPerService = serviceTypes.length > 1 && descriptionsPerService['limpeza_caixa_dagua'];
+        const description = hasPerService ? (descriptionsPerService['limpeza_caixa_dagua']?.description || '') : baseData.description;
+        const problem_photos = hasPerService ? (descriptionsPerService['limpeza_caixa_dagua']?.photos || []) : baseData.problem_photos;
+        await base44.entities.ServiceRequest.create({
+          ...baseData,
+          service_type: 'limpeza_caixa_dagua',
+          description: `[Prestador 2] ${description}`,
+          problem_photos,
+        });
+      }
+
       // Se TV acima de 55" e tem segundo prestador, cria OS adicional para ele
       if (tv_size === 'acima55' && _secondProvider && serviceTypes.includes('instalacao_suporte_tv')) {
         const firstResult = results.find((_, i) => serviceTypes[i] === 'instalacao_suporte_tv');
@@ -1278,7 +1293,8 @@ export default function SolicitarServico() {
           form={{
             ...form,
             tv_size: tvSize,
-            requires_two_providers: form.service_type.includes('instalacao_suporte_tv') && tvSize === 'acima55',
+            requires_two_providers: (form.service_type.includes('instalacao_suporte_tv') && tvSize === 'acima55') ||
+              (form.service_type.includes('limpeza_caixa_dagua') && caixaDaguaTipo === 'condominio'),
           }}
           onConfirm={handleFinalConfirm}
           onSchedule={handleFinalConfirm}
