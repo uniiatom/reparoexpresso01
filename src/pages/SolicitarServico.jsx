@@ -621,7 +621,7 @@ export default function SolicitarServico() {
                     <div className="grid grid-cols-2 gap-3">
                       {(caixaDaguaTipo === 'residencia'
                         ? ['500L', '1.000L', '1.500L', '2.000L', '3.000L', 'Não sei']
-                        : ['2.000L', '3.000L', '5.000L', '10.000L', '15.000L', 'Não sei']
+                        : ['10.000L', '15.000L', '20.000L', '30.000L', '50.000L', 'Não sei']
                       ).map(litro => (
                         <button
                           key={litro}
