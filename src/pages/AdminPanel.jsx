@@ -14,6 +14,7 @@ import ChecklistsAdmin from '../components/admin/ChecklistsAdmin';
 import AdditionalPointsAdmin from '../components/admin/AdditionalPointsAdmin';
 import ProviderPhotosApproval from '../components/admin/ProviderPhotosApproval';
 import ProviderDetailsModal from '../components/admin/ProviderDetailsModal';
+import AdminReserveFundDashboard from '../components/AdminReserveFundDashboard';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -141,6 +142,9 @@ export default function AdminPanel() {
           <TabsTrigger value="additional">➕ Pontos Adicionais</TabsTrigger>
           <TabsTrigger value="photos">
             📷 Fotos {pendingPhotoProviders.length > 0 && `(${pendingPhotoProviders.length})`}
+          </TabsTrigger>
+          <TabsTrigger value="reserve-fund">
+            🔐 Fundos de Reserva
           </TabsTrigger>
         </TabsList>
 
@@ -285,6 +289,10 @@ export default function AdminPanel() {
 
         <TabsContent value="photos">
           <ProviderPhotosApproval />
+        </TabsContent>
+
+        <TabsContent value="reserve-fund">
+          <AdminReserveFundDashboard />
         </TabsContent>
       </Tabs>
 

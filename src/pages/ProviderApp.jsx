@@ -22,6 +22,7 @@ import ActiveJobCard from '../components/ActiveJobCard';
 import DeclineReasonModal from '../components/DeclineReasonModal';
 import ProviderPhotoEditor from '../components/ProviderPhotoEditor';
 import CashbackPanel from '../components/CashbackPanel';
+import ProviderReserveFund from '../components/ProviderReserveFund';
 import ProviderLevelIncentive from '../components/ProviderLevelIncentive';
 import ProviderLevelBadge, { getProviderLevel, PROVIDER_LEVELS } from '../components/ProviderLevelBadge';
 
@@ -548,6 +549,12 @@ export default function ProviderApp() {
         >
           💸 Bônus
         </button>
+        <button
+          onClick={() => setActiveTab('fundo')}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'fundo' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          🔐 Fundo
+        </button>
       </div>
 
       {/* ── ABA CHAMADOS ── */}
@@ -867,6 +874,11 @@ export default function ProviderApp() {
           provider={provider}
           onUpdate={() => queryClient.invalidateQueries({ queryKey: ['my-provider'] })}
         />
+      )}
+
+      {/* ── ABA FUNDO DE RESERVA ── */}
+      {activeTab === 'fundo' && (
+        <ProviderReserveFund providerId={provider.id} />
       )}
 
       {/* Checklist modal */}
