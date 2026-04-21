@@ -1,0 +1,60 @@
+{
+  "name": "Client",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID do usu\u00e1rio vinculado"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nome completo"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefone / WhatsApp"
+    },
+    "cpf": {
+      "type": "string",
+      "description": "CPF do cliente"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de nascimento"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "Foto de perfil"
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "C\u00f3digo de indica\u00e7\u00e3o personalizado do cliente"
+    },
+    "addresses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Endere\u00e7os salvos"
+    }
+  },
+  "required": [
+    "name",
+    "phone"
+  ]
+}
