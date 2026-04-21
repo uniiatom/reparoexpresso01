@@ -391,6 +391,13 @@ export default function AcompanharServico() {
                 <FavoriteButton
                   providerId={request.provider_id}
                   providerName={request.provider_name}
+                  providerData={{
+                    name: request.provider_name,
+                    photo_url: null,
+                    rating: null,
+                    city: request.city,
+                    state: request.state,
+                  }}
                   size="md"
                   variant="outline"
                 />
