@@ -1,0 +1,71 @@
+{
+  "name": "ReserveFund",
+  "type": "object",
+  "properties": {
+    "provider_id": {
+      "type": "string",
+      "description": "ID do prestador PJ"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Nome do prestador (desnormalizado)"
+    },
+    "total_accumulated": {
+      "type": "number",
+      "default": 0,
+      "description": "Total acumulado no fundo de reserva"
+    },
+    "blocked_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Valor bloqueado em garantia (dentro do prazo de 3 meses)"
+    },
+    "available_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Valor que pode ser sacado ap\u00f3s 3 meses (calculado)"
+    },
+    "debited_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Total j\u00e1 debitado por indeniza\u00e7\u00f5es"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "em_rescisao",
+        "encerrado"
+      ],
+      "default": "ativo",
+      "description": "Status do fundo"
+    },
+    "last_service_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data do \u00faltimo servi\u00e7o conclu\u00eddo"
+    },
+    "termination_request_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data quando prestador solicitou encerramento"
+    },
+    "termination_approval_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data quando admin aprovou o encerramento"
+    },
+    "pix_sent_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data quando PIX foi enviado"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es sobre o fundo ou encerramento"
+    }
+  },
+  "required": [
+    "provider_id"
+  ]
+}
