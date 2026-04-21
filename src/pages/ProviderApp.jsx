@@ -25,6 +25,7 @@ import CashbackPanel from '../components/CashbackPanel';
 import ProviderReserveFund from '../components/ProviderReserveFund';
 import ProviderLevelIncentive from '../components/ProviderLevelIncentive';
 import ProviderLevelBadge, { getProviderLevel, PROVIDER_LEVELS } from '../components/ProviderLevelBadge';
+import InvoiceManager from '../components/InvoiceManager';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -532,6 +533,12 @@ export default function ProviderApp() {
           📋 Histórico
         </button>
         <button
+          onClick={() => setActiveTab('notas')}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'notas' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          🧾 Notas
+        </button>
+        <button
           onClick={() => setActiveTab('indisponibilidade')}
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'indisponibilidade' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
@@ -541,7 +548,7 @@ export default function ProviderApp() {
           onClick={() => setActiveTab('fotos')}
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'fotos' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
-          📷 Minhas Fotos
+          📷 Fotos
         </button>
         <button
           onClick={() => setActiveTab('cashback')}
@@ -856,6 +863,11 @@ export default function ProviderApp() {
             </div>
           )}
         </div>
+      )}
+
+      {/* ── ABA NOTAS FISCAIS ── */}
+      {activeTab === 'notas' && (
+        <InvoiceManager providerId={provider.id} providerName={provider.name} />
       )}
 
       {/* ── ABA INDISPONIBILIDADE ── */}

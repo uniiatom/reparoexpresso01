@@ -1,0 +1,81 @@
+{
+  "name": "Invoice",
+  "type": "object",
+  "properties": {
+    "provider_id": {
+      "type": "string",
+      "description": "ID do prestador"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Nome do prestador (desnormalizado)"
+    },
+    "invoice_number": {
+      "type": "string",
+      "description": "N\u00famero da nota fiscal"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL do arquivo da nota fiscal"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Valor da nota"
+    },
+    "issue_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de emiss\u00e3o"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o/Observa\u00e7\u00f5es"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "enviada",
+        "recebida",
+        "paga",
+        "baixada"
+      ],
+      "default": "enviada",
+      "description": "Status da nota: enviada (aguardando recebimento), recebida (validada), paga (paga), baixada (processada)"
+    },
+    "received_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data de recebimento/valida\u00e7\u00e3o"
+    },
+    "paid_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data do pagamento"
+    },
+    "low_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data da baixa/processamento"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "pix",
+        "transferencia",
+        "boleto",
+        "outro"
+      ],
+      "description": "M\u00e9todo de pagamento"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es internas"
+    }
+  },
+  "required": [
+    "provider_id",
+    "provider_name",
+    "invoice_number",
+    "amount"
+  ]
+}
