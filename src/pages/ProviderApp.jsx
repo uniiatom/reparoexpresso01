@@ -374,13 +374,13 @@ export default function ProviderApp() {
         <div>
           <h1 className="text-xl font-bold text-foreground">Olá, {provider.name.split(' ')[0]}!</h1>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <div className="flex gap-1">
+            <div className="flex gap-1 items-center">
               {[1,2,3,4,5].map(s => (
                 <Star key={s} className={cn("w-3.5 h-3.5", s <= Math.round(provider.rating || 5) ? "text-yellow-400 fill-yellow-400" : "text-muted")} />
               ))}
               <span className="text-xs text-muted-foreground ml-1">{provider.total_jobs || 0} serviços</span>
+              <ProviderLevelBadge totalJobs={provider.total_jobs} rating={provider.rating} size="sm" />
             </div>
-            <ProviderLevelBadge totalJobs={provider.total_jobs} rating={provider.rating} size="sm" />
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -394,6 +394,18 @@ export default function ProviderApp() {
           />
         </div>
       </div>
+
+      {/* Nível do Prestador — card destacado (só exibe se atingiu algum nível) */}
+      {(provider.total_jobs >= 120) && (
+        <div className="mb-4">
+          <ProviderLevelBadge
+            totalJobs={provider.total_jobs}
+            rating={provider.rating}
+            variant="highlight"
+            size="md"
+          />
+        </div>
+      )}
 
       {/* Abas de navegação - linha 1 */}
       <div className="flex gap-1 mb-1 bg-muted rounded-2xl p-1">
