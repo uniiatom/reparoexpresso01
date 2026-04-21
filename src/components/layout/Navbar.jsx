@@ -32,7 +32,7 @@ export default function Navbar() {
         <Link to="/" className="flex items-center gap-2">
           <img
             src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg"
-            alt="Me Socorro - Marido de Aluguel"
+            alt="Reparo Expresso"
             className="h-10 w-auto object-contain"
           />
         </Link>

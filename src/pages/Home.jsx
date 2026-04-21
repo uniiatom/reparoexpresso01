@@ -160,7 +160,7 @@ export default function Home() {
             >
               <img
                 src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg"
-                alt="Me Socorro"
+                alt="Reparo Expresso"
                 className="w-72 max-w-xs object-contain drop-shadow-2xl"
               />
               <p className="text-white/80 text-lg max-w-xs">
