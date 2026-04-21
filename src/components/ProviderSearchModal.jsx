@@ -108,13 +108,17 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(u => {
-      setCurrentUser(u);
-      if (u?.email) {
-        base44.entities.Favorite.filter({ client_email: u.email }).then(favs => setFavorites(favs || []));
+    // Busca favoritos e inicia busca de prestadores em paralelo
+    Promise.all([
+      base44.auth.me().catch(() => null),
+      searchProviders(),
+    ]).then(([u]) => {
+      if (u?.id) {
+        base44.entities.Favorite.filter({ client_id: u.id })
+          .then(favs => setFavorites(favs || []))
+          .catch(() => {});
       }
-    }).catch(() => {});
-    searchProviders();
+    });
   }, []);
 
   // Geocodifica uma query via Nominatim
@@ -185,6 +189,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   const searchProviders = async () => {
+    // retorna Promise para uso no useEffect
     setPhase('searching');
 
     const [clientCoords, onlineProviders] = await Promise.all([
@@ -325,10 +330,10 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       <div className="bg-card w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden">
 
         {/* Tabs: Busca automática / Favoritos */}
-        {favorites.length > 0 && phase !== 'searching' && (
+        {favorites.length > 0 && (
           <div className="flex border-b border-border">
             <button
-              onClick={() => { setPhase('found'); setSelectedFavorite(null); }}
+              onClick={() => { setPhase(nearestProvider ? 'found' : 'none'); setSelectedFavorite(null); }}
               className={cn("flex-1 py-3 text-sm font-semibold transition-all", phase !== 'favorites' ? "text-primary border-b-2 border-primary" : "text-muted-foreground")}
             >
               🔍 Prestador próximo
