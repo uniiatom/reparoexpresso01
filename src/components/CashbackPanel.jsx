@@ -244,6 +244,28 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
         </motion.div>
       )}
 
+      {/* Opções de resgate (cliente) */}
+      {ownerType === 'cliente' && available.length > 0 && (
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+          <p className="text-sm font-bold text-foreground mb-2">💰 Opções de Resgate</p>
+          <div className="space-y-2">
+            <Button
+              className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm"
+              onClick={() => redeemMutation.mutate('credit')}
+              disabled={selectedForRedemption.length === 0 || redeemMutation.isPending}
+            >
+              <Gift className="w-4 h-4 mr-2" />
+              Usar como crédito ({selectedCashbacks.length} selecionado{selectedCashbacks.length !== 1 ? 's' : ''})
+            </Button>
+            <p className="text-xs text-muted-foreground text-center">
+              {selectedTotal > 0 
+                ? `R$ ${selectedTotal.toFixed(2)} será convertido em crédito para seu próximo serviço`
+                : 'Selecione cashbacks para usar como crédito'}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Regras rápidas (apenas cliente) */}
       {ownerType === 'cliente' && (
         <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-2 text-xs text-blue-800">
@@ -251,7 +273,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
           <p>1️⃣ Indique amigos usando seu código de indicação.</p>
           <p>2️⃣ Quando o serviço do amigo for <strong>concluído</strong>, o bônus é gerado.</p>
           <p>3️⃣ O valor cai na sua carteira em até <strong>48 horas</strong> após a conclusão.</p>
-          <p>4️⃣ Acumule <strong>R$ 200,00</strong> ou mais para solicitar resgate via PIX.</p>
+          <p>4️⃣ Use como <strong>crédito</strong> no próximo serviço ou acumule <strong>R$ 200,00+</strong> para PIX.</p>
           <p>5️⃣ Quanto mais amigos ativos, maior seu nível e mais cashback por serviço!</p>
           <div className="border-t border-blue-200 pt-2 mt-1">
             <p className="font-semibold mb-1">📊 Tabela de progressão:</p>
