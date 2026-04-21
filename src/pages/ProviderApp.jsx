@@ -395,17 +395,26 @@ export default function ProviderApp() {
         </div>
       </div>
 
-      {/* Nível do Prestador — card destacado (só exibe se atingiu algum nível) */}
-      {getProviderLevel(provider.total_jobs, provider.rating) && (
-        <div className="mb-4">
+      {/* Nível do Prestador — card destacado ou info de progresso */}
+      <div className="mb-4">
+        {getProviderLevel(provider.total_jobs, provider.rating) ? (
           <ProviderLevelBadge
             totalJobs={provider.total_jobs}
             rating={provider.rating}
             variant="highlight"
             size="md"
           />
-        </div>
-      )}
+        ) : (
+          <div className="rounded-2xl p-4 bg-gradient-to-r from-slate-100 to-slate-50 border-2 border-slate-200 flex items-center gap-4">
+            <span className="text-4xl">🎯</span>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">Próximo nível</p>
+              <p className="text-lg font-black text-slate-900">⭐ Pro</p>
+              <p className="text-xs text-slate-600 mt-0.5">{120 - (provider.total_jobs || 0)} serviços e ≥ 4★ para desbloquear</p>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Abas de navegação - linha 1 */}
       <div className="flex gap-1 mb-1 bg-muted rounded-2xl p-1">
