@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -336,6 +336,8 @@ export default function SolicitarServico() {
     },
   });
 
+  const createRequestRef = useRef(false);
+
   const createRequest = useMutation({
     mutationFn: async (formData) => {
       const { _secondProvider, requires_two_providers, tv_size, _caixaCondominio, ...cleanData } = formData;
@@ -407,6 +409,8 @@ export default function SolicitarServico() {
   });
 
   const handleFinalConfirm = (formData) => {
+    if (createRequestRef.current) return;
+    createRequestRef.current = true;
     setShowProviderSearch(false);
     const { _secondProvider, ...cleanFormData } = formData;
     createRequest.mutate({ ...cleanFormData, _secondProvider, _caixaCondominio: caixaDaguaTipo === 'condominio' });
