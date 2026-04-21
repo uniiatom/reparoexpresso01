@@ -22,7 +22,7 @@ import ActiveJobCard from '../components/ActiveJobCard';
 import DeclineReasonModal from '../components/DeclineReasonModal';
 import ProviderPhotoEditor from '../components/ProviderPhotoEditor';
 import CashbackPanel from '../components/CashbackPanel';
-import ProviderLevelBadge, { getProviderLevel } from '../components/ProviderLevelBadge';
+import ProviderLevelBadge, { getProviderLevel, PROVIDER_LEVELS } from '../components/ProviderLevelBadge';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -395,25 +395,101 @@ export default function ProviderApp() {
         </div>
       </div>
 
-      {/* Nível do Prestador — card destacado ou info de progresso */}
-      <div className="mb-4">
-        {getProviderLevel(provider.total_jobs, provider.rating) ? (
-          <ProviderLevelBadge
-            totalJobs={provider.total_jobs}
-            rating={provider.rating}
-            variant="highlight"
-            size="md"
-          />
-        ) : (
-          <div className="rounded-2xl p-4 bg-gradient-to-r from-slate-100 to-slate-50 border-2 border-slate-200 flex items-center gap-4">
-            <span className="text-4xl">🎯</span>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">Próximo nível</p>
-              <p className="text-lg font-black text-slate-900">⭐ Pro</p>
-              <p className="text-xs text-slate-600 mt-0.5">{120 - (provider.total_jobs || 0)} serviços e ≥ 4★ para desbloquear</p>
+      {/* Nível do Prestador — card com progressão */}
+      <div className="mb-4 rounded-2xl p-5 bg-card border-2 border-border">
+        {(() => {
+          const currentLevel = getProviderLevel(provider.total_jobs, provider.rating);
+          const jobs = provider.total_jobs || 0;
+          const rating = provider.rating || 0;
+          
+          // Encontra o próximo nível
+          let nextLevel = null;
+          for (const lvl of PROVIDER_LEVELS) {
+            if (jobs < lvl.minJobs || rating < lvl.minRating) {
+              nextLevel = lvl;
+              break;
+            }
+          }
+          
+          return (
+            <div className="space-y-4">
+              {/* Nível atual */}
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Nível atual</p>
+                {currentLevel ? (
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{currentLevel.emoji}</span>
+                    <div>
+                      <p className="text-lg font-bold text-foreground">{currentLevel.label}</p>
+                      <p className="text-xs text-muted-foreground">{currentLevel.description}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">Sem nível (0 serviços)</p>
+                )}
+              </div>
+
+              {nextLevel && (
+                <>
+                  <div className="h-px bg-border" />
+                  
+                  {/* Próximo nível */}
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Próximo nível</p>
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-3xl">{nextLevel.emoji}</span>
+                      <div>
+                        <p className="text-lg font-bold text-foreground">{nextLevel.label}</p>
+                        <p className="text-xs text-muted-foreground">{nextLevel.description}</p>
+                      </div>
+                    </div>
+
+                    {/* Progresso */}
+                    <div className="space-y-2">
+                      {/* Serviços */}
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-xs font-semibold text-foreground">Serviços</span>
+                          <span className="text-xs text-muted-foreground">{jobs} / {nextLevel.minJobs}</span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary transition-all" 
+                            style={{ width: `${Math.min((jobs / nextLevel.minJobs) * 100, 100)}%` }}
+                          />
+                        </div>
+                        {jobs < nextLevel.minJobs && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {nextLevel.minJobs - jobs} serviço(s) faltando
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Rating */}
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-xs font-semibold text-foreground">Avaliação</span>
+                          <span className="text-xs text-muted-foreground">{rating.toFixed(1)} / {nextLevel.minRating}</span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-yellow-400 transition-all" 
+                            style={{ width: `${Math.min((rating / nextLevel.minRating) * 100, 100)}%` }}
+                          />
+                        </div>
+                        {rating < nextLevel.minRating && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {(nextLevel.minRating - rating).toFixed(1)} ⭐ faltando
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Abas de navegação - linha 1 */}
