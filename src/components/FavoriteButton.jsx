@@ -5,7 +5,7 @@ import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-export default function FavoriteButton({ providerId, providerName, size = "md", variant = "default" }) {
+export default function FavoriteButton({ providerId, providerName, providerData, size = "md", variant = "default" }) {
   const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
 
@@ -42,19 +42,16 @@ export default function FavoriteButton({ providerId, providerName, size = "md", 
           await base44.entities.Favorite.delete(favorites[0].id);
         }
       } else {
-        // Adicionar favorito - buscar dados do prestador
-        const providers = await base44.entities.Provider.filter({ id: providerId });
-        const provider = providers[0];
-
+        // Adicionar favorito
         await base44.entities.Favorite.create({
           client_id: user.id,
           client_email: user.email,
           provider_id: providerId,
-          provider_name: provider?.name || providerName,
-          provider_photo_url: provider?.photo_url,
-          provider_rating: provider?.rating,
-          provider_city: provider?.city,
-          provider_state: provider?.state,
+          provider_name: providerData?.name || providerName,
+          provider_photo_url: providerData?.photo_url,
+          provider_rating: providerData?.rating,
+          provider_city: providerData?.city,
+          provider_state: providerData?.state,
         });
       }
     },

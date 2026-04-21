@@ -173,6 +173,7 @@ export default function ProviderProfile() {
             <FavoriteButton
               providerId={provider.id}
               providerName={provider.name}
+              providerData={provider}
               size="md"
               variant="outline"
             />
