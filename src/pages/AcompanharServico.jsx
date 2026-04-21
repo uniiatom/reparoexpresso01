@@ -13,6 +13,7 @@ import ServiceChat from '../components/ServiceChat';
 import PaymentModal from '../components/PaymentModal';
 import PixPaymentModal from '../components/PixPaymentModal';
 import NotificationPermissionBanner from '../components/NotificationPermissionBanner';
+import SatisfactionSurveyModal from '../components/SatisfactionSurveyModal';
 import { useServiceNotifications } from '../hooks/useServiceNotifications';
 
 const STATUS_STEPS = [
@@ -36,6 +37,7 @@ export default function AcompanharServico() {
   const [showPayment, setShowPayment] = useState(false);
   const [showPixPayment, setShowPixPayment] = useState(false);
   const [showRetorno, setShowRetorno] = useState(false);
+  const [showSatisfactionSurvey, setShowSatisfactionSurvey] = useState(false);
   const [previousStatus, setPreviousStatus] = useState(null);
   const previousStatusRef = useRef(null);
   const [user, setUser] = useState(null);
@@ -131,6 +133,23 @@ export default function AcompanharServico() {
       return () => clearTimeout(timer);
     }
   }, [request?.status, request?.rating_client]);
+
+  // Mostrar pesquisa de satisfação após conclusão
+  useEffect(() => {
+    if (request?.status === 'concluido' && user?.id) {
+      // Verifica se já respondeu pesquisa
+      base44.entities.SatisfactionSurvey.filter({
+        service_request_id: request.id,
+        respondent_id: user.id,
+        respondent_type: 'cliente'
+      }).then(surveys => {
+        if (surveys.length === 0) {
+          const timer = setTimeout(() => setShowSatisfactionSurvey(true), 2000);
+          return () => clearTimeout(timer);
+        }
+      });
+    }
+  }, [request?.status, user?.id, request?.id]);
 
   if (!request) {
     return (
@@ -587,6 +606,15 @@ export default function AcompanharServico() {
       />
       {showRating && <RatingModal requestId={id} onClose={handleRatingClose} />}
       {showRetorno && <RetornoModal request={request} onClose={() => setShowRetorno(false)} />}
+      {showSatisfactionSurvey && user && (
+        <SatisfactionSurveyModal
+          job={request}
+          respondentType="cliente"
+          respondentId={user.id}
+          respondentName={user.full_name}
+          onClose={() => setShowSatisfactionSurvey(false)}
+        />
+      )}
       {request.final_price && (
         <>
           <PaymentModal

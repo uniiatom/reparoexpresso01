@@ -1,0 +1,53 @@
+{
+  "name": "SatisfactionSurvey",
+  "type": "object",
+  "properties": {
+    "service_request_id": {
+      "type": "string",
+      "description": "ID do servi\u00e7o avaliado"
+    },
+    "respondent_type": {
+      "type": "string",
+      "enum": [
+        "cliente",
+        "prestador"
+      ],
+      "description": "Quem respondeu a pesquisa"
+    },
+    "respondent_id": {
+      "type": "string",
+      "description": "ID de quem respondeu"
+    },
+    "respondent_name": {
+      "type": "string",
+      "description": "Nome de quem respondeu"
+    },
+    "quality_rating": {
+      "type": "number",
+      "description": "Avalia\u00e7\u00e3o da qualidade (1-5)"
+    },
+    "punctuality_rating": {
+      "type": "number",
+      "description": "Avalia\u00e7\u00e3o de pontualidade (1-5)"
+    },
+    "service_rating": {
+      "type": "number",
+      "description": "Avalia\u00e7\u00e3o geral do atendimento (1-5)"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Coment\u00e1rio adicional"
+    },
+    "recommended": {
+      "type": "boolean",
+      "description": "Recomendaria novamente?"
+    }
+  },
+  "required": [
+    "service_request_id",
+    "respondent_type",
+    "respondent_id",
+    "quality_rating",
+    "service_rating"
+  ]
+}
