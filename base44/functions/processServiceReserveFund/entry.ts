@@ -26,8 +26,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No valid price for service' }, { status: 400 });
     }
 
-    // Calcula retenção: 3% do valor líquido do prestador
-    const retentionAmount = finalPrice * 0.03;
+    // Busca bônus/cashback do prestador para este serviço
+    const cashbacks = await base44.asServiceRole.entities.Cashback.filter({
+      service_request_id: service.id,
+      owner_id: providerPJId,
+      owner_type: 'prestador',
+    });
+    const totalCashback = cashbacks.reduce((sum, cb) => sum + (cb.cashback_amount || 0), 0);
+
+    // Calcula retenção: 3% do valor líquido do prestador + bônus
+    const baseValue = finalPrice + totalCashback;
+    const retentionAmount = baseValue * 0.03;
     const blockedUntilDate = new Date();
     blockedUntilDate.setMonth(blockedUntilDate.getMonth() + 3);
 
@@ -66,7 +75,7 @@ Deno.serve(async (req) => {
       service_value: finalPrice,
       retention_percentage: 3,
       blocked_until: blockedUntilDate.toISOString(),
-      reason: `Retenção de 3% do serviço ${service.service_number || serviceRequestId}`,
+      reason: `Retenção de 3% do serviço ${service.service_number || serviceRequestId} (valor: R$ ${finalPrice.toFixed(2)} + bônus: R$ ${totalCashback.toFixed(2)})`,
       status: 'confirmada',
     });
 
