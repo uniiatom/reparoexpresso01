@@ -136,43 +136,25 @@ export default function Home() {
         {!splashDone && (
           <motion.div
             key="splash"
-            className="fixed inset-0 z-50 bg-gradient-to-br from-primary to-primary/80 flex flex-col items-center justify-center cursor-pointer"
+            className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center cursor-pointer"
             onClick={() => setSplashDone(true)}
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.4 }}
           >
-            {/* decorative dots */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {[...Array(24)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-2 h-2 bg-white/20 rounded-full"
-                  style={{ left: `${(i * 37 + 5) % 100}%`, top: `${(i * 53 + 10) % 100}%` }}
-                />
-              ))}
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
+            <motion.img
+              src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/6252ddb37_generated_image.png"
+              alt="Reparo Expresso"
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="flex flex-col items-center gap-8 px-8 text-center"
+              transition={{ duration: 0.5 }}
+              className="w-full h-full object-contain"
+            />
+            <motion.div
+              animate={{ opacity: [0.4, 1, 0.4] }}
+              transition={{ repeat: Infinity, duration: 1.6 }}
+              className="absolute bottom-10 text-gray-400 text-sm font-medium"
             >
-              <img
-                src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/a0f4e96ef_153aef43-fc57-462e-90bc-3fdadfe5d7ed.jpg"
-                alt="Reparo Expresso"
-                className="w-80 max-w-xs object-contain drop-shadow-2xl"
-              />
-              <p className="text-white/80 text-lg max-w-xs">
-                Profissionais qualificados podendo chegar em minutos
-              </p>
-              <motion.div
-                animate={{ opacity: [0.4, 1, 0.4] }}
-                transition={{ repeat: Infinity, duration: 1.6 }}
-                className="text-white/60 text-sm mt-4"
-              >
-                Toque para continuar
-              </motion.div>
+              Toque para continuar
             </motion.div>
           </motion.div>
         )}

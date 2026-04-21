@@ -31,7 +31,7 @@ export default function Navbar() {
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <img
-            src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/a0f4e96ef_153aef43-fc57-462e-90bc-3fdadfe5d7ed.jpg"
+            src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/6252ddb37_generated_image.png"
             alt="Reparo Expresso"
             className="h-10 w-auto object-contain"
           />
