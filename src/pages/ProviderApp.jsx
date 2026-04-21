@@ -22,7 +22,7 @@ import ActiveJobCard from '../components/ActiveJobCard';
 import DeclineReasonModal from '../components/DeclineReasonModal';
 import ProviderPhotoEditor from '../components/ProviderPhotoEditor';
 import CashbackPanel from '../components/CashbackPanel';
-import ProviderLevelBadge from '../components/ProviderLevelBadge';
+import ProviderLevelBadge, { getProviderLevel } from '../components/ProviderLevelBadge';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -396,7 +396,7 @@ export default function ProviderApp() {
       </div>
 
       {/* Nível do Prestador — card destacado (só exibe se atingiu algum nível) */}
-      {(provider.total_jobs >= 120) && (
+      {getProviderLevel(provider.total_jobs, provider.rating) && (
         <div className="mb-4">
           <ProviderLevelBadge
             totalJobs={provider.total_jobs}
