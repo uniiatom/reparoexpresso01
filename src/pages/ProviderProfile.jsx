@@ -77,8 +77,16 @@ export default function ProviderProfile() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-card rounded-3xl overflow-hidden shadow-xl mb-6 border border-border"
       >
-        {/* Background Header */}
-        <div className="h-20 bg-gradient-to-r from-primary/20 to-primary/10" />
+        {/* Background Header — usa cor do nível ou padrão */}
+        {(() => {
+          const lvl = getProviderLevel(provider.total_jobs, provider.rating);
+          return (
+            <div className={cn(
+              "h-24 bg-gradient-to-r",
+              lvl ? `${lvl.gradientBg} opacity-90` : "from-primary/20 to-primary/10"
+            )} />
+          );
+        })()}
 
         {/* Profile Info */}
         <div className="px-6 pb-6">
@@ -110,10 +118,12 @@ export default function ProviderProfile() {
             </p>
           )}
 
-          {/* Level Badge */}
-          <div className="mb-3">
-            <ProviderLevelBadge totalJobs={provider.total_jobs} rating={provider.rating} size="md" showDescription />
-          </div>
+          {/* Level Badge — destaque ou nenhum */}
+          {getProviderLevel(provider.total_jobs, provider.rating) && (
+            <div className="mb-4">
+              <ProviderLevelBadge totalJobs={provider.total_jobs} rating={provider.rating} variant="highlight" />
+            </div>
+          )}
 
           {/* Rating */}
           <div className="flex items-center gap-3 mb-4">
