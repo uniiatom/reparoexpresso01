@@ -1,11 +1,25 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// Regras de cashback
-const CLIENTE_CASHBACK_PERCENT = 5;    // 5% do valor do serviço para o cliente
-const PRESTADOR_BONUS_META = 5;        // Bônus para cada 5 serviços concluídos
-const PRESTADOR_BONUS_VALOR = 20;      // R$ 20 de bônus por meta atingida
-const PRESTADOR_BONUS_AVALIACAO = 10;  // R$ 10 bônus se avaliação >= 4.5
-const CASHBACK_EXPIRY_DAYS = 90;       // Cashback expira em 90 dias
+// Tabela de níveis de cashback do cliente (por amigos indicadores ativos)
+const NIVEIS_CLIENTE = [
+  { nivel: 'Iniciante',  minAmigos: 0,  maxAmigos: 9,  bonusPorServico: 2.50, percentTake: 6.9  },
+  { nivel: 'Pro',        minAmigos: 10, maxAmigos: 19, bonusPorServico: 3.50, percentTake: 9.7  },
+  { nivel: 'Elite',      minAmigos: 20, maxAmigos: 34, bonusPorServico: 4.50, percentTake: 12.5 },
+  { nivel: 'Lendário',   minAmigos: 35, maxAmigos: 49, bonusPorServico: 5.50, percentTake: 15.2 },
+  { nivel: 'Imperador',  minAmigos: 50, maxAmigos: 70, bonusPorServico: 7.00, percentTake: 19.4 },
+];
+
+const PRESTADOR_BONUS_META = 5;
+const PRESTADOR_BONUS_VALOR = 20;
+const PRESTADOR_BONUS_AVALIACAO = 10;
+const CASHBACK_EXPIRY_DAYS = 90;
+
+function getNivelCliente(amigosAtivos) {
+  for (let i = NIVEIS_CLIENTE.length - 1; i >= 0; i--) {
+    if (amigosAtivos >= NIVEIS_CLIENTE[i].minAmigos) return NIVEIS_CLIENTE[i];
+  }
+  return NIVEIS_CLIENTE[0];
+}
 
 Deno.serve(async (req) => {
   try {
@@ -25,9 +39,20 @@ Deno.serve(async (req) => {
     const expiresAt = new Date(Date.now() + CASHBACK_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString();
     const results = [];
 
-    // ── CASHBACK CLIENTE ──
-    if (serviceRequest.client_id && finalPrice > 0) {
-      const cashbackValue = parseFloat((finalPrice * CLIENTE_CASHBACK_PERCENT / 100).toFixed(2));
+    // ── CASHBACK CLIENTE (baseado em amigos indicados ativos) ──
+    if (serviceRequest.client_id) {
+      // Busca indicações confirmadas do cliente (amigos ativos = que já fizeram ao menos 1 serviço)
+      const referrals = await base44.asServiceRole.entities.Referral.filter({
+        referrer_id: serviceRequest.client_id,
+        reward_status: 'confirmada',
+      });
+      const amigosAtivos = referrals.length;
+      const nivel = getNivelCliente(amigosAtivos);
+
+      // Cashback = bônus fixo por serviço do nível + % do take sobre o valor do serviço
+      const bonusFixo = nivel.bonusPorServico;
+      const bonusPercent = finalPrice > 0 ? parseFloat((finalPrice * nivel.percentTake / 100).toFixed(2)) : 0;
+      const cashbackTotal = parseFloat((bonusFixo + bonusPercent).toFixed(2));
 
       await base44.asServiceRole.entities.Cashback.create({
         owner_id: serviceRequest.client_id,
@@ -36,15 +61,15 @@ Deno.serve(async (req) => {
         service_request_id: request_id,
         service_type: serviceRequest.service_type,
         service_value: finalPrice,
-        cashback_amount: cashbackValue,
-        cashback_percent: CLIENTE_CASHBACK_PERCENT,
-        reason: `${CLIENTE_CASHBACK_PERCENT}% de cashback pelo serviço concluído`,
+        cashback_amount: cashbackTotal,
+        cashback_percent: nivel.percentTake,
+        reason: `🏅 Nível ${nivel.nivel} · R$ ${bonusFixo.toFixed(2)} fixo + ${nivel.percentTake}% do take (${amigosAtivos} amigos ativos)`,
         status: 'disponivel',
         expires_at: expiresAt,
       });
 
-      console.log(`[cashback] Cliente ${serviceRequest.client_name}: R$ ${cashbackValue}`);
-      results.push({ type: 'cliente', amount: cashbackValue });
+      console.log(`[cashback] Cliente ${serviceRequest.client_name} (${nivel.nivel}, ${amigosAtivos} amigos): R$ ${cashbackTotal}`);
+      results.push({ type: 'cliente', nivel: nivel.nivel, amigosAtivos, amount: cashbackTotal });
     }
 
     // ── CASHBACK PRESTADOR ──
@@ -56,7 +81,6 @@ Deno.serve(async (req) => {
 
       const totalConcluidos = providerRequests.length;
 
-      // Bônus por meta de serviços (a cada 5 concluídos)
       if (totalConcluidos % PRESTADOR_BONUS_META === 0) {
         await base44.asServiceRole.entities.Cashback.create({
           owner_id: serviceRequest.provider_id,
@@ -71,12 +95,9 @@ Deno.serve(async (req) => {
           status: 'disponivel',
           expires_at: expiresAt,
         });
-
-        console.log(`[cashback] Prestador ${serviceRequest.provider_name}: bônus meta R$ ${PRESTADOR_BONUS_VALOR}`);
         results.push({ type: 'prestador_meta', amount: PRESTADOR_BONUS_VALOR });
       }
 
-      // Bônus por avaliação alta
       if (serviceRequest.rating_client && serviceRequest.rating_client >= 4.5) {
         await base44.asServiceRole.entities.Cashback.create({
           owner_id: serviceRequest.provider_id,
@@ -91,8 +112,6 @@ Deno.serve(async (req) => {
           status: 'disponivel',
           expires_at: expiresAt,
         });
-
-        console.log(`[cashback] Prestador ${serviceRequest.provider_name}: bônus avaliação R$ ${PRESTADOR_BONUS_AVALIACAO}`);
         results.push({ type: 'prestador_avaliacao', amount: PRESTADOR_BONUS_AVALIACAO });
       }
     }

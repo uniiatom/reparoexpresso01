@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Wallet, Gift, Clock, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Wallet, Gift, Clock, CheckCircle2, ChevronRight, Users, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -13,14 +13,44 @@ const SERVICE_LABELS = {
   troca_pneu: "Troca Pneu", reboque: "Reboque", outros: "Outros",
 };
 
+const NIVEIS = [
+  { nivel: 'Iniciante',  minAmigos: 0,  maxAmigos: 9,  bonusPorServico: 2.50, percentTake: 6.9,  emoji: '🌱', color: 'bg-slate-100 text-slate-700 border-slate-200' },
+  { nivel: 'Pro',        minAmigos: 10, maxAmigos: 19, bonusPorServico: 3.50, percentTake: 9.7,  emoji: '⚡', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+  { nivel: 'Elite',      minAmigos: 20, maxAmigos: 34, bonusPorServico: 4.50, percentTake: 12.5, emoji: '💎', color: 'bg-purple-100 text-purple-700 border-purple-200' },
+  { nivel: 'Lendário',   minAmigos: 35, maxAmigos: 49, bonusPorServico: 5.50, percentTake: 15.2, emoji: '🔥', color: 'bg-orange-100 text-orange-700 border-orange-200' },
+  { nivel: 'Imperador',  minAmigos: 50, maxAmigos: 70, bonusPorServico: 7.00, percentTake: 19.4, emoji: '👑', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+];
+
+function getNivel(amigosAtivos) {
+  for (let i = NIVEIS.length - 1; i >= 0; i--) {
+    if (amigosAtivos >= NIVEIS[i].minAmigos) return NIVEIS[i];
+  }
+  return NIVEIS[0];
+}
+
 export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
   const [showHistory, setShowHistory] = useState(false);
+  const [showNiveis, setShowNiveis] = useState(false);
 
   const { data: cashbacks = [], isLoading } = useQuery({
     queryKey: ['cashbacks', userId, ownerType],
     queryFn: () => base44.entities.Cashback.filter({ owner_id: userId, owner_type: ownerType }, '-created_date', 50),
     enabled: !!userId,
   });
+
+  // Para clientes: busca amigos indicados ativos (referrals confirmadas)
+  const { data: referrals = [] } = useQuery({
+    queryKey: ['referrals-ativos', userId],
+    queryFn: () => base44.entities.Referral.filter({ referrer_id: userId, reward_status: 'confirmada' }),
+    enabled: !!userId && ownerType === 'cliente',
+  });
+
+  const amigosAtivos = referrals.length;
+  const nivelAtual = getNivel(amigosAtivos);
+  const proximoNivel = NIVEIS.find(n => n.minAmigos > amigosAtivos);
+  const progressoPercent = proximoNivel
+    ? Math.min(100, ((amigosAtivos - nivelAtual.minAmigos) / (proximoNivel.minAmigos - nivelAtual.minAmigos)) * 100)
+    : 100;
 
   const available = cashbacks.filter(c => c.status === 'disponivel');
   const used = cashbacks.filter(c => c.status === 'utilizado');
@@ -67,26 +97,110 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
         </div>
       </motion.div>
 
-      {/* Como funciona */}
-      <div className="bg-card border border-border rounded-2xl p-4">
-        <p className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-          <Gift className="w-4 h-4 text-emerald-600" />
-          {ownerType === 'cliente' ? 'Como funciona?' : 'Como ganhar bônus?'}
-        </p>
-        {ownerType === 'cliente' ? (
-          <div className="space-y-2 text-xs text-muted-foreground">
-            <p>✅ Ganhe <strong>5%</strong> de cashback em todo serviço concluído</p>
-            <p>💳 Use o saldo como desconto no próximo pedido</p>
-            <p>⏳ Cashback válido por <strong>90 dias</strong> após o serviço</p>
+      {/* Card de Nível (apenas cliente) */}
+      {ownerType === 'cliente' && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-card border border-border rounded-3xl p-5"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">{nivelAtual.emoji}</span>
+              <div>
+                <p className="font-bold text-foreground text-base">{nivelAtual.nivel}</p>
+                <p className="text-xs text-muted-foreground">{amigosAtivos} amigo(s) indicado(s) ativo(s)</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-bold text-emerald-600">R$ {nivelAtual.bonusPorServico.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground">+ {nivelAtual.percentTake}% do take</p>
+            </div>
           </div>
-        ) : (
+
+          {/* Barra de progresso */}
+          {proximoNivel && (
+            <div className="mb-3">
+              <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                <span>{amigosAtivos} amigos</span>
+                <span>{proximoNivel.minAmigos} para {proximoNivel.emoji} {proximoNivel.nivel}</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressoPercent}%` }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  className="h-full bg-emerald-500 rounded-full"
+                />
+              </div>
+            </div>
+          )}
+          {!proximoNivel && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-3 py-2 text-xs text-yellow-800 font-semibold text-center mb-3">
+              👑 Nível máximo atingido!
+            </div>
+          )}
+
+          {/* Botão ver todos os níveis */}
+          <button
+            onClick={() => setShowNiveis(!showNiveis)}
+            className="flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary/80 transition-colors w-full"
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            Ver todos os níveis e benefícios
+            <ChevronRight className={cn("w-3.5 h-3.5 ml-auto transition-transform", showNiveis && "rotate-90")} />
+          </button>
+
+          {/* Tabela de níveis */}
+          {showNiveis && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mt-3 space-y-2"
+            >
+              <div className="grid grid-cols-4 text-xs text-muted-foreground font-semibold px-1 mb-1">
+                <span>Nível</span>
+                <span className="text-center">Amigos</span>
+                <span className="text-center">Bônus fixo</span>
+                <span className="text-center">% take</span>
+              </div>
+              {NIVEIS.map(n => (
+                <div
+                  key={n.nivel}
+                  className={cn(
+                    "grid grid-cols-4 items-center rounded-xl border px-3 py-2 text-xs",
+                    n.nivel === nivelAtual.nivel ? n.color + " font-bold" : "bg-muted/40 border-transparent text-muted-foreground"
+                  )}
+                >
+                  <span className="flex items-center gap-1">{n.emoji} {n.nivel}</span>
+                  <span className="text-center">{n.minAmigos}–{n.maxAmigos}</span>
+                  <span className="text-center">R$ {n.bonusPorServico.toFixed(2)}</span>
+                  <span className="text-center">{n.percentTake}%</span>
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground mt-2 px-1">
+                <Users className="w-3 h-3 inline mr-1" />
+                Amigos ativos = indicações que já confirmaram ao menos 1 serviço concluído
+              </p>
+            </motion.div>
+          )}
+        </motion.div>
+      )}
+
+      {/* Como funciona (prestador) */}
+      {ownerType === 'prestador' && (
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <p className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+            <Gift className="w-4 h-4 text-emerald-600" /> Como ganhar bônus?
+          </p>
           <div className="space-y-2 text-xs text-muted-foreground">
             <p>🏆 Ganhe <strong>R$ 20</strong> a cada 5 serviços concluídos</p>
             <p>⭐ Ganhe <strong>R$ 10</strong> por avaliação ≥ 4,5 estrelas</p>
             <p>💸 Bônus convertidos em crédito para saque</p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Lista de cashbacks disponíveis */}
       {available.length > 0 && (
@@ -104,7 +218,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                 <CheckCircle2 className="w-5 h-5 text-emerald-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-emerald-900">{c.reason}</p>
+                <p className="text-sm font-semibold text-emerald-900 leading-tight">{c.reason}</p>
                 <p className="text-xs text-emerald-700 truncate">
                   {SERVICE_LABELS[c.service_type] || c.service_type}
                   {c.expires_at && ` · expira ${new Date(c.expires_at).toLocaleDateString('pt-BR')}`}
@@ -150,7 +264,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
           <p className="text-sm font-semibold text-foreground">Nenhum cashback ainda</p>
           <p className="text-xs text-muted-foreground mt-1">
             {ownerType === 'cliente'
-              ? 'Complete seu primeiro serviço e ganhe 5% de volta!'
+              ? 'Complete seu primeiro serviço e ganhe cashback com base no seu nível!'
               : 'Conclua serviços e receba avaliações altas para ganhar bônus!'}
           </p>
         </div>
