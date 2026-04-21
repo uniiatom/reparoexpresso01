@@ -15,6 +15,7 @@ import AdditionalPointsAdmin from '../components/admin/AdditionalPointsAdmin';
 import ProviderPhotosApproval from '../components/admin/ProviderPhotosApproval';
 import ProviderDetailsModal from '../components/admin/ProviderDetailsModal';
 import AdminReserveFundDashboard from '../components/AdminReserveFundDashboard';
+import InvoicesAdmin from '../components/admin/InvoicesAdmin';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -145,6 +146,9 @@ export default function AdminPanel() {
           </TabsTrigger>
           <TabsTrigger value="reserve-fund">
             🔐 Fundos de Reserva
+          </TabsTrigger>
+          <TabsTrigger value="invoices">
+            🧾 Notas Fiscais
           </TabsTrigger>
         </TabsList>
 
@@ -293,6 +297,10 @@ export default function AdminPanel() {
 
         <TabsContent value="reserve-fund">
           <AdminReserveFundDashboard />
+        </TabsContent>
+
+        <TabsContent value="invoices">
+          <InvoicesAdmin />
         </TabsContent>
       </Tabs>
 
