@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, AlertCircle, MapPin, Star, Calendar, Zap, X } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, MapPin, Star, Calendar, Zap, X, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function calcDistance(lat1, lon1, lat2, lon2) {
@@ -94,7 +94,7 @@ function ProviderCard({ provider, label }) {
 }
 
 export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClose }) {
-  const [phase, setPhase] = useState('searching'); // searching | found | none
+  const [phase, setPhase] = useState('searching'); // searching | found | none | favorites
   const [nearestProvider, setNearestProvider] = useState(null);
   const [secondProvider, setSecondProvider] = useState(null);
   const [estMin, setEstMin] = useState(null);
@@ -103,8 +103,17 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [confirming, setConfirming] = useState(false);
   const processingRef = useRef(false);
   const [allUnavailabilities, setAllUnavailabilities] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [selectedFavorite, setSelectedFavorite] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
+    base44.auth.me().then(u => {
+      setCurrentUser(u);
+      if (u?.email) {
+        base44.entities.Favorite.filter({ client_email: u.email }).then(favs => setFavorites(favs || []));
+      }
+    }).catch(() => {});
     searchProviders();
   }, []);
 
@@ -272,20 +281,35 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     return { night_surcharge, weekend_surcharge, holiday_surcharge };
   };
 
-  const handleConfirmImmediate = () => {
+  const handleConfirmImmediate = (providerOverride) => {
     if (confirming || processingRef.current) return;
     processingRef.current = true;
     setConfirming(true);
+    const useSecond = providerOverride ? null : secondProvider;
     if (form.modality === 'agendado') {
       const surcharges = getSurcharges(form.scheduled_date, form.scheduled_time);
-      onConfirm({ ...form, ...surcharges, _secondProvider: secondProvider });
+      onConfirm({ ...form, ...surcharges, _secondProvider: useSecond });
     } else {
       const now = new Date();
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       const currentDate = now.toISOString().split('T')[0];
       const surcharges = getSurcharges(currentDate, currentTime);
-      onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges, _secondProvider: secondProvider });
+      onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges, _secondProvider: useSecond });
     }
+  };
+
+  const handleConfirmFavorite = async () => {
+    if (!selectedFavorite || confirming || processingRef.current) return;
+    processingRef.current = true;
+    setConfirming(true);
+    // Busca dados completos do prestador favorito
+    const providerList = await base44.entities.Provider.filter({ id: selectedFavorite.provider_id });
+    const provider = providerList[0] || null;
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const currentDate = now.toISOString().split('T')[0];
+    const surcharges = getSurcharges(currentDate, currentTime);
+    onConfirm({ ...form, modality: 'imediato', urgency: 'agora', ...surcharges, _favoriteProvider: provider });
   };
 
   const handleConfirmSchedule = () => {
@@ -299,7 +323,73 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4">
       <div className="bg-card w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden">
-        
+
+        {/* Tabs: Busca automática / Favoritos */}
+        {favorites.length > 0 && phase !== 'searching' && (
+          <div className="flex border-b border-border">
+            <button
+              onClick={() => { setPhase('found'); setSelectedFavorite(null); }}
+              className={cn("flex-1 py-3 text-sm font-semibold transition-all", phase !== 'favorites' ? "text-primary border-b-2 border-primary" : "text-muted-foreground")}
+            >
+              🔍 Prestador próximo
+            </button>
+            <button
+              onClick={() => setPhase('favorites')}
+              className={cn("flex-1 py-3 text-sm font-semibold transition-all flex items-center justify-center gap-1", phase === 'favorites' ? "text-primary border-b-2 border-primary" : "text-muted-foreground")}
+            >
+              <Heart className="w-3.5 h-3.5" /> Favoritos
+            </button>
+          </div>
+        )}
+
+        {/* Fase: favoritos */}
+        {phase === 'favorites' && (
+          <div className="p-5">
+            <p className="text-sm text-muted-foreground mb-4">Selecione um prestador favorito para este serviço</p>
+            <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+              {favorites.map(fav => (
+                <button
+                  key={fav.id}
+                  onClick={() => setSelectedFavorite(fav)}
+                  className={cn(
+                    "w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left",
+                    selectedFavorite?.id === fav.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                  )}
+                >
+                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-primary/10 flex items-center justify-center flex-shrink-0 border border-border">
+                    {fav.provider_photo_url ? (
+                      <img src={fav.provider_photo_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-lg font-bold text-primary">{fav.provider_name?.charAt(0)}</span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground text-sm">{fav.provider_name}</p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                      <span className="text-xs text-muted-foreground">{fav.provider_rating?.toFixed(1) || '—'}</span>
+                      {fav.provider_city && <span className="text-xs text-muted-foreground">· {fav.provider_city}</span>}
+                    </div>
+                  </div>
+                  {selectedFavorite?.id === fav.id && (
+                    <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
+                  )}
+                </button>
+              ))}
+            </div>
+            <Button
+              onClick={handleConfirmFavorite}
+              disabled={!selectedFavorite || confirming}
+              className="w-full h-12 rounded-2xl font-bold bg-primary text-primary-foreground mt-4"
+            >
+              {confirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Heart className="w-4 h-4 mr-2" /> Chamar este prestador</>}
+            </Button>
+            <button onClick={onClose} className="w-full text-sm text-muted-foreground hover:text-foreground text-center py-2 mt-1">
+              Cancelar
+            </button>
+          </div>
+        )}
+
         {/* Fase: buscando */}
         {phase === 'searching' && (
           <div className="p-8 text-center">
