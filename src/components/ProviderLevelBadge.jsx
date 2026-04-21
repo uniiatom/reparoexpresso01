@@ -69,14 +69,20 @@ export default function ProviderLevelBadge({ totalJobs, rating, size = 'md', sho
     lg: 'text-base px-4 py-2 gap-2',
   };
 
+  const gradientMap = {
+    pro:       'linear-gradient(to right, #3b82f6, #2563eb)',
+    pro_plus:  'linear-gradient(to right, #a855f7, #ec4899)',
+    pro_elite: 'linear-gradient(to right, #10b981, #14b8a6)',
+    pro_lenda: 'linear-gradient(to right, #f59e0b, #f97316)',
+  };
+
   // variant="highlight" — card destacado para perfil público
   if (variant === 'highlight') {
     return (
-      <div className={cn(
-        'rounded-2xl p-4 flex items-center gap-4',
-        `bg-gradient-to-r ${level.gradientBg}`,
-        'shadow-lg', level.glowColor
-      )}>
+      <div
+        className="rounded-2xl p-4 flex items-center gap-4 shadow-lg"
+        style={{ background: gradientMap[level.key] }}
+      >
         <span className="text-4xl">{level.emoji}</span>
         <div className="text-white">
           <p className="text-xs font-semibold uppercase tracking-widest opacity-80">Nível do Prestador</p>

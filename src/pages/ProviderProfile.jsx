@@ -80,11 +80,20 @@ export default function ProviderProfile() {
         {/* Background Header — usa cor do nível ou padrão */}
         {(() => {
           const lvl = getProviderLevel(provider.total_jobs, provider.rating);
+          const gradientMap = {
+            pro:       'linear-gradient(to right, #3b82f6, #2563eb)',
+            pro_plus:  'linear-gradient(to right, #a855f7, #ec4899)',
+            pro_elite: 'linear-gradient(to right, #10b981, #14b8a6)',
+            pro_lenda: 'linear-gradient(to right, #f59e0b, #f97316)',
+          };
+          const style = lvl
+            ? { background: gradientMap[lvl.key] }
+            : {};
           return (
-            <div className={cn(
-              "h-24 bg-gradient-to-r",
-              lvl ? `${lvl.gradientBg} opacity-90` : "from-primary/20 to-primary/10"
-            )} />
+            <div
+              className={cn("h-24", !lvl && "bg-gradient-to-r from-primary/20 to-primary/10")}
+              style={style}
+            />
           );
         })()}
 
