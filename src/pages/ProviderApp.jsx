@@ -22,6 +22,7 @@ import ActiveJobCard from '../components/ActiveJobCard';
 import DeclineReasonModal from '../components/DeclineReasonModal';
 import ProviderPhotoEditor from '../components/ProviderPhotoEditor';
 import CashbackPanel from '../components/CashbackPanel';
+import ProviderLevelBadge from '../components/ProviderLevelBadge';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -372,11 +373,14 @@ export default function ProviderApp() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold text-foreground">Olá, {provider.name.split(' ')[0]}!</h1>
-          <div className="flex gap-1 mt-1">
-            {[1,2,3,4,5].map(s => (
-              <Star key={s} className={cn("w-3.5 h-3.5", s <= Math.round(provider.rating || 5) ? "text-yellow-400 fill-yellow-400" : "text-muted")} />
-            ))}
-            <span className="text-xs text-muted-foreground ml-1">{provider.total_jobs || 0} serviços</span>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <div className="flex gap-1">
+              {[1,2,3,4,5].map(s => (
+                <Star key={s} className={cn("w-3.5 h-3.5", s <= Math.round(provider.rating || 5) ? "text-yellow-400 fill-yellow-400" : "text-muted")} />
+              ))}
+              <span className="text-xs text-muted-foreground ml-1">{provider.total_jobs || 0} serviços</span>
+            </div>
+            <ProviderLevelBadge totalJobs={provider.total_jobs} rating={provider.rating} size="sm" />
           </div>
         </div>
         <div className="flex items-center gap-3">

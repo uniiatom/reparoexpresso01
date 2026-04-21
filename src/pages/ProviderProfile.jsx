@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import FavoriteButton from "@/components/FavoriteButton";
 import CriteriaStats from "@/components/CriteriaStats";
+import ProviderLevelBadge, { PROVIDER_LEVELS, getProviderLevel } from "@/components/ProviderLevelBadge";
 
 export default function ProviderProfile() {
   const { id } = useParams();
@@ -108,6 +109,11 @@ export default function ProviderProfile() {
               <MapPin className="w-4 h-4" /> {provider.city}, {provider.state}
             </p>
           )}
+
+          {/* Level Badge */}
+          <div className="mb-3">
+            <ProviderLevelBadge totalJobs={provider.total_jobs} rating={provider.rating} size="md" showDescription />
+          </div>
 
           {/* Rating */}
           <div className="flex items-center gap-3 mb-4">
@@ -332,6 +338,28 @@ export default function ProviderProfile() {
             <p className="text-xs text-muted-foreground px-2">
               {provider.is_approved ? '✓ Aprovado e homologado' : '⏳ Pendente de aprovação'}
             </p>
+
+            {/* Tabela de níveis */}
+            <div className="bg-card rounded-3xl p-5 border border-border">
+              <p className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                <Award className="w-4 h-4 text-primary" /> Níveis de Desempenho
+              </p>
+              <div className="space-y-2">
+                {PROVIDER_LEVELS.map(lvl => {
+                  const current = getProviderLevel(provider.total_jobs, provider.rating);
+                  const isActive = current?.key === lvl.key;
+                  return (
+                    <div key={lvl.key} className={cn(
+                      'flex items-center justify-between rounded-2xl px-4 py-3 border text-sm',
+                      isActive ? lvl.color + ' font-bold' : 'bg-muted/40 border-transparent text-muted-foreground'
+                    )}>
+                      <span className="flex items-center gap-2">{lvl.emoji} {lvl.label}</span>
+                      <span className="text-xs">{lvl.description}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </motion.div>
         )}
       </div>
