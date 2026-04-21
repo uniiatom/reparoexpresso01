@@ -124,8 +124,9 @@ export default function ReferralCard({ user }) {
         {pendingReferrals.length > 0 && (
           <div className="bg-white/50 rounded-2xl p-3 text-sm">
             <p className="text-amber-700 font-semibold">
-              ⏳ {pendingReferrals.length} indicação{pendingReferrals.length !== 1 ? 's' : ''} aguardando confirmação
+              ⏳ {pendingReferrals.length} indicação{pendingReferrals.length !== 1 ? 's' : ''} aguardando conclusão do serviço
             </p>
+            <p className="text-amber-600 text-xs mt-1">O bônus é creditado somente após o serviço ser concluído.</p>
           </div>
         )}
       </div>
@@ -177,29 +178,48 @@ export default function ReferralCard({ user }) {
             </Button>
 
             <p className="text-xs text-muted-foreground">
-              📱 Compartilhe seu código com amigos. Quando eles contratarem um serviço usando sua indicação, você ganha R$ 10!
+              📱 Compartilhe seu código com amigos. Quando o serviço deles for <strong>concluído</strong>, você ganha bônus de acordo com seu nível (de R$ 2,50 a R$ 7,00 por serviço). O crédito cai na carteira em até <strong>48 horas</strong>.
             </p>
           </>
         )}
       </div>
 
       {/* Como funciona */}
-      <div className="bg-card rounded-3xl p-6 border border-border">
-        <p className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+      <div className="bg-card rounded-3xl p-6 border border-border space-y-4">
+        <p className="text-sm font-semibold text-foreground flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-primary" /> Como funciona
         </p>
         <div className="space-y-2 text-xs text-muted-foreground">
           {[
             'Compartilhe seu código de indicação com amigos',
             'Eles usam seu código ao solicitar um serviço',
-            'Quando o serviço é concluído, você recebe R$ 10',
-            'Acumule ganhos ilimitados!',
+            'Quando o serviço do amigo for concluído, o bônus é gerado',
+            'O valor cai na sua carteira em até 48 horas após a conclusão',
+            'Acumule R$ 200,00 ou mais para solicitar resgate via PIX',
           ].map((step, i) => (
             <p key={i} className="flex items-start gap-2">
               <span className="text-primary font-bold flex-shrink-0">{i + 1}.</span>
               <span>{step}</span>
             </p>
           ))}
+        </div>
+
+        {/* Tabela de progressão */}
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 space-y-2">
+          <p className="text-xs font-bold text-emerald-900">📊 Tabela de bônus por nível de indicações:</p>
+          {[
+            { emoji: '🌱', nivel: 'Iniciante', amigos: '0–9', bonus: 'R$ 2,50' },
+            { emoji: '⚡', nivel: 'Pro',       amigos: '10–19', bonus: 'R$ 3,50' },
+            { emoji: '💎', nivel: 'Elite',     amigos: '20–34', bonus: 'R$ 4,50' },
+            { emoji: '🔥', nivel: 'Lendário',  amigos: '35–49', bonus: 'R$ 5,50' },
+            { emoji: '👑', nivel: 'Imperador', amigos: '50+',   bonus: 'R$ 7,00' },
+          ].map(n => (
+            <div key={n.nivel} className="flex items-center justify-between bg-white/70 rounded-xl px-3 py-1.5 text-xs">
+              <span>{n.emoji} <strong>{n.nivel}</strong> <span className="text-muted-foreground">({n.amigos} amigos)</span></span>
+              <span className="font-bold text-emerald-700">{n.bonus}/serviço</span>
+            </div>
+          ))}
+          <p className="text-[10px] text-emerald-700 pt-1">* Amigos ativos = indicados com ao menos 1 serviço concluído.</p>
         </div>
       </div>
 
