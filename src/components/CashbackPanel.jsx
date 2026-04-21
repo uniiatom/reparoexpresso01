@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { Wallet, Gift, Clock, CheckCircle2, ChevronRight, Users, TrendingUp } from 'lucide-react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Wallet, Gift, Clock, CheckCircle2, ChevronRight, Users, TrendingUp, Zap, BookOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -31,6 +33,7 @@ function getNivel(amigosAtivos) {
 export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
   const [showHistory, setShowHistory] = useState(false);
   const [showNiveis, setShowNiveis] = useState(false);
+  const [selectedForRedemption, setSelectedForRedemption] = useState([]);
 
   const { data: cashbacks = [], isLoading } = useQuery({
     queryKey: ['cashbacks', userId, ownerType],
@@ -56,6 +59,25 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
   const used = cashbacks.filter(c => c.status === 'utilizado');
   const totalDisponivel = available.reduce((sum, c) => sum + (c.cashback_amount || 0), 0);
   const totalGanho = cashbacks.reduce((sum, c) => sum + (c.cashback_amount || 0), 0);
+
+  const selectedCashbacks = available.filter(c => selectedForRedemption.includes(c.id));
+  const selectedTotal = selectedCashbacks.reduce((sum, c) => sum + (c.cashback_amount || 0), 0);
+
+  const redeemMutation = useMutation({
+    mutationFn: (redemptionType) =>
+      base44.functions.invoke('processCashbackRedemption', {
+        cashbackIds: selectedForRedemption,
+        redemptionType,
+      }),
+    onSuccess: (res) => {
+      toast.success(res.data?.message || 'Resgate processado com sucesso!');
+      setSelectedForRedemption([]);
+    },
+    onError: (err) => {
+      const msg = err.response?.data?.message || err.message;
+      toast.error(msg);
+    },
+  });
 
   if (isLoading) return (
     <div className="bg-card rounded-3xl p-6 border border-border animate-pulse">
@@ -95,6 +117,37 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
             <p className="text-xs opacity-80">utilizados</p>
           </div>
         </div>
+
+        {/* Botões de resgate */}
+        {(ownerType === 'prestador' && available.length > 0) && (
+          <div className="flex gap-2 mt-4">
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 text-xs font-semibold"
+              onClick={() => {
+                if (selectedTotal < 200) {
+                  toast.error(`Mínimo R$ 200,00 para PIX. Você tem R$ ${selectedTotal.toFixed(2)}`);
+                  return;
+                }
+                redeemMutation.mutate('pix');
+              }}
+              disabled={selectedForRedemption.length === 0 || redeemMutation.isPending}
+            >
+              <Zap className="w-3 h-3 mr-1" />
+              Sacar via PIX
+            </Button>
+            <Button
+              size="sm"
+              className="flex-1 text-xs font-semibold bg-purple-600 hover:bg-purple-700"
+              onClick={() => redeemMutation.mutate('course')}
+              disabled={selectedForRedemption.length === 0 || redeemMutation.isPending}
+            >
+              <BookOpen className="w-3 h-3 mr-1" />
+              Cursos (2.5x)
+            </Button>
+          </div>
+        )}
       </motion.div>
 
       {/* Card de Nível (apenas cliente) */}
@@ -214,18 +267,36 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
         </div>
       )}
 
-      {/* Como funciona (prestador) */}
+      {/* Regras de resgate (prestador) */}
       {ownerType === 'prestador' && (
-        <div className="bg-card border border-border rounded-2xl p-4">
-          <p className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-            <Gift className="w-4 h-4 text-emerald-600" /> Como ganhar bônus?
-          </p>
-          <div className="space-y-2 text-xs text-muted-foreground">
-            <p>🏆 Ganhe <strong>R$ 20</strong> a cada 5 serviços concluídos</p>
-            <p>⭐ Ganhe <strong>R$ 10</strong> por avaliação ≥ 4,5 estrelas</p>
-            <p>💸 Bônus convertidos em crédito para saque</p>
-          </div>
-        </div>
+       <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+         <p className="text-sm font-bold text-foreground flex items-center gap-2">
+           <Gift className="w-4 h-4 text-emerald-600" /> Como ganhar bônus?
+         </p>
+         <div className="space-y-2 text-xs text-muted-foreground">
+           <p>🏆 Ganhe <strong>R$ 20</strong> a cada 5 serviços concluídos</p>
+           <p>⭐ Ganhe <strong>R$ 10</strong> por avaliação ≥ 4,5 estrelas</p>
+           <p>💸 Bônus convertidos em crédito para saque</p>
+         </div>
+
+         <div className="border-t border-border pt-3">
+           <p className="text-sm font-bold text-foreground mb-2">💰 Opções de Resgate</p>
+           <div className="space-y-2">
+             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+               <p className="text-xs font-bold text-blue-900 flex items-center gap-2 mb-1">
+                 <Zap className="w-3.5 h-3.5" /> PIX Direto
+               </p>
+               <p className="text-xs text-blue-800">Mínimo: <strong>R$ 200,00</strong> · Valor real · Saque em 2 dias úteis</p>
+             </div>
+             <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
+               <p className="text-xs font-bold text-purple-900 flex items-center gap-2 mb-1">
+                 <BookOpen className="w-3.5 h-3.5" /> Cursos Escola Prática
+               </p>
+               <p className="text-xs text-purple-800">Sem mínimo · <strong>Valor × 2.5</strong> em crédito · Desenvolva suas habilidades!</p>
+             </div>
+           </div>
+         </div>
+       </div>
       )}
 
       {/* Lista de cashbacks disponíveis */}
@@ -238,19 +309,57 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-center gap-3"
+              onClick={() => {
+                if (ownerType === 'prestador') {
+                  setSelectedForRedemption(prev =>
+                    prev.includes(c.id) ? prev.filter(id => id !== c.id) : [...prev, c.id]
+                  );
+                }
+              }}
+              className={cn(
+                "bg-emerald-50 border-2 rounded-2xl p-3 flex items-center gap-3 transition-all",
+                ownerType === 'prestador' && 'cursor-pointer hover:shadow-md',
+                selectedForRedemption.includes(c.id)
+                  ? 'border-purple-500 bg-purple-50'
+                  : 'border-emerald-200'
+              )}
             >
-              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              <div className={cn(
+                "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
+                selectedForRedemption.includes(c.id)
+                  ? 'bg-purple-100'
+                  : 'bg-emerald-100'
+              )}>
+                <CheckCircle2 className={cn(
+                  "w-5 h-5",
+                  selectedForRedemption.includes(c.id)
+                    ? 'text-purple-600'
+                    : 'text-emerald-600'
+                )} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-emerald-900 leading-tight">{c.reason}</p>
-                <p className="text-xs text-emerald-700 truncate">
+                <p className={cn(
+                  "text-sm font-semibold leading-tight",
+                  selectedForRedemption.includes(c.id)
+                    ? 'text-purple-900'
+                    : 'text-emerald-900'
+                )}>{c.reason}</p>
+                <p className={cn(
+                  "text-xs truncate",
+                  selectedForRedemption.includes(c.id)
+                    ? 'text-purple-700'
+                    : 'text-emerald-700'
+                )}>
                   {SERVICE_LABELS[c.service_type] || c.service_type}
                   {c.expires_at && ` · expira ${new Date(c.expires_at).toLocaleDateString('pt-BR')}`}
                 </p>
               </div>
-              <p className="text-lg font-bold text-emerald-600 flex-shrink-0">R$ {c.cashback_amount?.toFixed(2)}</p>
+              <p className={cn(
+                "text-lg font-bold flex-shrink-0",
+                selectedForRedemption.includes(c.id)
+                  ? 'text-purple-600'
+                  : 'text-emerald-600'
+              )}>R$ {c.cashback_amount?.toFixed(2)}</p>
             </motion.div>
           ))}
         </div>
