@@ -14,10 +14,7 @@ import NearbyProvidersMap from "@/components/NearbyProvidersMap";
 const homeServices = [
   { icon: Zap, label: "Elétrica", subtitle: "Chuveiro, tomada, QDC", type: "eletrica", color: "bg-yellow-100 text-yellow-700" },
   { icon: Pipette, label: "Hidráulica", subtitle: "Vazamento, registro", type: "hidraulica", color: "bg-blue-100 text-blue-700" },
-  { icon: Paintbrush, label: "Pintura", subtitle: "Paredes e acabamentos", type: "pintura", color: "bg-orange-100 text-orange-700" },
 
-  { icon: Settings, label: "Montagem", subtitle: "Móveis e estruturas", type: "montagem", color: "bg-purple-100 text-purple-700" },
-  { icon: HardHat, label: "Alvenaria", subtitle: "Construção e reforma", type: "alvenaria", color: "bg-red-100 text-red-700" },
   { icon: Lock, label: "Fechadura", subtitle: "Serviços de fechadura", type: "fechadura", color: "bg-green-100 text-green-700" },
   { icon: Thermometer, label: "Ar Condicionado", subtitle: "Instalação e reparo", type: "ar_condicionado", color: "bg-cyan-100 text-cyan-700" },
   { icon: Waves, label: "Limpeza Caixa d'Água", subtitle: "Limpeza especializada", type: "limpeza_caixa_dagua", color: "bg-blue-100 text-blue-700" },
@@ -25,9 +22,7 @@ const homeServices = [
   { icon: Layers, label: "Substituição de Telha", subtitle: "Reparos de cobertura", type: "substituicao_telha", color: "bg-orange-100 text-orange-700" },
   { icon: Sparkles, label: "Limpeza de Telhado", subtitle: "Limpeza de cobertura", type: "limpeza_telhado", color: "bg-amber-100 text-amber-700" },
   { icon: ChefHat, label: "Coifa de Parede", subtitle: "Instalação de coifa", type: "instalacao_coifa_parede", color: "bg-teal-100 text-teal-700" },
-  { icon: ChefHat, label: "Coifa Ilha", subtitle: "Instalação de coifa", type: "instalacao_coifa_ilha", color: "bg-emerald-100 text-emerald-700" },
   { icon: ShowerHead, label: "Conversão Vaso CX Acoplada", subtitle: "Adaptação sanitária", type: "conversao_vaso_coplado", color: "bg-indigo-100 text-indigo-700" },
-  { icon: ShowerHead, label: "Vaso Monobloco", subtitle: "Instalação sanitária", type: "instalacao_vaso_monobloco", color: "bg-violet-100 text-violet-700" },
   { icon: Layers, label: "Reparo Forro de Gesso", subtitle: "Manutenção de forro", type: "reparo_forro_gesso", color: "bg-stone-100 text-stone-700" },
   { icon: Droplets, label: "Desentupimento", subtitle: "Desobstrução rápida", type: "desentupimento", color: "bg-amber-100 text-amber-700" },
   { icon: Droplets, label: "Caça Vazamento", subtitle: "Detecção de vazamentos", type: "caca_vazamento", color: "bg-blue-100 text-blue-700" },
@@ -93,7 +88,6 @@ export default function Home() {
   const [showNearbyMap, setShowNearbyMap] = useState(false);
   const [electricalModalExpanded, setElectricalModalExpanded] = useState(true);
   const [hydraulicModalExpanded, setHydraulicModalExpanded] = useState(true);
-  const [showVasoMonoblocoModal, setShowVasoMonoblocoModal] = useState(false);
   const [activeRequests, setActiveRequests] = useState([]);
 
   useEffect(() => {
@@ -294,16 +288,6 @@ export default function Home() {
                                   <span className="text-xs text-center text-muted-foreground">{s.subtitle}</span>
                                 </div>
                               </button>
-                            ) : s.type === 'instalacao_vaso_monobloco' ? (
-                             <button onClick={() => setShowVasoMonoblocoModal(true)} className="w-full h-full">
-                               <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
-                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
-                                   <s.icon className="w-6 h-6" />
-                                 </div>
-                                 <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
-                                 <span className="text-xs text-center text-muted-foreground">{getPriceLabel(s.type) || s.subtitle}</span>
-                               </div>
-                             </button>
                             ) : (
                              <Link to={`/solicitar?tipo=${s.type}`}>
                                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
@@ -535,47 +519,6 @@ export default function Home() {
                               </Button>
                             </motion.div>
                           )}
-                        </>
-                      )}
-                    </AnimatePresence>
-
-                    {/* Modal Vaso Monobloco */}
-                    <AnimatePresence>
-                      {showVasoMonoblocoModal && (
-                        <>
-                          <motion.div
-                            key="overlay-vaso"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowVasoMonoblocoModal(false)}
-                            className="fixed inset-0 bg-black/40 z-40"
-                          />
-                          <motion.div
-                            key="modal-vaso"
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
-                          >
-                            <h2 className="text-2xl font-bold text-foreground mb-2">🚿 Vaso Monobloco</h2>
-                            <div className="bg-primary/10 rounded-2xl p-4 mb-4 border border-primary/20">
-                              <p className="text-sm text-muted-foreground mb-1">Valor do serviço:</p>
-                              <p className="text-2xl font-bold text-primary">{getPriceLabel('instalacao_vaso_monobloco') || 'R$ 1.200,00'}</p>
-                            </div>
-                            <p className="text-xs text-muted-foreground mb-4">Prestadores disponíveis em sua região</p>
-                            <Link to="/solicitar?tipo=instalacao_vaso_monobloco" onClick={() => setShowVasoMonoblocoModal(false)}>
-                              <Button className="w-full h-10 rounded-2xl font-bold text-sm">
-                                Solicitar Serviço
-                              </Button>
-                            </Link>
-                            <button
-                              onClick={() => setShowVasoMonoblocoModal(false)}
-                              className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors mt-2"
-                            >
-                              Fechar
-                            </button>
-                          </motion.div>
                         </>
                       )}
                     </AnimatePresence>
