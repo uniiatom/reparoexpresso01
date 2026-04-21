@@ -287,7 +287,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
           <p className="font-bold text-sm text-blue-900">📋 Como funciona seu cashback</p>
           <p>1️⃣ Indique amigos usando seu código de indicação.</p>
           <p>2️⃣ Quando o serviço do amigo for <strong>concluído</strong>, o bônus é gerado.</p>
-          <p>3️⃣ O valor cai na sua carteira em até <strong>48 horas</strong> após a conclusão.</p>
+          <p>3️⃣ O valor cai na sua carteira após <strong>48 horas</strong> da conclusão do serviço.</p>
           <p>4️⃣ Use como <strong>crédito</strong> no próximo serviço ou acumule <strong>R$ 200,00+</strong> para PIX.</p>
           <p>5️⃣ Quanto mais amigos ativos, maior seu nível e mais cashback por serviço!</p>
           <div className="border-t border-blue-200 pt-2 mt-1">
