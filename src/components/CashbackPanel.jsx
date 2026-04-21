@@ -179,10 +179,12 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                   <span className="text-center">{n.percentTake}%</span>
                 </div>
               ))}
-              <p className="text-xs text-muted-foreground mt-2 px-1">
-                <Users className="w-3 h-3 inline mr-1" />
-                Amigos ativos = indicações que já confirmaram ao menos 1 serviço concluído
-              </p>
+              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1">
+                <p className="font-bold flex items-center gap-1">⚠️ Como funciona o cashback por indicação:</p>
+                <p>• Você é bonificado <strong>somente quando o serviço do amigo que você indicou for finalizado</strong> (status: concluído).</p>
+                <p>• Indicações pendentes <strong>não geram cashback</strong> até a conclusão do serviço.</p>
+                <p>• <Users className="w-3 h-3 inline mr-0.5" />Amigos ativos = amigos indicados que já tiveram ao menos 1 serviço concluído.</p>
+              </div>
             </motion.div>
           )}
         </motion.div>
@@ -264,7 +266,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
           <p className="text-sm font-semibold text-foreground">Nenhum cashback ainda</p>
           <p className="text-xs text-muted-foreground mt-1">
             {ownerType === 'cliente'
-              ? 'Complete seu primeiro serviço e ganhe cashback com base no seu nível!'
+              ? 'Indique amigos e ganhe cashback quando o serviço deles for concluído!'
               : 'Conclua serviços e receba avaliações altas para ganhar bônus!'}
           </p>
         </div>
