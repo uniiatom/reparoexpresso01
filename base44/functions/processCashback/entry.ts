@@ -14,6 +14,21 @@ const PRESTADOR_BONUS_VALOR = 20;
 const PRESTADOR_BONUS_AVALIACAO = 10;
 const CASHBACK_EXPIRY_DAYS = 90;
 
+// Bônus por nível de desempenho do prestador (por serviço concluído)
+const NIVEIS_PRESTADOR = [
+  { key: 'pro_lenda', minJobs: 220, minRating: 5, bonus: 5.00, label: 'Pro Lenda 👑' },
+  { key: 'pro_elite', minJobs: 190, minRating: 4, bonus: 4.00, label: 'Pro Elite 💎' },
+  { key: 'pro_plus',  minJobs: 160, minRating: 4, bonus: 3.00, label: 'Pro Plus 🔥' },
+  { key: 'pro',       minJobs: 120, minRating: 4, bonus: 2.00, label: 'Pro ⭐' },
+];
+
+function getNivelPrestador(totalJobs, rating) {
+  for (const lvl of NIVEIS_PRESTADOR) {
+    if (totalJobs >= lvl.minJobs && rating >= lvl.minRating) return lvl;
+  }
+  return null;
+}
+
 function getNivelCliente(amigosAtivos) {
   for (let i = NIVEIS_CLIENTE.length - 1; i >= 0; i--) {
     if (amigosAtivos >= NIVEIS_CLIENTE[i].minAmigos) return NIVEIS_CLIENTE[i];
@@ -96,6 +111,29 @@ Deno.serve(async (req) => {
           expires_at: expiresAt,
         });
         results.push({ type: 'prestador_meta', amount: PRESTADOR_BONUS_VALOR });
+      }
+
+      // Bônus de nível por serviço concluído
+      const providerEntity = await base44.asServiceRole.entities.Provider.get(serviceRequest.provider_id).catch(() => null);
+      if (providerEntity) {
+        const nivelPrestador = getNivelPrestador(providerEntity.total_jobs || 0, providerEntity.rating || 0);
+        if (nivelPrestador) {
+          await base44.asServiceRole.entities.Cashback.create({
+            owner_id: serviceRequest.provider_id,
+            owner_type: 'prestador',
+            owner_name: serviceRequest.provider_name,
+            service_request_id: request_id,
+            service_type: serviceRequest.service_type,
+            service_value: finalPrice,
+            cashback_amount: nivelPrestador.bonus,
+            cashback_percent: 0,
+            reason: `${nivelPrestador.label} · bônus por nível (R$ ${nivelPrestador.bonus.toFixed(2)}/serviço)`,
+            status: 'disponivel',
+            expires_at: expiresAt,
+          });
+          results.push({ type: 'prestador_nivel', nivel: nivelPrestador.key, amount: nivelPrestador.bonus });
+          console.log(`[cashback] Prestador ${serviceRequest.provider_name} (${nivelPrestador.label}): +R$ ${nivelPrestador.bonus}`);
+        }
       }
 
       if (serviceRequest.rating_client && serviceRequest.rating_client >= 4.5) {

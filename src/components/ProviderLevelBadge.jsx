@@ -10,7 +10,7 @@ export const PROVIDER_LEVELS = [
     minRating: 4,
     color: 'bg-blue-100 text-blue-700 border-blue-200',
     iconColor: 'text-blue-500',
-    description: '120 serv./mês + ≥ 4 estrelas',
+    description: '120 serv./mês + ≥ 4★ · +R$ 2,00/serviço',
   },
   {
     key: 'pro_plus',
@@ -20,7 +20,7 @@ export const PROVIDER_LEVELS = [
     minRating: 4,
     color: 'bg-purple-100 text-purple-700 border-purple-200',
     iconColor: 'text-purple-500',
-    description: '160 serv./mês + ≥ 4 estrelas',
+    description: '160 serv./mês + ≥ 4★ · +R$ 3,00/serviço',
   },
   {
     key: 'pro_elite',
@@ -30,7 +30,7 @@ export const PROVIDER_LEVELS = [
     minRating: 4,
     color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     iconColor: 'text-emerald-500',
-    description: '190 serv./mês + ≥ 4 estrelas',
+    description: '190 serv./mês + ≥ 4★ · +R$ 4,00/serviço',
   },
   {
     key: 'pro_lenda',
@@ -40,7 +40,7 @@ export const PROVIDER_LEVELS = [
     minRating: 5,
     color: 'bg-yellow-100 text-yellow-700 border-yellow-200',
     iconColor: 'text-yellow-500',
-    description: '220 serv./mês + 5 estrelas',
+    description: '220 serv./mês + 5★ · +R$ 5,00/serviço',
   },
 ];
 
