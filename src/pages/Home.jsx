@@ -29,11 +29,9 @@ const homeServices = [
   { icon: ClipboardList, label: "Check-up", subtitle: "Vistoria completa", type: "checkup", color: "bg-green-100 text-green-700" },
   { icon: Layers, label: "Rejunte", subtitle: "Rejunte de azulejos", type: "rejunte", color: "bg-rose-100 text-rose-700" },
   { icon: DoorOpen, label: "Portão Eletrônico", subtitle: "Instalação e reparo", type: "portao_eletronico", color: "bg-sky-100 text-sky-700" },
-  { icon: Phone, label: "Interfone", subtitle: "Instalação e reparo", type: "interfone", color: "bg-lime-100 text-lime-700" },
+
   { icon: Gauge, label: "Pressurizador", subtitle: "Instalação e reparo", type: "pressurizador", color: "bg-cyan-100 text-cyan-700" },
-  { icon: ShieldAlert, label: "Alarme/Cerca Elétrica", subtitle: "Instalação e reparo", type: "alarme_cerca_eletrica", color: "bg-red-100 text-red-700" },
-  { icon: Shield, label: "Concertina", subtitle: "Instalação e reparo", type: "concertina", color: "bg-zinc-100 text-zinc-700" },
-  { icon: Video, label: "Câmera/CFTV", subtitle: "Instalação e reparo", type: "camera_cftv", color: "bg-gray-100 text-gray-700" },
+
 ];
 
 const vehicleServices = [
