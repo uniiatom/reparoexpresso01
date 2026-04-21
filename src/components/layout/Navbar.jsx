@@ -30,11 +30,12 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 bg-card/90 backdrop-blur-xl border-b border-border/50">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <img
-            src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg"
-            alt="Reparo Expresso"
-            className="h-10 w-auto object-contain"
-          />
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
+              <span className="text-primary-foreground font-black text-sm">RE</span>
+            </div>
+            <span className="font-black text-lg text-foreground tracking-tight">Reparo <span className="text-primary">Expresso</span></span>
+          </div>
         </Link>
 
         {/* Desktop */}
