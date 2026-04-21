@@ -248,21 +248,36 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
       {ownerType === 'cliente' && available.length > 0 && (
         <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
           <p className="text-sm font-bold text-foreground mb-2">💰 Opções de Resgate</p>
-          <div className="space-y-2">
+          <div className="flex gap-2">
             <Button
-              className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm"
-              onClick={() => redeemMutation.mutate('credit')}
+              className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs"
+              onClick={() => redeemMutation.mutate('service')}
               disabled={selectedForRedemption.length === 0 || redeemMutation.isPending}
             >
-              <Gift className="w-4 h-4 mr-2" />
-              Usar como crédito ({selectedCashbacks.length} selecionado{selectedCashbacks.length !== 1 ? 's' : ''})
+              <Gift className="w-3 h-3 mr-1" />
+              Usar em serviço
             </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              {selectedTotal > 0 
-                ? `R$ ${selectedTotal.toFixed(2)} será convertido em crédito para seu próximo serviço`
-                : 'Selecione cashbacks para usar como crédito'}
-            </p>
+            <Button
+              variant="outline"
+              className="flex-1 rounded-xl text-xs font-semibold"
+              onClick={() => {
+                if (selectedTotal < 200) {
+                  toast.error(`Mínimo R$ 200,00 para PIX. Você tem R$ ${selectedTotal.toFixed(2)}`);
+                  return;
+                }
+                redeemMutation.mutate('pix');
+              }}
+              disabled={selectedForRedemption.length === 0 || redeemMutation.isPending}
+            >
+              <Zap className="w-3 h-3 mr-1" />
+              Sacar PIX
+            </Button>
           </div>
+          {selectedTotal > 0 && (
+            <p className="text-xs text-muted-foreground text-center">
+              Total selecionado: <strong>R$ {selectedTotal.toFixed(2)}</strong>
+            </p>
+          )}
         </div>
       )}
 
