@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock, User, Phone, Star, MapPin, Wrench, AlertCircle, Plus } from "lucide-react";
+import FavoriteButton from '../components/FavoriteButton';
 import { cn } from "@/lib/utils";
 import RatingModal from '../components/RatingModal';
 import RetornoModal from '../components/RetornoModal';
@@ -380,11 +381,21 @@ export default function AcompanharServico() {
                 </p>
               )}
             </div>
-            {request.provider_phone && (
-              <a href={`https://wa.me/55${request.provider_phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer">
-                <Button size="sm" variant="outline" className="rounded-xl">WhatsApp</Button>
-              </a>
-            )}
+            <div className="flex items-center gap-2">
+              {request.provider_phone && (
+                <a href={`https://wa.me/55${request.provider_phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer">
+                  <Button size="sm" variant="outline" className="rounded-xl">WhatsApp</Button>
+                </a>
+              )}
+              {request.provider_id && (
+                <FavoriteButton
+                  providerId={request.provider_id}
+                  providerName={request.provider_name}
+                  size="md"
+                  variant="outline"
+                />
+              )}
+            </div>
           </div>
         </div>
       )}
