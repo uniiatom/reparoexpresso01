@@ -79,7 +79,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
           </p>
         </div>
         <p className="text-4xl font-bold mb-1">R$ {totalDisponivel.toFixed(2)}</p>
-        <p className="text-emerald-100 text-xs">disponível para usar no próximo serviço</p>
+        <p className="text-emerald-100 text-xs">disponível · resgate PIX a partir de R$ 200,00</p>
 
         <div className="flex gap-3 mt-4">
           <div className="flex-1 bg-white/15 rounded-2xl p-3 text-center">
@@ -179,15 +179,39 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                   <span className="text-center">{n.percentTake}%</span>
                 </div>
               ))}
-              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1">
-                <p className="font-bold flex items-center gap-1">⚠️ Como funciona o cashback por indicação:</p>
-                <p>• Você é bonificado <strong>somente quando o serviço do amigo que você indicou for finalizado</strong> (status: concluído).</p>
-                <p>• Indicações pendentes <strong>não geram cashback</strong> até a conclusão do serviço.</p>
-                <p>• <Users className="w-3 h-3 inline mr-0.5" />Amigos ativos = amigos indicados que já tiveram ao menos 1 serviço concluído.</p>
+              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1.5">
+                <p className="font-bold">⚠️ Regras do cashback por indicação:</p>
+                <p>• O bônus é creditado <strong>somente quando o serviço do amigo indicado for concluído</strong>.</p>
+                <p>• Após a conclusão, o valor cai na carteira em até <strong>48 horas</strong>.</p>
+                <p>• O resgate via PIX está disponível a partir de <strong>R$ 200,00</strong> acumulados.</p>
+                <p>• <Users className="w-3 h-3 inline mr-0.5" />Amigos ativos = indicados com ao menos 1 serviço concluído.</p>
               </div>
             </motion.div>
           )}
         </motion.div>
+      )}
+
+      {/* Regras rápidas (apenas cliente) */}
+      {ownerType === 'cliente' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-2 text-xs text-blue-800">
+          <p className="font-bold text-sm text-blue-900">📋 Como funciona seu cashback</p>
+          <p>1️⃣ Indique amigos usando seu código de indicação.</p>
+          <p>2️⃣ Quando o serviço do amigo for <strong>concluído</strong>, o bônus é gerado.</p>
+          <p>3️⃣ O valor cai na sua carteira em até <strong>48 horas</strong> após a conclusão.</p>
+          <p>4️⃣ Acumule <strong>R$ 200,00</strong> ou mais para solicitar resgate via PIX.</p>
+          <p>5️⃣ Quanto mais amigos ativos, maior seu nível e mais cashback por serviço!</p>
+          <div className="border-t border-blue-200 pt-2 mt-1">
+            <p className="font-semibold mb-1">📊 Tabela de progressão:</p>
+            <div className="space-y-1">
+              {NIVEIS.map(n => (
+                <div key={n.nivel} className="flex items-center justify-between bg-white/60 rounded-lg px-2 py-1">
+                  <span>{n.emoji} <strong>{n.nivel}</strong> ({n.minAmigos}–{n.maxAmigos === 70 ? '50+' : n.maxAmigos} amigos)</span>
+                  <span className="font-bold text-emerald-700">R$ {n.bonusPorServico.toFixed(2)}/serviço</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Como funciona (prestador) */}
