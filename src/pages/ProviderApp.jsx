@@ -22,6 +22,7 @@ import ActiveJobCard from '../components/ActiveJobCard';
 import DeclineReasonModal from '../components/DeclineReasonModal';
 import ProviderPhotoEditor from '../components/ProviderPhotoEditor';
 import CashbackPanel from '../components/CashbackPanel';
+import ProviderLevelIncentive from '../components/ProviderLevelIncentive';
 import ProviderLevelBadge, { getProviderLevel, PROVIDER_LEVELS } from '../components/ProviderLevelBadge';
 
 const SERVICE_LABELS = {
@@ -369,6 +370,9 @@ export default function ProviderApp() {
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
+      {/* Mensagem de incentivo de nível */}
+      <ProviderLevelIncentive providerId={provider?.id} />
+
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
