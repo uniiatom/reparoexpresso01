@@ -159,7 +159,7 @@ export default function Home() {
               className="flex flex-col items-center gap-8 px-8 text-center"
             >
               <img
-                src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/13a4eec55_generated_image.png"
+                src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/a0f4e96ef_153aef43-fc57-462e-90bc-3fdadfe5d7ed.jpg"
                 alt="Reparo Expresso"
                 className="w-80 max-w-xs object-contain drop-shadow-2xl"
               />
