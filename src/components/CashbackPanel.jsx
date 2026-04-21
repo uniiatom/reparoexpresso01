@@ -245,7 +245,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
       )}
 
       {/* Opções de resgate (cliente) */}
-      {ownerType === 'cliente' && available.length > 0 && (
+      {ownerType === 'cliente' && (
         <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
           <p className="text-sm font-bold text-foreground mb-2">💰 Opções de Resgate</p>
           <div className="flex gap-2">
