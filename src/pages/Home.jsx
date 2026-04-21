@@ -158,12 +158,11 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="flex flex-col items-center gap-8 px-8 text-center"
             >
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-24 h-24 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-sm">
-                  <span className="text-white font-black text-4xl">RE</span>
-                </div>
-                <span className="text-white font-black text-4xl tracking-tight drop-shadow-2xl">Reparo Expresso</span>
-              </div>
+              <img
+                src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/13a4eec55_generated_image.png"
+                alt="Reparo Expresso"
+                className="w-80 max-w-xs object-contain drop-shadow-2xl"
+              />
               <p className="text-white/80 text-lg max-w-xs">
                 Profissionais qualificados podendo chegar em minutos
               </p>
