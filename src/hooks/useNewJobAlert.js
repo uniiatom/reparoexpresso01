@@ -82,16 +82,19 @@ export function startHornLoop() {
 
 /**
  * Monitora novos chamados via subscribe em tempo real.
- * Quando enabled=true e chega um ServiceRequest com status='aguardando',
- * dispara a buzina em loop e chama onNewJob(requestData).
+ * Dispara a buzina quando:
+ * - status='aguardando' (chamado livre) OU
+ * - status='aceito' com provider_id === providerId (chamado atribuído automaticamente ao prestador)
  */
-export function useNewJobAlert({ enabled, onNewJob }) {
+export function useNewJobAlert({ enabled, onNewJob, providerId }) {
   const enabledRef = useRef(enabled);
+  const providerIdRef = useRef(providerId);
   const seenIds = useRef(new Set());
   const onNewJobRef = useRef(onNewJob);
   const stopHornRef = useRef(null);
 
   useEffect(() => { enabledRef.current = enabled; }, [enabled]);
+  useEffect(() => { providerIdRef.current = providerId; }, [providerId]);
   useEffect(() => { onNewJobRef.current = onNewJob; }, [onNewJob]);
 
   // Expõe funções globais para parar a buzina e limpar IDs vistos
@@ -119,14 +122,26 @@ export function useNewJobAlert({ enabled, onNewJob }) {
     const unsubscribe = base44.entities.ServiceRequest.subscribe((event) => {
       if (!enabledRef.current) return;
 
-      const isNewJob =
+      const data = event.data;
+      if (!data) return;
+
+      // Chamado livre ainda sem prestador
+      const isOpenJob =
         (event.type === 'create' || event.type === 'update') &&
-        event.data?.status === 'aguardando' &&
-        event.data?.modality !== 'agendado';
+        data.status === 'aguardando' &&
+        data.modality !== 'agendado';
 
-      // Limpa apenas quando job é cancelado ou concluído (não apenas quando sai de "aguardando")
-      const isFinalizado = event.type === 'update' && ['cancelado', 'concluido'].includes(event.data?.status);
+      // Chamado atribuído automaticamente a este prestador (backend assignServiceToProvider)
+      const isAssignedToMe =
+        event.type === 'update' &&
+        data.status === 'aceito' &&
+        providerIdRef.current &&
+        data.provider_id === providerIdRef.current;
 
+      const isNewJob = isOpenJob || isAssignedToMe;
+
+      // Limpa quando job é finalizado
+      const isFinalizado = event.type === 'update' && ['cancelado', 'concluido'].includes(data.status);
       if (isFinalizado) {
         seenIds.current.delete(event.id);
       }
@@ -135,7 +150,7 @@ export function useNewJobAlert({ enabled, onNewJob }) {
         seenIds.current.add(event.id);
         stopHornRef.current?.();
         stopHornRef.current = startHornLoop();
-        onNewJobRef.current?.(event.data);
+        onNewJobRef.current?.(data);
       }
     });
 

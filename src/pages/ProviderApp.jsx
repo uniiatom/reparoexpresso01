@@ -95,6 +95,7 @@ export default function ProviderApp() {
   useNewJobAlert({
     enabled: !!(provider?.is_online && provider?.is_approved && !activeJob),
     onNewJob: handleNewJob,
+    providerId: provider?.id,
   }); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
