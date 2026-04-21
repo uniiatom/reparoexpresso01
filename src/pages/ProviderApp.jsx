@@ -21,6 +21,7 @@ import AdditionalPointModal from '../components/AdditionalPointModal';
 import ActiveJobCard from '../components/ActiveJobCard';
 import DeclineReasonModal from '../components/DeclineReasonModal';
 import ProviderPhotoEditor from '../components/ProviderPhotoEditor';
+import CashbackPanel from '../components/CashbackPanel';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -436,6 +437,12 @@ export default function ProviderApp() {
         >
           📷 Minhas Fotos
         </button>
+        <button
+          onClick={() => setActiveTab('cashback')}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'cashback' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          💸 Bônus
+        </button>
       </div>
 
       {/* ── ABA CHAMADOS ── */}
@@ -742,6 +749,11 @@ export default function ProviderApp() {
       {/* ── ABA INDISPONIBILIDADE ── */}
       {activeTab === 'indisponibilidade' && (
         <ProviderUnavailabilitySection providerId={provider.id} />
+      )}
+
+      {/* ── ABA CASHBACK/BÔNUS ── */}
+      {activeTab === 'cashback' && (
+        <CashbackPanel userId={provider.id} ownerType="prestador" />
       )}
 
       {/* ── ABA FOTOS ── */}

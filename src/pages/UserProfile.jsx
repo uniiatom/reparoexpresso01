@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import CashbackPanel from '@/components/CashbackPanel';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, LogOut, Calendar, Gift, Camera, Wrench } from "lucide-react";
 import { useNavigate, Link } from 'react-router-dom';
@@ -109,6 +110,16 @@ export default function UserProfile() {
           </div>
         </div>
       </div>
+
+      {/* Cashback */}
+      {user?.id && (
+        <div className="mb-8">
+          <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+            💸 Meu Cashback
+          </h3>
+          <CashbackPanel userId={user.id} ownerType="cliente" />
+        </div>
+      )}
 
       {/* Service History */}
       <div className="mb-8">

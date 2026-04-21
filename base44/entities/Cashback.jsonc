@@ -1,0 +1,73 @@
+{
+  "name": "Cashback",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "ID do usu\u00e1rio (cliente ou prestador)"
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": [
+        "cliente",
+        "prestador"
+      ],
+      "description": "Tipo do dono do cashback"
+    },
+    "owner_name": {
+      "type": "string",
+      "description": "Nome do dono"
+    },
+    "service_request_id": {
+      "type": "string",
+      "description": "ID da OS que gerou o cashback"
+    },
+    "service_type": {
+      "type": "string",
+      "description": "Tipo de servi\u00e7o"
+    },
+    "service_value": {
+      "type": "number",
+      "description": "Valor do servi\u00e7o que gerou o cashback"
+    },
+    "cashback_amount": {
+      "type": "number",
+      "description": "Valor de cashback em R$"
+    },
+    "cashback_percent": {
+      "type": "number",
+      "description": "Percentual aplicado"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Motivo do cashback (ex: 5% sobre servi\u00e7o, b\u00f4nus avalia\u00e7\u00e3o)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "disponivel",
+        "utilizado",
+        "expirado"
+      ],
+      "default": "disponivel",
+      "description": "Status do cashback"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "Data de expira\u00e7\u00e3o (ISO)"
+    },
+    "used_at": {
+      "type": "string",
+      "description": "Data de uso"
+    },
+    "used_in_request_id": {
+      "type": "string",
+      "description": "ID da OS onde o cashback foi utilizado"
+    }
+  },
+  "required": [
+    "owner_id",
+    "owner_type",
+    "cashback_amount"
+  ]
+}
