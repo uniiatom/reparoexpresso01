@@ -1,75 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export default function FavoriteButton({ providerId, providerName, providerData, size = "md", variant = "default" }) {
   const [user, setUser] = useState(null);
-  const queryClient = useQueryClient();
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favoriteId, setFavoriteId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => setUser(u)).catch(() => {});
   }, []);
 
-  // Verificar se já é favorito
-  const { data: isFavorited, isLoading } = useQuery({
-    queryKey: ['is-favorited', user?.id, providerId],
-    queryFn: async () => {
-      if (!user?.id) return false;
-      const favorites = await base44.entities.Favorite.filter({
-        client_id: user.id,
-        provider_id: providerId,
-      });
-      return favorites.length > 0;
-    },
-    enabled: !!user?.id,
-  });
-
-  // Mutation para adicionar/remover favorito
-  const toggleFavorite = useMutation({
-    mutationFn: async () => {
-      if (!user?.id || !providerId) return;
-
-      if (isFavorited) {
-        // Remover favorito
-        const favorites = await base44.entities.Favorite.filter({
-          client_id: user.id,
-          provider_id: providerId,
-        });
-        if (favorites.length > 0) {
-          await base44.entities.Favorite.delete(favorites[0].id);
+  useEffect(() => {
+    if (!user?.id || !providerId) return;
+    base44.entities.Favorite.filter({ client_id: user.id })
+      .then(favs => {
+        const match = favs.find(f => f.provider_id === providerId);
+        if (match) {
+          setIsFavorited(true);
+          setFavoriteId(match.id);
+        } else {
+          setIsFavorited(false);
+          setFavoriteId(null);
         }
+      })
+      .catch(() => {});
+  }, [user?.id, providerId]);
+
+  const handleToggle = async () => {
+    if (!user?.id || !providerId || loading) return;
+    setLoading(true);
+    try {
+      if (isFavorited && favoriteId) {
+        await base44.entities.Favorite.delete(favoriteId);
+        setIsFavorited(false);
+        setFavoriteId(null);
+        toast.success('Removido dos favoritos');
       } else {
-        // Adicionar favorito
-        await base44.entities.Favorite.create({
+        const created = await base44.entities.Favorite.create({
           client_id: user.id,
           client_email: user.email,
           provider_id: providerId,
           provider_name: providerData?.name || providerName,
-          provider_photo_url: providerData?.photo_url,
-          provider_rating: providerData?.rating,
-          provider_city: providerData?.city,
-          provider_state: providerData?.state,
+          provider_photo_url: providerData?.photo_url || null,
+          provider_rating: providerData?.rating || null,
+          provider_city: providerData?.city || null,
+          provider_state: providerData?.state || null,
         });
+        setIsFavorited(true);
+        setFavoriteId(created.id);
+        toast.success('Adicionado aos favoritos!');
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['is-favorited', user?.id, providerId] });
-      queryClient.invalidateQueries({ queryKey: ['favorites', user?.id] });
-      toast.success(isFavorited ? 'Removido dos favoritos' : 'Adicionado aos favoritos!');
-    },
-  });
+    } catch (err) {
+      toast.error('Erro ao salvar favorito: ' + (err?.message || 'tente novamente'));
+    }
+    setLoading(false);
+  };
 
   if (!user) return null;
 
-  const sizeClasses = {
-    sm: 'w-5 h-5',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8',
-  };
-
+  const sizeClasses = { sm: 'w-5 h-5', md: 'w-6 h-6', lg: 'w-8 h-8' };
   const buttonClasses = {
     default: 'p-2 hover:bg-accent rounded-lg transition-colors',
     primary: 'p-3 bg-primary text-primary-foreground rounded-2xl transition-colors hover:bg-primary/90',
@@ -78,8 +71,8 @@ export default function FavoriteButton({ providerId, providerName, providerData,
 
   return (
     <button
-      onClick={() => toggleFavorite.mutate()}
-      disabled={isLoading || toggleFavorite.isPending}
+      onClick={handleToggle}
+      disabled={loading}
       className={buttonClasses[variant]}
       title={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
     >
@@ -87,9 +80,7 @@ export default function FavoriteButton({ providerId, providerName, providerData,
         className={cn(
           sizeClasses[size],
           'transition-all',
-          isFavorited
-            ? 'text-red-500 fill-red-500'
-            : 'text-muted-foreground'
+          isFavorited ? 'text-red-500 fill-red-500' : 'text-muted-foreground'
         )}
       />
     </button>
