@@ -124,14 +124,29 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       }
     });
 
-    // Inicia busca de prestadores — sempre mantém "searching" por 5 minutos depois vai para agendamento
+    // Inicia busca de prestadores
     setPhase('searching');
-    const searchTimeout = setTimeout(() => {
-      console.log('[search] ⏱️ 5 minutos atingidos, encerrando busca...');
-      searchProviders(); // Busca prestadores e abre agenda
-    }, 5 * 60 * 1000); // 5 minutos
+    let isMounted = true;
 
-    return () => clearTimeout(searchTimeout);
+    // Executa busca imediatamente e agenda timer para abrir agendamento
+    searchProviders().then(() => {
+      if (!isMounted) return;
+      // Busca completou, agenda timer para abrir agendamento após 5 min
+      const searchTimeout = setTimeout(() => {
+        if (isMounted) {
+          console.log('[search] ⏱️ 5 minutos atingidos, abrindo agendamento...');
+          setPhase('none');
+        }
+      }, 5 * 60 * 1000);
+      return () => clearTimeout(searchTimeout);
+    }).catch(e => {
+      console.error('[search] Erro:', e.message);
+      if (isMounted) setPhase('none');
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Geocodifica uma query via Nominatim
