@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, ClipboardList, MapPin, ChevronDown, ChevronUp, Image } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { CheckCircle2, ClipboardList, MapPin, ChevronDown, ChevronUp, Image, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const SERVICE_LABELS = {
@@ -14,6 +15,7 @@ const SERVICE_LABELS = {
 
 export default function ChecklistsAdmin() {
   const [expanded, setExpanded] = useState(null);
+  const [search, setSearch] = useState('');
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['admin-checklists'],
@@ -23,23 +25,47 @@ export default function ChecklistsAdmin() {
 
   const withChecklist = requests.filter(r => r.checklist?.completed_at);
 
+  const filtered = search.trim()
+    ? withChecklist.filter(r => {
+        const term = search.trim().toLowerCase().replace(/\D/g, '') || search.trim().toLowerCase();
+        const matchOS = r.service_number?.toLowerCase().includes(search.trim().toLowerCase());
+        const matchCPF = r.client_cpf && r.client_cpf.replace(/\D/g, '').includes(term);
+        const matchClient = r.client_name?.toLowerCase().includes(search.trim().toLowerCase());
+        return matchOS || matchCPF || matchClient;
+      })
+    : withChecklist;
+
   if (isLoading) {
     return <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" /></div>;
   }
 
-  if (withChecklist.length === 0) {
-    return (
-      <div className="text-center py-16 text-muted-foreground">
-        <ClipboardList className="w-10 h-10 mx-auto mb-3 opacity-40" />
-        <p>Nenhum checklist preenchido ainda</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted-foreground mb-4">{withChecklist.length} checklist(s) preenchido(s)</p>
-      {withChecklist.map(req => {
+      {/* Busca por OS ou CPF */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Buscar por número da OS, CPF ou nome do cliente..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="pl-9 pr-9 rounded-xl"
+        />
+        {search && (
+          <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <ClipboardList className="w-10 h-10 mx-auto mb-3 opacity-40" />
+          <p>{search ? 'Nenhum checklist encontrado para esta busca' : 'Nenhum checklist preenchido ainda'}</p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">{filtered.length} checklist(s) {search ? 'encontrado(s)' : 'preenchido(s)'}</p>
+      )}
+      {filtered.map(req => {
         const cl = req.checklist;
         const isOpen = expanded === req.id;
         const completedDate = cl.completed_at ? new Date(cl.completed_at).toLocaleString('pt-BR') : '-';
