@@ -283,26 +283,43 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
             client_name: form.client_name || 'Cliente',
           });
           
-          // Se foram criados alertas, aguarda respostas por 5 minutos
-          if (result.data?.alerts_created > 0) {
-            setPhase('aguardando_respostas');
-            setWaitingSeconds(1800);
-            
-            // Inicia timer de contagem regressiva (apenas conta, não muda fase)
-            let remaining = 1800;
-            waitingTimerRef.current = setInterval(() => {
-              remaining--;
-              setWaitingSeconds(remaining);
-            }, 1000);
+          // Se foram criados alertas, aguarda respostas
+            if (result.data?.alerts_created > 0) {
+              // Para serviço imediato, aguarda apenas 5 minutos; para agendado, 30 minutos
+              const waitTime = form.modality === 'imediato' ? 300 : 1800;
 
-            // Monitora respostas dos prestadores
-            busyAlertsUnsubscribeRef.current = base44.entities.ProviderBusyAlert.subscribe((event) => {
-              if (event.type === 'update' && event.data?.status === 'respondido') {
-                setProviderBusyAlerts(prev => [...prev, event.data]);
-              }
-            });
-            return;
-          }
+              setPhase('aguardando_respostas');
+              setWaitingSeconds(waitTime);
+
+              // Inicia timer de contagem regressiva
+              let remaining = waitTime;
+              waitingTimerRef.current = setInterval(() => {
+                remaining--;
+                setWaitingSeconds(remaining);
+
+                // Se tempo esgotou para imediato, abre agenda automaticamente
+                if (remaining <= 0 && form.modality === 'imediato') {
+                  clearInterval(waitingTimerRef.current);
+                  if (busyAlertsUnsubscribeRef.current) busyAlertsUnsubscribeRef.current();
+                  setPhase('none');
+                }
+              }, 1000);
+
+              // Monitora respostas dos prestadores
+              busyAlertsUnsubscribeRef.current = base44.entities.ProviderBusyAlert.subscribe((event) => {
+                if (event.type === 'update' && event.data?.status === 'respondido') {
+                  // Prestador respondeu - confirma serviço automaticamente para imediato
+                  if (form.modality === 'imediato') {
+                    clearInterval(waitingTimerRef.current);
+                    if (busyAlertsUnsubscribeRef.current) busyAlertsUnsubscribeRef.current();
+                    handleConfirmImmediate();
+                  } else {
+                    setProviderBusyAlerts(prev => [...prev, event.data]);
+                  }
+                }
+              });
+              return;
+            }
         } catch (e) {
           console.error('Erro ao buscar prestadores ocupados próximos:', e);
         }
