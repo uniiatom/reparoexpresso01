@@ -67,6 +67,10 @@
       ],
       "description": "M\u00e9todo de pagamento"
     },
+    "payment_proof_url": {
+      "type": "string",
+      "description": "URL do comprovante de pagamento"
+    },
     "notes": {
       "type": "string",
       "description": "Observa\u00e7\u00f5es internas"

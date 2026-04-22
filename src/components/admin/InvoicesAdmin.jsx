@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Download, CheckCircle2, DollarSign, Clock, FileText, ChevronRight } from 'lucide-react';
+import { Download, CheckCircle2, DollarSign, Clock, FileText, ChevronRight, Upload, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,8 @@ export default function InvoicesAdmin() {
   const queryClient = useQueryClient();
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchProvider, setSearchProvider] = useState('');
+  const [uploadingId, setUploadingId] = useState(null);
+  const fileInputRefs = useRef({});
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ['all-invoices'],
@@ -38,6 +40,15 @@ export default function InvoicesAdmin() {
       toast.success('Status atualizado!');
     },
   });
+
+  const handleUploadProof = async (invoiceId, file) => {
+    setUploadingId(invoiceId);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    await base44.entities.Invoice.update(invoiceId, { payment_proof_url: file_url });
+    queryClient.invalidateQueries({ queryKey: ['all-invoices'] });
+    toast.success('Comprovante anexado!');
+    setUploadingId(null);
+  };
 
   const addPaymentNoteMutation = useMutation({
     mutationFn: ({ id, notes }) => base44.entities.Invoice.update(id, { notes }),
@@ -172,16 +183,52 @@ export default function InvoicesAdmin() {
                 </div>
 
                 {/* Ações */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {invoice.file_url && (
                     <a
                       href={invoice.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-1 text-xs font-semibold text-primary bg-primary/10 rounded-lg py-1.5 hover:bg-primary/20 transition"
+                      className="flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 rounded-lg px-3 py-1.5 hover:bg-primary/20 transition"
                     >
-                      <Download className="w-3 h-3" /> Download
+                      <Download className="w-3 h-3" /> Nota Fiscal
                     </a>
+                  )}
+
+                  {/* Comprovante de pagamento */}
+                  {invoice.payment_proof_url ? (
+                    <a
+                      href={invoice.payment_proof_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-1.5 hover:bg-green-100 transition"
+                    >
+                      <ExternalLink className="w-3 h-3" /> Comprovante
+                    </a>
+                  ) : (
+                    <>
+                      <input
+                        ref={el => fileInputRefs.current[invoice.id] = el}
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleUploadProof(invoice.id, file);
+                          e.target.value = '';
+                        }}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={uploadingId === invoice.id}
+                        onClick={() => fileInputRefs.current[invoice.id]?.click()}
+                        className="rounded-lg text-xs border-orange-300 text-orange-700 hover:bg-orange-50"
+                      >
+                        <Upload className="w-3 h-3 mr-1" />
+                        {uploadingId === invoice.id ? 'Enviando...' : 'Comprovante'}
+                      </Button>
+                    </>
                   )}
                 </div>
 
