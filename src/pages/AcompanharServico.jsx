@@ -18,8 +18,8 @@ import { useServiceNotifications } from '../hooks/useServiceNotifications';
 
 const STATUS_STEPS = [
   { key: "aguardando", label: "Aguardando prestador", icon: Clock },
-  { key: "aceito", label: "Prestador a caminho", icon: User },
-  { key: "a_caminho", label: "Prestador a caminho", icon: User },
+  { key: "aceito", label: "Prestador confirmado", icon: User },
+  { key: "a_caminho", label: "Prestador a caminho!", icon: User },
   { key: "em_andamento", label: "Serviço em execução", icon: Wrench },
   { key: "concluido", label: "Serviço concluído!", icon: CheckCircle2 },
 ];
@@ -194,7 +194,7 @@ export default function AcompanharServico() {
           {request.status === 'a_caminho' && <span>🚗</span>}
           {request.status === 'concluido' && <CheckCircle2 className="w-4 h-4" />}
           {request.status === 'cancelado' && <AlertCircle className="w-4 h-4" />}
-          {request.status === 'a_caminho' ? 'Prestador a caminho!' : STATUS_STEPS.find(s => s.key === request.status)?.label || request.status}
+          {STATUS_STEPS.find(s => s.key === request.status)?.label || request.status}
         </div>
         <h1 className="text-2xl font-bold text-foreground">{SERVICE_LABELS[request.service_type] || request.service_type}</h1>
         {request.service_number && (
