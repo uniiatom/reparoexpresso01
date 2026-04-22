@@ -87,10 +87,11 @@ export default function AdminPanel() {
       rejection_reason: rejectReason,
       rejected_at: new Date().toISOString(),
       is_approved: false,
+      is_archived: true,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-providers'] });
-      toast.success("Prestador reprovado com sucesso");
+      toast.success("Prestador reprovado e arquivado com sucesso");
       setSelectedProvider(null);
     },
   });
@@ -101,10 +102,11 @@ export default function AdminPanel() {
       block_reason: blockReason,
       blocked_at: new Date().toISOString(),
       is_approved: false,
+      is_archived: true,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-providers'] });
-      toast.success("Prestador bloqueado com sucesso");
+      toast.success("Prestador bloqueado e arquivado com sucesso");
       setSelectedProvider(null);
     },
   });

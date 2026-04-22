@@ -126,6 +126,11 @@
       "format": "date-time",
       "description": "Data/hora do bloqueio"
     },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o prestador foi arquivado (reprovado ou bloqueado)"
+    },
     "rating": {
       "type": "number",
       "default": 5
