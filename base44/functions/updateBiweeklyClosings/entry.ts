@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     // Filtra serviços deste prestador no período
     const services = allServices.filter(s => {
       if (s.provider_id !== closing.provider_id) return false;
-      const date = new Date(s.updated_date);
+      const date = new Date(s.updated_date || s.created_date);
       return date >= periodStart && date <= periodEnd;
     });
 

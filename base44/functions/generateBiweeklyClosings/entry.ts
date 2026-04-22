@@ -46,9 +46,9 @@ Deno.serve(async (req) => {
   // Busca todos os serviços concluídos
   const allServices = await base44.asServiceRole.entities.ServiceRequest.filter({ status: 'concluido' });
 
-  // Filtra por período
+  // Filtra por período (usa updated_date que é quando o serviço foi concluído)
   const services = allServices.filter(s => {
-    const date = new Date(s.updated_date);
+    const date = new Date(s.updated_date || s.created_date);
     return date >= periodStart && date <= periodEnd;
   });
 
