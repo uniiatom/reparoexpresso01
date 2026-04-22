@@ -319,47 +319,56 @@ export default function AcompanharServico() {
         </Button>
       )}
 
-      {/* Prestador info */}
-      {request.provider_name && (
-        <div className="bg-card rounded-3xl p-5 border border-border mb-5">
-          <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wide font-semibold">Seu prestador</p>
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <span className="text-2xl font-bold text-primary">{request.provider_name.charAt(0)}</span>
-            </div>
-            <div className="flex-1">
-              <p className="font-bold text-foreground">{request.provider_name}</p>
-              {request.provider_phone && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-                  <Phone className="w-3 h-3" /> {request.provider_phone}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {request.provider_phone && (
-                <a href={`https://wa.me/55${request.provider_phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer">
-                  <Button size="sm" variant="outline" className="rounded-xl">WhatsApp</Button>
-                </a>
-              )}
-              {request.provider_id && (
-                <FavoriteButton
-                  providerId={request.provider_id}
-                  providerName={request.provider_name}
-                  providerData={{
-                    name: request.provider_name,
-                    photo_url: null,
-                    rating: null,
-                    city: request.city,
-                    state: request.state,
-                  }}
-                  size="md"
-                  variant="outline"
-                />
-              )}
+      {/* Prestador(es) info */}
+      {(() => {
+        const providers = batchRequests.length >= 2
+          ? batchRequests.filter(r => r.provider_name)
+          : request.provider_name ? [request] : [];
+        if (providers.length === 0) return null;
+        return (
+          <div className="bg-card rounded-3xl p-5 border border-border mb-5">
+            <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wide font-semibold">
+              {providers.length > 1 ? `Seus prestadores (${providers.length})` : 'Seu prestador'}
+            </p>
+            <div className="space-y-4">
+              {providers.map((r, idx) => (
+                <div key={r.id} className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-2xl font-bold text-primary">{r.provider_name.charAt(0)}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-foreground">{r.provider_name}</p>
+                    {providers.length > 1 && (
+                      <p className="text-xs text-primary font-semibold">Prestador {idx + 1}</p>
+                    )}
+                    {r.provider_phone && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Phone className="w-3 h-3" /> {r.provider_phone}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {r.provider_phone && (
+                      <a href={`https://wa.me/55${r.provider_phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer">
+                        <Button size="sm" variant="outline" className="rounded-xl">WhatsApp</Button>
+                      </a>
+                    )}
+                    {r.provider_id && (
+                      <FavoriteButton
+                        providerId={r.provider_id}
+                        providerName={r.provider_name}
+                        providerData={{ name: r.provider_name, photo_url: null, rating: null, city: r.city, state: r.state }}
+                        size="md"
+                        variant="outline"
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Aguardando animation */}
       {request.status === 'aguardando' && (
