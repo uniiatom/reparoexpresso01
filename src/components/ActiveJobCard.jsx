@@ -204,10 +204,14 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
   useEffect(() => {
     if (liveJob?.security_password) return;
     const interval = setInterval(async () => {
-      const updated = await base44.entities.ServiceRequest.get(liveJob.id);
-      if (updated?.security_password) {
-        setLiveJob(updated);
-        clearInterval(interval);
+      try {
+        const updated = await base44.entities.ServiceRequest.get(liveJob.id);
+        if (updated?.security_password) {
+          setLiveJob(updated);
+          clearInterval(interval);
+        }
+      } catch (e) {
+        // Ignora erros de rede temporários no polling
       }
     }, 5000);
     return () => clearInterval(interval);

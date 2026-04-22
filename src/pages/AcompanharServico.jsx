@@ -225,8 +225,8 @@ export default function AcompanharServico() {
         />
       )}
 
-      {/* Senhas de segurança */}
-      {!request.security_password && request.status === 'aguardando' && (
+      {/* Senhas de segurança — mostra para todas as OS do lote */}
+      {batchRequests.every(r => !r.security_password) && request.status === 'aguardando' && (
         <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 mb-5 flex items-center gap-3">
           <div className="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin flex-shrink-0" style={{borderWidth: '3px'}} />
           <div>
@@ -235,21 +235,28 @@ export default function AcompanharServico() {
           </div>
         </div>
       )}
-      {request.security_password && (
+      {batchRequests.some(r => r.security_password) && (
         <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 mb-5 space-y-3">
           <p className="text-xs font-bold text-amber-800 uppercase tracking-wide">🔐 Senhas de segurança</p>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white rounded-2xl p-3 border border-amber-100 text-center">
-              <p className="text-xs text-amber-700 font-semibold mb-1">Senha do prestador</p>
-              <p className="text-2xl font-mono font-black text-amber-900 tracking-widest">{request.security_password}</p>
-              <p className="text-xs text-amber-600 mt-1">Peça ao prestador esta senha antes de autorizar a entrada</p>
+          {batchRequests.filter(r => r.security_password).map((r, idx) => (
+            <div key={r.id} className="space-y-2">
+              {batchRequests.filter(x => x.security_password).length > 1 && (
+                <p className="text-xs font-semibold text-amber-700">Prestador {idx + 1}{r.provider_name ? ` — ${r.provider_name}` : ''}</p>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white rounded-2xl p-3 border border-amber-100 text-center">
+                  <p className="text-xs text-amber-700 font-semibold mb-1">Senha do prestador</p>
+                  <p className="text-2xl font-mono font-black text-amber-900 tracking-widest">{r.security_password}</p>
+                  <p className="text-xs text-amber-600 mt-1">Peça ao prestador esta senha antes de autorizar a entrada</p>
+                </div>
+                <div className="bg-white rounded-2xl p-3 border border-amber-100 text-center">
+                  <p className="text-xs text-amber-700 font-semibold mb-1">Sua senha de validação</p>
+                  <p className="text-2xl font-mono font-black text-amber-900 tracking-widest">{r.validation_password}</p>
+                  <p className="text-xs text-amber-600 mt-1">Informe ao prestador ao chegar</p>
+                </div>
+              </div>
             </div>
-            <div className="bg-white rounded-2xl p-3 border border-amber-100 text-center">
-              <p className="text-xs text-amber-700 font-semibold mb-1">Sua senha de validação</p>
-              <p className="text-2xl font-mono font-black text-amber-900 tracking-widest">{request.validation_password}</p>
-              <p className="text-xs text-amber-600 mt-1">Informe ao prestador ao chegar</p>
-            </div>
-          </div>
+          ))}
         </div>
       )}
 
