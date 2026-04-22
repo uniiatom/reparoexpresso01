@@ -206,28 +206,69 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   const searchProviders = async () => {
-    // retorna Promise para uso no useEffect
     setPhase('searching');
 
-    const [clientCoords, onlineProvidersRaw, activeServices] = await Promise.all([
+    // Para serviço imediato: SEMPRE tenta alertar prestadores ocupados por 5 minutos
+    if (form.modality === 'imediato' && !busyAlertCreated.current) {
+      busyAlertCreated.current = true;
+      const clientCoords = await getClientCoords();
+      const cLat = clientCoords?.lat || null;
+      const cLon = clientCoords?.lon || null;
+      const serviceTypes = Array.isArray(form.service_type) ? form.service_type : [form.service_type];
+
+      try {
+        const result = await base44.functions.invoke('findNearbyBusyProviders', {
+          service_request_id: 'temp_request_id',
+          client_latitude: cLat,
+          client_longitude: cLon,
+          service_type: serviceTypes[0],
+          client_name: form.client_name || 'Cliente',
+        });
+
+        // Se foram criados alertas, aguarda respostas por 5 minutos
+        if (result.data?.alerts_created > 0) {
+          const waitTime = 300; // 5 minutos
+          setPhase('aguardando_respostas');
+          setWaitingSeconds(waitTime);
+
+          let remaining = waitTime;
+          waitingTimerRef.current = setInterval(() => {
+            remaining--;
+            setWaitingSeconds(remaining);
+            if (remaining <= 0) {
+              clearInterval(waitingTimerRef.current);
+              if (busyAlertsUnsubscribeRef.current) busyAlertsUnsubscribeRef.current();
+              setPhase('none');
+            }
+          }, 1000);
+
+          busyAlertsUnsubscribeRef.current = base44.entities.ProviderBusyAlert.subscribe((event) => {
+            if (event.type === 'update' && event.data?.status === 'respondido') {
+              clearInterval(waitingTimerRef.current);
+              if (busyAlertsUnsubscribeRef.current) busyAlertsUnsubscribeRef.current();
+              handleConfirmImmediate();
+            }
+          });
+          return; // Aguarda respostas, não abre agenda ainda
+        }
+      } catch (e) {
+        console.error('Erro ao buscar prestadores próximos:', e);
+      }
+    }
+
+    // Fallback: procura prestadores online para mostrar disponível
+    const [clientCoords, onlineProvidersRaw] = await Promise.all([
       getClientCoords(),
       base44.entities.Provider.filter({ is_online: true, is_approved: true }),
-      base44.entities.ServiceRequest.filter({ status: 'em_andamento' }),
     ]);
-
-    // Filtra prestadores que NÃO têm OSs em andamento
-    const activeProviderIds = new Set(activeServices.map(s => s.provider_id));
-    const onlineProviders = onlineProvidersRaw.filter(p => !activeProviderIds.has(p.id));
 
     const clientLat = clientCoords?.lat || null;
     const clientLon = clientCoords?.lon || null;
-    console.log('[search] clientCoords:', clientLat, clientLon);
 
     const enrichWithDistance = (providers) => {
       return providers.map(p => {
         const coords = getProviderCoords(p);
         const dist = calcDistance(clientLat, clientLon, coords?.lat, coords?.lon);
-        console.log('[search] prestador:', p.name, '| coords:', coords, '| dist:', dist);
         return { ...p, distance: dist };
       }).sort((a, b) => {
         if (a.distance === null && b.distance === null) return 0;
@@ -237,83 +278,19 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       });
     };
 
-    if (onlineProviders.length > 0) {
-      const sorted = enrichWithDistance(onlineProviders);
-      const best = sorted[0];
-      setNearestProvider(best);
-      // Se precisa de 2 prestadores, pega o segundo também
+    if (onlineProvidersRaw.length > 0) {
+      const sorted = enrichWithDistance(onlineProvidersRaw);
+      setNearestProvider(sorted[0]);
       if (form.requires_two_providers && sorted.length > 1) {
         setSecondProvider(sorted[1]);
       }
       setPhase('found');
-      // Calcula ETA via OSRM assincronamente
-      const pCoords = getProviderCoords(best);
-      if (pCoords && clientLat && clientLon) {
-        estMinutesOSRM(pCoords.lat, pCoords.lon, clientLat, clientLon).then(setEstMin);
-      }
       return;
     }
 
-    // Nenhum online — busca todos aprovados e tenta criar alertas
-    const [allProviders, unavails] = await Promise.all([
-      base44.entities.Provider.filter({ is_approved: true }),
-      base44.entities.ProviderUnavailability.list(),
-    ]);
+    // Nenhum disponível: abre agenda
+    const unavails = await base44.entities.ProviderUnavailability.list();
     setAllUnavailabilities(unavails || []);
-
-    if (allProviders.length > 0) {
-      const sorted = enrichWithDistance(allProviders);
-      setNearestProvider(sorted[0]);
-
-      // Para serviço imediato, tenta buscar prestadores próximos para responder ao alerta
-      if (form.modality === 'imediato' && !busyAlertCreated.current) {
-        busyAlertCreated.current = true;
-        const clientCoords2 = await getClientCoords();
-        const cLat = clientCoords2?.lat || null;
-        const cLon = clientCoords2?.lon || null;
-        const serviceTypes = Array.isArray(form.service_type) ? form.service_type : [form.service_type];
-
-        try {
-          const result = await base44.functions.invoke('findNearbyBusyProviders', {
-            service_request_id: 'temp_request_id',
-            client_latitude: cLat,
-            client_longitude: cLon,
-            service_type: serviceTypes[0],
-            client_name: form.client_name || 'Cliente',
-          });
-
-          // Se foram criados alertas, aguarda respostas por 5 minutos
-          if (result.data?.alerts_created > 0) {
-            const waitTime = 300; // 5 minutos
-            setPhase('aguardando_respostas');
-            setWaitingSeconds(waitTime);
-
-            let remaining = waitTime;
-            waitingTimerRef.current = setInterval(() => {
-              remaining--;
-              setWaitingSeconds(remaining);
-              if (remaining <= 0) {
-                clearInterval(waitingTimerRef.current);
-                if (busyAlertsUnsubscribeRef.current) busyAlertsUnsubscribeRef.current();
-                setPhase('none');
-              }
-            }, 1000);
-
-            busyAlertsUnsubscribeRef.current = base44.entities.ProviderBusyAlert.subscribe((event) => {
-              if (event.type === 'update' && event.data?.status === 'respondido') {
-                clearInterval(waitingTimerRef.current);
-                if (busyAlertsUnsubscribeRef.current) busyAlertsUnsubscribeRef.current();
-                handleConfirmImmediate();
-              }
-            });
-            return; // Aguarda respostas, não abre agenda ainda
-          }
-        } catch (e) {
-          console.error('Erro ao buscar prestadores próximos:', e);
-        }
-      }
-    }
-
     setPhase('none');
   };
 
