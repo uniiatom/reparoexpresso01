@@ -199,15 +199,10 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     // retorna Promise para uso no useEffect
     setPhase('searching');
 
-    const [clientCoords, onlineProvidersRaw, activeServices] = await Promise.all([
+    const [clientCoords, onlineProviders] = await Promise.all([
       getClientCoords(),
       base44.entities.Provider.filter({ is_online: true, is_approved: true }),
-      base44.entities.ServiceRequest.filter({ status: 'em_andamento' }),
     ]);
-
-    // Filtra prestadores que NÃO têm OSs em andamento
-    const activeProviderIds = new Set(activeServices.map(s => s.provider_id));
-    const onlineProviders = onlineProvidersRaw.filter(p => !activeProviderIds.has(p.id));
 
     const clientLat = clientCoords?.lat || null;
     const clientLon = clientCoords?.lon || null;
@@ -255,28 +250,12 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       const sorted = enrichWithDistance(allProviders);
       setNearestProvider(sorted[0]);
 
-      // Busca prestadores próximos em execução que podem responder ao alerta
+      // Cria BusyAlert e notifica os prestadores mais próximos (até 5km, max 5 prestadores)
       if (form.modality !== 'agendado' && !busyAlertCreated.current) {
         busyAlertCreated.current = true;
         const clientCoords2 = await getClientCoords();
         const cLat = clientCoords2?.lat || null;
         const cLon = clientCoords2?.lon || null;
-        const serviceTypes = Array.isArray(form.service_type) ? form.service_type : [form.service_type];
-
-        // Chama backend function para criar ProviderBusyAlerts (prestadores em execução próximos)
-        try {
-          await base44.functions.invoke('findNearbyBusyProviders', {
-            service_request_id: 'temp_request_id', // Será gerado na criação efetiva
-            client_latitude: cLat,
-            client_longitude: cLon,
-            service_type: serviceTypes[0],
-            client_name: form.client_name || 'Cliente',
-          });
-        } catch (e) {
-          console.error('Erro ao buscar prestadores ocupados próximos:', e);
-        }
-
-        // Cria BusyAlert também (sistema antigo de notificação em tempo real)
         const nearbyOccupied = sorted
           .filter(p => {
             if (!p.latitude || !p.longitude) return false;
@@ -287,6 +266,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
 
         if (nearbyOccupied.length > 0) {
           const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min
+          const serviceTypes = Array.isArray(form.service_type) ? form.service_type : [form.service_type];
           const newAlert = await base44.entities.BusyAlert.create({
             client_name: form.client_name || 'Cliente',
             client_phone: form.client_phone || '',
