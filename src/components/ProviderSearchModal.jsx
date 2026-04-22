@@ -234,7 +234,18 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       });
     };
 
-    // Busca todos aprovados e serviços em execução para criar BusyAlert (sequential para evitar rate limit)
+    // Se tem prestadores online disponíveis, mostra imediatamente
+    if (onlineProviders.length > 0) {
+      const sorted = enrichWithDistance(onlineProviders);
+      setNearestProvider(sorted[0]);
+      if (form.requires_two_providers && sorted.length > 1) {
+        setSecondProvider(sorted[1]);
+      }
+      setPhase('found');
+      return; // Sai aqui, não precisa criar BusyAlert
+    }
+
+    // Nenhum prestador disponível agora - busca aprovados e em execução para BusyAlert
     const allProviders = await base44.entities.Provider.filter({ is_approved: true });
     const unavails = await base44.entities.ProviderUnavailability.list();
     const activeRequests = await base44.entities.ServiceRequest.filter({ status: 'em_andamento' });
