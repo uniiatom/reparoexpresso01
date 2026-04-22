@@ -17,6 +17,7 @@ import ProviderDetailsModal from '../components/admin/ProviderDetailsModal';
 import AdminReserveFundDashboard from '../components/AdminReserveFundDashboard';
 import InvoicesAdmin from '../components/admin/InvoicesAdmin';
 import BiweeklyClosingAdmin from '../components/admin/BiweeklyClosingAdmin';
+import ClientConsultaAdmin from '../components/admin/ClientConsultaAdmin';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -153,6 +154,9 @@ export default function AdminPanel() {
           </TabsTrigger>
           <TabsTrigger value="fechamento">
             📆 Fechamento
+          </TabsTrigger>
+          <TabsTrigger value="consulta-cliente">
+            🔍 Consulta Cliente
           </TabsTrigger>
         </TabsList>
 
@@ -309,6 +313,10 @@ export default function AdminPanel() {
 
         <TabsContent value="fechamento">
           <BiweeklyClosingAdmin />
+        </TabsContent>
+
+        <TabsContent value="consulta-cliente">
+          <ClientConsultaAdmin />
         </TabsContent>
       </Tabs>
 
