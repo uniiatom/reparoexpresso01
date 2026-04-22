@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Upload, FileText, CheckCircle2, DollarSign, Download, Trash2, ChevronRight, Calendar } from 'lucide-react';
+import { Upload, FileText, Download, Trash2, ChevronRight, Calendar, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -18,6 +18,8 @@ const STATUS_CONFIG = {
 export default function InvoiceManager({ providerId, providerName }) {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [prefillAmount, setPrefillAmount] = useState('');
+  const [prefillDesc, setPrefillDesc] = useState('');
   const [formData, setFormData] = useState({
     invoice_number: '',
     amount: '',
@@ -26,12 +28,30 @@ export default function InvoiceManager({ providerId, providerName }) {
     file_url: '',
   });
   const [uploading, setUploading] = useState(false);
+  const [activeClosingId, setActiveClosingId] = useState(null);
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ['invoices', providerId],
     queryFn: () => base44.entities.Invoice.filter({ provider_id: providerId }, '-created_date', 50),
     enabled: !!providerId,
   });
+
+  const { data: closings = [] } = useQuery({
+    queryKey: ['my-closings', providerId],
+    queryFn: () => base44.entities.BiweeklyClosing.filter({ provider_id: providerId }, '-created_date', 20),
+    enabled: !!providerId,
+  });
+
+  const linkInvoiceMutation = useMutation({
+    mutationFn: ({ closingId, invoiceId }) =>
+      base44.entities.BiweeklyClosing.update(closingId, { status: 'nota_enviada', invoice_id: invoiceId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-closings', providerId] });
+      toast.success('Nota vinculada ao fechamento!');
+    },
+  });
+
+  const pendingClosings = closings.filter(c => c.status === 'pendente_nota');
 
   const createInvoiceMutation = useMutation({
     mutationFn: (data) =>
@@ -41,9 +61,15 @@ export default function InvoiceManager({ providerId, providerName }) {
         ...data,
         amount: parseFloat(data.amount),
       }),
-    onSuccess: () => {
+    onSuccess: (newInvoice, vars) => {
       queryClient.invalidateQueries({ queryKey: ['invoices', providerId] });
+      // Se veio de um fechamento pendente, vincula automaticamente
+      if (vars._closingId) {
+        linkInvoiceMutation.mutate({ closingId: vars._closingId, invoiceId: newInvoice.id });
+      }
       setFormData({ invoice_number: '', amount: '', issue_date: '', description: '', file_url: '' });
+      setPrefillAmount('');
+      setPrefillDesc('');
       setShowForm(false);
       toast.success('Nota fiscal enviada com sucesso!');
     },
@@ -87,12 +113,12 @@ export default function InvoiceManager({ providerId, providerName }) {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (closingId) => {
     if (!formData.invoice_number || !formData.amount || !formData.issue_date) {
       toast.error('Preencha número, valor e data');
       return;
     }
-    createInvoiceMutation.mutate(formData);
+    createInvoiceMutation.mutate({ ...formData, _closingId: closingId || null });
   };
 
   const stats = {
@@ -111,8 +137,58 @@ export default function InvoiceManager({ providerId, providerName }) {
     );
   }
 
+  const openFormForClosing = (closing) => {
+    setActiveClosingId(closing.id);
+    setFormData({
+      invoice_number: '',
+      amount: String(closing.net_amount),
+      issue_date: new Date().toISOString().split('T')[0],
+      description: `Serviços prestados no período ${closing.period_label}`,
+      file_url: '',
+    });
+    setShowForm(true);
+  };
+
   return (
     <div className="space-y-4">
+
+      {/* Fechamentos pendentes de nota */}
+      {pendingClosings.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-bold text-foreground flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-orange-500" />
+            Fechamentos aguardando sua nota fiscal
+          </p>
+          {pendingClosings.map(closing => (
+            <motion.div
+              key={closing.id}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-orange-50 border-2 border-orange-300 rounded-2xl p-4 space-y-2"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-bold text-orange-900 text-sm">📅 {closing.period_label}</p>
+                  <p className="text-xs text-orange-700">{closing.total_services} serviço(s) · Bruto R$ {closing.gross_amount?.toFixed(2)}</p>
+                  <p className="text-xs text-orange-700">Desconto fundo (-3%): R$ {closing.reserve_fund_deduction?.toFixed(2)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-orange-600 font-semibold">Valor a receber</p>
+                  <p className="text-xl font-black text-orange-900">R$ {closing.net_amount?.toFixed(2)}</p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                className="w-full rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xs"
+                onClick={() => openFormForClosing(closing)}
+              >
+                <Upload className="w-3 h-3 mr-1" /> Emitir nota para este fechamento
+              </Button>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3">
@@ -211,7 +287,7 @@ export default function InvoiceManager({ providerId, providerName }) {
             </Button>
             <Button
               className="flex-1 bg-primary text-primary-foreground font-semibold text-sm"
-              onClick={handleSubmit}
+              onClick={() => handleSubmit(activeClosingId)}
               disabled={createInvoiceMutation.isPending}
             >
               {createInvoiceMutation.isPending ? 'Enviando...' : 'Enviar Nota'}
