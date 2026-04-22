@@ -199,10 +199,15 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     // retorna Promise para uso no useEffect
     setPhase('searching');
 
-    const [clientCoords, onlineProviders] = await Promise.all([
+    const [clientCoords, onlineProvidersRaw, activeServices] = await Promise.all([
       getClientCoords(),
       base44.entities.Provider.filter({ is_online: true, is_approved: true }),
+      base44.entities.ServiceRequest.filter({ status: 'em_andamento' }),
     ]);
+
+    // Filtra prestadores que NÃO têm OSs em andamento
+    const activeProviderIds = new Set(activeServices.map(s => s.provider_id));
+    const onlineProviders = onlineProvidersRaw.filter(p => !activeProviderIds.has(p.id));
 
     const clientLat = clientCoords?.lat || null;
     const clientLon = clientCoords?.lon || null;
