@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,8 @@ export default function BiweeklyClosingAdmin() {
   const queryClient = useQueryClient();
   const [uploadingId, setUploadingId] = useState(null);
   const [generatingClosings, setGeneratingClosings] = useState(false);
+
+  const fileInputRefs = useRef({});
 
   const { data: closings = [], isLoading } = useQuery({
     queryKey: ['all-closings'],
@@ -171,27 +173,26 @@ export default function BiweeklyClosingAdmin() {
                 {closing.status === 'nota_enviada' && (
                   <div className="flex gap-2 flex-wrap">
                     {/* Pagar + Comprovante */}
-                    <label className="flex-1 cursor-pointer">
-                      <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        className="hidden"
-                        disabled={isUploading}
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleMarkPaidWithProof(closing.id, file);
-                          e.target.value = '';
-                        }}
-                      />
-                      <div className={cn(
-                        'flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition border cursor-pointer',
-                        'bg-green-600 hover:bg-green-700 text-white border-green-600',
-                        isUploading && 'opacity-50 pointer-events-none'
-                      )}>
-                        <Upload className="w-3 h-3" />
-                        {isUploading ? 'Enviando...' : 'Pagar + Comprovante'}
-                      </div>
-                    </label>
+                    <input
+                      ref={el => fileInputRefs.current[`pay_${closing.id}`] = el}
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleMarkPaidWithProof(closing.id, file);
+                        e.target.value = '';
+                      }}
+                    />
+                    <Button
+                      size="sm"
+                      className="flex-1 rounded-lg text-xs bg-green-600 hover:bg-green-700 text-white"
+                      disabled={isUploading}
+                      onClick={() => fileInputRefs.current[`pay_${closing.id}`]?.click()}
+                    >
+                      <Upload className="w-3 h-3 mr-1" />
+                      {isUploading ? 'Enviando...' : 'Pagar + Comprovante'}
+                    </Button>
 
                     {/* Marcar pago sem comprovante */}
                     <Button
@@ -208,27 +209,29 @@ export default function BiweeklyClosingAdmin() {
 
                 {/* Pago mas sem comprovante — permitir anexar */}
                 {closing.status === 'pago' && !closing.payment_proof_url && (
-                  <label className="cursor-pointer">
+                  <>
                     <input
+                      ref={el => fileInputRefs.current[`proof_${closing.id}`] = el}
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
                       className="hidden"
-                      disabled={isUploading}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) handleUploadProof(closing.id, file);
                         e.target.value = '';
                       }}
                     />
-                    <div className={cn(
-                      'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition border cursor-pointer w-fit',
-                      'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-300',
-                      isUploading && 'opacity-50 pointer-events-none'
-                    )}>
-                      <Upload className="w-3 h-3" />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isUploading}
+                      onClick={() => fileInputRefs.current[`proof_${closing.id}`]?.click()}
+                      className="rounded-lg text-xs border-blue-300 text-blue-700 hover:bg-blue-50"
+                    >
+                      <Upload className="w-3 h-3 mr-1" />
                       {isUploading ? 'Enviando...' : 'Anexar comprovante'}
-                    </div>
-                  </label>
+                    </Button>
+                  </>
                 )}
               </div>
             );
