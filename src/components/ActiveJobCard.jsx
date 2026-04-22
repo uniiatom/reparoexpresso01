@@ -195,16 +195,33 @@ function useLocalArrivalMinutes(job, active) {
 
 export default function ActiveJobCard({ job, providerName, onUpdateStatus, onShowChecklist, onShowAdditionalPoint, isPending }) {
   const [validationInput, setValidationInput] = useState('');
+  const [liveJob, setLiveJob] = useState(job);
+
+  // Sincroniza liveJob quando o job externo muda
+  useEffect(() => { setLiveJob(job); }, [job]);
+
+  // Polling de fallback: se a senha ainda não chegou, recarrega a cada 5s até aparecer
+  useEffect(() => {
+    if (liveJob?.security_password) return;
+    const interval = setInterval(async () => {
+      const updated = await base44.entities.ServiceRequest.get(liveJob.id);
+      if (updated?.security_password) {
+        setLiveJob(updated);
+        clearInterval(interval);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [liveJob?.id, liveJob?.security_password]);
 
   // Transmite localização GPS e recalcula tempo de chegada em tempo real quando a_caminho
-  useProviderLocationBroadcast(job, job.status === 'a_caminho');
+  useProviderLocationBroadcast(liveJob, liveJob.status === 'a_caminho');
   // Calcula tempo de chegada localmente via GPS (exibido no card sem depender do banco)
-  const localArrivalMinutes = useLocalArrivalMinutes(job, ['aceito', 'a_caminho'].includes(job.status));
+  const localArrivalMinutes = useLocalArrivalMinutes(liveJob, ['aceito', 'a_caminho'].includes(liveJob.status));
   // Alerta sonoro quando prazo de chegada está vencendo
-  useArrivalAlert(job);
+  useArrivalAlert(liveJob);
 
-  const isWaiting = job.status === WAITING_STATUS;
-  const currentStepIndex = isWaiting ? 2 : STEPS.findIndex(s => s.status === job.status); // em_espera = parado no em_andamento
+  const isWaiting = liveJob.status === WAITING_STATUS;
+  const currentStepIndex = isWaiting ? 2 : STEPS.findIndex(s => s.status === liveJob.status); // em_espera = parado no em_andamento
   const currentStep = isWaiting
     ? { label: 'Em Espera', icon: PauseCircle, color: 'text-yellow-700 bg-yellow-100' }
     : STEPS[currentStepIndex];
@@ -213,13 +230,13 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
   const handleNextStep = () => {
     const nextStep = STEPS[currentStepIndex + 1];
     if (!nextStep) return;
-    onUpdateStatus({ id: job.id, status: nextStep.status });
+    onUpdateStatus({ id: liveJob.id, status: nextStep.status });
     setValidationInput('');
   };
 
   // Botão de ação principal por etapa
   const renderActions = () => {
-    if (job.status === 'aceito') {
+    if (liveJob.status === 'aceito') {
       return (
         <Button
           className="w-full rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold h-12"
@@ -231,9 +248,9 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
       );
     }
 
-    if (job.status === 'a_caminho') {
-      const needsValidation = !!job.validation_password;
-      const validationOk = !needsValidation || validationInput === job.validation_password;
+    if (liveJob.status === 'a_caminho') {
+      const needsValidation = !!liveJob.validation_password;
+      const validationOk = !needsValidation || validationInput === liveJob.validation_password;
 
       return (
         <div className="space-y-3">
@@ -267,7 +284,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
       );
     }
 
-    if (job.status === 'em_andamento') {
+    if (liveJob.status === 'em_andamento') {
       return (
         <div className="space-y-2">
           <div className="flex gap-2">
@@ -301,13 +318,13 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
             variant="outline"
             className="w-full rounded-xl border-yellow-500 text-yellow-700 hover:bg-yellow-50"
             disabled={isPending}
-            onClick={() => onUpdateStatus({ id: job.id, status: WAITING_STATUS })}
+            onClick={() => onUpdateStatus({ id: liveJob.id, status: WAITING_STATUS })}
           >
             <PauseCircle className="w-4 h-4 mr-1" /> Colocar em Espera (cliente buscar peça)
           </Button>
-          {job.additional_points?.length > 0 && (
+          {liveJob.additional_points?.length > 0 && (
             <p className="text-xs text-muted-foreground text-center">
-              {job.additional_points.length} ponto(s) adicional(is) registrado(s)
+              {liveJob.additional_points.length} ponto(s) adicional(is) registrado(s)
             </p>
           )}
         </div>
@@ -315,7 +332,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
     }
 
     // Serviço em espera — aguardando cliente buscar peça
-    if (job.status === WAITING_STATUS) {
+    if (liveJob.status === WAITING_STATUS) {
       return (
         <div className="space-y-3">
           <div className="bg-yellow-50 border border-yellow-300 rounded-2xl p-4 text-center space-y-1">
@@ -327,7 +344,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           <Button
             className="w-full rounded-2xl bg-primary text-primary-foreground font-bold h-12"
             disabled={isPending}
-            onClick={() => onUpdateStatus({ id: job.id, status: 'em_andamento' })}
+            onClick={() => onUpdateStatus({ id: liveJob.id, status: 'em_andamento' })}
           >
             <PlayCircle className="w-4 h-4 mr-2" /> Retomar Execução
           </Button>
@@ -380,17 +397,17 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
       {/* Informações do serviço */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <p className="font-bold text-foreground text-lg">{SERVICE_LABELS[job.service_type] || job.service_type}</p>
-          {job.service_number && (
+          <p className="font-bold text-foreground text-lg">{SERVICE_LABELS[liveJob.service_type] || liveJob.service_type}</p>
+          {liveJob.service_number && (
             <span className="text-xs font-mono font-bold text-primary/70 bg-primary/10 px-2 py-0.5 rounded-lg">
-              {job.service_number}
+              {liveJob.service_number}
             </span>
           )}
         </div>
-        <p className="text-sm text-muted-foreground">{job.description}</p>
-        {job.problem_photos?.length > 0 && (
+        <p className="text-sm text-muted-foreground">{liveJob.description}</p>
+        {liveJob.problem_photos?.length > 0 && (
           <div className="mt-2 flex gap-2 flex-wrap">
-            {job.problem_photos.map((url, i) => (
+            {liveJob.problem_photos.map((url, i) => (
               <a key={i} href={url} target="_blank" rel="noreferrer">
                 <img src={url} alt={`Foto ${i + 1}`} className="w-20 h-20 object-cover rounded-xl border border-border" />
               </a>
@@ -398,20 +415,20 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           </div>
         )}
         <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-          <MapPin className="w-3.5 h-3.5" /> {job.address}{job.city ? `, ${job.city}` : ''}
+          <MapPin className="w-3.5 h-3.5" /> {liveJob.address}{liveJob.city ? `, ${liveJob.city}` : ''}
         </p>
         <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-          <Phone className="w-3.5 h-3.5" /> {job.client_name} · {job.client_phone}
+          <Phone className="w-3.5 h-3.5" /> {liveJob.client_name} · {liveJob.client_phone}
         </p>
 
         {/* ETA quando aceito — usa o valor OSRM calculado no momento do aceite */}
-        {job.status === 'aceito' && (() => {
-          const mins = localArrivalMinutes ?? job.estimated_arrival_minutes;
+        {liveJob.status === 'aceito' && (() => {
+          const mins = localArrivalMinutes ?? liveJob.estimated_arrival_minutes;
           if (!mins) return null;
-          const pLat = job.provider_latitude;
-          const pLon = job.provider_longitude;
-          const cLat = job.client_latitude || job.latitude;
-          const cLon = job.client_longitude || job.longitude;
+          const pLat = liveJob.provider_latitude;
+          const pLon = liveJob.provider_longitude;
+          const cLat = liveJob.client_latitude || liveJob.latitude;
+          const cLon = liveJob.client_longitude || liveJob.longitude;
           const dist = calcDistance(pLat, pLon, cLat, cLon);
           return (
             <div className="mt-3 bg-blue-50 border border-blue-200 rounded-2xl p-3 flex items-center gap-3">
@@ -425,7 +442,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
             </div>
           );
         })()}
-        {job.status === 'a_caminho' && localArrivalMinutes != null && (
+        {liveJob.status === 'a_caminho' && localArrivalMinutes != null && (
           <div className="mt-3 bg-orange-50 border border-orange-200 rounded-2xl p-3 flex items-center gap-3">
             <span className="text-2xl">🚗</span>
             <div>
@@ -436,16 +453,16 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
         )}
 
         {/* Localização do cliente — disponível apenas a partir do deslocamento */}
-        {['a_caminho', 'em_andamento', 'concluido'].includes(job.status) && (() => {
-          const lat = job.client_latitude || job.latitude;
-          const lng = job.client_longitude || job.longitude;
+        {['a_caminho', 'em_andamento', 'concluido'].includes(liveJob.status) && (() => {
+          const lat = liveJob.client_latitude || liveJob.latitude;
+          const lng = liveJob.client_longitude || liveJob.longitude;
           if (!lat || !lng) return (
             <div className="mt-3 bg-orange-50 border border-orange-200 rounded-2xl p-3 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-orange-500 flex-shrink-0" />
               <p className="text-xs text-orange-700 font-semibold">Localização do cliente não disponível ainda.</p>
             </div>
           );
-          const isLive = !!(job.client_latitude && job.client_longitude);
+          const isLive = !!(liveJob.client_latitude && liveJob.client_longitude);
           return (
             <div className="mt-3 rounded-2xl overflow-hidden border border-border">
               <div className={cn("flex items-center gap-2 px-3 py-2 text-xs font-semibold", isLive ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700")}>
@@ -463,8 +480,8 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
                   <Marker position={[lat, lng]} icon={clientIcon}>
                     <Popup>Cliente</Popup>
                   </Marker>
-                  {job.provider_latitude && job.provider_longitude && (
-                    <Marker position={[job.provider_latitude, job.provider_longitude]} icon={providerIcon}>
+                  {liveJob.provider_latitude && liveJob.provider_longitude && (
+                    <Marker position={[liveJob.provider_latitude, liveJob.provider_longitude]} icon={providerIcon}>
                       <Popup>Você</Popup>
                     </Marker>
                   )}
@@ -477,19 +494,25 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
       </div>
 
       {/* Senha de identificação */}
-      {job.security_password && (
+      {liveJob.security_password ? (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-center">
-          <p className="text-xs text-amber-700 font-semibold">Sua senha de identificação</p>
-          <p className="text-2xl font-mono font-black text-amber-900 tracking-widest mt-1">{job.security_password}</p>
+          <p className="text-xs text-amber-700 font-semibold">🔐 Sua senha de identificação</p>
+          <p className="text-3xl font-mono font-black text-amber-900 tracking-widest mt-1">{liveJob.security_password}</p>
           <p className="text-xs text-amber-600 mt-1">Mostre esta senha ao cliente antes de entrar</p>
+        </div>
+      ) : (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-center flex items-center justify-center gap-2">
+          <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+          <p className="text-xs text-amber-700 font-semibold">Gerando senha de segurança...</p>
         </div>
       )}
 
       {/* Chat */}
-      <ServiceChat requestId={job.id} senderRole="prestador" senderName={providerName} />
+      <ServiceChat requestId={liveJob.id} senderRole="prestador" senderName={providerName} />
 
       {/* Ações */}
       {renderActions()}
     </div>
   );
+
 }
