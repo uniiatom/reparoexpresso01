@@ -1,0 +1,66 @@
+{
+  "name": "ProviderBusyAlert",
+  "type": "object",
+  "properties": {
+    "service_request_id": {
+      "type": "string",
+      "description": "ID da OS que o cliente abriu"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Nome do cliente solicitante"
+    },
+    "client_latitude": {
+      "type": "number",
+      "description": "Latitude do cliente"
+    },
+    "client_longitude": {
+      "type": "number",
+      "description": "Longitude do cliente"
+    },
+    "provider_id": {
+      "type": "string",
+      "description": "ID do prestador em execu\u00e7\u00e3o"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Nome do prestador"
+    },
+    "service_type": {
+      "type": "string",
+      "description": "Tipo de servi\u00e7o solicitado"
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "Dist\u00e2ncia entre prestador e cliente"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "notificado",
+        "respondido",
+        "expirado"
+      ],
+      "default": "notificado",
+      "description": "Status do alerta"
+    },
+    "finish_time_minutes": {
+      "type": "number",
+      "description": "Em quantos minutos o prestador termina o atendimento atual"
+    },
+    "responded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora que o prestador respondeu ao alerta"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora de expira\u00e7\u00e3o do alerta (15 min ap\u00f3s cria\u00e7\u00e3o)"
+    }
+  },
+  "required": [
+    "service_request_id",
+    "provider_id"
+  ]
+}

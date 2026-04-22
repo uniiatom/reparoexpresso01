@@ -250,12 +250,28 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       const sorted = enrichWithDistance(allProviders);
       setNearestProvider(sorted[0]);
 
-      // Cria BusyAlert e notifica os prestadores mais próximos (até 5km, max 5 prestadores)
+      // Busca prestadores próximos em execução que podem responder ao alerta
       if (form.modality !== 'agendado' && !busyAlertCreated.current) {
         busyAlertCreated.current = true;
         const clientCoords2 = await getClientCoords();
         const cLat = clientCoords2?.lat || null;
         const cLon = clientCoords2?.lon || null;
+        const serviceTypes = Array.isArray(form.service_type) ? form.service_type : [form.service_type];
+
+        // Chama backend function para criar ProviderBusyAlerts (prestadores em execução próximos)
+        try {
+          await base44.functions.invoke('findNearbyBusyProviders', {
+            service_request_id: 'temp_request_id', // Será gerado na criação efetiva
+            client_latitude: cLat,
+            client_longitude: cLon,
+            service_type: serviceTypes[0],
+            client_name: form.client_name || 'Cliente',
+          });
+        } catch (e) {
+          console.error('Erro ao buscar prestadores ocupados próximos:', e);
+        }
+
+        // Cria BusyAlert também (sistema antigo de notificação em tempo real)
         const nearbyOccupied = sorted
           .filter(p => {
             if (!p.latitude || !p.longitude) return false;
@@ -266,7 +282,6 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
 
         if (nearbyOccupied.length > 0) {
           const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min
-          const serviceTypes = Array.isArray(form.service_type) ? form.service_type : [form.service_type];
           const newAlert = await base44.entities.BusyAlert.create({
             client_name: form.client_name || 'Cliente',
             client_phone: form.client_phone || '',
