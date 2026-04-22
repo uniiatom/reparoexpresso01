@@ -343,23 +343,20 @@ export default function InvoiceManager({ providerId, providerName }) {
                   </p>
                 </div>
 
-                {/* Fluxo de status */}
+                {/* Status apenas visual para o prestador */}
                 <div className="flex items-center gap-1 text-xs bg-muted rounded-lg p-2">
                   {['enviada', 'recebida', 'paga', 'baixada'].map((s, i) => (
                     <React.Fragment key={s}>
-                      <button
-                        onClick={() => updateStatusMutation.mutate({ id: invoice.id, status: s })}
-                        disabled={updateStatusMutation.isPending}
+                      <span
                         className={cn(
-                          'flex-1 py-1 px-2 rounded font-semibold transition-all text-xs',
+                          'flex-1 py-1 px-2 rounded font-semibold text-center text-xs',
                           invoice.status === s
                             ? STATUS_CONFIG[s].color + ' border border-current'
-                            : 'text-muted-foreground hover:bg-muted/80'
+                            : 'text-muted-foreground'
                         )}
-                        title={`Marcar como ${STATUS_CONFIG[s].label}`}
                       >
                         {STATUS_CONFIG[s].icon}
-                      </button>
+                      </span>
                       {i < 3 && <ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />}
                     </React.Fragment>
                   ))}
