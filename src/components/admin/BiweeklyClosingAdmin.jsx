@@ -266,7 +266,7 @@ export default function BiweeklyClosingAdmin() {
                             }}
                           />
                           <span className={cn(
-                            'inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors',
+                            'inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold border border-blue-300 text-blue-600 hover:bg-blue-50 cursor-pointer transition-colors',
                             uploadingProof === closing.id && 'opacity-60 pointer-events-none'
                           )}>
                             {uploadingProof === closing.id
