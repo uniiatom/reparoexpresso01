@@ -236,6 +236,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       base44.entities.ProviderUnavailability.list(),
     ]);
     setAllUnavailabilities(unavails || []);
+    console.log('[search] Total de prestadores aprovados:', allProviders.length);
 
     // Cria BusyAlert para prestadores em execução (em_andamento) próximos ao cliente
     if (form.modality !== 'agendado' && !busyAlertCreated.current && allProviders.length > 0) {
@@ -243,16 +244,24 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       const clientCoords2 = await getClientCoords();
       const cLat = clientCoords2?.lat || null;
       const cLon = clientCoords2?.lon || null;
+      console.log('[busyalert] clientCoords:', cLat, cLon);
       
       const sorted = enrichWithDistance(allProviders);
       const nearbyOccupied = sorted
         .filter(p => {
-          if (!p.latitude || !p.longitude) return false;
+          if (!p.latitude || !p.longitude) {
+            console.log('[busyalert] prestador sem coords:', p.name, '| status:', p.status);
+            return false;
+          }
           const d = calcDistance(cLat, cLon, p.latitude, p.longitude);
+          const isOccupied = p.status === 'em_andamento';
+          console.log('[busyalert] prestador:', p.name, '| status:', p.status, '| dist:', d?.toFixed(1), '| qualifica:', isOccupied && d <= 15);
           // Inclui prestadores em execução (em_andamento) que estejam dentro de 15km
-          return d !== null && d <= 15 && p.status === 'em_andamento';
+          return d !== null && d <= 15 && isOccupied;
         })
         .slice(0, 5);
+
+      console.log('[busyalert] nearbyOccupied:', nearbyOccupied.length, nearbyOccupied.map(p => p.name));
 
       if (nearbyOccupied.length > 0) {
         const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min
@@ -270,7 +279,10 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
           responses: [],
           expires_at: expiresAt,
         });
+        console.log('[busyalert] Alerta criado:', newAlert.id, 'com notificações para:', nearbyOccupied.length, 'prestadores');
         setBusyAlertId(newAlert.id);
+      } else {
+        console.log('[busyalert] Nenhum prestador em execução próximo');
       }
     }
 

@@ -66,9 +66,19 @@ export default function BusyAlertBanner({ provider }) {
       if (relevant.length > 0) playBeep();
     };
 
+    // Carrega imediatamente
     loadAlerts();
+    
+    // Subscribe para mudanças em tempo real
     const unsub = base44.entities.BusyAlert.subscribe(() => loadAlerts());
-    return unsub;
+    
+    // Polling a cada 2 segundos como fallback
+    const pollInterval = setInterval(loadAlerts, 2000);
+    
+    return () => {
+      unsub();
+      clearInterval(pollInterval);
+    };
   }, [provider?.id, provider?.is_online, dismissed]);
 
   const playBeep = () => {
