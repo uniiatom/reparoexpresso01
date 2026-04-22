@@ -207,10 +207,11 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     // retorna Promise para uso no useEffect
     setPhase('searching');
 
-    const [clientCoords, onlineProvidersRaw] = await Promise.all([
-      getClientCoords(),
-      base44.entities.Provider.filter({ is_online: true, is_approved: true }),
-    ]);
+    // Busca coords do cliente
+    const clientCoords = await getClientCoords();
+
+    // Depois busca prestadores
+    const onlineProvidersRaw = await base44.entities.Provider.filter({ is_online: true, is_approved: true });
 
     // Filtra prestadores: remove os que estão em execução
     const onlineProviders = onlineProvidersRaw.filter(p => p.status !== 'em_andamento');
@@ -233,12 +234,10 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       });
     };
 
-    // Busca todos aprovados e serviços em execução para criar BusyAlert
-    const [allProviders, unavails, activeRequests] = await Promise.all([
-      base44.entities.Provider.filter({ is_approved: true }),
-      base44.entities.ProviderUnavailability.list(),
-      base44.entities.ServiceRequest.filter({ status: 'em_andamento' }),
-    ]);
+    // Busca todos aprovados e serviços em execução para criar BusyAlert (sequential para evitar rate limit)
+    const allProviders = await base44.entities.Provider.filter({ is_approved: true });
+    const unavails = await base44.entities.ProviderUnavailability.list();
+    const activeRequests = await base44.entities.ServiceRequest.filter({ status: 'em_andamento' });
     setAllUnavailabilities(unavails || []);
     console.log('[search] Total de prestadores aprovados:', allProviders.length);
     console.log('[search] Serviços em andamento:', activeRequests.length);
