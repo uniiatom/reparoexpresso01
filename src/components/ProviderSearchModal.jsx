@@ -115,17 +115,22 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const busyAlertCreated = useRef(false);
 
   useEffect(() => {
-    // Busca favoritos e inicia busca de prestadores em paralelo
-    Promise.all([
-      base44.auth.me().catch(() => null),
-      searchProviders(),
-    ]).then(([u]) => {
+    // Busca favoritos
+    base44.auth.me().catch(() => null).then(u => {
       if (u?.id) {
         base44.entities.Favorite.filter({ client_id: u.id })
           .then(favs => setFavorites(favs || []))
           .catch(() => {});
       }
     });
+
+    // Inicia busca de prestadores — sempre mantém "searching" por 5 minutos
+    setPhase('searching');
+    const searchTimeout = setTimeout(() => {
+      searchProviders();
+    }, 5 * 60 * 1000); // 5 minutos
+
+    return () => clearTimeout(searchTimeout);
   }, []);
 
   // Geocodifica uma query via Nominatim
@@ -225,70 +230,51 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       });
     };
 
-    if (onlineProviders.length > 0) {
-      const sorted = enrichWithDistance(onlineProviders);
-      const best = sorted[0];
-      setNearestProvider(best);
-      // Se precisa de 2 prestadores, pega o segundo também
-      if (form.requires_two_providers && sorted.length > 1) {
-        setSecondProvider(sorted[1]);
-      }
-      setPhase('found');
-      // Calcula ETA via OSRM assincronamente
-      const pCoords = getProviderCoords(best);
-      if (pCoords && clientLat && clientLon) {
-        estMinutesOSRM(pCoords.lat, pCoords.lon, clientLat, clientLon).then(setEstMin);
-      }
-      return;
-    }
-
-    // Nenhum online — busca todos aprovados
+    // Busca todos aprovados para criar BusyAlert e mostrar opção de agendamento
     const [allProviders, unavails] = await Promise.all([
       base44.entities.Provider.filter({ is_approved: true }),
       base44.entities.ProviderUnavailability.list(),
     ]);
     setAllUnavailabilities(unavails || []);
 
-    if (allProviders.length > 0) {
+    // Cria BusyAlert para prestadores em execução (em_andamento) próximos ao cliente
+    if (form.modality !== 'agendado' && !busyAlertCreated.current && allProviders.length > 0) {
+      busyAlertCreated.current = true;
+      const clientCoords2 = await getClientCoords();
+      const cLat = clientCoords2?.lat || null;
+      const cLon = clientCoords2?.lon || null;
+      
       const sorted = enrichWithDistance(allProviders);
-      setNearestProvider(sorted[0]);
+      const nearbyOccupied = sorted
+        .filter(p => {
+          if (!p.latitude || !p.longitude) return false;
+          const d = calcDistance(cLat, cLon, p.latitude, p.longitude);
+          // Inclui prestadores em execução (em_andamento) que estejam dentro de 15km
+          return d !== null && d <= 15 && p.status === 'em_andamento';
+        })
+        .slice(0, 5);
 
-      // Cria BusyAlert e notifica os prestadores mais próximos (até 5km, max 5 prestadores)
-      if (form.modality !== 'agendado' && !busyAlertCreated.current) {
-        busyAlertCreated.current = true;
-        const clientCoords2 = await getClientCoords();
-        const cLat = clientCoords2?.lat || null;
-        const cLon = clientCoords2?.lon || null;
-        const nearbyOccupied = sorted
-           .filter(p => {
-             if (!p.latitude || !p.longitude) return false;
-             const d = calcDistance(cLat, cLon, p.latitude, p.longitude);
-             // Inclui prestadores em execução (em_andamento) que estejam dentro de 15km
-             return d !== null && d <= 15 && p.status === 'em_andamento';
-           })
-           .slice(0, 5);
-
-        if (nearbyOccupied.length > 0) {
-          const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min
-          const serviceTypes = Array.isArray(form.service_type) ? form.service_type : [form.service_type];
-          const newAlert = await base44.entities.BusyAlert.create({
-            client_name: form.client_name || 'Cliente',
-            client_phone: form.client_phone || '',
-            service_type: serviceTypes[0],
-            service_description: form.description || '',
-            client_latitude: cLat,
-            client_longitude: cLon,
-            client_address: [form.address, form.number, form.neighborhood, form.city].filter(Boolean).join(', '),
-            status: 'aguardando',
-            notified_provider_ids: nearbyOccupied.map(p => p.id),
-            responses: [],
-            expires_at: expiresAt,
-          });
-          setBusyAlertId(newAlert.id);
-        }
+      if (nearbyOccupied.length > 0) {
+        const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min
+        const serviceTypes = Array.isArray(form.service_type) ? form.service_type : [form.service_type];
+        const newAlert = await base44.entities.BusyAlert.create({
+          client_name: form.client_name || 'Cliente',
+          client_phone: form.client_phone || '',
+          service_type: serviceTypes[0],
+          service_description: form.description || '',
+          client_latitude: cLat,
+          client_longitude: cLon,
+          client_address: [form.address, form.number, form.neighborhood, form.city].filter(Boolean).join(', '),
+          status: 'aguardando',
+          notified_provider_ids: nearbyOccupied.map(p => p.id),
+          responses: [],
+          expires_at: expiresAt,
+        });
+        setBusyAlertId(newAlert.id);
       }
     }
 
+    // Mostra tela de agendamento (nenhum prestador disponível agora)
     setPhase('none');
   };
 
