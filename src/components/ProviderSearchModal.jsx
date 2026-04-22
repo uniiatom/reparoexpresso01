@@ -213,11 +213,16 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     // Busca coords do cliente
     const clientCoords = await getClientCoords();
 
-    // Depois busca prestadores
+    // Depois busca prestadores online
     const onlineProvidersRaw = await base44.entities.Provider.filter({ is_online: true, is_approved: true });
-
-    // Filtra prestadores: remove os que estão em execução
-    const onlineProviders = onlineProvidersRaw.filter(p => p.status !== 'em_andamento');
+    
+    // Busca serviços em execução para identificar prestadores ocupados
+    const activeRequests = await base44.entities.ServiceRequest.filter({ status: 'em_andamento' });
+    const occupiedProviderIds = new Set(activeRequests.map(r => r.provider_id).filter(Boolean));
+    
+    // Separa prestadores: livres vs em execução
+    const availableProviders = onlineProvidersRaw.filter(p => !occupiedProviderIds.has(p.id));
+    const busyProviders = onlineProvidersRaw.filter(p => occupiedProviderIds.has(p.id));
 
     const clientLat = clientCoords?.lat || null;
     const clientLon = clientCoords?.lon || null;
@@ -237,9 +242,9 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       });
     };
 
-    // Se tem prestadores online disponíveis, mostra imediatamente
-    if (onlineProviders.length > 0) {
-      const sorted = enrichWithDistance(onlineProviders);
+    // Se tem prestadores disponíveis (livres), mostra imediatamente
+    if (availableProviders.length > 0) {
+      const sorted = enrichWithDistance(availableProviders);
       setNearestProvider(sorted[0]);
       if (form.requires_two_providers && sorted.length > 1) {
         setSecondProvider(sorted[1]);
@@ -248,10 +253,9 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       return; // Sai aqui, não precisa criar BusyAlert
     }
 
-    // Nenhum prestador disponível agora - busca aprovados e em execução para BusyAlert
+    // Nenhum prestador livre agora - busca aprovados para BusyAlert
     const allProviders = await base44.entities.Provider.filter({ is_approved: true });
     const unavails = await base44.entities.ProviderUnavailability.list();
-    const activeRequests = await base44.entities.ServiceRequest.filter({ status: 'em_andamento' });
     setAllUnavailabilities(unavails || []);
     console.log('[search] Total de prestadores aprovados:', allProviders.length);
     console.log('[search] Serviços em andamento:', activeRequests.length);
