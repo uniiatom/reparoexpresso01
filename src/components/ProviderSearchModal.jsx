@@ -286,10 +286,10 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
           // Se foram criados alertas, aguarda respostas por 5 minutos
           if (result.data?.alerts_created > 0) {
             setPhase('aguardando_respostas');
-            setWaitingSeconds(300);
+            setWaitingSeconds(1800);
             
             // Inicia timer de contagem regressiva (apenas conta, não muda fase)
-            let remaining = 300;
+            let remaining = 1800;
             waitingTimerRef.current = setInterval(() => {
               remaining--;
               setWaitingSeconds(remaining);
