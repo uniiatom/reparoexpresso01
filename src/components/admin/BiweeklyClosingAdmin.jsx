@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { RefreshCw, CheckCircle2, Clock, FileText } from 'lucide-react';
+import { RefreshCw, CheckCircle2, Clock, FileText, RotateCcw } from 'lucide-react';
 
 const STATUS_CONFIG = {
   pendente_nota: { label: 'Aguard. Nota', color: 'bg-orange-100 text-orange-700 border-orange-200', icon: '⏳' },
@@ -19,6 +19,7 @@ export default function BiweeklyClosingAdmin() {
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const { data: closings = [], isLoading } = useQuery({
     queryKey: ['biweekly-closings'],
@@ -32,6 +33,19 @@ export default function BiweeklyClosingAdmin() {
       toast.success('Status atualizado!');
     },
   });
+
+  const handleUpdate = async () => {
+    setUpdating(true);
+    try {
+      const res = await base44.functions.invoke('updateBiweeklyClosings', {});
+      toast.success(res.data?.message || 'Fechamentos atualizados!');
+      queryClient.invalidateQueries({ queryKey: ['biweekly-closings'] });
+    } catch (err) {
+      toast.error('Erro: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -98,14 +112,25 @@ export default function BiweeklyClosingAdmin() {
             <Input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm mt-1" />
           </div>
         </div>
-        <Button
-          className="w-full font-semibold"
-          onClick={handleGenerate}
-          disabled={generating}
-        >
-          <RefreshCw className={cn('w-4 h-4 mr-2', generating && 'animate-spin')} />
-          {generating ? 'Gerando...' : 'Gerar Fechamentos'}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            className="flex-1 font-semibold"
+            onClick={handleGenerate}
+            disabled={generating}
+          >
+            <RefreshCw className={cn('w-4 h-4 mr-2', generating && 'animate-spin')} />
+            {generating ? 'Gerando...' : 'Gerar Fechamentos'}
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 font-semibold"
+            onClick={handleUpdate}
+            disabled={updating}
+          >
+            <RotateCcw className={cn('w-4 h-4 mr-2', updating && 'animate-spin')} />
+            {updating ? 'Atualizando...' : 'Atualizar com Serviços'}
+          </Button>
+        </div>
       </div>
 
       {/* Lista */}
