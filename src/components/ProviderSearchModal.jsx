@@ -323,33 +323,6 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
         } catch (e) {
           console.error('Erro ao buscar prestadores ocupados próximos:', e);
         }
-
-        // Cria BusyAlert também (sistema antigo de notificação em tempo real)
-        const nearbyOccupied = sorted
-          .filter(p => {
-            if (!p.latitude || !p.longitude) return false;
-            const d = calcDistance(cLat, cLon, p.latitude, p.longitude);
-            return d !== null && d <= 15; // até 15km
-          })
-          .slice(0, 5);
-
-        if (nearbyOccupied.length > 0) {
-          const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min
-          const newAlert = await base44.entities.BusyAlert.create({
-            client_name: form.client_name || 'Cliente',
-            client_phone: form.client_phone || '',
-            service_type: serviceTypes[0],
-            service_description: form.description || '',
-            client_latitude: cLat,
-            client_longitude: cLon,
-            client_address: [form.address, form.number, form.neighborhood, form.city].filter(Boolean).join(', '),
-            status: 'aguardando',
-            notified_provider_ids: nearbyOccupied.map(p => p.id),
-            responses: [],
-            expires_at: expiresAt,
-          });
-          setBusyAlertId(newAlert.id);
-        }
       }
     }
 
