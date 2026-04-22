@@ -28,7 +28,6 @@ import ProviderLevelBadge, { getProviderLevel, PROVIDER_LEVELS } from '../compon
 import InvoiceManager from '../components/InvoiceManager';
 import BatchProviderChat from '../components/BatchProviderChat';
 import BusyAlertBanner from '../components/BusyAlertBanner';
-import ProviderBusyAlertModal from '../components/ProviderBusyAlertModal';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -47,7 +46,6 @@ export default function ProviderApp() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(location.state?.tab || 'chamados');
   const [declineTarget, setDeclineTarget] = useState(null); // { job, source: 'banner' | 'list' }
-  const [busyAlert, setBusyAlert] = useState(null); // Alerta de prestador ocupado
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
@@ -102,21 +100,10 @@ export default function ProviderApp() {
   const incomingJob = jobQueue[0] || null;
 
   useNewJobAlert({
-    enabled: !!(provider?.is_online && provider?.is_approved),
+    enabled: !!(provider?.is_online && provider?.is_approved && !activeJob),
     onNewJob: handleNewJob,
     providerId: provider?.id,
   }); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Monitora alertas de prestador ocupado (ProviderBusyAlert)
-  useEffect(() => {
-    if (!provider?.is_online || !provider?.is_approved) return;
-    const unsub = base44.entities.ProviderBusyAlert.subscribe((event) => {
-      if (event.type === 'create' && event.data?.provider_id === provider.id) {
-        setBusyAlert(event.data);
-      }
-    });
-    return unsub;
-  }, [provider?.is_online, provider?.is_approved, provider?.id]);
 
   useEffect(() => {
     if (!provider?.id) return;
@@ -350,7 +337,7 @@ export default function ProviderApp() {
     mutationFn: ({ id, status, final_price }) => base44.entities.ServiceRequest.update(id, { status, ...(final_price && { final_price }) }),
   });
 
-  // Buzina sempre ativa quando online, mesmo com job ativo. Banner só mostra sem job ativo.
+  // Banner só bloqueia se há job realmente ativo (não em espera)
   const shouldShowBanner = !realActiveJob;
   const completedJobs = myJobs.filter(j => j.status === 'concluido');
   // OS na fila: atribuídas ao prestador mas ainda aguardando (não ativas nem concluídas nem agendadas)
@@ -360,7 +347,12 @@ export default function ProviderApp() {
     .filter(j => j.status === 'agendado')
     .sort((a, b) => (a.scheduled_date || '').localeCompare(b.scheduled_date || ''));
 
-  // A buzina continua tocando mesmo com job ativo — o banner não aparece mas o som continua
+  // Para a buzina automaticamente se o prestador já tem um job realmente ativo (não em espera)
+  useEffect(() => {
+    if (realActiveJob) {
+      window.__stopProviderHorn?.();
+    }
+  }, [realActiveJob?.id]);
 
   if (!provider) {
     return <ProviderSetupModal user={user} onCreated={() => queryClient.invalidateQueries({ queryKey: ['my-provider'] })} />;
@@ -966,15 +958,6 @@ export default function ProviderApp() {
         <DeclineReasonModal
           onConfirm={handleDeclineConfirm}
           onCancel={() => setDeclineTarget(null)}
-        />
-      )}
-
-      {/* Modal de alerta prestador ocupado (ProviderBusyAlert) */}
-      {busyAlert && (
-        <ProviderBusyAlertModal
-          alert={busyAlert}
-          onClose={() => setBusyAlert(null)}
-          onRespond={() => setBusyAlert(null)}
         />
       )}
     </div>

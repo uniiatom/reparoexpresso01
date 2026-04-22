@@ -9,38 +9,46 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    // 1. Busca APENAS serviços em andamento do mesmo tipo de serviço
-    const busyServices = await base44.entities.ServiceRequest.filter({ status: 'em_andamento', service_type });
+    // Busca prestadores ativos/ocupados no mesmo tipo de serviço
+    const providers = await base44.entities.Provider.filter({ is_approved: true, is_blocked: false });
     
-    if (busyServices.length === 0) {
-      // Nenhum prestador ocupado desse tipo — retorna vazio
-      return Response.json({ success: true, alerts_created: 0, alerts: [] });
-    }
+    // Calcula distância e filtra prestadores em execução próximos
+    const busyNearby = providers.filter(p => {
+      // Se não tem localização, ignora
+      if (!p.latitude || !p.longitude) return false;
+      
+      // Calcula distância simples (Haversine)
+      const R = 6371;
+      const dLat = (p.latitude - client_latitude) * Math.PI / 180;
+      const dLon = (p.longitude - client_longitude) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(client_latitude*Math.PI/180)*Math.cos(p.latitude*Math.PI/180)*Math.sin(dLon/2)**2;
+      const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      
+      // Retorna prestadores a até 5km de distância
+      return distance <= 5;
+    });
 
-    // 2. Busca dados dos prestadores ocupados
-    const providerIds = [...new Set(busyServices.map(s => s.provider_id))];
-    const allProviders = await base44.entities.Provider.filter({ is_approved: true, is_blocked: false });
-    const busyProviders = allProviders.filter(p => providerIds.includes(p.id) && p.latitude && p.longitude);
+    // Busca OSs em andamento desses prestadores no mesmo serviço
+    const allServices = await base44.entities.ServiceRequest.list('-created_date', 1000);
+    const providersInService = allServices.filter(s => 
+      s.status === 'em_andamento' && 
+      s.service_type === service_type && 
+      busyNearby.some(p => p.id === s.provider_id)
+    );
 
-    // 3. Calcula distância e ordena (até 10km)
-    const nearby = busyProviders
-      .map(p => {
-        const R = 6371;
-        const dLat = (p.latitude - client_latitude) * Math.PI / 180;
-        const dLon = (p.longitude - client_longitude) * Math.PI / 180;
-        const a = Math.sin(dLat/2)**2 + Math.cos(client_latitude*Math.PI/180)*Math.cos(p.latitude*Math.PI/180)*Math.sin(dLon/2)**2;
-        const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return { ...p, distance };
-      })
-      .filter(p => p.distance <= 10)
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, 5); // Máx 5
-
-    const toProcess = nearby;
+    // Cria alertas para cada prestador encontrado (máx 3)
     const alerts = [];
-    
-    for (const provider of toProcess) {
+    for (const service of providersInService.slice(0, 3)) {
+      const provider = busyNearby.find(p => p.id === service.provider_id);
       if (!provider) continue;
+
+      const distance = Math.round(
+        6371 * 2 * Math.asin(Math.sqrt(
+          Math.sin((provider.latitude - client_latitude) * Math.PI / 360)**2 + 
+          Math.cos(client_latitude * Math.PI / 180) * Math.cos(provider.latitude * Math.PI / 180) * 
+          Math.sin((provider.longitude - client_longitude) * Math.PI / 360)**2
+        )) * 10
+      ) / 10;
 
       try {
         const alert = await base44.entities.ProviderBusyAlert.create({
@@ -51,11 +59,9 @@ Deno.serve(async (req) => {
           provider_id: provider.id,
           provider_name: provider.name,
           service_type,
-          distance_km: Math.round(provider.distance * 10) / 10,
+          distance_km: distance,
           status: 'notificado',
-          can_attend: false,
-          finish_time_minutes: 0,
-          expires_at: new Date(Date.now() + 5 * 60000).toISOString(), // 5 min
+          expires_at: new Date(Date.now() + 15 * 60000).toISOString(),
         });
         alerts.push(alert);
       } catch (e) {
