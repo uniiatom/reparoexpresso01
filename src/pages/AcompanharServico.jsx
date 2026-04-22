@@ -16,6 +16,7 @@ import NotificationPermissionBanner from '../components/NotificationPermissionBa
 import SatisfactionSurveyModal from '../components/SatisfactionSurveyModal';
 import { useServiceNotifications } from '../hooks/useServiceNotifications';
 import BatchProvidersPanel from '../components/BatchProvidersPanel';
+import BatchProviderChat from '../components/BatchProviderChat';
 
 const STATUS_STEPS = [
   { key: "aguardando", label: "Aguardando prestador", icon: Clock },
@@ -214,6 +215,15 @@ export default function AcompanharServico() {
 
       {/* Painel de múltiplos prestadores */}
       <BatchProvidersPanel batchRequests={batchRequests} currentId={id} />
+
+      {/* Chat entre prestadores do lote — visível para o cliente acompanhar */}
+      {batchRequests.length >= 2 && (
+        <BatchProviderChat
+          batchRequests={batchRequests}
+          senderRole="cliente"
+          senderName={request.client_name}
+        />
+      )}
 
       {/* Senhas de segurança */}
       {!request.security_password && request.status === 'aguardando' && (

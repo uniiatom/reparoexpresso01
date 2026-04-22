@@ -26,6 +26,7 @@ import ProviderReserveFund from '../components/ProviderReserveFund';
 import ProviderLevelIncentive from '../components/ProviderLevelIncentive';
 import ProviderLevelBadge, { getProviderLevel, PROVIDER_LEVELS } from '../components/ProviderLevelBadge';
 import InvoiceManager from '../components/InvoiceManager';
+import BatchProviderChat from '../components/BatchProviderChat';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -601,6 +602,19 @@ export default function ProviderApp() {
           isPending={updateJobStatus.isPending}
         />
       )}
+
+      {/* Chat entre prestadores do mesmo lote */}
+      {(() => {
+        const activeJobs = myJobs.filter(j => ['aceito', 'a_caminho', 'em_andamento', 'em_espera'].includes(j.status));
+        if (activeJobs.length < 2) return null;
+        return (
+          <BatchProviderChat
+            batchRequests={activeJobs}
+            senderRole="prestador"
+            senderName={provider.name}
+          />
+        );
+      })()}
 
       {/* ── FILA DE OS ATRIBUÍDAS ── */}
       {queuedJobs.length > 0 && (
