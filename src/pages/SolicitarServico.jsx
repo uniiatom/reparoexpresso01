@@ -370,16 +370,27 @@ export default function SolicitarServico() {
         })
       );
 
+      // Função auxiliar: gera senhas para uma OS via backend (fallback caso a automação falhe)
+      const ensurePasswords = async (requestId) => {
+        try {
+          await base44.functions.invoke('generateServicePasswords', { request_id: requestId });
+        } catch (e) {
+          // Silencia — a automação onServiceCreated já deve ter gerado
+        }
+      };
+
       // Se caixa d'água de condomínio e tem segundo prestador, cria OS adicional para ele
       if (_caixaCondominio && _secondProvider && serviceTypes.includes('limpeza_caixa_dagua')) {
         const descCondominio = descriptionsPerService['limpeza_caixa_dagua']?.description || baseData.description;
         const photosCondominio = descriptionsPerService['limpeza_caixa_dagua']?.photos || baseData.problem_photos;
-        await base44.entities.ServiceRequest.create({
+        const secondOS = await base44.entities.ServiceRequest.create({
           ...baseData,
           service_type: 'limpeza_caixa_dagua',
           description: `[Prestador 2] ${descCondominio}`,
           problem_photos: photosCondominio,
         });
+        // Aguarda 3s para a automação processar; se senha ainda não foi gerada, força geração
+        setTimeout(() => ensurePasswords(secondOS.id), 3000);
       }
 
       // Se TV acima de 55" e tem segundo prestador, cria OS adicional para ele
@@ -389,14 +400,28 @@ export default function SolicitarServico() {
           const hasPerService = serviceTypes.length > 1 && descriptionsPerService['instalacao_suporte_tv'];
           const description = hasPerService ? (descriptionsPerService['instalacao_suporte_tv']?.description || '') : baseData.description;
           const problem_photos = hasPerService ? (descriptionsPerService['instalacao_suporte_tv']?.photos || []) : baseData.problem_photos;
-          await base44.entities.ServiceRequest.create({
+          const secondOS = await base44.entities.ServiceRequest.create({
             ...baseData,
             service_type: 'instalacao_suporte_tv',
             description: `[TV acima de 55" - Prestador 2] ${description}`,
             problem_photos,
           });
+          // Aguarda 3s para a automação processar; se senha ainda não foi gerada, força geração
+          setTimeout(() => ensurePasswords(secondOS.id), 3000);
         }
       }
+
+      // Fallback: garante senhas para todas as OSs principais após 3s
+      results.forEach(r => {
+        setTimeout(async () => {
+          try {
+            const current = await base44.entities.ServiceRequest.filter({ id: r.id });
+            if (current[0] && !current[0].security_password) {
+              await base44.functions.invoke('generateServicePasswords', { request_id: r.id });
+            }
+          } catch (e) { /* silencia */ }
+        }, 3000);
+      });
 
       return results[0];
     },
