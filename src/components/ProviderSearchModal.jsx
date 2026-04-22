@@ -293,8 +293,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       }
     }
 
-    // Mostra tela de agendamento (nenhum prestador disponível agora)
-    setPhase('none');
+    // Mantém em 'searching' - agendamento será aberto após 5 minutos pelo timer
   };
 
   // Verifica se uma data+hora está bloqueada para TODOS os prestadores (todos com indisponibilidade)
