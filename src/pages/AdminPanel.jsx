@@ -266,9 +266,14 @@ export default function AdminPanel() {
                         <FileText className="w-4 h-4 mr-1" /> Ver ficha
                       </Button>
                       {!prov.is_approved && (
-                        <Button size="sm" className="rounded-xl bg-green-600 text-white hover:bg-green-700" onClick={() => approveProvider.mutate({ id: prov.id, approved: true })}>
-                          <CheckCircle2 className="w-4 h-4 mr-1" /> Aprovar
-                        </Button>
+                        <>
+                          <Button size="sm" className="rounded-xl bg-green-600 text-white hover:bg-green-700" onClick={() => approveProvider.mutate({ id: prov.id, approved: true })}>
+                            <CheckCircle2 className="w-4 h-4 mr-1" /> Aprovar
+                          </Button>
+                          <Button size="sm" variant="outline" className="rounded-xl text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => approveProvider.mutate({ id: prov.id, approved: false })}>
+                            <XCircle className="w-4 h-4 mr-1" /> Reprovar
+                          </Button>
+                        </>
                       )}
                       {prov.is_approved && (
                         <Button size="sm" variant="outline" className="rounded-xl text-destructive border-destructive/30" onClick={() => approveProvider.mutate({ id: prov.id, approved: false })}>

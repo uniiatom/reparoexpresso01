@@ -100,11 +100,16 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onB
           )}
 
           {/* Ações */}
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-2 flex-wrap">
             {!provider.is_approved ? (
-              <Button className="flex-1 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold" onClick={() => { onApprove(provider.id, true); onClose(); }}>
-                <ShieldCheck className="w-4 h-4 mr-2" /> Aprovar prestador
-              </Button>
+              <>
+                <Button className="flex-1 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold" onClick={() => { onApprove(provider.id, true); onClose(); }}>
+                  <ShieldCheck className="w-4 h-4 mr-2" /> Aprovar
+                </Button>
+                <Button variant="outline" className="flex-1 rounded-2xl text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => { onApprove(provider.id, false); onClose(); }}>
+                  <ShieldOff className="w-4 h-4 mr-2" /> Reprovar
+                </Button>
+              </>
             ) : (
               <Button variant="outline" className="flex-1 rounded-2xl text-destructive border-destructive/30" onClick={() => { onApprove(provider.id, false); onClose(); }}>
                 <ShieldOff className="w-4 h-4 mr-2" /> Bloquear prestador
