@@ -51,29 +51,34 @@ export default function BusyAlertBanner({ provider }) {
     if (!provider?.id || !provider?.is_online) return;
 
     const loadAlerts = async () => {
-      const all = await base44.entities.BusyAlert.filter({ status: 'aguardando' });
-      // Filtra alertas não expirados que notificaram este prestador
-      const now = new Date();
-      const relevant = all.filter(a => {
-        if (dismissed.has(a.id)) return false;
-        if (a.expires_at && new Date(a.expires_at) < now) return false;
-        if (!a.notified_provider_ids?.includes(provider.id)) return false;
-        // Já respondeu?
-        if (a.responses?.some(r => r.provider_id === provider.id)) return false;
-        return true;
-      });
-      setAlerts(relevant);
-      if (relevant.length > 0) playBeep();
+      try {
+        const all = await base44.entities.BusyAlert.filter({ status: 'aguardando' });
+        // Filtra alertas não expirados que notificaram este prestador
+        const now = new Date();
+        const relevant = all.filter(a => {
+          if (dismissed.has(a.id)) return false;
+          if (a.expires_at && new Date(a.expires_at) < now) return false;
+          if (!a.notified_provider_ids?.includes(provider.id)) return false;
+          // Já respondeu?
+          if (a.responses?.some(r => r.provider_id === provider.id)) return false;
+          return true;
+        });
+        setAlerts(relevant);
+        if (relevant.length > 0) playBeep();
+      } catch (e) {
+        console.error('[BusyAlert] Erro ao carregar alertas:', e.message);
+        // Continua funcionando, tenta novamente no próximo ciclo
+      }
     };
 
     // Carrega imediatamente
     loadAlerts();
     
     // Subscribe para mudanças em tempo real
-    const unsub = base44.entities.BusyAlert.subscribe(() => loadAlerts());
+    const unsub = base44.entities.BusyAlert.subscribe(() => loadAlerts()).catch(() => {});
     
-    // Polling a cada 2 segundos como fallback
-    const pollInterval = setInterval(loadAlerts, 2000);
+    // Polling a cada 5 segundos como fallback (aumentado para evitar rate limit)
+    const pollInterval = setInterval(loadAlerts, 5000);
     
     return () => {
       unsub();
