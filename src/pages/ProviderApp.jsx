@@ -106,8 +106,8 @@ export default function ProviderApp() {
 
   useEffect(() => {
     if (!provider?.id) return;
-    // Carga inicial
-    base44.entities.ServiceRequest.filter({ provider_id: provider.id }).then(setMyJobs);
+    // Carga inicial — busca todos sem limite de paginação
+    base44.entities.ServiceRequest.filter({ provider_id: provider.id }, '-created_date', 500).then(setMyJobs);
     // Real-time via subscribe
     const unsub = base44.entities.ServiceRequest.subscribe((event) => {
       if (!['create', 'update', 'delete'].includes(event.type)) return;
@@ -859,12 +859,15 @@ export default function ProviderApp() {
           {completedJobs.length > 0 ? (
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground mb-3">Total: {completedJobs.length} serviço(s) concluído(s)</p>
-              {completedJobs.map(job => (
+              {[...completedJobs].sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).map(job => (
                 <div key={job.id} className="bg-card rounded-2xl p-4 border border-border flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground text-sm">{SERVICE_LABELS[job.service_type] || job.service_type}</p>
                     <p className="text-xs text-muted-foreground truncate">{job.client_name} · {job.city}</p>
+                    {job.created_date && (
+                      <p className="text-xs text-muted-foreground">{new Date(job.created_date).toLocaleDateString('pt-BR')}</p>
+                    )}
                   </div>
                   {job.final_price && <span className="text-sm font-bold text-primary">R$ {job.final_price}</span>}
                 </div>
