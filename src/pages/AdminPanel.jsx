@@ -111,33 +111,33 @@ export default function AdminPanel() {
       <h1 className="text-2xl font-bold text-foreground mb-6">Painel Administrativo</h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-4">
         {[
-          { label: "Total Chamados", value: stats.total, icon: Briefcase, color: "text-foreground" },
+          { label: "Total", value: stats.total, icon: Briefcase, color: "text-foreground" },
           { label: "Ativos", value: stats.active, icon: Clock, color: "text-yellow-600" },
           { label: "Concluídos", value: stats.completed, icon: CheckCircle2, color: "text-green-600" },
-          { label: "Online agora", value: stats.providers_online, icon: Users, color: "text-primary" },
+          { label: "Online", value: stats.providers_online, icon: Users, color: "text-primary" },
           { label: "Prestadores", value: stats.providers_approved, icon: Star, color: "text-blue-600" },
-          { label: "Receita", value: `R$ ${stats.revenue.toFixed(0)}`, icon: TrendingUp, color: "text-primary" },
+          { label: "Receita", value: `R$ ${Math.floor(stats.revenue)}`, icon: TrendingUp, color: "text-primary" },
         ].map(stat => (
           <Card key={stat.label}>
-            <CardContent className="p-4 text-center">
-              <stat.icon className={cn("w-5 h-5 mx-auto mb-1", stat.color)} />
-              <p className={cn("text-xl font-bold", stat.color)}>{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+            <CardContent className="p-2 text-center">
+              <stat.icon className={cn("w-4 h-4 mx-auto mb-0.5", stat.color)} />
+              <p className={cn("text-sm font-bold", stat.color)}>{stat.value}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {pendingProviders.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-3">
-          <p className="font-semibold text-yellow-800 text-sm">⚠️ {pendingProviders.length} prestador(es) aguardando aprovação</p>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-2 mb-2 text-xs">
+          <p className="font-semibold text-yellow-800">⚠️ {pendingProviders.length} prestador(es) aguardando aprovação</p>
         </div>
       )}
       {pendingPhotoProviders.length > 0 && (
-        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-6">
-          <p className="font-semibold text-orange-800 text-sm">📷 {pendingPhotoProviders.length} prestador(es) com fotos aguardando aprovação</p>
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-2 mb-3 text-xs">
+          <p className="font-semibold text-orange-800">📷 {pendingPhotoProviders.length} fotos aguardando aprovação</p>
         </div>
       )}
 
