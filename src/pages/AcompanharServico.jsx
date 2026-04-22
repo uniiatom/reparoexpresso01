@@ -159,11 +159,12 @@ export default function AcompanharServico() {
     );
   }
 
-  // OS do mesmo lote: criadas no mesmo dia pela mesma pessoa, exceto canceladas
+  // OS do mesmo lote: criadas com menos de 5 minutos de diferença pela mesma pessoa, exceto canceladas
   const batchRequests = allRequests.filter(r => {
     if (!request?.created_date) return false;
-    const sameDay = r.created_date?.slice(0, 10) === request.created_date?.slice(0, 10);
-    return sameDay && r.status !== 'cancelado';
+    const diffMs = Math.abs(new Date(r.created_date) - new Date(request.created_date));
+    const diffMin = diffMs / 60000;
+    return diffMin <= 5 && r.status !== 'cancelado';
   });
   const otherBatchRequests = batchRequests.filter(r => r.id !== id);
 
