@@ -28,6 +28,7 @@ import ProviderLevelBadge, { getProviderLevel, PROVIDER_LEVELS } from '../compon
 import InvoiceManager from '../components/InvoiceManager';
 import BatchProviderChat from '../components/BatchProviderChat';
 import BusyAlertBanner from '../components/BusyAlertBanner';
+import ProviderBusyAlertModal from '../components/ProviderBusyAlertModal';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -46,6 +47,7 @@ export default function ProviderApp() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(location.state?.tab || 'chamados');
   const [declineTarget, setDeclineTarget] = useState(null); // { job, source: 'banner' | 'list' }
+  const [busyAlert, setBusyAlert] = useState(null); // Alerta de prestador ocupado
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
@@ -104,6 +106,17 @@ export default function ProviderApp() {
     onNewJob: handleNewJob,
     providerId: provider?.id,
   }); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Monitora alertas de prestador ocupado (ProviderBusyAlert)
+  useEffect(() => {
+    if (!provider?.is_online || !provider?.is_approved) return;
+    const unsub = base44.entities.ProviderBusyAlert.subscribe((event) => {
+      if (event.type === 'create' && event.data?.provider_id === provider.id) {
+        setBusyAlert(event.data);
+      }
+    });
+    return unsub;
+  }, [provider?.is_online, provider?.is_approved, provider?.id]);
 
   useEffect(() => {
     if (!provider?.id) return;
@@ -953,6 +966,15 @@ export default function ProviderApp() {
         <DeclineReasonModal
           onConfirm={handleDeclineConfirm}
           onCancel={() => setDeclineTarget(null)}
+        />
+      )}
+
+      {/* Modal de alerta prestador ocupado (ProviderBusyAlert) */}
+      {busyAlert && (
+        <ProviderBusyAlertModal
+          alert={busyAlert}
+          onClose={() => setBusyAlert(null)}
+          onRespond={() => setBusyAlert(null)}
         />
       )}
     </div>
