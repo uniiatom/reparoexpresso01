@@ -16,7 +16,7 @@ import ProviderPhotosApproval from '../components/admin/ProviderPhotosApproval';
 import ProviderDetailsModal from '../components/admin/ProviderDetailsModal';
 import AdminReserveFundDashboard from '../components/AdminReserveFundDashboard';
 import InvoicesAdmin from '../components/admin/InvoicesAdmin';
-import BiweeklyClosingAdmin from '../components/admin/BiweeklyClosingAdmin';
+import BiweeklyClosingAdmin from '../components/admin/BiweeklyClosingAdmin.jsx';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
