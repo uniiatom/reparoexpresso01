@@ -230,15 +230,17 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       });
     };
 
-    // Busca todos aprovados para criar BusyAlert e mostrar opção de agendamento
-    const [allProviders, unavails] = await Promise.all([
+    // Busca todos aprovados e serviços em execução para criar BusyAlert
+    const [allProviders, unavails, activeRequests] = await Promise.all([
       base44.entities.Provider.filter({ is_approved: true }),
       base44.entities.ProviderUnavailability.list(),
+      base44.entities.ServiceRequest.filter({ status: 'em_andamento' }),
     ]);
     setAllUnavailabilities(unavails || []);
     console.log('[search] Total de prestadores aprovados:', allProviders.length);
+    console.log('[search] Serviços em andamento:', activeRequests.length);
 
-    // Cria BusyAlert para prestadores em execução (em_andamento) próximos ao cliente
+    // Cria BusyAlert para prestadores em execução próximos ao cliente
     if (form.modality !== 'agendado' && !busyAlertCreated.current && allProviders.length > 0) {
       busyAlertCreated.current = true;
       const clientCoords2 = await getClientCoords();
@@ -246,25 +248,28 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       const cLon = clientCoords2?.lon || null;
       console.log('[busyalert] clientCoords:', cLat, cLon);
       
+      // IDs de prestadores que estão em execução
+      const occupiedProviderIds = new Set(activeRequests.map(r => r.provider_id).filter(Boolean));
+      console.log('[busyalert] Prestadores em execução:', occupiedProviderIds.size);
+      
       const sorted = enrichWithDistance(allProviders);
       const nearbyOccupied = sorted
         .filter(p => {
           if (!p.latitude || !p.longitude) {
-            console.log('[busyalert] prestador sem coords:', p.name, '| status:', p.status);
+            console.log('[busyalert] prestador sem coords:', p.name);
             return false;
           }
           const d = calcDistance(cLat, cLon, p.latitude, p.longitude);
-          const isOccupied = p.status === 'em_andamento';
-          console.log('[busyalert] prestador:', p.name, '| status:', p.status, '| dist:', d?.toFixed(1), '| qualifica:', isOccupied && d <= 15);
-          // Inclui prestadores em execução (em_andamento) que estejam dentro de 15km
+          const isOccupied = occupiedProviderIds.has(p.id);
+          console.log('[busyalert] prestador:', p.name, '| ocupado:', isOccupied, '| dist:', d?.toFixed(1), 'km | qualifica:', isOccupied && d <= 15);
           return d !== null && d <= 15 && isOccupied;
         })
         .slice(0, 5);
 
-      console.log('[busyalert] nearbyOccupied:', nearbyOccupied.length, nearbyOccupied.map(p => p.name));
+      console.log('[busyalert] nearbyOccupied encontrados:', nearbyOccupied.length, nearbyOccupied.map(p => p.name));
 
       if (nearbyOccupied.length > 0) {
-        const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min
+        const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
         const serviceTypes = Array.isArray(form.service_type) ? form.service_type : [form.service_type];
         const newAlert = await base44.entities.BusyAlert.create({
           client_name: form.client_name || 'Cliente',
@@ -279,10 +284,10 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
           responses: [],
           expires_at: expiresAt,
         });
-        console.log('[busyalert] Alerta criado:', newAlert.id, 'com notificações para:', nearbyOccupied.length, 'prestadores');
+        console.log('[busyalert] ✅ Alerta criado:', newAlert.id, 'notificando:', nearbyOccupied.map(p => p.name).join(', '));
         setBusyAlertId(newAlert.id);
       } else {
-        console.log('[busyalert] Nenhum prestador em execução próximo');
+        console.log('[busyalert] ❌ Nenhum prestador em execução próximo');
       }
     }
 
