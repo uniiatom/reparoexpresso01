@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, AlertCircle, MapPin, Star, Calendar, Zap, X, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ProviderLevelBadge from "@/components/ProviderLevelBadge";
+import BusyAlertClientView from "@/components/BusyAlertClientView";
 
 function calcDistance(lat1, lon1, lat2, lon2) {
   if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -110,6 +111,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [favorites, setFavorites] = useState([]);
   const [selectedFavorite, setSelectedFavorite] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [busyAlertId, setBusyAlertId] = useState(null);
+  const busyAlertCreated = useRef(false);
 
   useEffect(() => {
     // Busca favoritos e inicia busca de prestadores em paralelo
@@ -246,6 +249,40 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     if (allProviders.length > 0) {
       const sorted = enrichWithDistance(allProviders);
       setNearestProvider(sorted[0]);
+
+      // Cria BusyAlert e notifica os prestadores mais próximos (até 5km, max 5 prestadores)
+      if (form.modality !== 'agendado' && !busyAlertCreated.current) {
+        busyAlertCreated.current = true;
+        const clientCoords2 = await getClientCoords();
+        const cLat = clientCoords2?.lat || null;
+        const cLon = clientCoords2?.lon || null;
+        const nearbyOccupied = sorted
+          .filter(p => {
+            if (!p.latitude || !p.longitude) return false;
+            const d = calcDistance(cLat, cLon, p.latitude, p.longitude);
+            return d !== null && d <= 15; // até 15km
+          })
+          .slice(0, 5);
+
+        if (nearbyOccupied.length > 0) {
+          const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min
+          const serviceTypes = Array.isArray(form.service_type) ? form.service_type : [form.service_type];
+          const newAlert = await base44.entities.BusyAlert.create({
+            client_name: form.client_name || 'Cliente',
+            client_phone: form.client_phone || '',
+            service_type: serviceTypes[0],
+            service_description: form.description || '',
+            client_latitude: cLat,
+            client_longitude: cLon,
+            client_address: [form.address, form.number, form.neighborhood, form.city].filter(Boolean).join(', '),
+            status: 'aguardando',
+            notified_provider_ids: nearbyOccupied.map(p => p.id),
+            responses: [],
+            expires_at: expiresAt,
+          });
+          setBusyAlertId(newAlert.id);
+        }
+      }
     }
 
     setPhase('none');
@@ -540,6 +577,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
               >
                 {confirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Calendar className="w-4 h-4 mr-2" /> Confirmar agendamento</>}
               </Button>
+              {busyAlertId && <BusyAlertClientView alertId={busyAlertId} />}
               <button onClick={onClose} className="w-full text-sm text-muted-foreground hover:text-foreground text-center py-1">
                 Cancelar
               </button>

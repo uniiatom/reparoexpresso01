@@ -27,6 +27,7 @@ import ProviderLevelIncentive from '../components/ProviderLevelIncentive';
 import ProviderLevelBadge, { getProviderLevel, PROVIDER_LEVELS } from '../components/ProviderLevelBadge';
 import InvoiceManager from '../components/InvoiceManager';
 import BatchProviderChat from '../components/BatchProviderChat';
+import BusyAlertBanner from '../components/BusyAlertBanner';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -567,6 +568,9 @@ export default function ProviderApp() {
 
       {/* ── ABA CHAMADOS ── */}
       {activeTab === 'chamados' && <>
+
+      {/* Alertas de clientes aguardando (todos prestadores ocupados) */}
+      <BusyAlertBanner provider={provider} />
 
       {/* Job em espera (pausado) — sempre visível, mesmo com outro job ativo */}
       {waitingJob && !realActiveJob && (

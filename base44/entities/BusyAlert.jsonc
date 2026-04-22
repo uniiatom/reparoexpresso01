@@ -1,0 +1,89 @@
+{
+  "name": "BusyAlert",
+  "type": "object",
+  "properties": {
+    "client_name": {
+      "type": "string",
+      "description": "Nome do cliente que tentou abrir o servi\u00e7o"
+    },
+    "client_phone": {
+      "type": "string",
+      "description": "Telefone do cliente"
+    },
+    "service_type": {
+      "type": "string",
+      "description": "Tipo de servi\u00e7o solicitado"
+    },
+    "service_description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do servi\u00e7o"
+    },
+    "client_latitude": {
+      "type": "number",
+      "description": "Latitude do cliente"
+    },
+    "client_longitude": {
+      "type": "number",
+      "description": "Longitude do cliente"
+    },
+    "client_address": {
+      "type": "string",
+      "description": "Endere\u00e7o do cliente"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "aguardando",
+        "prestador_respondeu",
+        "expirado"
+      ],
+      "default": "aguardando",
+      "description": "Status do alerta"
+    },
+    "notified_provider_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs dos prestadores notificados"
+    },
+    "responses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "provider_id": {
+            "type": "string"
+          },
+          "provider_name": {
+            "type": "string"
+          },
+          "can_attend": {
+            "type": "boolean"
+          },
+          "finish_in_minutes": {
+            "type": "number"
+          },
+          "travel_minutes": {
+            "type": "number"
+          },
+          "total_eta_minutes": {
+            "type": "number"
+          },
+          "responded_at": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Respostas dos prestadores"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "Quando o alerta expira (ISO)"
+    }
+  },
+  "required": [
+    "client_name",
+    "service_type"
+  ]
+}
