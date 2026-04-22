@@ -3,9 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Upload, CheckCircle, FileText, RefreshCw, ExternalLink } from 'lucide-react';
+import { Upload, CheckCircle, FileText, RefreshCw, ExternalLink, ClipboardList } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import ProviderServiceReview from './ProviderServiceReview';
 
 const STATUS_CONFIG = {
   pendente_nota: { label: 'Pendente NF', color: 'bg-orange-100 text-orange-700 border-orange-200' },
@@ -17,6 +18,7 @@ export default function BiweeklyClosingAdmin() {
   const queryClient = useQueryClient();
   const [uploadingId, setUploadingId] = useState(null);
   const [generatingClosings, setGeneratingClosings] = useState(false);
+  const [activeTab, setActiveTab] = useState('fechamentos');
 
   const fileInputRefs = useRef({});
 
@@ -109,6 +111,36 @@ export default function BiweeklyClosingAdmin() {
           {generatingClosings ? 'Gerando...' : 'Gerar Fechamentos'}
         </Button>
       </div>
+
+      {/* Tabs de navegação */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setActiveTab('fechamentos')}
+          className={cn("flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border transition",
+            activeTab === 'fechamentos'
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-background border-border text-muted-foreground hover:bg-muted"
+          )}
+        >
+          <FileText className="w-3.5 h-3.5" /> Fechamentos
+        </button>
+        <button
+          onClick={() => setActiveTab('conferencia')}
+          className={cn("flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border transition",
+            activeTab === 'conferencia'
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-background border-border text-muted-foreground hover:bg-muted"
+          )}
+        >
+          <ClipboardList className="w-3.5 h-3.5" /> Conferência de Atendimentos
+        </button>
+      </div>
+
+      {/* Aba de Conferência */}
+      {activeTab === 'conferencia' && <ProviderServiceReview />}
+
+      {/* Conteúdo de Fechamentos */}
+      {activeTab === 'fechamentos' && <>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
@@ -238,6 +270,8 @@ export default function BiweeklyClosingAdmin() {
           })}
         </div>
       )}
+
+      </>}
     </div>
   );
 }
