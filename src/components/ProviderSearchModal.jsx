@@ -243,10 +243,19 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
           }, 1000);
 
           busyAlertsUnsubscribeRef.current = base44.entities.ProviderBusyAlert.subscribe((event) => {
+            // Verifica se prestador respondeu E pode atender
             if (event.type === 'update' && event.data?.status === 'respondido') {
-              clearInterval(waitingTimerRef.current);
-              if (busyAlertsUnsubscribeRef.current) busyAlertsUnsubscribeRef.current();
-              handleConfirmImmediate();
+              // Busca o alerta completo para validar se pode atender
+              base44.entities.ProviderBusyAlert.get(event.id).then(alert => {
+                if (alert?.can_attend === true) {
+                  clearInterval(waitingTimerRef.current);
+                  if (busyAlertsUnsubscribeRef.current) busyAlertsUnsubscribeRef.current();
+                  handleConfirmImmediate();
+                } else {
+                  console.log('[search] Prestador respondeu que não pode atender');
+                  // Se prestador não pode, aguarda até timeout ou outra resposta
+                }
+              });
             }
           });
           return; // Aguarda respostas, não abre agenda ainda
