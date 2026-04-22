@@ -77,7 +77,21 @@ export default function AdminPanel() {
     mutationFn: ({ id, approved }) => base44.entities.Provider.update(id, { is_approved: approved }),
     onSuccess: (_, { approved }) => {
       queryClient.invalidateQueries({ queryKey: ['all-providers'] });
-      toast.success(approved ? "Prestador aprovado!" : "Prestador bloqueado");
+      toast.success(approved ? "Prestador aprovado!" : "Prestador reprovado");
+    },
+  });
+
+  const rejectProvider = useMutation({
+    mutationFn: ({ providerId, rejectReason }) => base44.entities.Provider.update(providerId, {
+      is_rejected: true,
+      rejection_reason: rejectReason,
+      rejected_at: new Date().toISOString(),
+      is_approved: false,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-providers'] });
+      toast.success("Prestador reprovado com sucesso");
+      setSelectedProvider(null);
     },
   });
 
@@ -104,7 +118,7 @@ export default function AdminPanel() {
     revenue: requests.filter(r => r.final_price).reduce((acc, r) => acc + (r.final_price || 0), 0),
   };
 
-  const pendingProviders = providers.filter(p => !p.is_approved && !p.is_blocked);
+  const pendingProviders = providers.filter(p => !p.is_approved && !p.is_blocked && !p.is_rejected);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -254,7 +268,7 @@ export default function AdminPanel() {
           <div className="space-y-3">
             {providers.length === 0 ? (
               <p className="text-center text-muted-foreground py-10">Nenhum prestador cadastrado</p>
-            ) : providers.filter(p => !p.is_blocked).map(prov => (
+            ) : providers.filter(p => !p.is_blocked && !p.is_rejected).map(prov => (
               <Card key={prov.id}>
                 <CardContent className="p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -284,7 +298,7 @@ export default function AdminPanel() {
                           <Button size="sm" className="rounded-xl bg-green-600 text-white hover:bg-green-700" onClick={() => approveProvider.mutate({ id: prov.id, approved: true })}>
                             <CheckCircle2 className="w-4 h-4 mr-1" /> Aprovar
                           </Button>
-                          <Button size="sm" variant="outline" className="rounded-xl text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => approveProvider.mutate({ id: prov.id, approved: false })}>
+                          <Button size="sm" variant="outline" className="rounded-xl text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => setSelectedProvider(prov)}>
                             <XCircle className="w-4 h-4 mr-1" /> Reprovar
                           </Button>
                         </>
@@ -344,6 +358,7 @@ export default function AdminPanel() {
           provider={selectedProvider}
           onClose={() => setSelectedProvider(null)}
           onApprove={(id, approved) => approveProvider.mutate({ id, approved })}
+          onReject={(id, reason) => rejectProvider.mutate({ providerId: id, rejectReason: reason })}
           onBlock={(id, reason) => blockProvider.mutate({ providerId: id, blockReason: reason })}
         />
       )}

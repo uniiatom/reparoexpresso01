@@ -98,6 +98,20 @@
       "default": false,
       "description": "Aprovado pelo admin"
     },
+    "is_rejected": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o prestador foi reprovado"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "Motivo da reprova\u00e7\u00e3o"
+    },
+    "rejected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora da reprova\u00e7\u00e3o"
+    },
     "is_blocked": {
       "type": "boolean",
       "default": false,

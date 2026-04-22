@@ -12,9 +12,11 @@ const SPECIALTY_LABELS = {
   fechadura: "Fechadura", ar_condicionado: "Ar Condicionado", outros: "Outros",
 };
 
-export default function ProviderDetailsModal({ provider, onClose, onApprove, onBlock }) {
+export default function ProviderDetailsModal({ provider, onClose, onApprove, onReject, onBlock }) {
   const [blockReason, setBlockReason] = useState('');
   const [showBlockForm, setShowBlockForm] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showRejectForm, setShowRejectForm] = useState(false);
 
   if (!provider) return null;
 
@@ -36,6 +38,15 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onB
       await onBlock(provider.id, blockReason);
       setBlockReason('');
       setShowBlockForm(false);
+      onClose();
+    }
+  };
+
+  const handleReject = async () => {
+    if (onReject) {
+      await onReject(provider.id, rejectReason);
+      setRejectReason('');
+      setShowRejectForm(false);
       onClose();
     }
   };
@@ -66,6 +77,8 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onB
               <div className="flex flex-wrap gap-2 mt-1">
                 {provider.is_blocked
                   ? <Badge className="bg-red-100 text-red-800 border-0 text-xs">🚫 Bloqueado</Badge>
+                  : provider.is_rejected
+                  ? <Badge className="bg-orange-100 text-orange-800 border-0 text-xs">❌ Reprovado</Badge>
                   : provider.is_approved
                   ? <Badge className="bg-green-100 text-green-800 border-0 text-xs">✓ Aprovado</Badge>
                   : <Badge className="bg-yellow-100 text-yellow-800 border-0 text-xs">⏳ Pendente</Badge>}
@@ -79,6 +92,19 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onB
               </div>
             </div>
           </div>
+
+          {/* Aviso de reprovação */}
+          {provider.is_rejected && (
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-3 space-y-2">
+              <p className="text-sm font-bold text-orange-800">❌ Prestador Reprovado</p>
+              {provider.rejection_reason && (
+                <p className="text-xs text-orange-700">{provider.rejection_reason}</p>
+              )}
+              {provider.rejected_at && (
+                <p className="text-xs text-orange-600">Reprovado em {new Date(provider.rejected_at).toLocaleDateString('pt-BR')}</p>
+              )}
+            </div>
+          )}
 
           {/* Aviso de bloqueio */}
           {provider.is_blocked && (
@@ -128,6 +154,37 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onB
             </div>
           )}
 
+          {/* Formulário de reprovação */}
+          {showRejectForm && (
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-3 space-y-3">
+              <p className="text-sm font-bold text-orange-800">Motivo da reprovação</p>
+              <Textarea
+                placeholder="Descreva o motivo da reprovação..."
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                className="rounded-xl"
+              />
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold"
+                  onClick={handleReject}
+                >
+                  Confirmar Reprovação
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-xl"
+                  onClick={() => {
+                    setShowRejectForm(false);
+                    setRejectReason('');
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Formulário de bloqueio */}
           {showBlockForm && (
             <div className="bg-red-50 border border-red-200 rounded-2xl p-3 space-y-3">
@@ -160,12 +217,15 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onB
           )}
 
           {/* Ações */}
-          {!provider.is_blocked && (
+          {!provider.is_blocked && !provider.is_rejected && (
             <div className="flex gap-3 pt-2 flex-wrap">
               {!provider.is_approved ? (
                 <>
                   <Button className="flex-1 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold" onClick={() => { onApprove(provider.id, true); onClose(); }}>
                     <ShieldCheck className="w-4 h-4 mr-2" /> Aprovar
+                  </Button>
+                  <Button variant="outline" className="flex-1 rounded-2xl text-orange-600 border-orange-300 hover:bg-orange-50" onClick={() => setShowRejectForm(true)}>
+                    ❌ Reprovar
                   </Button>
                   <Button variant="outline" className="flex-1 rounded-2xl text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => setShowBlockForm(true)}>
                     <ShieldOff className="w-4 h-4 mr-2" /> Bloquear
