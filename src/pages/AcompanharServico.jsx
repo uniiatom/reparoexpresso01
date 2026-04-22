@@ -15,6 +15,7 @@ import PixPaymentModal from '../components/PixPaymentModal';
 import NotificationPermissionBanner from '../components/NotificationPermissionBanner';
 import SatisfactionSurveyModal from '../components/SatisfactionSurveyModal';
 import { useServiceNotifications } from '../hooks/useServiceNotifications';
+import BatchProvidersPanel from '../components/BatchProvidersPanel';
 
 const STATUS_STEPS = [
   { key: "aguardando", label: "Aguardando prestador", icon: Clock },
@@ -184,12 +185,7 @@ export default function AcompanharServico() {
       <NotificationPermissionBanner />
       {/* Header */}
       <div className="text-center mb-6">
-        {/* Indicador de múltiplos prestadores */}
-        {otherBatchRequests.length > 0 && (
-          <div className="inline-flex items-center gap-1.5 bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full mb-2">
-            👥 {batchRequests.length} prestadores acionados · Prestador {batchRequests.findIndex(r => r.id === id) + 1}
-          </div>
-        )}
+
         <div className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-3", statusColor)}>
           {request.status === 'aguardando' && <Clock className="w-4 h-4 animate-pulse" />}
           {request.status === 'a_caminho' && <span>🚗</span>}
@@ -216,109 +212,8 @@ export default function AcompanharServico() {
         </p>
       </div>
 
-      {/* Painel de OS do mesmo lote — múltiplos prestadores */}
-      {otherBatchRequests.length > 0 && (
-        <div className="mb-5 space-y-3">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide px-1">
-            👥 {otherBatchRequests.length + 1} prestadores acionados simultaneamente
-          </p>
-
-          {/* Cards lado a lado se 2 prestadores, ou empilhados se mais */}
-          <div className={cn(
-            "gap-3",
-            batchRequests.length === 2 ? "grid grid-cols-2" : "flex flex-col"
-          )}>
-            {batchRequests.map((r, idx) => {
-              const isCurrent = r.id === id;
-              const statusLabel = { aguardando: 'Aguardando', aceito: 'Aceito', a_caminho: 'A caminho', em_andamento: 'Em execução', concluido: 'Concluído', cancelado: 'Cancelado' }[r.status] || r.status;
-              const statusCls = {
-                aguardando: 'bg-yellow-100 text-yellow-700',
-                aceito: 'bg-blue-100 text-blue-700',
-                a_caminho: 'bg-orange-100 text-orange-700',
-                em_andamento: 'bg-primary/10 text-primary',
-                concluido: 'bg-green-100 text-green-700',
-                cancelado: 'bg-red-100 text-red-700',
-              }[r.status] || 'bg-muted text-muted-foreground';
-
-              const statusEmoji = { aguardando: '⏳', aceito: '✅', a_caminho: '🚗', em_andamento: '🔧', concluido: '🎉', cancelado: '❌' }[r.status] || '⏳';
-
-              const Card = isCurrent ? 'div' : 'button';
-              return (
-                <Card
-                  key={r.id}
-                  onClick={!isCurrent ? () => navigate(`/acompanhar/${r.id}`) : undefined}
-                  className={cn(
-                    "rounded-2xl border-2 p-3 text-left w-full transition-all",
-                    isCurrent
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-card hover:border-primary/40 cursor-pointer"
-                  )}
-                >
-                  {/* Cabeçalho */}
-                  <div className="flex items-center justify-between mb-2 gap-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                      Prestador {idx + 1}{isCurrent ? ' (este)' : ''}
-                    </span>
-                    <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-lg", statusCls)}>
-                      {statusEmoji} {statusLabel}
-                    </span>
-                  </div>
-
-                  {/* Nome do prestador */}
-                  {r.provider_name ? (
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <div className="w-7 h-7 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-primary">{r.provider_name.charAt(0)}</span>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-foreground truncate">{r.provider_name}</p>
-                        {r.estimated_arrival_minutes != null && r.status !== 'concluido' && (
-                          <p className="text-[10px] text-muted-foreground">~{r.estimated_arrival_minutes} min</p>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <div className="w-7 h-7 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
-                        <User className="w-3 h-3 text-muted-foreground" />
-                      </div>
-                      <p className="text-xs text-muted-foreground italic">Buscando prestador...</p>
-                    </div>
-                  )}
-
-                  {/* Tipo de serviço */}
-                  <p className="text-xs text-muted-foreground mb-2">{SERVICE_LABELS[r.service_type] || r.service_type}</p>
-
-                  {/* Senhas */}
-                  {r.security_password && (
-                    <div className="grid grid-cols-2 gap-1 mt-1">
-                      <div className="bg-amber-50 rounded-lg p-1.5 text-center border border-amber-100">
-                        <p className="text-[9px] text-amber-700 font-semibold">Senha prestador</p>
-                        <p className="text-sm font-mono font-black text-amber-900 tracking-widest">{r.security_password}</p>
-                      </div>
-                      <div className="bg-amber-50 rounded-lg p-1.5 text-center border border-amber-100">
-                        <p className="text-[9px] text-amber-700 font-semibold">Sua senha</p>
-                        <p className="text-sm font-mono font-black text-amber-900 tracking-widest">{r.validation_password}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {!isCurrent && (
-                    <p className="text-[10px] text-primary font-semibold mt-2">Toque para acompanhar →</p>
-                  )}
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Linha separadora antes do conteúdo principal */}
-          <div className="border-t border-border pt-3">
-            <p className="text-xs text-muted-foreground font-semibold px-1 mb-1">
-              📍 Acompanhando: <span className="text-primary">{SERVICE_LABELS[request.service_type] || request.service_type} {request.service_number ? `· ${request.service_number}` : ''}</span>
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Painel de múltiplos prestadores */}
+      <BatchProvidersPanel batchRequests={batchRequests} currentId={id} />
 
       {/* Senhas de segurança */}
       {!request.security_password && request.status === 'aguardando' && (
