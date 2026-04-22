@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { RefreshCw, CheckCircle2, Clock, FileText, RotateCcw } from 'lucide-react';
+import { RefreshCw, CheckCircle2, Clock, FileText, RotateCcw, Upload, ExternalLink, Loader2 } from 'lucide-react';
 
 const STATUS_CONFIG = {
   pendente_nota: { label: 'Aguard. Nota', color: 'bg-orange-100 text-orange-700 border-orange-200', icon: '⏳' },
@@ -20,6 +20,7 @@ export default function BiweeklyClosingAdmin() {
   const [customEnd, setCustomEnd] = useState('');
   const [generating, setGenerating] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [uploadingProof, setUploadingProof] = useState(null); // closing.id sendo processado
 
   const { data: closings = [], isLoading } = useQuery({
     queryKey: ['biweekly-closings'],
@@ -27,12 +28,42 @@ export default function BiweeklyClosingAdmin() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }) => base44.entities.BiweeklyClosing.update(id, { status }),
+    mutationFn: ({ id, data }) => base44.entities.BiweeklyClosing.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['biweekly-closings'] });
       toast.success('Status atualizado!');
     },
   });
+
+  const handleMarkAsPaid = async (closing, file) => {
+    setUploadingProof(closing.id);
+    try {
+      let payment_proof_url = closing.payment_proof_url || null;
+      if (file) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        payment_proof_url = file_url;
+      }
+      updateStatusMutation.mutate({ id: closing.id, data: { status: 'pago', payment_proof_url } });
+    } catch (err) {
+      toast.error('Erro ao enviar comprovante');
+    } finally {
+      setUploadingProof(null);
+    }
+  };
+
+  const handleUploadProof = async (closing, file) => {
+    setUploadingProof(closing.id);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.BiweeklyClosing.update(closing.id, { payment_proof_url: file_url });
+      queryClient.invalidateQueries({ queryKey: ['biweekly-closings'] });
+      toast.success('Comprovante anexado!');
+    } catch (err) {
+      toast.error('Erro ao enviar comprovante');
+    } finally {
+      setUploadingProof(null);
+    }
+  };
 
   const handleUpdate = async () => {
     setUpdating(true);
@@ -171,26 +202,80 @@ export default function BiweeklyClosingAdmin() {
                 </div>
 
                 {/* Botões de status */}
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 flex-wrap items-center">
                   {closing.status === 'pendente_nota' && (
                     <Button size="sm" variant="outline" className="rounded-xl text-xs" disabled>
                       <Clock className="w-3 h-3 mr-1" /> Aguardando nota do prestador
                     </Button>
                   )}
                   {closing.status === 'nota_enviada' && (
-                    <Button
-                      size="sm"
-                      className="rounded-xl text-xs bg-green-600 hover:bg-green-700 text-white"
-                      onClick={() => updateStatusMutation.mutate({ id: closing.id, status: 'pago' })}
-                      disabled={updateStatusMutation.isPending}
-                    >
-                      <CheckCircle2 className="w-3 h-3 mr-1" /> Marcar como Pago
-                    </Button>
+                    <div className="flex gap-2 items-center flex-wrap">
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          className="hidden"
+                          onChange={e => {
+                            const file = e.target.files[0];
+                            if (file) handleMarkAsPaid(closing, file);
+                          }}
+                        />
+                        <span className={cn(
+                          'inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-green-600 hover:bg-green-700 text-white cursor-pointer transition-colors',
+                          uploadingProof === closing.id && 'opacity-60 pointer-events-none'
+                        )}>
+                          {uploadingProof === closing.id
+                            ? <><Loader2 className="w-3 h-3 animate-spin" /> Enviando...</>
+                            : <><Upload className="w-3 h-3" /> Pagar + Comprovante</>}
+                        </span>
+                      </label>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-xl text-xs"
+                        onClick={() => updateStatusMutation.mutate({ id: closing.id, data: { status: 'pago' } })}
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        <CheckCircle2 className="w-3 h-3 mr-1" /> Marcar Pago (sem comprovante)
+                      </Button>
+                    </div>
                   )}
                   {closing.status === 'pago' && (
-                    <span className="text-xs text-green-600 font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Pagamento realizado
-                    </span>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-xs text-green-600 font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Pagamento realizado
+                      </span>
+                      {closing.payment_proof_url ? (
+                        <a
+                          href={closing.payment_proof_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline font-semibold"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Ver comprovante
+                        </a>
+                      ) : (
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*,application/pdf"
+                            className="hidden"
+                            onChange={e => {
+                              const file = e.target.files[0];
+                              if (file) handleUploadProof(closing, file);
+                            }}
+                          />
+                          <span className={cn(
+                            'inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors',
+                            uploadingProof === closing.id && 'opacity-60 pointer-events-none'
+                          )}>
+                            {uploadingProof === closing.id
+                              ? <><Loader2 className="w-3 h-3 animate-spin" /> Enviando...</>
+                              : <><Upload className="w-3 h-3" /> Anexar comprovante</>}
+                          </span>
+                        </label>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
