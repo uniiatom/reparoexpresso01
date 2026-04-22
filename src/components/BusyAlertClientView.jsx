@@ -8,11 +8,24 @@ export default function BusyAlertClientView({ alertId }) {
 
   useEffect(() => {
     if (!alertId) return;
+    
+    // Carrega inicial
     base44.entities.BusyAlert.get(alertId).then(setAlert).catch(() => {});
+    
+    // Subscribe com polling fallback
     const unsub = base44.entities.BusyAlert.subscribe((event) => {
       if (event.id === alertId && event.data) setAlert(event.data);
     });
-    return unsub;
+    
+    // Polling a cada 3 segundos como fallback
+    const pollInterval = setInterval(() => {
+      base44.entities.BusyAlert.get(alertId).then(setAlert).catch(() => {});
+    }, 3000);
+    
+    return () => {
+      unsub();
+      clearInterval(pollInterval);
+    };
   }, [alertId]);
 
   // Conta o tempo decorrido desde a criação do alerta
