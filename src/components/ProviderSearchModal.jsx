@@ -99,7 +99,7 @@ function ProviderCard({ provider, label }) {
 }
 
 export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClose }) {
-  const [phase, setPhase] = useState('searching'); // searching | found | none | favorites
+  const [phase, setPhase] = useState('searching'); // searching | found | none | favorites | aguardando_respostas
   const [nearestProvider, setNearestProvider] = useState(null);
   const [secondProvider, setSecondProvider] = useState(null);
   const [estMin, setEstMin] = useState(null);
@@ -112,7 +112,11 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [selectedFavorite, setSelectedFavorite] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [busyAlertId, setBusyAlertId] = useState(null);
+  const [providerBusyAlerts, setProviderBusyAlerts] = useState([]);
+  const [waitingSeconds, setWaitingSeconds] = useState(300); // 5 min
   const busyAlertCreated = useRef(false);
+  const waitingTimerRef = useRef(null);
+  const busyAlertsUnsubscribeRef = useRef(null);
 
   useEffect(() => {
     // Busca favoritos e inicia busca de prestadores em paralelo
@@ -126,6 +130,12 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
           .catch(() => {});
       }
     });
+
+    // Cleanup ao desmontar
+    return () => {
+      if (waitingTimerRef.current) clearInterval(waitingTimerRef.current);
+      if (busyAlertsUnsubscribeRef.current) busyAlertsUnsubscribeRef.current();
+    };
   }, []);
 
   // Geocodifica uma query via Nominatim
@@ -265,13 +275,38 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
 
         // Chama backend function para criar ProviderBusyAlerts (prestadores em execução próximos)
         try {
-          await base44.functions.invoke('findNearbyBusyProviders', {
-            service_request_id: 'temp_request_id', // Será gerado na criação efetiva
+          const result = await base44.functions.invoke('findNearbyBusyProviders', {
+            service_request_id: 'temp_request_id',
             client_latitude: cLat,
             client_longitude: cLon,
             service_type: serviceTypes[0],
             client_name: form.client_name || 'Cliente',
           });
+          
+          // Se foram criados alertas, aguarda respostas por 5 minutos
+          if (result.data?.alerts_created > 0) {
+            setPhase('aguardando_respostas');
+            setWaitingSeconds(300);
+            
+            // Inicia timer de contagem regressiva
+            let remaining = 300;
+            waitingTimerRef.current = setInterval(() => {
+              remaining--;
+              setWaitingSeconds(remaining);
+              if (remaining <= 0) {
+                clearInterval(waitingTimerRef.current);
+                setPhase('none');
+              }
+            }, 1000);
+
+            // Monitora respostas dos prestadores
+            busyAlertsUnsubscribeRef.current = base44.entities.ProviderBusyAlert.subscribe((event) => {
+              if (event.type === 'update' && event.data?.status === 'respondido') {
+                setProviderBusyAlerts(prev => [...prev, event.data]);
+              }
+            });
+            return;
+          }
         } catch (e) {
           console.error('Erro ao buscar prestadores ocupados próximos:', e);
         }
@@ -535,6 +570,56 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                   )}
                 </>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Fase: aguardando respostas dos prestadores ocupados */}
+        {phase === 'aguardando_respostas' && (
+          <div>
+            <div className="bg-blue-50 px-6 pt-6 pb-4 border-b border-border">
+              <div className="flex items-center gap-2 text-blue-700 mb-3">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span className="font-bold text-base">Procurando prestadores próximos</span>
+              </div>
+              <p className="text-sm text-blue-700/80">
+                Enviamos notificação para profissionais em atendimento próximo a você. Aguardando respostas...
+              </p>
+            </div>
+
+            <div className="px-6 py-6 space-y-4">
+              {/* Mostra respostas recebidas */}
+              {providerBusyAlerts.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase">Prestadores disponíveis</p>
+                  {providerBusyAlerts.map(alert => (
+                    <div key={alert.id} className="bg-green-50 border border-green-200 rounded-2xl p-3">
+                      <p className="font-semibold text-sm text-green-900">{alert.provider_name}</p>
+                      <p className="text-xs text-green-700 mt-1">
+                        Termina em ~{alert.finish_time_minutes} minutos · {alert.distance_km} km de distância
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Contador regressivo */}
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">Tempo restante para busca</p>
+                <div className="text-4xl font-bold text-primary">{Math.floor(waitingSeconds / 60)}:{String(waitingSeconds % 60).padStart(2, '0')}</div>
+              </div>
+
+              <Button 
+                onClick={() => { 
+                  if (waitingTimerRef.current) clearInterval(waitingTimerRef.current);
+                  if (busyAlertsUnsubscribeRef.current) busyAlertsUnsubscribeRef.current();
+                  setPhase('none'); 
+                }} 
+                variant="outline"
+                className="w-full rounded-2xl"
+              >
+                Pular e agendar agora
+              </Button>
             </div>
           </div>
         )}
