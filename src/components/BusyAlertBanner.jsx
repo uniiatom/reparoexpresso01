@@ -75,7 +75,7 @@ export default function BusyAlertBanner({ provider }) {
     loadAlerts();
     
     // Subscribe para mudanças em tempo real
-    const unsub = base44.entities.BusyAlert.subscribe(() => loadAlerts()).catch(() => {});
+    const unsub = base44.entities.BusyAlert.subscribe(() => loadAlerts());
     
     // Polling a cada 5 segundos como fallback (aumentado para evitar rate limit)
     const pollInterval = setInterval(loadAlerts, 5000);
