@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { RefreshCw, CheckCircle2, Clock, FileText, RotateCcw, Upload, ExternalLink, Loader2 } from 'lucide-react';
+import { RefreshCw, CheckCircle2, Clock, RotateCcw, Upload, ExternalLink, Loader2 } from 'lucide-react';
 
 const STATUS_CONFIG = {
   pendente_nota: { label: 'Aguard. Nota', color: 'bg-orange-100 text-orange-700 border-orange-200', icon: '⏳' },
@@ -20,7 +20,7 @@ export default function BiweeklyClosingAdmin() {
   const [customEnd, setCustomEnd] = useState('');
   const [generating, setGenerating] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [uploadingProof, setUploadingProof] = useState(null); // closing.id sendo processado
+  const [uploadingProof, setUploadingProof] = useState(null);
 
   const { data: closings = [], isLoading } = useQuery({
     queryKey: ['biweekly-closings'],
@@ -144,20 +144,11 @@ export default function BiweeklyClosingAdmin() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button
-            className="flex-1 font-semibold"
-            onClick={handleGenerate}
-            disabled={generating}
-          >
+          <Button className="flex-1 font-semibold" onClick={handleGenerate} disabled={generating}>
             <RefreshCw className={cn('w-4 h-4 mr-2', generating && 'animate-spin')} />
             {generating ? 'Gerando...' : 'Gerar Fechamentos'}
           </Button>
-          <Button
-            variant="outline"
-            className="flex-1 font-semibold"
-            onClick={handleUpdate}
-            disabled={updating}
-          >
+          <Button variant="outline" className="flex-1 font-semibold" onClick={handleUpdate} disabled={updating}>
             <RotateCcw className={cn('w-4 h-4 mr-2', updating && 'animate-spin')} />
             {updating ? 'Atualizando...' : 'Atualizar com Serviços'}
           </Button>
@@ -189,15 +180,15 @@ export default function BiweeklyClosingAdmin() {
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div className="bg-muted rounded-lg p-2 text-center">
                     <p className="text-muted-foreground">Bruto</p>
-                    <p className="font-bold text-foreground">R$ {closing.gross_amount?.toFixed(2)}</p>
+                    <p className="font-bold text-foreground">R$ {(closing.gross_amount || 0).toFixed(2)}</p>
                   </div>
                   <div className="bg-red-50 rounded-lg p-2 text-center">
                     <p className="text-red-600">Fundo (-3%)</p>
-                    <p className="font-bold text-red-700">- R$ {closing.reserve_fund_deduction?.toFixed(2)}</p>
+                    <p className="font-bold text-red-700">- R$ {(closing.reserve_fund_deduction || 0).toFixed(2)}</p>
                   </div>
                   <div className="bg-green-50 rounded-lg p-2 text-center">
                     <p className="text-green-600">Líquido</p>
-                    <p className="font-bold text-green-700">R$ {closing.net_amount?.toFixed(2)}</p>
+                    <p className="font-bold text-green-700">R$ {(closing.net_amount || 0).toFixed(2)}</p>
                   </div>
                 </div>
 
@@ -208,6 +199,7 @@ export default function BiweeklyClosingAdmin() {
                       <Clock className="w-3 h-3 mr-1" /> Aguardando nota do prestador
                     </Button>
                   )}
+
                   {closing.status === 'nota_enviada' && (
                     <div className="flex gap-2 items-center flex-wrap">
                       <label className="cursor-pointer">
@@ -240,6 +232,7 @@ export default function BiweeklyClosingAdmin() {
                       </Button>
                     </div>
                   )}
+
                   {closing.status === 'pago' && (
                     <div className="flex items-center gap-3 flex-wrap">
                       <span className="text-xs text-green-600 font-semibold flex items-center gap-1">
@@ -250,7 +243,7 @@ export default function BiweeklyClosingAdmin() {
                           href={closing.payment_proof_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline font-semibold"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold border border-blue-300 text-blue-600 hover:bg-blue-50 transition-colors"
                         >
                           <ExternalLink className="w-3 h-3" /> Ver comprovante
                         </a>
