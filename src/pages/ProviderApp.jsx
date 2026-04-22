@@ -100,7 +100,7 @@ export default function ProviderApp() {
   const incomingJob = jobQueue[0] || null;
 
   useNewJobAlert({
-    enabled: !!(provider?.is_online && provider?.is_approved && !activeJob),
+    enabled: !!(provider?.is_online && provider?.is_approved),
     onNewJob: handleNewJob,
     providerId: provider?.id,
   }); // eslint-disable-line react-hooks/exhaustive-deps
@@ -337,7 +337,7 @@ export default function ProviderApp() {
     mutationFn: ({ id, status, final_price }) => base44.entities.ServiceRequest.update(id, { status, ...(final_price && { final_price }) }),
   });
 
-  // Banner só bloqueia se há job realmente ativo (não em espera)
+  // Buzina sempre ativa quando online, mesmo com job ativo. Banner só mostra sem job ativo.
   const shouldShowBanner = !realActiveJob;
   const completedJobs = myJobs.filter(j => j.status === 'concluido');
   // OS na fila: atribuídas ao prestador mas ainda aguardando (não ativas nem concluídas nem agendadas)
@@ -347,12 +347,7 @@ export default function ProviderApp() {
     .filter(j => j.status === 'agendado')
     .sort((a, b) => (a.scheduled_date || '').localeCompare(b.scheduled_date || ''));
 
-  // Para a buzina automaticamente se o prestador já tem um job realmente ativo (não em espera)
-  useEffect(() => {
-    if (realActiveJob) {
-      window.__stopProviderHorn?.();
-    }
-  }, [realActiveJob?.id]);
+  // A buzina continua tocando mesmo com job ativo — o banner não aparece mas o som continua
 
   if (!provider) {
     return <ProviderSetupModal user={user} onCreated={() => queryClient.invalidateQueries({ queryKey: ['my-provider'] })} />;
