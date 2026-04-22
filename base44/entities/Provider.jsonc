@@ -98,6 +98,20 @@
       "default": false,
       "description": "Aprovado pelo admin"
     },
+    "is_blocked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o prestador foi bloqueado"
+    },
+    "block_reason": {
+      "type": "string",
+      "description": "Motivo do bloqueio"
+    },
+    "blocked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora do bloqueio"
+    },
     "rating": {
       "type": "number",
       "default": 5

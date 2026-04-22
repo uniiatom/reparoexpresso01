@@ -358,6 +358,27 @@ export default function ProviderApp() {
     return <ProviderSetupModal user={user} onCreated={() => queryClient.invalidateQueries({ queryKey: ['my-provider'] })} />;
   }
 
+  if (provider?.is_blocked) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="bg-card rounded-3xl shadow-2xl p-8 max-w-lg w-full border border-destructive/20">
+          <div className="text-center space-y-4">
+            <div className="text-6xl">🚫</div>
+            <h1 className="text-2xl font-bold text-destructive">Sua conta foi bloqueada</h1>
+            <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-4 space-y-2">
+              <p className="text-sm text-destructive font-semibold">Motivo do bloqueio:</p>
+              <p className="text-sm text-foreground">{provider.block_reason || 'Bloqueado pelo administrador'}</p>
+            </div>
+            <p className="text-muted-foreground text-sm">Se acredita que há um erro, entre em contato com o suporte.</p>
+            <Button variant="outline" onClick={() => base44.auth.logout()}>
+              Sair da conta
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!provider.is_approved) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">

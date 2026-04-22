@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Star, Phone, Mail, MapPin, Briefcase, Calendar, User, IdCard, ShieldCheck, ShieldOff } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const SPECIALTY_LABELS = {
@@ -11,6 +13,9 @@ const SPECIALTY_LABELS = {
 };
 
 export default function ProviderDetailsModal({ provider, onClose, onApprove, onBlock }) {
+  const [blockReason, setBlockReason] = useState('');
+  const [showBlockForm, setShowBlockForm] = useState(false);
+
   if (!provider) return null;
 
   const fields = [
@@ -25,6 +30,15 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onB
     { label: "Anos de experiência", value: provider.experience_years != null ? `${provider.experience_years} anos` : null, icon: Briefcase },
     { label: "Biografia", value: provider.bio },
   ];
+
+  const handleBlock = async () => {
+    if (onBlock) {
+      await onBlock(provider.id, blockReason);
+      setBlockReason('');
+      setShowBlockForm(false);
+      onClose();
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto py-6 px-4">
@@ -50,7 +64,9 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onB
             <div>
               <p className="text-xl font-bold text-foreground">{provider.name}</p>
               <div className="flex flex-wrap gap-2 mt-1">
-                {provider.is_approved
+                {provider.is_blocked
+                  ? <Badge className="bg-red-100 text-red-800 border-0 text-xs">🚫 Bloqueado</Badge>
+                  : provider.is_approved
                   ? <Badge className="bg-green-100 text-green-800 border-0 text-xs">✓ Aprovado</Badge>
                   : <Badge className="bg-yellow-100 text-yellow-800 border-0 text-xs">⏳ Pendente</Badge>}
                 {provider.is_online && <Badge className="bg-primary/10 text-primary border-0 text-xs">🟢 Online</Badge>}
@@ -63,6 +79,19 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onB
               </div>
             </div>
           </div>
+
+          {/* Aviso de bloqueio */}
+          {provider.is_blocked && (
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-3 space-y-2">
+              <p className="text-sm font-bold text-red-800">🚫 Prestador Bloqueado</p>
+              {provider.block_reason && (
+                <p className="text-xs text-red-700">{provider.block_reason}</p>
+              )}
+              {provider.blocked_at && (
+                <p className="text-xs text-red-600">Bloqueado em {new Date(provider.blocked_at).toLocaleDateString('pt-BR')}</p>
+              )}
+            </div>
+          )}
 
           {/* Foto de corpo inteiro */}
           {provider.photo_body_url && (
@@ -99,23 +128,56 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onB
             </div>
           )}
 
+          {/* Formulário de bloqueio */}
+          {showBlockForm && (
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-3 space-y-3">
+              <p className="text-sm font-bold text-red-800">Motivo do bloqueio</p>
+              <Textarea
+                placeholder="Descreva o motivo do bloqueio..."
+                value={blockReason}
+                onChange={(e) => setBlockReason(e.target.value)}
+                className="rounded-xl"
+              />
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold"
+                  onClick={handleBlock}
+                >
+                  Confirmar Bloqueio
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-xl"
+                  onClick={() => {
+                    setShowBlockForm(false);
+                    setBlockReason('');
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Ações */}
-          <div className="flex gap-3 pt-2 flex-wrap">
-            {!provider.is_approved ? (
-              <>
-                <Button className="flex-1 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold" onClick={() => { onApprove(provider.id, true); onClose(); }}>
-                  <ShieldCheck className="w-4 h-4 mr-2" /> Aprovar
+          {!provider.is_blocked && (
+            <div className="flex gap-3 pt-2 flex-wrap">
+              {!provider.is_approved ? (
+                <>
+                  <Button className="flex-1 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold" onClick={() => { onApprove(provider.id, true); onClose(); }}>
+                    <ShieldCheck className="w-4 h-4 mr-2" /> Aprovar
+                  </Button>
+                  <Button variant="outline" className="flex-1 rounded-2xl text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => setShowBlockForm(true)}>
+                    <ShieldOff className="w-4 h-4 mr-2" /> Bloquear
+                  </Button>
+                </>
+              ) : (
+                <Button variant="outline" className="flex-1 rounded-2xl text-destructive border-destructive/30" onClick={() => setShowBlockForm(true)}>
+                  <ShieldOff className="w-4 h-4 mr-2" /> Bloquear prestador
                 </Button>
-                <Button variant="outline" className="flex-1 rounded-2xl text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => { onApprove(provider.id, false); onClose(); }}>
-                  <ShieldOff className="w-4 h-4 mr-2" /> Reprovar
-                </Button>
-              </>
-            ) : (
-              <Button variant="outline" className="flex-1 rounded-2xl text-destructive border-destructive/30" onClick={() => { onApprove(provider.id, false); onClose(); }}>
-                <ShieldOff className="w-4 h-4 mr-2" /> Bloquear prestador
-              </Button>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

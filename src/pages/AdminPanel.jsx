@@ -81,6 +81,20 @@ export default function AdminPanel() {
     },
   });
 
+  const blockProvider = useMutation({
+    mutationFn: ({ providerId, blockReason }) => base44.entities.Provider.update(providerId, {
+      is_blocked: true,
+      block_reason: blockReason,
+      blocked_at: new Date().toISOString(),
+      is_approved: false,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-providers'] });
+      toast.success("Prestador bloqueado com sucesso");
+      setSelectedProvider(null);
+    },
+  });
+
   const stats = {
     total: requests.length,
     active: requests.filter(r => ['aguardando', 'aceito', 'a_caminho', 'em_andamento'].includes(r.status)).length,
@@ -90,7 +104,7 @@ export default function AdminPanel() {
     revenue: requests.filter(r => r.final_price).reduce((acc, r) => acc + (r.final_price || 0), 0),
   };
 
-  const pendingProviders = providers.filter(p => !p.is_approved);
+  const pendingProviders = providers.filter(p => !p.is_approved && !p.is_blocked);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -240,7 +254,7 @@ export default function AdminPanel() {
           <div className="space-y-3">
             {providers.length === 0 ? (
               <p className="text-center text-muted-foreground py-10">Nenhum prestador cadastrado</p>
-            ) : providers.map(prov => (
+            ) : providers.filter(p => !p.is_blocked).map(prov => (
               <Card key={prov.id}>
                 <CardContent className="p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -330,6 +344,7 @@ export default function AdminPanel() {
           provider={selectedProvider}
           onClose={() => setSelectedProvider(null)}
           onApprove={(id, approved) => approveProvider.mutate({ id, approved })}
+          onBlock={(id, reason) => blockProvider.mutate({ providerId: id, blockReason: reason })}
         />
       )}
     </div>
