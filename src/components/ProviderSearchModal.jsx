@@ -199,10 +199,13 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     // retorna Promise para uso no useEffect
     setPhase('searching');
 
-    const [clientCoords, onlineProviders] = await Promise.all([
+    const [clientCoords, onlineProvidersRaw] = await Promise.all([
       getClientCoords(),
       base44.entities.Provider.filter({ is_online: true, is_approved: true }),
     ]);
+
+    // Filtra prestadores: remove os que estão em execução
+    const onlineProviders = onlineProvidersRaw.filter(p => p.status !== 'em_andamento');
 
     const clientLat = clientCoords?.lat || null;
     const clientLon = clientCoords?.lon || null;
@@ -257,12 +260,13 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
         const cLat = clientCoords2?.lat || null;
         const cLon = clientCoords2?.lon || null;
         const nearbyOccupied = sorted
-          .filter(p => {
-            if (!p.latitude || !p.longitude) return false;
-            const d = calcDistance(cLat, cLon, p.latitude, p.longitude);
-            return d !== null && d <= 15; // até 15km
-          })
-          .slice(0, 5);
+           .filter(p => {
+             if (!p.latitude || !p.longitude) return false;
+             const d = calcDistance(cLat, cLon, p.latitude, p.longitude);
+             // Inclui prestadores em execução (em_andamento) que estejam dentro de 15km
+             return d !== null && d <= 15 && p.status === 'em_andamento';
+           })
+           .slice(0, 5);
 
         if (nearbyOccupied.length > 0) {
           const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min
@@ -437,23 +441,26 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
         )}
 
         {/* Fase: buscando */}
-        {phase === 'searching' && (
-          <div className="p-8 text-center">
-            <div className="relative w-20 h-20 mx-auto mb-5">
-              <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
-              <div className="relative w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-                <MapPin className="w-9 h-9 text-primary" />
-              </div>
-            </div>
-            <h3 className="text-xl font-bold text-foreground">Buscando prestadores</h3>
-            <p className="text-muted-foreground mt-2 text-sm">Localizando profissionais disponíveis perto de você...</p>
-            <div className="flex justify-center gap-1 mt-5">
-              {[0,1,2].map(i => (
-                <div key={i} className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: `${i*0.15}s` }} />
-              ))}
-            </div>
-          </div>
-        )}
+         {phase === 'searching' && (
+           <div className="p-8 text-center">
+             <div className="relative w-20 h-20 mx-auto mb-5">
+               <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
+               <div className="relative w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+                 <MapPin className="w-9 h-9 text-primary" />
+               </div>
+             </div>
+             <h3 className="text-xl font-bold text-foreground">Buscando prestadores</h3>
+             <p className="text-muted-foreground mt-2 text-sm">Localizando profissionais disponíveis perto de você...</p>
+             <p className="text-xs text-muted-foreground mt-3 bg-primary/5 border border-primary/20 rounded-xl p-3">
+               ⏱️ A busca pode levar até 5 minutos. Notificaremos caso um prestador ocupado possa te atender depois.
+             </p>
+             <div className="flex justify-center gap-1 mt-5">
+               {[0,1,2].map(i => (
+                 <div key={i} className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: `${i*0.15}s` }} />
+               ))}
+             </div>
+           </div>
+         )}
 
         {/* Fase: prestador encontrado */}
         {phase === 'found' && nearestProvider && (
