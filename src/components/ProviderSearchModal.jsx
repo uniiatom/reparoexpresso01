@@ -305,7 +305,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                 }
               }, 1000);
 
-              // Monitora respostas dos prestadores
+              // Monitora respostas dos prestadores ocupados
               busyAlertsUnsubscribeRef.current = base44.entities.ProviderBusyAlert.subscribe((event) => {
                 if (event.type === 'update' && event.data?.status === 'respondido') {
                   // Prestador respondeu - confirma serviço automaticamente para imediato
@@ -318,6 +318,9 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                   }
                 }
               });
+              } else {
+              // Nenhum alerta criado — vai direto para agenda
+              setPhase('none');
               return;
             }
         } catch (e) {

@@ -9,11 +9,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    // Busca prestadores ativos/ocupados no mesmo tipo de serviço
-    const providers = await base44.entities.Provider.filter({ is_approved: true, is_blocked: false });
+    // Busca prestadores aprovados, online e próximos
+    const providers = await base44.entities.Provider.filter({ is_approved: true, is_blocked: false, is_online: true });
     
-    // Calcula distância e filtra prestadores em execução próximos
-    const busyNearby = providers.filter(p => {
+    // Calcula distância e filtra prestadores próximos (até 10km)
+    const nearbyProviders = providers.filter(p => {
       // Se não tem localização, ignora
       if (!p.latitude || !p.longitude) return false;
       
@@ -24,22 +24,45 @@ Deno.serve(async (req) => {
       const a = Math.sin(dLat/2)**2 + Math.cos(client_latitude*Math.PI/180)*Math.cos(p.latitude*Math.PI/180)*Math.sin(dLon/2)**2;
       const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       
-      // Retorna prestadores a até 5km de distância
-      return distance <= 5;
+      // Retorna prestadores a até 10km de distância
+      return distance <= 10;
     });
 
-    // Busca OSs em andamento desses prestadores no mesmo serviço
+    // Ordena por distância (mais próximos primeiro)
     const allServices = await base44.entities.ServiceRequest.list('-created_date', 1000);
+    const sortedByDistance = nearbyProviders.sort((a, b) => {
+      const R = 6371;
+      const distA = R * 2 * Math.asin(Math.sqrt(
+        Math.sin((a.latitude - client_latitude) * Math.PI / 360)**2 + 
+        Math.cos(client_latitude * Math.PI / 180) * Math.cos(a.latitude * Math.PI / 180) * 
+        Math.sin((a.longitude - client_longitude) * Math.PI / 360)**2
+      ));
+      const distB = R * 2 * Math.asin(Math.sqrt(
+        Math.sin((b.latitude - client_latitude) * Math.PI / 360)**2 + 
+        Math.cos(client_latitude * Math.PI / 180) * Math.cos(b.latitude * Math.PI / 180) * 
+        Math.sin((b.longitude - client_longitude) * Math.PI / 360)**2
+      ));
+      return distA - distB;
+    });
+    
+    // Prioriza prestadores em atendimento (mais rápidos), depois os online
     const providersInService = allServices.filter(s => 
       s.status === 'em_andamento' && 
       s.service_type === service_type && 
-      busyNearby.some(p => p.id === s.provider_id)
+      sortedByDistance.some(p => p.id === s.provider_id)
     );
+    
+    // Se não tem em atendimento, usa os online diretos
+    const providersToNotify = providersInService.length > 0 ? providersInService : sortedByDistance.slice(0, 5);
 
-    // Cria alertas para cada prestador encontrado (máx 3)
+    // Cria alertas para cada prestador encontrado (máx 5)
     const alerts = [];
-    for (const service of providersInService.slice(0, 3)) {
-      const provider = busyNearby.find(p => p.id === service.provider_id);
+    const toProcess = providersInService.length > 0 
+      ? providersInService.slice(0, 5)
+      : sortedByDistance.slice(0, 5);
+    
+    for (const item of toProcess) {
+      const provider = item.provider_id ? nearbyProviders.find(p => p.id === item.provider_id) : item;
       if (!provider) continue;
 
       const distance = Math.round(
