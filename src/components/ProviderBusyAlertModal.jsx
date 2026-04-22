@@ -66,17 +66,20 @@ export default function ProviderBusyAlertModal({ alert, onClose, onRespond }) {
               <Clock className="w-4 h-4" />
               Em quantos minutos você termina o atendimento atual?
             </label>
-            <div className="relative">
-              <Input
-                type="number"
-                min="1"
-                max="120"
-                placeholder="Ex: 15"
-                value={finishTime}
-                onChange={(e) => setFinishTime(e.target.value)}
-                className="rounded-2xl pr-12 text-center"
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-semibold">min</span>
+            <div className="flex flex-wrap gap-2">
+              {[5, 10, 15, 20, 30].map(time => (
+                <button
+                  key={time}
+                  onClick={() => setFinishTime(String(time))}
+                  className={`flex-1 min-w-16 py-2 rounded-xl font-semibold text-sm border-2 transition-all ${
+                    finishTime === String(time)
+                      ? 'border-orange-600 bg-orange-100 text-orange-900'
+                      : 'border-border bg-background text-foreground hover:border-orange-300'
+                  }`}
+                >
+                  {time}
+                </button>
+              ))}
             </div>
             <p className="text-xs text-muted-foreground">
               O cliente verá que você pode atender em breve
