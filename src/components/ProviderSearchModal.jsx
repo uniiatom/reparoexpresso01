@@ -124,10 +124,11 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       }
     });
 
-    // Inicia busca de prestadores — sempre mantém "searching" por 5 minutos
+    // Inicia busca de prestadores — sempre mantém "searching" por 5 minutos depois vai para agendamento
     setPhase('searching');
     const searchTimeout = setTimeout(() => {
-      searchProviders();
+      console.log('[search] ⏱️ 5 minutos atingidos, encerrando busca...');
+      setPhase('none'); // Abre a tela de agendamento automaticamente
     }, 5 * 60 * 1000); // 5 minutos
 
     return () => clearTimeout(searchTimeout);
