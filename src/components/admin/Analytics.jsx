@@ -114,7 +114,34 @@ export default function Analytics() {
 
   return (
     <div className="space-y-6">
-
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Volume Total', value: analytics.totalRequests, icon: Briefcase, color: 'text-blue-600' },
+          { label: 'Concluídos', value: analytics.completedRequests, icon: Activity, color: 'text-green-600' },
+          { label: 'Receita', value: `R$ ${parseFloat(analytics.totalRevenue).toLocaleString('pt-BR')}`, icon: DollarSign, color: 'text-primary' },
+          { label: 'Taxa Cancelamento', value: `${analytics.cancellationRate}%`, icon: AlertCircle, color: 'text-red-600' },
+        ].map((metric, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1 }}
+          >
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground font-semibold mb-1">{metric.label}</p>
+                    <p className={cn('text-2xl font-bold', metric.color)}>{metric.value}</p>
+                  </div>
+                  <metric.icon className={cn('w-8 h-8 opacity-20', metric.color)} />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
 
       {/* Top Providers */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
