@@ -320,8 +320,8 @@ export default function AcompanharServico() {
         </div>
       )}
 
-      {/* Senhas de segurança — ocultar quando painel de lote já as exibe */}
-      {!request.security_password && request.status === 'aguardando' && otherBatchRequests.length === 0 && (
+      {/* Senhas de segurança */}
+      {!request.security_password && request.status === 'aguardando' && (
         <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 mb-5 flex items-center gap-3">
           <div className="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin flex-shrink-0" style={{borderWidth: '3px'}} />
           <div>
@@ -330,7 +330,7 @@ export default function AcompanharServico() {
           </div>
         </div>
       )}
-      {request.security_password && otherBatchRequests.length === 0 && (
+      {request.security_password && (
         <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 mb-5 space-y-3">
           <p className="text-xs font-bold text-amber-800 uppercase tracking-wide">🔐 Senhas de segurança</p>
           <div className="grid grid-cols-2 gap-3">
