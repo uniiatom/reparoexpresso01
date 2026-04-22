@@ -288,15 +288,11 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
             setPhase('aguardando_respostas');
             setWaitingSeconds(300);
             
-            // Inicia timer de contagem regressiva
+            // Inicia timer de contagem regressiva (apenas conta, não muda fase)
             let remaining = 300;
             waitingTimerRef.current = setInterval(() => {
               remaining--;
               setWaitingSeconds(remaining);
-              if (remaining <= 0) {
-                clearInterval(waitingTimerRef.current);
-                setPhase('none');
-              }
             }, 1000);
 
             // Monitora respostas dos prestadores
@@ -618,7 +614,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                 variant="outline"
                 className="w-full rounded-2xl"
               >
-                Pular e agendar agora
+                Cancelar e fechar
               </Button>
             </div>
           </div>
