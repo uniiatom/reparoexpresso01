@@ -9,27 +9,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    // Busca prestadores aprovados, online e próximos
-    const providers = await base44.entities.Provider.filter({ is_approved: true, is_blocked: false, is_online: true });
+    // Busca todos os prestadores aprovados (online ou não)
+    const allProviders = await base44.entities.Provider.filter({ is_approved: true, is_blocked: false });
     
     // Calcula distância e filtra prestadores próximos (até 10km)
-    const nearbyProviders = providers.filter(p => {
-      // Se não tem localização, ignora
+    const nearbyProviders = allProviders.filter(p => {
       if (!p.latitude || !p.longitude) return false;
       
-      // Calcula distância simples (Haversine)
       const R = 6371;
       const dLat = (p.latitude - client_latitude) * Math.PI / 180;
       const dLon = (p.longitude - client_longitude) * Math.PI / 180;
       const a = Math.sin(dLat/2)**2 + Math.cos(client_latitude*Math.PI/180)*Math.cos(p.latitude*Math.PI/180)*Math.sin(dLon/2)**2;
       const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       
-      // Retorna prestadores a até 10km de distância
       return distance <= 10;
     });
 
-    // Ordena por distância (mais próximos primeiro)
-    const allServices = await base44.entities.ServiceRequest.list('-created_date', 1000);
+    // Busca serviços em andamento próximos
+    const allServices = await base44.entities.ServiceRequest.filter({ status: 'em_andamento' });
+    
+    // Ordena por distância
     const sortedByDistance = nearbyProviders.sort((a, b) => {
       const R = 6371;
       const distA = R * 2 * Math.asin(Math.sqrt(
@@ -45,24 +44,22 @@ Deno.serve(async (req) => {
       return distA - distB;
     });
     
-    // Prioriza prestadores em atendimento (mais rápidos), depois os online
+    // Prioriza prestadores em atendimento (do mesmo tipo de serviço)
     const providersInService = allServices.filter(s => 
-      s.status === 'em_andamento' && 
       s.service_type === service_type && 
       sortedByDistance.some(p => p.id === s.provider_id)
     );
     
-    // Se não tem em atendimento, usa os online diretos
-    const providersToNotify = providersInService.length > 0 ? providersInService : sortedByDistance.slice(0, 5);
+    // Combina: primeiro os em atendimento, depois os online próximos (máx 5 total)
+    const providersOnline = sortedByDistance.filter(p => p.is_online);
+    const toProcess = [
+      ...providersInService.slice(0, 3).map(s => ({ ...nearbyProviders.find(p => p.id === s.provider_id), _inService: true })),
+      ...providersOnline.filter(p => !providersInService.find(s => s.provider_id === p.id)).slice(0, 2)
+    ];
 
-    // Cria alertas para cada prestador encontrado (máx 5)
     const alerts = [];
-    const toProcess = providersInService.length > 0 
-      ? providersInService.slice(0, 5)
-      : sortedByDistance.slice(0, 5);
     
-    for (const item of toProcess) {
-      const provider = item.provider_id ? nearbyProviders.find(p => p.id === item.provider_id) : item;
+    for (const provider of toProcess) {
       if (!provider) continue;
 
       const distance = Math.round(
@@ -84,6 +81,8 @@ Deno.serve(async (req) => {
           service_type,
           distance_km: distance,
           status: 'notificado',
+          can_attend: false, // Padrão false até o prestador responder
+          finish_time_minutes: 0, // Será preenchido pelo prestador
           expires_at: new Date(Date.now() + 15 * 60000).toISOString(),
         });
         alerts.push(alert);
