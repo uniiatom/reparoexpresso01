@@ -142,35 +142,35 @@ export default function AdminPanel() {
       )}
 
       <Tabs defaultValue="analytics">
-        <TabsList className="mb-6 flex flex-wrap">
-          <TabsTrigger value="analytics">📊 Analytics</TabsTrigger>
-          <TabsTrigger value="optimizer">🎯 Otimizar Rotas</TabsTrigger>
-          <TabsTrigger value="requests">Chamados</TabsTrigger>
-          <TabsTrigger value="providers">
-            Prestadores {pendingProviders.length > 0 && `(${pendingProviders.length} pendentes)`}
+        <TabsList className="mb-3 flex flex-wrap gap-1 h-auto p-1">
+          <TabsTrigger value="analytics" className="text-xs px-2 py-1">📊 Analytics</TabsTrigger>
+          <TabsTrigger value="optimizer" className="text-xs px-2 py-1">🎯 Rotas</TabsTrigger>
+          <TabsTrigger value="requests" className="text-xs px-2 py-1">Chamados</TabsTrigger>
+          <TabsTrigger value="providers" className="text-xs px-2 py-1">
+            Prestadores {pendingProviders.length > 0 && `(${pendingProviders.length})`}
           </TabsTrigger>
-          <TabsTrigger value="pricing">
-            <DollarSign className="w-3.5 h-3.5 mr-1" /> Precificação
+          <TabsTrigger value="pricing" className="text-xs px-2 py-1">
+            <DollarSign className="w-3 h-3 mr-0.5" /> Preços
           </TabsTrigger>
-          <TabsTrigger value="repasse">
-            <DollarSign className="w-3.5 h-3.5 mr-1" /> Repasse
+          <TabsTrigger value="repasse" className="text-xs px-2 py-1">
+            <DollarSign className="w-3 h-3 mr-0.5" /> Repasse
           </TabsTrigger>
-          <TabsTrigger value="checklists">✅ Checklists</TabsTrigger>
-          <TabsTrigger value="additional">➕ Pontos Adicionais</TabsTrigger>
-          <TabsTrigger value="photos">
-            📷 Fotos {pendingPhotoProviders.length > 0 && `(${pendingPhotoProviders.length})`}
+          <TabsTrigger value="checklists" className="text-xs px-2 py-1">✅ Checklists</TabsTrigger>
+          <TabsTrigger value="additional" className="text-xs px-2 py-1">➕ Pontos</TabsTrigger>
+          <TabsTrigger value="photos" className="text-xs px-2 py-1">
+            📷 {pendingPhotoProviders.length > 0 && `(${pendingPhotoProviders.length})`}
           </TabsTrigger>
-          <TabsTrigger value="reserve-fund">
-            🔐 Fundos de Reserva
+          <TabsTrigger value="reserve-fund" className="text-xs px-2 py-1">
+            🔐 Fundos
           </TabsTrigger>
-          <TabsTrigger value="invoices">
-            🧾 Notas Fiscais
+          <TabsTrigger value="invoices" className="text-xs px-2 py-1">
+            🧾 NFe
           </TabsTrigger>
-          <TabsTrigger value="fechamento">
+          <TabsTrigger value="fechamento" className="text-xs px-2 py-1">
             📆 Fechamento
           </TabsTrigger>
-          <TabsTrigger value="consulta-cliente">
-            🔍 Consulta Cliente
+          <TabsTrigger value="consulta-cliente" className="text-xs px-2 py-1">
+            🔍 Clientes
           </TabsTrigger>
         </TabsList>
 
