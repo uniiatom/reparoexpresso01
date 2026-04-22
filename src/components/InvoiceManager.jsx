@@ -175,6 +175,7 @@ export default function InvoiceManager({ providerId, providerName }) {
                 <div className="text-right">
                   <p className="text-xs text-orange-600 font-semibold">Valor a receber</p>
                   <p className="text-xl font-black text-orange-900">R$ {closing.net_amount?.toFixed(2)}</p>
+                  <p className="text-[10px] text-orange-500 mt-0.5">⏱ Pago em até 5 dias úteis</p>
                 </div>
               </div>
               <Button
