@@ -98,7 +98,7 @@ function ProviderCard({ provider, label }) {
   );
 }
 
-export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClose, onBusyAlertCreated }) {
+export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClose, onBusyAlertCreated, onProviderResponded }) {
   const [phase, setPhase] = useState('searching'); // searching | found | none | favorites
   const [nearestProvider, setNearestProvider] = useState(null);
   const [secondProvider, setSecondProvider] = useState(null);
@@ -611,6 +611,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                 <BusyAlertClientView
                   alertId={busyAlertId}
                   form={form}
+                  onProviderResponded={() => onClose && onClose()}
                   onConfirm={(formData) => {
                     if (confirming || processingRef.current) return;
                     processingRef.current = true;
@@ -633,6 +634,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
               <BusyAlertClientView
                 alertId={busyAlertId}
                 form={form}
+                onProviderResponded={() => onClose && onClose()}
                 onConfirm={(formData) => {
                   if (confirming || processingRef.current) return;
                   processingRef.current = true;

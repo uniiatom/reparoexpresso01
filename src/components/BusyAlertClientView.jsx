@@ -1,23 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Clock, CheckCircle2, User, AlertCircle, Zap, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function BusyAlertClientView({ alertId, onConfirm, form }) {
+export default function BusyAlertClientView({ alertId, onConfirm, form, onProviderResponded }) {
   const [alert, setAlert] = useState(null);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [confirming, setConfirming] = useState(false);
+  const notifiedRef = React.useRef(false);
 
   useEffect(() => {
     if (!alertId) return;
     
+    const handleUpdate = (data) => {
+      setAlert(data);
+      // Quando um prestador responde, notifica o pai para fechar o modal de busca
+      const hasResponses = data?.responses?.filter(r => r.can_attend)?.length > 0;
+      if (hasResponses && !notifiedRef.current) {
+        notifiedRef.current = true;
+        if (onProviderResponded) onProviderResponded();
+      }
+    };
+
     // Carrega inicial
-    base44.entities.BusyAlert.get(alertId).then(setAlert).catch(() => {});
+    base44.entities.BusyAlert.get(alertId).then(handleUpdate).catch(() => {});
     
     // Polling a cada 2 segundos
     const pollInterval = setInterval(() => {
       base44.entities.BusyAlert.get(alertId)
-        .then(setAlert)
+        .then(handleUpdate)
         .catch(() => {});
     }, 2000);
     

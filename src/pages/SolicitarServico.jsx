@@ -1441,6 +1441,21 @@ export default function SolicitarServico() {
         </div>
       )}
 
+      {/* Banner dentro do modal enquanto modal está aberto — fecha o modal ao receber resposta */}
+      {activeBusyAlertId && showProviderSearch && (
+        <div className="hidden">
+          <BusyAlertClientView
+            alertId={activeBusyAlertId}
+            form={form}
+            onProviderResponded={() => setShowProviderSearch(false)}
+            onConfirm={(formData) => {
+              setActiveBusyAlertId(null);
+              handleFinalConfirm(formData);
+            }}
+          />
+        </div>
+      )}
+
       {showProviderSearch && (
         <ProviderSearchModal
           form={{
@@ -1453,6 +1468,7 @@ export default function SolicitarServico() {
           onSchedule={handleFinalConfirm}
           onClose={() => setShowProviderSearch(false)}
           onBusyAlertCreated={(id) => setActiveBusyAlertId(id)}
+          onProviderResponded={() => setShowProviderSearch(false)}
         />
       )}
     </div>
