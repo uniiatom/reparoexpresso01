@@ -98,7 +98,7 @@ function ProviderCard({ provider, label }) {
   );
 }
 
-export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClose }) {
+export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClose, onBusyAlertCreated }) {
   const [phase, setPhase] = useState('searching'); // searching | found | none | favorites
   const [nearestProvider, setNearestProvider] = useState(null);
   const [secondProvider, setSecondProvider] = useState(null);
@@ -306,6 +306,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
         });
         console.log('[busyalert] ✅ Alerta criado:', newAlert.id, 'notificando:', nearbyOccupied.map(p => p.name).join(', '));
         setBusyAlertId(newAlert.id);
+        if (onBusyAlertCreated) onBusyAlertCreated(newAlert.id);
       } else {
         console.log('[busyalert] ❌ Nenhum prestador em execução próximo');
       }
@@ -628,8 +629,20 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
         {/* Botão fechar quando buscando (caso queira cancelar) */}
         {phase === 'searching' && (
           <div className="px-6 pb-6">
-            <button onClick={onClose} className="w-full text-sm text-muted-foreground hover:text-foreground text-center py-1">
-              Cancelar
+            {busyAlertId && (
+              <BusyAlertClientView
+                alertId={busyAlertId}
+                form={form}
+                onConfirm={(formData) => {
+                  if (confirming || processingRef.current) return;
+                  processingRef.current = true;
+                  setConfirming(true);
+                  onConfirm(formData);
+                }}
+              />
+            )}
+            <button onClick={onClose} className="w-full text-sm text-muted-foreground hover:text-foreground text-center py-2 mt-2">
+              Cancelar busca
             </button>
           </div>
         )}

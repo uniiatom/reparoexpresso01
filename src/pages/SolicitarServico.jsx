@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import BusyAlertClientView from "@/components/BusyAlertClientView";
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -82,6 +83,7 @@ export default function SolicitarServico() {
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [showProviderSearch, setShowProviderSearch] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
+  const [activeBusyAlertId, setActiveBusyAlertId] = useState(null);
   const [showCaixaDaguaModal, setShowCaixaDaguaModal] = useState(false);
   const [caixaDaguaTipo, setCaixaDaguaTipo] = useState(null); // 'residencia' | 'condominio'
   const [caixaDaguaLitragem, setCaixaDaguaLitragem] = useState(null);
@@ -1425,6 +1427,20 @@ export default function SolicitarServico() {
         )}
       </div>
 
+      {/* Banner persistente de resposta do prestador ocupado — aparece mesmo após fechar o modal */}
+      {activeBusyAlertId && !showProviderSearch && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 p-4 max-w-lg mx-auto">
+          <BusyAlertClientView
+            alertId={activeBusyAlertId}
+            form={form}
+            onConfirm={(formData) => {
+              setActiveBusyAlertId(null);
+              handleFinalConfirm(formData);
+            }}
+          />
+        </div>
+      )}
+
       {showProviderSearch && (
         <ProviderSearchModal
           form={{
@@ -1436,6 +1452,7 @@ export default function SolicitarServico() {
           onConfirm={handleFinalConfirm}
           onSchedule={handleFinalConfirm}
           onClose={() => setShowProviderSearch(false)}
+          onBusyAlertCreated={(id) => setActiveBusyAlertId(id)}
         />
       )}
     </div>
