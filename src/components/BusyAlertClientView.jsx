@@ -76,41 +76,29 @@ export default function BusyAlertClientView({ alertId, onConfirm, form }) {
 
   // Há respostas de prestadores — mostrar botão para confirmar
   return (
-    <div className="mt-4 rounded-2xl border-2 border-green-400 bg-green-50 p-4">
-      <p className="text-sm font-bold text-green-800 mb-3 flex items-center gap-2">
-        <CheckCircle2 className="w-4 h-4" />
+    <div className="mt-3 rounded-2xl border-2 border-green-400 bg-green-50 p-3">
+      <p className="text-xs font-bold text-green-800 mb-2 flex items-center gap-1.5">
+        <CheckCircle2 className="w-3.5 h-3.5" />
         {responses.length === 1 ? '🎉 Um prestador pode te atender!' : `🎉 ${responses.length} prestadores podem te atender!`}
       </p>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {responses.map((r, i) => (
-          <div key={i} className="bg-white rounded-xl p-4 border-2 border-green-300 space-y-3">
-            {/* Info do prestador */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
-                <User className="w-5 h-5 text-green-600" />
+          <div key={i} className="bg-white rounded-xl p-2.5 border border-green-300 space-y-2">
+            {/* Info resumida */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <User className="w-4 h-4 text-green-600" />
+                </div>
+                <p className="text-xs font-bold text-foreground truncate">{r.provider_name}</p>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground">{r.provider_name}</p>
-                <p className="text-xs text-muted-foreground">Prestador disponível após serviço atual</p>
-              </div>
+              <span className="text-sm font-black text-green-700 whitespace-nowrap">~{r.total_eta_minutes} min</span>
             </div>
 
-            {/* Detalhamento do tempo */}
-            <div className="bg-green-50 rounded-xl p-3 border border-green-200 space-y-2">
-              <p className="text-xs font-bold text-green-800 mb-1">⏱️ Estimativa de chegada:</p>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Termina atendimento atual em:</span>
-                <span className="font-semibold text-foreground">~{r.finish_in_minutes} min</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Tempo de deslocamento até você:</span>
-                <span className="font-semibold text-foreground">~{r.travel_minutes || 0} min</span>
-              </div>
-              <div className="h-px bg-green-200" />
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-green-800">Total estimado para chegar:</span>
-                <span className="text-lg font-black text-green-700">~{r.total_eta_minutes} min</span>
-              </div>
+            {/* Detalhes compactos */}
+            <div className="flex gap-3 text-xs text-muted-foreground px-1">
+              <span>🔧 {r.finish_in_minutes} min p/ terminar</span>
+              <span>🚗 {r.travel_minutes || 0} min deslocamento</span>
             </div>
 
             {/* Botão confirmar */}
@@ -118,20 +106,17 @@ export default function BusyAlertClientView({ alertId, onConfirm, form }) {
               <Button
                 onClick={() => handleConfirmProvider(r)}
                 disabled={confirming}
-                className="w-full h-11 rounded-xl font-bold bg-green-600 hover:bg-green-700 text-white text-sm"
+                className="w-full h-9 rounded-xl font-bold bg-green-600 hover:bg-green-700 text-white text-xs"
               >
                 {confirming
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <><Zap className="w-4 h-4 mr-1" /> Confirmar atendimento em ~{r.total_eta_minutes} min</>
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : <><Zap className="w-3.5 h-3.5 mr-1" /> Confirmar em ~{r.total_eta_minutes} min</>
                 }
               </Button>
             )}
           </div>
         ))}
       </div>
-      <p className="text-xs text-green-700 mt-2 text-center">
-        Confirme para garantir seu atendimento com este prestador.
-      </p>
     </div>
   );
 }
