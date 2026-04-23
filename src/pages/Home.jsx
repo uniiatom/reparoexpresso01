@@ -134,7 +134,7 @@ export default function Home() {
             transition={{ duration: 0.4 }}
           >
             <motion.img
-              src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/d39f7bda3_generated_image.png"
+              src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/2abc65b15_generated_image.png"
               alt="Reparo Expresso"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
