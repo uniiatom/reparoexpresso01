@@ -606,7 +606,18 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
               >
                 {confirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Calendar className="w-4 h-4 mr-2" /> Confirmar agendamento</>}
               </Button>
-              {busyAlertId && <BusyAlertClientView alertId={busyAlertId} />}
+              {busyAlertId && (
+                <BusyAlertClientView
+                  alertId={busyAlertId}
+                  form={form}
+                  onConfirm={(formData) => {
+                    if (confirming || processingRef.current) return;
+                    processingRef.current = true;
+                    setConfirming(true);
+                    onConfirm(formData);
+                  }}
+                />
+              )}
               <button onClick={onClose} className="w-full text-sm text-muted-foreground hover:text-foreground text-center py-1">
                 Cancelar
               </button>
