@@ -15,7 +15,8 @@ export default function Wallet() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
-  const [ownerType, setOwnerType] = useState('cliente');
+  const [ownerType, setOwnerType] = useState(null); // null = carregando
+  const [isProvider, setIsProvider] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [filter, setFilter] = useState('all');
 
@@ -23,9 +24,10 @@ export default function Wallet() {
     base44.auth.me()
       .then(async u => {
         setUser(u);
-        // Verifica se é prestador
         const providers = await base44.entities.Provider.filter({ user_id: u.id });
-        if (providers.length > 0) setOwnerType('prestador');
+        const hasProvider = providers.length > 0;
+        setIsProvider(hasProvider);
+        setOwnerType(hasProvider ? 'prestador' : 'cliente');
       })
       .catch(() => navigate('/'));
   }, [navigate]);
@@ -48,7 +50,7 @@ export default function Wallet() {
       });
       return newWallet;
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && !!ownerType,
   });
 
   const { data: transactions = [], isLoading: txLoading, refetch: refetchTx } = useQuery({
@@ -75,7 +77,7 @@ export default function Wallet() {
     toast.success('Atualizado!');
   };
 
-  if (!user || walletLoading) {
+  if (!user || ownerType === null || walletLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -96,21 +98,23 @@ export default function Wallet() {
         </button>
       </div>
 
-      {/* Toggle cliente/prestador (se tiver os dois) */}
-      <div className="flex gap-2 mb-5">
-        <button
-          onClick={() => setOwnerType('cliente')}
-          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${ownerType === 'cliente' ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'}`}
-        >
-          👤 Cliente
-        </button>
-        <button
-          onClick={() => setOwnerType('prestador')}
-          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${ownerType === 'prestador' ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground'}`}
-        >
-          🔧 Prestador
-        </button>
-      </div>
+      {/* Toggle cliente/prestador (somente se for prestador) */}
+      {isProvider && (
+        <div className="flex gap-2 mb-5">
+          <button
+            onClick={() => setOwnerType('cliente')}
+            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${ownerType === 'cliente' ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'}`}
+          >
+            👤 Cliente
+          </button>
+          <button
+            onClick={() => setOwnerType('prestador')}
+            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${ownerType === 'prestador' ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground'}`}
+          >
+            🔧 Prestador
+          </button>
+        </div>
+      )}
 
       {/* Wallet Card */}
       <div className="mb-5">
