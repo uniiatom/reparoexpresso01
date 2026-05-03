@@ -348,8 +348,8 @@ export default function SolicitarServico() {
   }, {
     moto: { base: 130, perKm: 3.00 },
     carro: { base: 130, perKm: 3.00 },
-    suv: { base: 180, perKm: 4.50 },
-    van: { base: 220, perKm: 5.50 },
+    suv: { base: 130, perKm: 3.00 },
+    van: { base: 130, perKm: 3.00 },
   });
 
   // Calcula preço estimado para reboque
