@@ -517,7 +517,14 @@ export default function SolicitarServico() {
     createRequestRef.current = true;
     setShowProviderSearch(false);
     const { _secondProvider, ...cleanFormData } = formData;
-    createRequest.mutate({ ...cleanFormData, _secondProvider, _caixaCondominio: caixaDaguaTipo === 'condominio' });
+    // Adiciona preço estimado se for reboque
+    const finalData = { 
+      ...cleanFormData, 
+      _secondProvider, 
+      _caixaCondominio: caixaDaguaTipo === 'condominio',
+      estimated_price: towPrice?.total || cleanFormData.client_suggested_price,
+    };
+    createRequest.mutate(finalData);
   };
 
   const canNext = () => {
