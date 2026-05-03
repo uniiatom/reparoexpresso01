@@ -49,23 +49,30 @@ export default function BusyAlertClientView({ alertId, onConfirm, form, onProvid
   if (!alert) return null;
 
   const handleConfirmProvider = async (response) => {
-    if (!onConfirm || confirming) return;
-    setConfirming(true);
-    
-    // Marca o alerta como aceito pelo cliente
-    await base44.entities.BusyAlert.update(alertId, { status: 'aceito_pelo_cliente' }).catch(() => {});
-    
-    // Chama onConfirm com dados do prestador que vai atender
-    const now = new Date();
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const currentDate = now.toISOString().split('T')[0];
-    onConfirm({
-      ...form,
-      modality: 'imediato',
-      urgency: 'agora',
-      estimated_arrival_minutes: response.total_eta_minutes,
-    });
-  };
+     if (!onConfirm || confirming) return;
+     setConfirming(true);
+
+     // Marca o alerta como aceito pelo cliente
+     await base44.entities.BusyAlert.update(alertId, { status: 'aceito_pelo_cliente' }).catch(() => {});
+
+     // Chama onConfirm com dados do prestador que vai atender
+     const now = new Date();
+     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+     const currentDate = now.toISOString().split('T')[0];
+     onConfirm({
+       ...form,
+       modality: 'imediato',
+       urgency: 'agora',
+       estimated_arrival_minutes: response.total_eta_minutes,
+     });
+   };
+
+   const handleCancel = async () => {
+     setConfirming(true);
+     await base44.entities.BusyAlert.update(alertId, { status: 'cancelado_pelo_cliente' }).catch(() => {});
+     setConfirming(false);
+     setAlert(null);
+   };
 
   // Se não há respostas ainda
   if (responses.length === 0) {
@@ -140,9 +147,16 @@ export default function BusyAlertClientView({ alertId, onConfirm, form, onProvid
           </div>
         ))}
       </div>
-      <p className="text-xs text-green-700 mt-2 text-center">
-        Confirme para garantir seu atendimento com este prestador.
-      </p>
-    </div>
+      <div className="flex gap-2 mt-4">
+        <Button
+          onClick={handleCancel}
+          disabled={confirming}
+          variant="outline"
+          className="flex-1 rounded-xl border-destructive text-destructive hover:bg-destructive/5"
+        >
+          Cancelar solicitação
+        </Button>
+      </div>
+      </div>
   );
 }
