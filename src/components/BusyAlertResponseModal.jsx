@@ -4,7 +4,7 @@ import { Clock, MapPin, Phone, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-const FINISH_TIME_OPTIONS = [5, 10, 15, 20, 30];
+const FINISH_TIME_OPTIONS = [5, 10, 15, 30, 40];
 
 async function estMinutesOSRM(lat1, lon1, lat2, lon2) {
   if (!lat1 || !lon1 || !lat2 || !lon2) return null;

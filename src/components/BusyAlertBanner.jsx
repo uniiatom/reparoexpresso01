@@ -216,16 +216,16 @@ export default function BusyAlertBanner({ provider }) {
                     Em quantos minutos você finaliza o atendimento atual?
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {[15, 30, 45, 60, 90, 120].map(m => (
-                      <button
-                        key={m}
-                        onClick={() => setFinishMinutes(String(m))}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 transition-all ${finishMinutes === String(m) ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-border text-foreground'}`}
-                      >
-                        {m} min
-                      </button>
-                    ))}
-                  </div>
+                     {[5, 10, 15, 30, 40].map(m => (
+                       <button
+                         key={m}
+                         onClick={() => setFinishMinutes(String(m))}
+                         className={`px-3 py-1.5 rounded-xl text-xs font-semibold border-2 transition-all ${finishMinutes === String(m) ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-border text-foreground'}`}
+                       >
+                         {m} min
+                       </button>
+                     ))}
+                   </div>
                   <input
                     type="number"
                     min="1"
