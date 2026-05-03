@@ -9,7 +9,7 @@ import ReferralCard from "@/components/ReferralCard";
 import FavoritesList from "@/components/FavoritesList";
 import PaymentModal from "@/components/PaymentModal";
 import AvailableScheduleSelector from "@/components/AvailableScheduleSelector";
-import NearbyProvidersMap from "@/components/NearbyProvidersMap";
+import FleetMap from "@/components/FleetMap";
 
 const homeServices = [
   { icon: Zap, label: "Elétrica", subtitle: "Chuveiro, tomada, QDC", type: "eletrica", color: "bg-yellow-100 text-yellow-700" },
@@ -717,8 +717,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Nearby Providers Map */}
-          {showNearbyMap && <NearbyProvidersMap onClose={() => setShowNearbyMap(false)} />}
+          {/* Fleet Map */}
+          {showNearbyMap && <FleetMap onClose={() => setShowNearbyMap(false)} />}
 
           {/* Payment Modal */}
           {showPaymentModal && pendingServiceData && (
@@ -737,8 +737,8 @@ export default function Home() {
             >
               <span className="text-2xl">🗺️</span>
               <div className="text-left flex-1">
-                <p className="font-semibold text-foreground text-sm">Ver prestadores online próximos</p>
-                <p className="text-xs text-muted-foreground">Mapa em tempo real</p>
+                <p className="font-semibold text-foreground text-sm">🚐 Frota ao Vivo — Fiorino • Reboque • Moto</p>
+                <p className="text-xs text-muted-foreground">Acompanhe a frota em tempo real no mapa</p>
               </div>
               <span className="flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
                 <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span>
