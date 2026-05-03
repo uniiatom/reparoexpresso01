@@ -304,36 +304,91 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
         </div>
       )}
 
-      {/* Regras de resgate (prestador) */}
+      {/* Níveis e regras (prestador) */}
       {ownerType === 'prestador' && (
-       <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
-         <p className="text-sm font-bold text-foreground flex items-center gap-2">
-           <Gift className="w-4 h-4 text-emerald-600" /> Como ganhar bônus?
-         </p>
-         <div className="space-y-2 text-xs text-muted-foreground">
-           <p>🏆 Ganhe <strong>R$ 20</strong> a cada 5 serviços concluídos</p>
-           <p>⭐ Ganhe <strong>R$ 10</strong> por avaliação ≥ 4,5 estrelas</p>
-           <p>💸 Bônus convertidos em crédito para saque</p>
-         </div>
+        <div className="space-y-3">
+          {/* Card de nível atual */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-card border border-border rounded-3xl p-5"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-bold text-foreground flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-600" /> Níveis de Bônus
+              </p>
+              <button
+                onClick={() => setShowNiveis(!showNiveis)}
+                className="text-xs font-semibold text-primary hover:text-primary/80 flex items-center gap-1"
+              >
+                {showNiveis ? 'Ocultar' : 'Ver todos'}
+                <ChevronRight className={cn("w-3.5 h-3.5 transition-transform", showNiveis && "rotate-90")} />
+              </button>
+            </div>
 
-         <div className="border-t border-border pt-3">
-           <p className="text-sm font-bold text-foreground mb-2">💰 Opções de Resgate</p>
-           <div className="space-y-2">
-             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-               <p className="text-xs font-bold text-blue-900 flex items-center gap-2 mb-1">
-                 <Zap className="w-3.5 h-3.5" /> PIX Direto
-               </p>
-               <p className="text-xs text-blue-800">Mínimo: <strong>R$ 200,00</strong> · Valor real · Saque em 2 dias úteis</p>
-             </div>
-             <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
-               <p className="text-xs font-bold text-purple-900 flex items-center gap-2 mb-1">
-                 <BookOpen className="w-3.5 h-3.5" /> Cursos Escola Prática
-               </p>
-               <p className="text-xs text-purple-800">Sem mínimo · <strong>Valor × 2.5</strong> em crédito · Desenvolva suas habilidades!</p>
-             </div>
-           </div>
-         </div>
-       </div>
+            <div className="space-y-2 text-xs text-muted-foreground mb-3">
+              <p>🏆 Ganhe <strong>R$ 20</strong> a cada 5 serviços concluídos</p>
+              <p>⭐ Ganhe <strong>R$ 10</strong> por avaliação ≥ 4,5 estrelas</p>
+              <p>📈 Mais serviços = mais bônus por nível</p>
+            </div>
+
+            {showNiveis && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="space-y-2"
+              >
+                <div className="grid grid-cols-3 text-xs text-muted-foreground font-semibold px-1 mb-1">
+                  <span>Nível</span>
+                  <span className="text-center">Serviços/mês</span>
+                  <span className="text-center">Bônus extra</span>
+                </div>
+                {[
+                  { emoji: '🌱', nivel: 'Iniciante',  min: 0,  max: 9,  bonus: 'R$ 20/bloco 5 serv.' },
+                  { emoji: '⚡', nivel: 'Pro',        min: 10, max: 19, bonus: 'R$ 30/bloco 5 serv.' },
+                  { emoji: '💎', nivel: 'Elite',      min: 20, max: 34, bonus: 'R$ 40/bloco 5 serv.' },
+                  { emoji: '🔥', nivel: 'Lendário',   min: 35, max: 49, bonus: 'R$ 55/bloco 5 serv.' },
+                  { emoji: '👑', nivel: 'Imperador',  min: 50, max: null, bonus: 'R$ 70/bloco 5 serv.' },
+                ].map(n => (
+                  <div
+                    key={n.nivel}
+                    className="grid grid-cols-3 items-center rounded-xl border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
+                  >
+                    <span className="flex items-center gap-1 font-semibold text-foreground">{n.emoji} {n.nivel}</span>
+                    <span className="text-center">{n.min}{n.max ? `–${n.max}` : '+'}</span>
+                    <span className="text-center text-emerald-700 font-semibold">{n.bonus}</span>
+                  </div>
+                ))}
+                <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
+                  <p className="font-bold mb-1">⚠️ Regras:</p>
+                  <p>• Bônus calculado ao final de cada quinzena.</p>
+                  <p>• Avaliação ≥ 4,5 ★ gera R$ 10 extra por serviço.</p>
+                  <p>• Resgate via PIX (mín. R$ 200) ou cursos (× 2.5).</p>
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+
+          {/* Opções de resgate */}
+          <div className="bg-card border border-border rounded-2xl p-4">
+            <p className="text-sm font-bold text-foreground mb-2">💰 Opções de Resgate</p>
+            <div className="space-y-2">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                <p className="text-xs font-bold text-blue-900 flex items-center gap-2 mb-1">
+                  <Zap className="w-3.5 h-3.5" /> PIX Direto
+                </p>
+                <p className="text-xs text-blue-800">Mínimo: <strong>R$ 200,00</strong> · Valor real · Saque em 2 dias úteis</p>
+              </div>
+              <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
+                <p className="text-xs font-bold text-purple-900 flex items-center gap-2 mb-1">
+                  <BookOpen className="w-3.5 h-3.5" /> Cursos Escola Prática
+                </p>
+                <p className="text-xs text-purple-800">Sem mínimo · <strong>Valor × 2.5</strong> em crédito · Desenvolva suas habilidades!</p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Lista de cashbacks disponíveis */}
