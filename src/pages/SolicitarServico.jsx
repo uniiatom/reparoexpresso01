@@ -115,6 +115,7 @@ export default function SolicitarServico() {
   const [desentupimentoTipo, setDesentupimentoTipo] = useState(null);
   const [showMolaAlert, setShowMolaAlert] = useState(null); // nome do tipo que tem taxa de mola
   const [showNaoSeiAlert, setShowNaoSeiAlert] = useState(false);
+  const [showPaneSeccaAlert, setShowPaneSeccaAlert] = useState(false);
   const [showForroGessoModal, setShowForroGessoModal] = useState(false);
   const [forroGessoTipo, setForroGessoTipo] = useState(null);
   const [towQuestions, setTowQuestions] = useState({});
@@ -691,6 +692,10 @@ export default function SolicitarServico() {
                   if (s.value === 'limpeza_caixa_dagua' && selected) {
                     setCaixaDaguaTipo(null);
                   }
+                  if (s.value === 'pane_seca' && !selected) {
+                    setShowPaneSeccaAlert(true);
+                    return;
+                  }
                   set('service_type', selected
                     ? form.service_type.filter(t => t !== s.value)
                     : [...form.service_type, s.value]
@@ -938,6 +943,45 @@ export default function SolicitarServico() {
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal aviso Pane Seca */}
+          {showPaneSeccaAlert && (
+            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowPaneSeccaAlert(false)}>
+              <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+                <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+                <div className="text-center mb-5">
+                  <span className="text-4xl mb-3 block">⛽</span>
+                  <h3 className="text-lg font-bold text-foreground mb-2">Pane Seca - Importante</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Informações sobre o serviço de pane seca:
+                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-left space-y-3">
+                    <div>
+                      <p className="text-sm font-semibold text-blue-900 mb-1">🛢️ Gasolina fornecida</p>
+                      <p className="text-xs text-blue-800">Fornecemos 5 litros de gasolina aditivada</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-900 mb-1">🧾 Comprovante fiscal</p>
+                      <p className="text-xs text-blue-800">Entregamos o cupom fiscal do combustível ao cliente</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-900 mb-1">⚠️ Responsabilidade da gasolina</p>
+                      <p className="text-xs text-blue-800">Não nos responsabilizamos pela qualidade da gasolina. Se o carro funcionar apenas com gasolina Podium ou outra marca específica, o cliente deve informar <strong>no ato da abertura do serviço</strong></p>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    set('service_type', [...form.service_type, 'pane_seca']);
+                    setShowPaneSeccaAlert(false);
+                  }}
+                  className="w-full py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-bold transition-all"
+                >
+                  Entendi, continuar
+                </button>
               </div>
             </div>
           )}
