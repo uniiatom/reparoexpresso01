@@ -145,6 +145,10 @@
     },
     "experience_years": {
       "type": "number"
+    },
+    "push_subscription": {
+      "type": "string",
+      "description": "JSON da Web Push subscription do navegador do prestador"
     }
   },
   "required": [

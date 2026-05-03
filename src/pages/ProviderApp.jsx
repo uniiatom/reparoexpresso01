@@ -28,6 +28,7 @@ import ProviderLevelBadge, { getProviderLevel, PROVIDER_LEVELS } from '../compon
 import InvoiceManager from '../components/InvoiceManager';
 import BatchProviderChat from '../components/BatchProviderChat';
 import BusyAlertBanner from '../components/BusyAlertBanner';
+import { useProviderPush } from '../hooks/useProviderPush';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -104,6 +105,12 @@ export default function ProviderApp() {
     onNewJob: handleNewJob,
     providerId: provider?.id,
   }); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Registra Web Push para notificações com tela bloqueada
+  useProviderPush({
+    providerId: provider?.id,
+    enabled: !!(provider?.is_online && provider?.is_approved),
+  });
 
   useEffect(() => {
     if (!provider?.id) return;
