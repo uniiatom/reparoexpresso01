@@ -1,0 +1,77 @@
+{
+  "name": "PreventiveServiceReminder",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "ID do cliente"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Nome do cliente (desnormalizado)"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "limpeza_caixa_dagua",
+        "limpeza_gordura",
+        "limpeza_calha",
+        "ar_condicionado",
+        "hidraulica",
+        "eletrica",
+        "revisao_geral"
+      ],
+      "description": "Tipo de servi\u00e7o preventivo"
+    },
+    "last_service_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data do \u00faltimo servi\u00e7o realizado"
+    },
+    "next_reminder_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data do pr\u00f3ximo lembrete"
+    },
+    "reminder_interval_days": {
+      "type": "number",
+      "description": "Intervalo em dias entre lembretes (ex: 90 para trimestral)"
+    },
+    "reminder_interval_label": {
+      "type": "string",
+      "enum": [
+        "mensal",
+        "trimestral",
+        "semestral",
+        "anual"
+      ],
+      "description": "R\u00f3tulo do intervalo"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se o alarme est\u00e1 ativo"
+    },
+    "reminder_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o lembrete j\u00e1 foi enviado para a data atual"
+    },
+    "reminder_sent_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora em que o lembrete foi enviado"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionais sobre o servi\u00e7o"
+    }
+  },
+  "required": [
+    "client_id",
+    "service_type",
+    "last_service_date",
+    "reminder_interval_days",
+    "reminder_interval_label"
+  ]
+}
