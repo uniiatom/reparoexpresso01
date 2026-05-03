@@ -371,15 +371,7 @@ export default function SolicitarServico() {
     if (location) applyGeolocation();
   }, [location]);
 
-  // Atualiza distância do reboque quando coordenadas mudam
-  React.useEffect(() => {
-    if (isTow && form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude) {
-      const distance = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2;
-      if (distance > 0 && distance !== form.tow_distance_km) {
-        setForm(prev => ({ ...prev, tow_distance_km: distance }));
-      }
-    }
-  }, [form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude, isTow]);
+
 
   const [registerForm, setRegisterForm] = useState({
     name: currentUser?.full_name || '',
@@ -500,12 +492,11 @@ export default function SolicitarServico() {
     createRequestRef.current = true;
     setShowProviderSearch(false);
     const { _secondProvider, ...cleanFormData } = formData;
-    // Adiciona preço estimado se for reboque
     const finalData = { 
       ...cleanFormData, 
       _secondProvider, 
       _caixaCondominio: caixaDaguaTipo === 'condominio',
-      estimated_price: towPrice?.total || cleanFormData.client_suggested_price,
+      estimated_price: cleanFormData.client_suggested_price,
     };
     createRequest.mutate(finalData);
   };
