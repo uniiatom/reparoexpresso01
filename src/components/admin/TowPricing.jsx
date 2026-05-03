@@ -66,7 +66,12 @@ export default function TowPricing() {
         };
 
         if (values.id) {
-          updates.push(base44.entities.ServicePricing.update(values.id, data));
+          // Tenta atualizar; se falhar (ID não existe), cria novo
+          updates.push(
+            base44.entities.ServicePricing.update(values.id, data).catch(() =>
+              base44.entities.ServicePricing.create(data)
+            )
+          );
         } else {
           updates.push(base44.entities.ServicePricing.create(data));
         }
