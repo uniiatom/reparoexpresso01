@@ -1370,6 +1370,62 @@ export default function SolicitarServico() {
               </p>
             </div>
           </button>
+
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">ou digite o endereço</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label>CEP</Label>
+              <div className="relative">
+                <Input
+                  placeholder="00000-000"
+                  value={form.cep}
+                  onChange={e => set('cep', e.target.value)}
+                  onBlur={() => searchByCep(form.cep)}
+                  disabled={loadingCep}
+                  className="rounded-2xl"
+                />
+                {loadingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />}
+              </div>
+              {cepError && <p className="text-xs text-destructive">{cepError}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label>Rua</Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Nome da rua..."
+                  value={form.address}
+                  onChange={e => set('address', e.target.value)}
+                  className="pl-10 rounded-2xl"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Número</Label>
+                <Input placeholder="Nº" value={form.number} onChange={e => set('number', e.target.value)} className="rounded-2xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Bairro</Label>
+                <Input placeholder="Bairro" value={form.neighborhood} onChange={e => set('neighborhood', e.target.value)} className="rounded-2xl" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Cidade</Label>
+                <Input placeholder="Cidade" value={form.city} onChange={e => set('city', e.target.value)} className="rounded-2xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Estado</Label>
+                <Input placeholder="UF" value={form.state} onChange={e => set('state', e.target.value)} className="rounded-2xl" maxLength={2} />
+              </div>
+            </div>
+          </div>
           </div>
           )}
 
