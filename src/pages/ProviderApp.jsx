@@ -28,6 +28,7 @@ import ProviderLevelBadge from '../components/ProviderLevelBadge';
 import InvoiceManager from '../components/InvoiceManager';
 import BatchProviderChat from '../components/BatchProviderChat';
 import BusyAlertBanner from '../components/BusyAlertBanner';
+import ProviderTermsNotificationBanner from '../components/ProviderTermsNotificationBanner';
 import { useProviderPush } from '../hooks/useProviderPush';
 
 const SERVICE_LABELS = {
@@ -412,6 +413,9 @@ export default function ProviderApp() {
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
+      {/* Banner de notificação dos termos atualizados */}
+      <ProviderTermsNotificationBanner />
+
       {/* Mensagem de incentivo de nível */}
       <ProviderLevelIncentive providerId={provider?.id} />
 
