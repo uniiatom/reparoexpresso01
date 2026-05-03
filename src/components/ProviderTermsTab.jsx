@@ -15,22 +15,32 @@ export default function ProviderTermsTab({ providerId }) {
   const [confirmAccept, setConfirmAccept] = useState(false);
 
   useEffect(() => {
-    // Carrega os termos do localStorage (salvos pelo admin)
-    const stored = localStorage.getItem('provider_terms_content');
-    if (stored) {
-      setTermsContent(stored);
-    }
+    const loadData = async () => {
+      // Carrega os termos do localStorage (salvos pelo admin)
+      const stored = localStorage.getItem('provider_terms_content');
+      if (stored) {
+        setTermsContent(stored);
+      }
 
-    // Verifica se o prestador já aceitou
-    const accepted = localStorage.getItem(`provider_terms_accepted_${providerId}`);
-    if (accepted) {
-      setHasAccepted(true);
-      setAcceptedAt(new Date(accepted).toLocaleDateString('pt-BR', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }));
-    }
+      // Verifica se o prestador já aceitou consultando o banco
+      if (providerId) {
+        try {
+          const provider = await base44.entities.Provider.get(providerId);
+          if (provider && provider.terms_accepted_at) {
+            setHasAccepted(true);
+            setAcceptedAt(new Date(provider.terms_accepted_at).toLocaleDateString('pt-BR', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            }));
+          }
+        } catch (error) {
+          console.error('Erro ao carregar status de aceite:', error);
+        }
+      }
+    };
+    
+    loadData();
   }, [providerId]);
 
   const acceptMutation = useMutation({
