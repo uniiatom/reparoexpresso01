@@ -471,7 +471,8 @@ export default function SolicitarServico() {
     if (step === 3) {
       const hasDelivery = !isTow || (form.delivery_address.length > 3 && form.delivery_latitude && form.delivery_longitude);
       const hasLiveLocation = !isTow || sharingLocation; // Reboque exige localização em tempo real
-      return form.address.length > 3 && hasDelivery && hasLiveLocation;
+      const hasDistance = !isTow || (form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude); // Reboque precisa ter distância calculável
+      return form.address.length > 3 && hasDelivery && hasLiveLocation && hasDistance;
     }
     if (step === 4) {
       if (form.modality === 'agendado') return !!form.scheduled_date && !!form.scheduled_time;
@@ -1308,6 +1309,12 @@ export default function SolicitarServico() {
               <p className="text-xs text-blue-700 mt-1">entre o local de saída e entrega</p>
             </div>
           )}
+          {isTow && (!form.delivery_latitude || !form.latitude || !form.delivery_longitude || !form.longitude) && (
+            <div className="bg-orange-50 rounded-2xl p-4 border border-orange-200">
+              <p className="text-sm font-semibold text-orange-900 mb-1">⚠️ Distância não calculada</p>
+              <p className="text-xs text-orange-700">Informe o endereço de saída e entrega para calcular a cobrança do reboque</p>
+            </div>
+          )}
           </div>
           )}
 
@@ -1444,9 +1451,12 @@ export default function SolicitarServico() {
               <p className="text-sm text-muted-foreground">
                 📌 Entrega: {form.delivery_address}{form.delivery_number ? `, ${form.delivery_number}` : ''}{form.delivery_neighborhood ? ` - ${form.delivery_neighborhood}` : ''}{form.delivery_city ? `, ${form.delivery_city}` : ''}
                 {form.latitude && form.delivery_latitude && (
-                  <span className="block mt-1 font-semibold">Distância: {calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude).toFixed(1)} km</span>
+                  <span className="block mt-1 font-semibold text-blue-600">📏 Distância: {calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude).toFixed(1)} km</span>
                 )}
               </p>
+            )}
+            {isTow && form.latitude && form.delivery_latitude && (
+              <p className="text-sm text-blue-600 font-bold">💰 Distância calculada para cobrança</p>
             )}
             {form.problem_photos.length > 0 && <p className="text-sm text-muted-foreground">📷 {form.problem_photos.length} foto(s) anexada(s)</p>}
              {form.client_suggested_price && <p className="text-sm text-muted-foreground">💰 Sugestão de valor: R$ {Number(form.client_suggested_price).toFixed(2)}</p>}
