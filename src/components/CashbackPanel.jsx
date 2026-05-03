@@ -405,7 +405,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                   <span className="text-center">Bônus</span>
                 </div>
                 {[
-                  { emoji: '🌱', nivel: 'Iniciante', minJobs: 0,   maxJobs: 119, minRating: 0,  bonus: 'R$ 2,00' },
+                  { emoji: '🌱', nivel: 'Iniciante', minJobs: 0,   maxJobs: 119, minRating: 0,  bonus: '—' },
                   { emoji: '⭐', nivel: 'Pro',        minJobs: 120, maxJobs: 159, minRating: 4,  bonus: 'R$ 3,00' },
                   { emoji: '🔥', nivel: 'Pro Plus',   minJobs: 160, maxJobs: 189, minRating: 4,  bonus: 'R$ 3,50' },
                   { emoji: '💎', nivel: 'Pro Elite',  minJobs: 190, maxJobs: 219, minRating: 4,  bonus: 'R$ 4,00' },
