@@ -311,9 +311,17 @@ export default function SolicitarServico() {
   };
 
   // Verifica se todas as descrições por serviço estão preenchidas (quando múltiplos serviços)
+  // E se há pelo menos 2 fotos (próxima e ampla)
   const allDescriptionsFilled = () => {
-    if (form.service_type.length <= 1) return form.description.length > 5;
-    return form.service_type.every(t => (descriptionsPerService[t]?.description || '').length > 5);
+    const hasMinPhotos = form.service_type.length <= 1
+      ? form.problem_photos.length >= 2
+      : form.service_type.every(t => (descriptionsPerService[t]?.photos || []).length >= 2);
+    
+    const hasDescriptions = form.service_type.length <= 1
+      ? form.description.length > 5
+      : form.service_type.every(t => (descriptionsPerService[t]?.description || '').length > 5);
+    
+    return hasDescriptions && hasMinPhotos;
   };
 
   const applyGeolocation = () => {
@@ -976,25 +984,37 @@ export default function SolicitarServico() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Camera className="w-4 h-4" /> Fotos do problema (opcional)</Label>
+                <Label className="flex items-center gap-2"><Camera className="w-4 h-4" /> Fotos do problema *</Label>
+                <p className="text-xs text-muted-foreground mb-2">Envie 2 fotos obrigatórias: uma próxima e uma ampla (mais afastada)</p>
                 <div className="flex flex-wrap gap-2">
                   {form.problem_photos.map((url, idx) => (
-                    <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    <div key={idx} className="relative group">
+                      <div className="w-20 h-20 rounded-xl overflow-hidden border border-border">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-xs font-semibold text-muted-foreground mt-1 block text-center">
+                        Foto {idx + 1}
+                      </span>
                       <button onClick={() => removePhoto(idx)} className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center">
                         <X className="w-3 h-3 text-white" />
                       </button>
                     </div>
                   ))}
                   {form.problem_photos.length < 4 && (
-                    <label className={cn("w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors", uploadingPhotos && "opacity-50 pointer-events-none")}>
-                      {uploadingPhotos ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" /> : <Camera className="w-6 h-6 text-muted-foreground" />}
+                    <label className={cn("flex flex-col items-center justify-center cursor-pointer", uploadingPhotos && "opacity-50 pointer-events-none")}>
+                      <div className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center hover:border-primary/50 transition-colors">
+                        {uploadingPhotos ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" /> : <Camera className="w-6 h-6 text-muted-foreground" />}
+                      </div>
                       <span className="text-xs text-muted-foreground mt-1">{uploadingPhotos ? "..." : "Adicionar"}</span>
                       <input type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} capture="environment" />
                     </label>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">Tire fotos diretamente com a câmera ou escolha da galeria (máx. 4)</p>
+                {form.problem_photos.length < 2 && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-xl p-2 text-xs text-orange-700">
+                    ⚠️ Envie ao menos 2 fotos para continuar (próxima e ampla)
+                  </div>
+                )}
               </div>
             </>
           ) : (
@@ -1024,25 +1044,36 @@ export default function SolicitarServico() {
                       className="min-h-[90px] rounded-xl"
                     />
                     <div className="space-y-2">
-                      <Label className="flex items-center gap-2 text-xs"><Camera className="w-3 h-3" /> Fotos (opcional)</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {photos.map((url, pidx) => (
-                          <div key={pidx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-border">
-                            <img src={url} alt="" className="w-full h-full object-cover" />
-                            <button onClick={() => removePhotoFor(serviceType, pidx)} className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center">
-                              <X className="w-2.5 h-2.5 text-white" />
-                            </button>
-                          </div>
-                        ))}
-                        {photos.length < 4 && (
-                          <label className={cn("w-16 h-16 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors", isUploading && "opacity-50 pointer-events-none")}>
-                            {isUploading ? <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" /> : <Camera className="w-5 h-5 text-muted-foreground" />}
-                            <span className="text-[10px] text-muted-foreground mt-0.5">{isUploading ? "..." : "Foto"}</span>
-                            <input type="file" accept="image/*" multiple className="hidden" onChange={e => handlePhotoUploadFor(e, serviceType)} capture="environment" />
-                          </label>
-                        )}
-                      </div>
-                    </div>
+                       <Label className="flex items-center gap-2 text-xs"><Camera className="w-3 h-3" /> Fotos *</Label>
+                       <p className="text-xs text-muted-foreground mb-1">Envie 2 fotos obrigatórias: próxima e ampla</p>
+                       <div className="flex flex-wrap gap-2">
+                         {photos.map((url, pidx) => (
+                           <div key={pidx} className="flex flex-col items-center">
+                             <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-border">
+                               <img src={url} alt="" className="w-full h-full object-cover" />
+                               <button onClick={() => removePhotoFor(serviceType, pidx)} className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center">
+                                 <X className="w-2.5 h-2.5 text-white" />
+                               </button>
+                             </div>
+                             <span className="text-[9px] text-muted-foreground mt-0.5">Foto {pidx + 1}</span>
+                           </div>
+                         ))}
+                         {photos.length < 4 && (
+                           <label className={cn("flex flex-col items-center justify-center cursor-pointer", isUploading && "opacity-50 pointer-events-none")}>
+                             <div className="w-16 h-16 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center hover:border-primary/50 transition-colors">
+                               {isUploading ? <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" /> : <Camera className="w-5 h-5 text-muted-foreground" />}
+                             </div>
+                             <span className="text-[9px] text-muted-foreground mt-0.5">{isUploading ? "..." : "Adicionar"}</span>
+                             <input type="file" accept="image/*" multiple className="hidden" onChange={e => handlePhotoUploadFor(e, serviceType)} capture="environment" />
+                           </label>
+                         )}
+                       </div>
+                       {photos.length < 2 && (
+                         <div className="bg-orange-50 border border-orange-200 rounded-lg p-1.5 text-[10px] text-orange-700">
+                           ⚠️ Envie 2 fotos para continuar
+                         </div>
+                       )}
+                     </div>
                   </div>
                 );
               })}
