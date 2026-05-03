@@ -26,6 +26,7 @@ import ProviderDocumentReview from '../components/admin/ProviderDocumentReview';
 import ExpiringServicesAlert from '../components/admin/ExpiringServicesAlert';
 import TermsManager from '../components/admin/TermsManager';
 import ProviderTermsManager from '../components/admin/ProviderTermsManager';
+import ClientTermsManager from '../components/admin/ClientTermsManager';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -401,7 +402,7 @@ export default function AdminPanel() {
         </TabsContent>
 
         <TabsContent value="termos">
-          <TermsManager />
+          <ClientTermsManager />
         </TabsContent>
 
         <TabsContent value="termos-prestador">
