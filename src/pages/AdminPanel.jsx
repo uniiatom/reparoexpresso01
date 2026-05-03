@@ -20,6 +20,7 @@ import BiweeklyClosingAdmin from '../components/admin/BiweeklyClosingAdmin';
 import ClientConsultaAdmin from '../components/admin/ClientConsultaAdmin';
 import ServiceMetrics from '../components/admin/ServiceMetrics';
 import ClientBlacklist from '../components/admin/ClientBlacklist';
+import TowPricing from '../components/admin/TowPricing';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -327,7 +328,12 @@ export default function AdminPanel() {
         </TabsContent>
 
         <TabsContent value="pricing">
-          <ServicePricing />
+          <div className="space-y-4">
+            <ServicePricing />
+            <div className="border-t border-border pt-4 mt-4">
+              <TowPricing />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="repasse">

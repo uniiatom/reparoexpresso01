@@ -470,7 +470,8 @@ export default function SolicitarServico() {
     if (step === 2) return allDescriptionsFilled();
     if (step === 3) {
       const hasDelivery = !isTow || (form.delivery_address.length > 3 && form.delivery_latitude && form.delivery_longitude);
-      return form.address.length > 3 && hasDelivery;
+      const hasLiveLocation = !isTow || sharingLocation; // Reboque exige localização em tempo real
+      return form.address.length > 3 && hasDelivery && hasLiveLocation;
     }
     if (step === 4) {
       if (form.modality === 'agendado') return !!form.scheduled_date && !!form.scheduled_time;
@@ -1115,7 +1116,7 @@ export default function SolicitarServico() {
             </div>
           </button>
 
-          {/* Compartilhamento de localização em tempo real */}
+          {/* Compartilhamento de localização em tempo real — OBRIGATÓRIO para reboque */}
           <button
             onClick={sharingLocation ? stopLiveLocation : startLiveLocation}
             className={cn(
@@ -1131,9 +1132,12 @@ export default function SolicitarServico() {
             <div className="flex-1">
               <p className={cn("font-semibold text-sm", sharingLocation ? "text-green-700" : "text-foreground")}>
                 {sharingLocation ? "📡 Compartilhando localização em tempo real" : "Compartilhar localização em tempo real"}
+                {isTow && <span className="text-destructive"> *</span>}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {sharingLocation ? "O prestador verá sua posição ao vivo — toque para parar" : "Permite que o prestador te encontre com mais facilidade"}
+                {isTow
+                  ? "Obrigatório para reboque — o prestador precisa rastreá-lo"
+                  : "Permite que o prestador te encontre com mais facilidade"}
               </p>
             </div>
           </button>
