@@ -19,6 +19,7 @@ import InvoicesAdmin from '../components/admin/InvoicesAdmin';
 import BiweeklyClosingAdmin from '../components/admin/BiweeklyClosingAdmin';
 import ClientConsultaAdmin from '../components/admin/ClientConsultaAdmin';
 import ServiceMetrics from '../components/admin/ServiceMetrics';
+import ClientBlacklist from '../components/admin/ClientBlacklist';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -192,6 +193,9 @@ export default function AdminPanel() {
           <TabsTrigger value="metricas" className="text-xs px-2 py-1">
             <Activity className="w-3 h-3 mr-0.5" /> Métricas
           </TabsTrigger>
+          <TabsTrigger value="blacklist" className="text-xs px-2 py-1">
+            🚫 Blacklist
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics">
@@ -360,6 +364,10 @@ export default function AdminPanel() {
 
         <TabsContent value="metricas">
           <ServiceMetrics />
+        </TabsContent>
+
+        <TabsContent value="blacklist">
+          <ClientBlacklist />
         </TabsContent>
       </Tabs>
 

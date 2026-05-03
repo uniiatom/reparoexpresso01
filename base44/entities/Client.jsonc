@@ -51,6 +51,20 @@
         }
       },
       "description": "Endere\u00e7os salvos"
+    },
+    "is_blacklisted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o cliente est\u00e1 na blacklist"
+    },
+    "blacklist_reason": {
+      "type": "string",
+      "description": "Motivo da blacklist"
+    },
+    "blacklisted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora da blacklist"
     }
   },
   "required": [
