@@ -57,24 +57,31 @@ Deno.serve(async (req) => {
     const successCount = results.filter(r => r !== null).length;
     console.log(`${successCount} notificações criadas com sucesso para clientes`);
 
-    // Envia emails para todos os clientes (opcional)
-    const emailPromises = allClients
-      .filter(c => c.email)
-      .map(client =>
+    // Envia emails para todos os clientes
+    const clientsWithEmail = allClients.filter(c => c.email);
+    console.log(`Encontrados ${clientsWithEmail.length} clientes com email`);
+    
+    let emailSuccessCount = 0;
+    if (clientsWithEmail.length > 0) {
+      const emailPromises = clientsWithEmail.map(client =>
         base44.asServiceRole.integrations.Core.SendEmail({
           to: client.email,
           subject: '📋 Nossos Termos de Serviço foram atualizados',
           body: `Olá ${client.name},\n\nOs Termos de Serviço da plataforma foram atualizados.\n\n${change_summary || 'Acesse sua conta para visualizar as mudanças e aceitar os novos termos.'}\n\nAtenciosamente,\nEquipe Reparo Expresso`
+        }).then(() => {
+          console.log(`Email enviado para ${client.email}`);
+          return true;
         }).catch(err => {
-          console.warn(`Erro ao enviar email para ${client.email}:`, err.message);
-          return null;
+          console.error(`Erro ao enviar email para ${client.email}:`, err.message);
+          return false;
         })
       );
 
-    console.log(`Enviando emails de notificação para ${allClients.filter(c => c.email).length} clientes`);
-    const emailResults = await Promise.all(emailPromises);
-    const emailSuccessCount = emailResults.filter(r => r !== null).length;
-    console.log(`${emailSuccessCount} emails enviados com sucesso`);
+      console.log(`Enviando emails de notificação para ${clientsWithEmail.length} clientes`);
+      const emailResults = await Promise.all(emailPromises);
+      emailSuccessCount = emailResults.filter(r => r === true).length;
+      console.log(`${emailSuccessCount} emails enviados com sucesso`);
+    }
 
     return Response.json({
       success: true,

@@ -20,7 +20,7 @@ export default function ClientNotificationCenter({ clientId }) {
       return list;
     },
     enabled: !!clientId,
-    refetchInterval: 30000,
+    refetchInterval: 10000,
   });
 
   const handleMarkAsRead = async (notificationId) => {
