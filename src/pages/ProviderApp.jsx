@@ -114,12 +114,22 @@ export default function ProviderApp() {
 
   useEffect(() => {
     if (!provider?.id) return;
-    // Carga inicial — busca todos sem limite de paginação
-    base44.entities.ServiceRequest.filter({ provider_id: provider.id }, '-created_date', 500).then(setMyJobs);
+    // Carga inicial — busca jobs atribuídos OU serviços agendados (status 'agendado')
+    base44.entities.ServiceRequest.filter({ provider_id: provider.id }, '-created_date', 500).then(jobs => {
+      // Adiciona também serviços agendados sem atribuição (status 'agendado' sem provider_id)
+      base44.entities.ServiceRequest.filter({ status: 'agendado' }, '-created_date', 500).then(scheduled => {
+        const combined = [...jobs, ...scheduled.filter(s => s.provider_id !== provider.id)];
+        setMyJobs(combined);
+      });
+    });
+    
     // Real-time via subscribe
     const unsub = base44.entities.ServiceRequest.subscribe((event) => {
       if (!['create', 'update', 'delete'].includes(event.type)) return;
-      if (event.data?.provider_id !== provider.id && event.type !== 'delete') return;
+      const isMyJob = event.data?.provider_id === provider.id;
+      const isScheduledJob = event.data?.status === 'agendado'; // Serviços agendados para o futuro
+      if (!isMyJob && !isScheduledJob) return;
+      
       setMyJobs(prev => {
         if (event.type === 'delete') return prev.filter(j => j.id !== event.id);
         // Para create e update: upsert — adiciona se não existir, atualiza se existir
