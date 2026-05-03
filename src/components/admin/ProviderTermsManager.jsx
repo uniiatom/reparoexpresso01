@@ -62,7 +62,25 @@ Os valores de comissão e condições de pagamento são definidos pela plataform
 - A plataforma repassará os valores apenas após a emissão e validação da Nota Fiscal correspondente
 - O prestador é responsável por todas as obrigações fiscais e tributárias de sua PJ
 
-9. Uniforme e Padronização
+9. Fundo de Reserva
+A plataforma retém 3% (três por cento) do valor total de cada serviço executado pelo prestador como Fundo de Reserva. Este fundo serve para:
+- Garantir a qualidade e conformidade dos serviços prestados
+- Cobrir custos com reclamações, danos ou não conformidades
+- Manter um fundo de proteção ao cliente
+- Subsidiar bonus e incentivos para prestadores de excelência
+
+O Fundo de Reserva é mantido em conta específica e o prestador pode consultar seu saldo a qualquer momento através da plataforma. Saldos não utilizados após 12 meses inativo são automaticamente revertidos para a plataforma.
+
+10. Bônus e Incentivos
+A plataforma oferece sistema de bônus e incentivos baseado em:
+- Avaliações e satisfação do cliente
+- Cumprimento de metas de qualidade
+- Velocidade e eficiência nos atendimentos
+- Nível alcançado (Bronze, Prata, Ouro, Platina)
+
+Os bônus são custeados parcialmente com o Fundo de Reserva retido dos prestadores e podem ser creditados na carteira do prestador ou deduzidos dos próximos repasses.
+
+11. Uniforme e Padronização
 Para padronização e segurança de seus clientes, todos os prestadores são OBRIGADOS a:
 - Usar uniforme da plataforma em todos os atendimentos
 - Manter o uniforme em perfeito estado de conservação e higiene
@@ -73,10 +91,10 @@ Prestadores que se tornarem "Padrão" da plataforma (nível máximo) receberão 
 - A plotagem é de propriedade da plataforma e deve ser mantida enquanto o prestador permanecer ativo
 - Caso o prestador deixe de ser "Padrão" ou seja removido, ele deve remover a plotagem em até 30 dias
 
-10. Seguro e Responsabilidade
+12. Seguro e Responsabilidade
 Você é responsável por manter seguro adequado para sua atividade. A plataforma não se responsabiliza por danos causados por negligência do prestador ou por uso indevido de equipamento.
 
-11. Modificação dos Termos
+13. Modificação dos Termos
 A plataforma pode modificar estes termos a qualquer momento. Modificações serão notificadas aos prestadores. O uso contínuo da plataforma após as modificações constitui aceitação dos novos termos.`;
 
   useEffect(() => {
