@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertCircle, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function TowServiceQuestions({ answers, onChange }) {
   const questions = [
@@ -90,6 +91,29 @@ export default function TowServiceQuestions({ answers, onChange }) {
         <div className="bg-orange-50 rounded-2xl p-3 border border-orange-200">
           <p className="text-xs font-semibold text-orange-900 mb-1">ℹ️ Veículo rebaixado</p>
           <p className="text-xs text-orange-700">Pode ser necessário equipamento especial. O prestador será informado.</p>
+        </div>
+      )}
+
+      {!answers.easy_access && (
+        <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 space-y-3">
+          <div className="flex gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-amber-700 text-sm">⚠️ Acesso difícil</p>
+              <p className="text-xs text-amber-600 mt-1">
+                Se for necessário usar equipamento especial (correntes, polia, etc.), será cobrado uma taxa adicional no local.
+              </p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-amber-900">Descreva como está o carro:</label>
+            <Textarea
+              placeholder="Ex: Carro virado, em vala, amarrado em árvore, preso em mato, etc."
+              value={answers.vehicle_condition || ''}
+              onChange={(e) => handleAnswer('vehicle_condition', e.target.value)}
+              className="min-h-[80px] rounded-xl text-sm"
+            />
+          </div>
         </div>
       )}
     </div>
