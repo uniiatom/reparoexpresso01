@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import BusyAlertClientView from "@/components/BusyAlertClientView";
+import WarrantyBanner from "@/components/WarrantyBanner";
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -70,6 +71,23 @@ export default function SolicitarServico() {
     queryFn: () => base44.entities.Client.filter({ user_id: currentUser.id }),
     enabled: !!currentUser?.id,
     select: (data) => data[0] || null,
+  });
+
+  // Serviços concluídos dentro da janela de garantia (90 dias)
+  const { data: warrantyServices = [] } = useQuery({
+    queryKey: ['warranty-services', currentUser?.email],
+    queryFn: async () => {
+      const all = await base44.entities.ServiceRequest.filter({
+        created_by: currentUser.email,
+        status: 'concluido',
+      }, '-updated_date', 100);
+      const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+      return all.filter(r => {
+        const d = new Date(r.updated_date || r.created_date).getTime();
+        return d >= cutoff;
+      });
+    },
+    enabled: !!currentUser?.email,
   });
   const [step, setStep] = useState(-1);
 
@@ -526,6 +544,7 @@ export default function SolicitarServico() {
       {/* Step 1: Tipo de serviço */}
       {step === 1 && (
         <div>
+          <WarrantyBanner warrantyServices={warrantyServices} />
           <h2 className="text-2xl font-bold text-foreground mb-1">Qual serviço?</h2>
           <p className="text-muted-foreground mb-4">Selecione um ou mais serviços — cada um gera uma OS com senha própria</p>
           <div className="flex gap-2 mb-5">

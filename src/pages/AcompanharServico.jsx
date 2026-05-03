@@ -35,10 +35,11 @@ const SERVICE_LABELS = {
 export default function AcompanharServico() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const urlParams = new URLSearchParams(window.location.search);
   const [showRating, setShowRating] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [showPixPayment, setShowPixPayment] = useState(false);
-  const [showRetorno, setShowRetorno] = useState(false);
+  const [showRetorno, setShowRetorno] = useState(urlParams.get('retorno') === '1');
   const [showSatisfactionSurvey, setShowSatisfactionSurvey] = useState(false);
   const [previousStatus, setPreviousStatus] = useState(null);
   const previousStatusRef = useRef(null);
