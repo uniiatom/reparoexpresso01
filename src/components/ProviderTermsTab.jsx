@@ -33,9 +33,14 @@ export default function ProviderTermsTab({ providerId }) {
               month: 'long', 
               day: 'numeric' 
             }));
+          } else {
+            setHasAccepted(false);
+            setConfirmAccept(false);
           }
         } catch (error) {
           console.error('Erro ao carregar status de aceite:', error);
+          setHasAccepted(false);
+          setConfirmAccept(false);
         }
       }
     };
