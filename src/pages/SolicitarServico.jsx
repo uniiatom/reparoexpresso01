@@ -1132,12 +1132,9 @@ export default function SolicitarServico() {
             <div className="flex-1">
               <p className={cn("font-semibold text-sm", sharingLocation ? "text-green-700" : "text-foreground")}>
                 {sharingLocation ? "📡 Compartilhando localização em tempo real" : "Compartilhar localização em tempo real"}
-                {isTow && <span className="text-destructive"> *</span>}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {isTow
-                  ? "Obrigatório para reboque — o prestador precisa rastreá-lo"
-                  : "Permite que o prestador te encontre com mais facilidade"}
+                Permite que o prestador te encontre com mais facilidade
               </p>
             </div>
           </button>
