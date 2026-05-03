@@ -417,13 +417,22 @@ export default function AcompanharServico() {
         />
       )}
 
-      {/* Preço final */}
-      {request.final_price && (
+      {/* Preço estimado ou final */}
+      {(request.final_price || request.estimated_price || request.client_suggested_price) && (
         <div className="bg-card rounded-3xl p-5 border border-border mb-5 space-y-4">
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-foreground">Valor do serviço</span>
-            <span className="text-2xl font-bold text-primary">R$ {request.final_price.toFixed(2)}</span>
+            <span className="font-semibold text-foreground">
+              {request.final_price ? 'Valor do serviço' : 'Valor estimado'}
+            </span>
+            <span className="text-2xl font-bold text-primary">
+              R$ {(request.final_price || request.estimated_price || request.client_suggested_price)?.toFixed(2)}
+            </span>
           </div>
+          {request.estimated_price && !request.final_price && (
+            <p className="text-xs text-muted-foreground text-center">
+              ℹ️ Este é um valor estimado. O valor final será confirmado após o atendimento.
+            </p>
+          )}
           {/* Payment Status */}
           {request.payment_status && (
             <div className={cn(
