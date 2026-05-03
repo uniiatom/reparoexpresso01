@@ -61,8 +61,8 @@ export default function RetornoModal({ request, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4">
-      <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-5">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
+      <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-4 space-y-3 max-h-[92vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -92,7 +92,7 @@ export default function RetornoModal({ request, onClose }) {
                 key={t.id}
                 onClick={() => !expirado && setTipo(t.id)}
                 disabled={expirado}
-                className={`w-full text-left rounded-2xl border-2 p-4 transition-all flex items-start gap-3
+                className={`w-full text-left rounded-2xl border-2 p-3 transition-all flex items-start gap-3
                   ${expirado
                     ? 'border-border bg-muted/40 opacity-60 cursor-not-allowed'
                     : selected
@@ -173,7 +173,7 @@ export default function RetornoModal({ request, onClose }) {
           <div className="space-y-1">
             <p className="text-sm font-semibold text-foreground">Descreva o ocorrido</p>
             <textarea
-              className="w-full rounded-2xl border border-input bg-background px-3 py-2 text-sm min-h-[90px] resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-2xl border border-input bg-background px-3 py-2 text-sm min-h-[70px] resize-none focus:outline-none focus:ring-1 focus:ring-ring"
               placeholder={
                 tipo === 'retorno_peca'
                   ? 'Informe qual peça foi adquirida e o que resta ser feito...'
