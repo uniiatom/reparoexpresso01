@@ -470,9 +470,8 @@ export default function SolicitarServico() {
     if (step === 2) return allDescriptionsFilled();
     if (step === 3) {
       const hasDelivery = !isTow || (form.delivery_address.length > 3 && form.delivery_latitude && form.delivery_longitude);
-      const hasLiveLocation = !isTow || sharingLocation; // Reboque exige localização em tempo real
       const hasDistance = !isTow || (form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude); // Reboque precisa ter distância calculável
-      return form.address.length > 3 && hasDelivery && hasLiveLocation && hasDistance;
+      return form.address.length > 3 && hasDelivery && hasDistance;
     }
     if (step === 4) {
       if (form.modality === 'agendado') return !!form.scheduled_date && !!form.scheduled_time;
