@@ -680,6 +680,13 @@ export default function ProviderApp() {
                     {idx === 0 && <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Próxima</span>}
                   </div>
                     <p className="text-xs text-muted-foreground mb-1 line-clamp-2">{job.description}</p>
+                    {job.problem_photos?.length > 0 && (
+                      <div className="flex gap-1.5 mb-1.5 overflow-x-auto pb-0.5">
+                        {job.problem_photos.map((url, i) => (
+                          <img key={i} src={url} alt={`Foto ${i+1}`} className="w-12 h-12 object-cover rounded-lg flex-shrink-0 border border-border" />
+                        ))}
+                      </div>
+                    )}
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <MapPin className="w-3 h-3" /> {job.address}{job.city ? `, ${job.city}` : ''}
                     </p>
@@ -748,6 +755,13 @@ export default function ProviderApp() {
                     <span className="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-lg">{URGENCY_LABELS[req.urgency]}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">{req.description}</p>
+                  {req.problem_photos?.length > 0 && (
+                    <div className="flex gap-2 mb-2 overflow-x-auto pb-1">
+                      {req.problem_photos.map((url, i) => (
+                        <img key={i} src={url} alt={`Foto ${i+1}`} className="w-16 h-16 object-cover rounded-xl flex-shrink-0 border border-border" />
+                      ))}
+                    </div>
+                  )}
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5" /> {req.address}{req.city ? `, ${req.city}` : ''}
                   </p>

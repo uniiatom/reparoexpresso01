@@ -69,7 +69,22 @@ export default function NewJobBanner({ job, queueCount = 1, onAccept, onDecline 
                   <span className="text-xs font-bold px-2 py-1 rounded-lg bg-blue-100 text-blue-700 border border-blue-300">🔧 Retorno por Peça</span>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground mb-1 line-clamp-2">{job.description}</p>
+              <p className="text-sm text-muted-foreground mb-2 line-clamp-3">{job.description}</p>
+
+              {/* Fotos do problema */}
+              {job.problem_photos?.length > 0 && (
+                <div className="flex gap-2 mb-3 overflow-x-auto pb-1">
+                  {job.problem_photos.map((url, i) => (
+                    <img
+                      key={i}
+                      src={url}
+                      alt={`Foto ${i + 1}`}
+                      className="w-20 h-20 object-cover rounded-xl flex-shrink-0 border border-border"
+                    />
+                  ))}
+                </div>
+              )}
+
               <p className="text-sm text-muted-foreground flex items-center gap-1 mb-4">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                 {job.address}{job.city ? `, ${job.city}` : ''}
