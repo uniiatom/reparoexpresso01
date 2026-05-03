@@ -14,6 +14,7 @@ import ProviderApp from './pages/ProviderApp';
 import AdminPanel from './pages/AdminPanel';
 import ClientRegister from './pages/ClientRegister';
 import ProviderRegister from './pages/ProviderRegister';
+import ProviderCNPJRegistration from './pages/ProviderCNPJRegistration';
 import TermosCliente from './pages/TermosCliente';
 import TermosPrestador from './pages/TermosPrestador';
 import UserProfile from './pages/UserProfile';
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/cadastro" element={<ClientRegister />} />
         <Route path="/cadastro-prestador" element={<ProviderRegister />} />
+        <Route path="/cadastro-cnpj" element={<ProviderCNPJRegistration />} />
         <Route path="/dashboard-prestador" element={<ProviderDashboard />} />
         <Route path="/carteira" element={<WalletPage />} />
         <Route path="/minha-ficha" element={<ClienteDossie />} />
