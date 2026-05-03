@@ -127,18 +127,6 @@ export default function TowServiceQuestions({ answers, onChange }) {
           <p className="text-xs text-blue-700 mt-1">Você pode prosseguir com a solicitação do serviço</p>
         </div>
       )}
-
-      {answers.easy_access === false && (
-        <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 space-y-3">
-          <label className="text-xs font-semibold text-amber-900">Descreva como está o carro:</label>
-          <Textarea
-            placeholder="Ex: Carro virado, em vala, amarrado em árvore, preso em mato, etc."
-            value={answers.vehicle_condition || ''}
-            onChange={(e) => handleAnswer('vehicle_condition', e.target.value)}
-            className="min-h-[80px] rounded-xl text-sm"
-          />
-        </div>
-      )}
     </div>
   );
 }
