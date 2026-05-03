@@ -62,7 +62,7 @@ O pagamento pelos serviços pode ser realizado através das seguintes formas:
 - Cartão de Crédito
 
 4. Cancelamento
-Você pode cancelar uma solicitação de serviço antes que o prestador chegue. Após isso, o serviço está confirmado.
+Você pode cancelar uma solicitação de serviço enquanto o prestador ainda não iniciou o deslocamento. Uma vez que o prestador inicia o deslocamento para sua localização, o serviço não pode mais ser cancelado.
 
 5. Avaliação
 Solicitamos que avalie o prestador após o término do serviço para melhorar a qualidade da plataforma.
