@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Bell, X, CheckCircle2 } from 'lucide-react';
@@ -8,6 +8,15 @@ import { Badge } from "@/components/ui/badge";
 export default function ClientNotificationCenter({ clientId }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const queryClient = useQueryClient();
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    if (!clientId) return;
+    const unsubscribe = base44.entities.ClientNotification.subscribe((event) => {
+      queryClient.invalidateQueries({ queryKey: ['client-notifications', clientId] });
+    });
+    return unsubscribe;
+  }, [clientId, queryClient]);
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['client-notifications', clientId],

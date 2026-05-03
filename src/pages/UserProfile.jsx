@@ -85,7 +85,7 @@ export default function UserProfile() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-2xl font-bold text-foreground flex-1">Meu Perfil</h1>
-        {client?.id && <ClientNotificationCenter clientId={client.id} />}
+        {client?.id && <ClientNotificationCenter clientId={client.id} userId={user?.id} />}
       </div>
 
       {/* User Card */}
