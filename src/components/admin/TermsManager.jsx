@@ -3,15 +3,19 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Pencil, Check, X, Eye } from "lucide-react";
+import { Pencil, Check, X, Eye, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function TermsManager() {
   const [termsContent, setTermsContent] = useState('');
+  const [originalContent, setOriginalContent] = useState('');
   const [editing, setEditing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [notifying, setNotifying] = useState(false);
+  const [showNotifyModal, setShowNotifyModal] = useState(false);
+  const [changeSummary, setChangeSummary] = useState('');
 
   useEffect(() => {
     loadTerms();
@@ -24,13 +28,18 @@ export default function TermsManager() {
       const localTerms = localStorage.getItem('client_terms_content');
       if (localTerms) {
         setTermsContent(localTerms);
+        setOriginalContent(localTerms);
       } else {
         // Termos padrão se não houver salvos
-        setTermsContent(getDefaultTerms());
+        const defaultTerms = getDefaultTerms();
+        setTermsContent(defaultTerms);
+        setOriginalContent(defaultTerms);
       }
     } catch (err) {
       console.error('Erro ao carregar termos:', err);
-      setTermsContent(getDefaultTerms());
+      const defaultTerms = getDefaultTerms();
+      setTermsContent(defaultTerms);
+      setOriginalContent(defaultTerms);
     } finally {
       setLoading(false);
     }
@@ -63,13 +72,39 @@ A plataforma não é responsável por danos causados pelos prestadores de servi�
       setSaving(true);
       // Salva no localStorage para persistência
       localStorage.setItem('client_terms_content', termsContent);
+      setOriginalContent(termsContent);
       toast.success('Termos atualizados com sucesso!');
       setEditing(false);
+      // Mostra modal para notificar clientes
+      setShowNotifyModal(true);
     } catch (err) {
       toast.error('Erro ao salvar termos');
       console.error(err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleNotifyClients = async () => {
+    try {
+      setNotifying(true);
+      const response = await base44.functions.invoke('notifyTermsUpdate', {
+        terms_content: termsContent,
+        change_summary: changeSummary,
+      });
+      
+      if (response.data?.notified) {
+        toast.success(`✅ ${response.data.notified} cliente(s) notificado(s) sobre a alteração dos termos`);
+      } else {
+        toast.info('Nenhum cliente para notificar');
+      }
+      setShowNotifyModal(false);
+      setChangeSummary('');
+    } catch (err) {
+      toast.error('Erro ao notificar clientes');
+      console.error(err);
+    } finally {
+      setNotifying(false);
     }
   };
 
@@ -169,6 +204,74 @@ A plataforma não é responsável por danos causados pelos prestadores de servi�
           )}
         </CardContent>
       </Card>
+
+      {/* Modal de notificação de clientes */}
+      {showNotifyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Send className="w-5 h-5 text-primary" />
+                Notificar Clientes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Os termos foram atualizados. Deseja notificar os clientes sobre a alteração?
+              </p>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">
+                  Resumo da alteração <span className="text-muted-foreground">(opcional)</span>
+                </label>
+                <Textarea
+                  placeholder="Ex: Adicionada nova política de cancelamento..."
+                  value={changeSummary}
+                  onChange={(e) => setChangeSummary(e.target.value)}
+                  className="min-h-20 rounded-lg"
+                />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-900">
+                <p className="font-semibold mb-1">ℹ️ O que acontece:</p>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li>Email será enviado para todos os clientes cadastrados</li>
+                  <li>Eles verão os novos termos na próxima solicitação de serviço</li>
+                </ul>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4 border-t border-border">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowNotifyModal(false);
+                    setChangeSummary('');
+                  }}
+                  disabled={notifying}
+                  className="rounded-lg"
+                >
+                  Não notificar
+                </Button>
+                <Button
+                  onClick={handleNotifyClients}
+                  disabled={notifying}
+                  className="rounded-lg bg-primary text-primary-foreground"
+                >
+                  {notifying ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" /> Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-1" /> Notificar Clientes
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
