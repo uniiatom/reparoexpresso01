@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Wallet, Gift, Clock, CheckCircle2, ChevronRight, Users, TrendingUp, Zap, BookOpen } from 'lucide-react';
+import { Wallet, Gift, Clock, CheckCircle2, ChevronRight, Users, TrendingUp, Zap, BookOpen, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -47,6 +47,23 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
     queryFn: () => base44.entities.Referral.filter({ referrer_id: userId, reward_status: 'confirmada' }),
     enabled: !!userId && ownerType === 'cliente',
   });
+
+  // Para prestadores: busca dados reais de serviços e avaliação
+  const { data: provider } = useQuery({
+    queryKey: ['provider-cashback-data', userId],
+    queryFn: async () => {
+      const list = await base44.entities.Provider.filter({ id: userId });
+      return list[0] || null;
+    },
+    enabled: !!userId && ownerType === 'prestador',
+  });
+
+  const totalServicos = provider?.total_jobs || 0;
+  const mediaAvaliacao = provider?.rating || 0;
+  // Blocos de 5 serviços concluídos = bônus
+  const blocosCompletos = Math.floor(totalServicos / 5);
+  const servicosNoBloco = totalServicos % 5;
+  const progressoBloco = (servicosNoBloco / 5) * 100;
 
   const amigosAtivos = referrals.length;
   const nivelAtual = getNivel(amigosAtivos);
@@ -304,34 +321,76 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
         </div>
       )}
 
-      {/* Níveis e regras (prestador) */}
+      {/* Progresso e níveis (prestador) */}
       {ownerType === 'prestador' && (
         <div className="space-y-3">
-          {/* Card de nível atual */}
+          {/* Card de progresso real */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-card border border-border rounded-3xl p-5"
+            className="bg-card border border-border rounded-3xl p-5 space-y-4"
           >
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-bold text-foreground flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-600" /> Níveis de Bônus
-              </p>
-              <button
-                onClick={() => setShowNiveis(!showNiveis)}
-                className="text-xs font-semibold text-primary hover:text-primary/80 flex items-center gap-1"
-              >
-                {showNiveis ? 'Ocultar' : 'Ver todos'}
-                <ChevronRight className={cn("w-3.5 h-3.5 transition-transform", showNiveis && "rotate-90")} />
-              </button>
+            <p className="text-sm font-bold text-foreground flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-600" /> Seu Progresso de Bônus
+            </p>
+
+            {/* Serviços — bloco de 5 */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs font-semibold text-foreground">🔧 Serviços concluídos</span>
+                <span className="text-xs font-bold text-emerald-700">{totalServicos} total · {blocosCompletos} bônus gerado(s)</span>
+              </div>
+              <div className="h-3 bg-muted rounded-full overflow-hidden mb-1">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressoBloco}%` }}
+                  transition={{ duration: 0.8 }}
+                  className="h-full bg-emerald-500 rounded-full"
+                />
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{servicosNoBloco}/5 no bloco atual</span>
+                <span className="font-semibold text-emerald-700">R$ 20 a cada 5 serviços</span>
+              </div>
             </div>
 
-            <div className="space-y-2 text-xs text-muted-foreground mb-3">
-              <p>🏆 Ganhe <strong>R$ 20</strong> a cada 5 serviços concluídos</p>
-              <p>⭐ Ganhe <strong>R$ 10</strong> por avaliação ≥ 4,5 estrelas</p>
-              <p>📈 Mais serviços = mais bônus por nível</p>
+            {/* Avaliação */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs font-semibold text-foreground">⭐ Avaliação média</span>
+                <span className={cn(
+                  "text-xs font-bold px-2 py-0.5 rounded-full",
+                  mediaAvaliacao >= 4.5 ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"
+                )}>
+                  {mediaAvaliacao > 0 ? mediaAvaliacao.toFixed(1) : '—'} ★
+                  {mediaAvaliacao >= 4.5 && " · +R$ 10/serviço"}
+                </span>
+              </div>
+              <div className="h-3 bg-muted rounded-full overflow-hidden mb-1">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min((mediaAvaliacao / 5) * 100, 100)}%` }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className={cn("h-full rounded-full", mediaAvaliacao >= 4.5 ? "bg-yellow-400" : "bg-muted-foreground/40")}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {mediaAvaliacao >= 4.5
+                  ? "✅ Você está recebendo bônus de avaliação!"
+                  : `Precisa de ${(4.5 - mediaAvaliacao).toFixed(1)} ★ a mais para ganhar bônus de avaliação`}
+              </p>
             </div>
+
+            {/* Tabela de níveis */}
+            <button
+              onClick={() => setShowNiveis(!showNiveis)}
+              className="flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary/80 transition-colors w-full pt-1 border-t border-border"
+            >
+              <Users className="w-3.5 h-3.5" />
+              Ver tabela de níveis e bônus
+              <ChevronRight className={cn("w-3.5 h-3.5 ml-auto transition-transform", showNiveis && "rotate-90")} />
+            </button>
 
             {showNiveis && (
               <motion.div
@@ -341,29 +400,36 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
               >
                 <div className="grid grid-cols-3 text-xs text-muted-foreground font-semibold px-1 mb-1">
                   <span>Nível</span>
-                  <span className="text-center">Serviços/mês</span>
-                  <span className="text-center">Bônus extra</span>
+                  <span className="text-center">Serviços total</span>
+                  <span className="text-center">Bônus / bloco</span>
                 </div>
                 {[
-                  { emoji: '🌱', nivel: 'Iniciante',  min: 0,  max: 9,  bonus: 'R$ 20/bloco 5 serv.' },
-                  { emoji: '⚡', nivel: 'Pro',        min: 10, max: 19, bonus: 'R$ 30/bloco 5 serv.' },
-                  { emoji: '💎', nivel: 'Elite',      min: 20, max: 34, bonus: 'R$ 40/bloco 5 serv.' },
-                  { emoji: '🔥', nivel: 'Lendário',   min: 35, max: 49, bonus: 'R$ 55/bloco 5 serv.' },
-                  { emoji: '👑', nivel: 'Imperador',  min: 50, max: null, bonus: 'R$ 70/bloco 5 serv.' },
-                ].map(n => (
-                  <div
-                    key={n.nivel}
-                    className="grid grid-cols-3 items-center rounded-xl border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
-                  >
-                    <span className="flex items-center gap-1 font-semibold text-foreground">{n.emoji} {n.nivel}</span>
-                    <span className="text-center">{n.min}{n.max ? `–${n.max}` : '+'}</span>
-                    <span className="text-center text-emerald-700 font-semibold">{n.bonus}</span>
-                  </div>
-                ))}
-                <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
-                  <p className="font-bold mb-1">⚠️ Regras:</p>
+                  { emoji: '🌱', nivel: 'Iniciante',  min: 0,   max: 49,  bonus: 'R$ 20' },
+                  { emoji: '⚡', nivel: 'Pro',        min: 50,  max: 149, bonus: 'R$ 30' },
+                  { emoji: '💎', nivel: 'Elite',      min: 150, max: 299, bonus: 'R$ 40' },
+                  { emoji: '🔥', nivel: 'Lendário',   min: 300, max: 499, bonus: 'R$ 55' },
+                  { emoji: '👑', nivel: 'Imperador',  min: 500, max: null, bonus: 'R$ 70' },
+                ].map(n => {
+                  const isAtual = totalServicos >= n.min && (n.max === null || totalServicos <= n.max);
+                  return (
+                    <div
+                      key={n.nivel}
+                      className={cn(
+                        "grid grid-cols-3 items-center rounded-xl border px-3 py-2 text-xs",
+                        isAtual ? "border-emerald-300 bg-emerald-50 font-bold text-emerald-900" : "border-transparent bg-muted/40 text-muted-foreground"
+                      )}
+                    >
+                      <span className="flex items-center gap-1">{n.emoji} {n.nivel}</span>
+                      <span className="text-center">{n.min}{n.max ? `–${n.max}` : '+'}</span>
+                      <span className="text-center text-emerald-700 font-semibold">{n.bonus}</span>
+                    </div>
+                  );
+                })}
+                <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1">
+                  <p className="font-bold">⚠️ Regras:</p>
+                  <p>• Bônus de R$ 20–70 a cada <strong>5 serviços concluídos</strong> (por nível).</p>
+                  <p>• Avaliação média <strong>≥ 4,5 ★</strong> gera R$ 10 extra por serviço.</p>
                   <p>• Bônus calculado ao final de cada quinzena.</p>
-                  <p>• Avaliação ≥ 4,5 ★ gera R$ 10 extra por serviço.</p>
                   <p>• Resgate via PIX (mín. R$ 200) ou cursos (× 2.5).</p>
                 </div>
               </motion.div>
