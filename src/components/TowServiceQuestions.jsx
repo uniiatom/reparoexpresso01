@@ -94,10 +94,17 @@ export default function TowServiceQuestions({ answers, onChange }) {
         </div>
       )}
 
-      {allAnswered && answers.lowered && (
-        <div className="bg-orange-50 rounded-2xl p-3 border border-orange-200">
-          <p className="text-xs font-semibold text-orange-900 mb-1">ℹ️ Veículo rebaixado</p>
-          <p className="text-xs text-orange-700">Pode ser necessário equipamento especial. O prestador será informado.</p>
+      {answers.lowered === true && (
+        <div className="bg-red-50 rounded-2xl p-4 border border-red-200 space-y-2">
+          <div className="flex gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-red-700 text-sm">⚠️ Veículo rebaixado</p>
+              <p className="text-xs text-red-600 mt-1">
+                Você está ciente de que <strong>pode haver danos ao parachoque</strong> durante o reboque. <strong>A plataforma Reparo Expresso e o reboquista não se responsabilizam por danos causados durante a remoção do veículo.</strong>
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
