@@ -116,6 +116,7 @@ export default function SolicitarServico() {
   const [showForroGessoModal, setShowForroGessoModal] = useState(false);
   const [forroGessoTipo, setForroGessoTipo] = useState(null);
   const [towQuestions, setTowQuestions] = useState({});
+  const [towVehicleType, setTowVehicleType] = useState(null);
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
   
   const [sharingLocation, setSharingLocation] = useState(false);
@@ -324,6 +325,35 @@ export default function SolicitarServico() {
 
   const isTow = form.service_type.includes('reboque');
 
+  // Preços base de reboque por tipo de veículo (em R$)
+  const towPricingTable = {
+    moto: { base: 150, perKm: 3.50 },
+    carro: { base: 180, perKm: 5.00 },
+    suv: { base: 220, perKm: 6.00 },
+    van: { base: 250, perKm: 7.00 },
+    caminhao: { base: 300, perKm: 8.50 },
+  };
+
+  // Calcula preço estimado para reboque
+  const calculateTowPrice = () => {
+    if (!isTow || !towVehicleType || !form.tow_distance_km) return null;
+    const pricing = towPricingTable[towVehicleType];
+    if (!pricing) return null;
+    
+    const distanceCharge = form.tow_distance_km * pricing.perKm;
+    const total = pricing.base + distanceCharge;
+    
+    return {
+      base: pricing.base,
+      distanceCharge,
+      total,
+      distance: form.tow_distance_km,
+      perKm: pricing.perKm,
+    };
+  };
+
+  const towPrice = calculateTowPrice();
+
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -495,11 +525,12 @@ export default function SolicitarServico() {
     if (step === 0) return registerForm.name.length > 2 && registerForm.phone.length > 7;
     if (step === 1) return form.service_type.length > 0;
     if (step === 2) {
-      // Se é reboque, valida perguntas primeiro
+      // Se é reboque, valida perguntas e tipo de veículo
       if (isTow) {
         const allAnswered = Object.keys(towQuestions).length === 5;
         const hasVictims = towQuestions.has_victims === true;
-        if (!allAnswered || hasVictims) return false;
+        const hasVehicleType = !!towVehicleType;
+        if (!allAnswered || hasVictims || !hasVehicleType) return false;
       }
       return allDescriptionsFilled();
     }
@@ -998,7 +1029,7 @@ export default function SolicitarServico() {
       {/* Step 2: Perguntas de reboque + Descrição + Fotos */}
       {step === 2 && (
         <div className="space-y-5">
-          {/* Se tiver reboque, mostra as perguntas primeiro */}
+          {/* Se tiver reboque, mostra as perguntas e tipo de veículo */}
           {isTow && (
             <>
               <TowServiceQuestions answers={towQuestions} onChange={setTowQuestions} />
@@ -1008,6 +1039,79 @@ export default function SolicitarServico() {
                   <p className="text-red-600 text-xs mt-1">Aguarde a polícia registrar o ocorrido antes de solicitar o serviço.</p>
                 </div>
               )}
+              <div className="h-px bg-border" />
+
+              {/* Seleção de tipo de veículo */}
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-foreground">Qual o tipo do veículo?</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: 'moto', label: '🏍️ Moto', desc: 'Motocicleta/scooter' },
+                    { value: 'carro', label: '🚗 Carro', desc: 'Sedan/hatch' },
+                    { value: 'suv', label: '🚙 SUV', desc: 'SUV/crossover' },
+                    { value: 'van', label: '🚐 Van', desc: 'Van/minibus' },
+                    { value: 'caminhao', label: '🚚 Caminhão', desc: 'Caminhão' },
+                  ].map(v => (
+                    <button
+                      key={v.value}
+                      onClick={() => setTowVehicleType(v.value)}
+                      className={cn(
+                        "flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all text-center",
+                        towVehicleType === v.value
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
+                      )}
+                    >
+                      <span className="text-2xl">{v.label.split(' ')[0]}</span>
+                      <span className="text-xs font-semibold text-foreground">{v.label.split(' ').slice(1).join(' ')}</span>
+                      <span className="text-[10px] text-muted-foreground">{v.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Previsão de preço */}
+              {towVehicleType && form.tow_distance_km && towPrice && (
+                <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-4 border border-primary/20 space-y-3">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-1">ESTIMATIVA DE PREÇO</p>
+                    <div className="text-3xl font-black text-primary">
+                      R$ {towPrice.total.toFixed(2)}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="bg-white/50 rounded-xl p-2">
+                      <p className="text-muted-foreground font-medium">Taxa base</p>
+                      <p className="font-bold text-foreground">R$ {towPrice.base.toFixed(2)}</p>
+                    </div>
+                    <div className="bg-white/50 rounded-xl p-2">
+                      <p className="text-muted-foreground font-medium">Distância</p>
+                      <p className="font-bold text-foreground">{towPrice.distance.toFixed(1)} km</p>
+                    </div>
+                    <div className="col-span-2 bg-white/50 rounded-xl p-2">
+                      <p className="text-muted-foreground font-medium">Distância (ida e volta) × R$ {towPrice.perKm.toFixed(2)}/km</p>
+                      <p className="font-bold text-foreground">R$ {towPrice.distanceCharge.toFixed(2)}</p>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-muted-foreground bg-white/50 rounded-xl p-2">
+                    <p>⚠️ Preço estimado. O valor final pode variar conforme:</p>
+                    <ul className="list-disc list-inside mt-1 space-y-0.5">
+                      <li>Condições de acesso ao veículo</li>
+                      <li>Necessidade de equipamento especial (veículo rebaixado)</li>
+                      <li>Roda travada ou danos adicionais</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {!towVehicleType && (
+                <div className="bg-blue-50 rounded-2xl p-3 border border-blue-200">
+                  <p className="text-xs text-blue-700">📍 Selecione o tipo de veículo para calcular o preço</p>
+                </div>
+              )}
+
               <div className="h-px bg-border" />
             </>
           )}
@@ -1444,8 +1548,10 @@ export default function SolicitarServico() {
                 )}
               </p>
             )}
-            {isTow && form.latitude && form.delivery_latitude && (
-              <p className="text-sm text-blue-600 font-bold">💰 Distância calculada para cobrança</p>
+            {isTow && towPrice && (
+              <p className="text-sm text-blue-600 font-bold">
+                💰 Estimado: R$ {towPrice.total.toFixed(2)} ({towVehicleType})
+              </p>
             )}
             {form.problem_photos.length > 0 && <p className="text-sm text-muted-foreground">📷 {form.problem_photos.length} foto(s) anexada(s)</p>}
              {form.client_suggested_price && <p className="text-sm text-muted-foreground">💰 Sugestão de valor: R$ {Number(form.client_suggested_price).toFixed(2)}</p>}
