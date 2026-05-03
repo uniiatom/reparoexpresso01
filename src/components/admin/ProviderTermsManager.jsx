@@ -55,12 +55,28 @@ A plataforma pode suspender ou bloquear sua conta se:
 - Cometer fraude ou atividade ilegal
 
 8. Comissão e Pagamento
-Os valores de comissão e condições de pagamento são definidos pela plataforma e podem sofrer alterações mediante notificação prévia. O pagamento é realizado via PIX conforme agenda estabelecida.
+Os valores de comissão e condições de pagamento são definidos pela plataforma e podem sofrer alterações mediante notificação prévia. O pagamento é realizado via PIX conforme agenda estabelecida. O PRESTADOR ESTÁ CIENTE E CONCORDA QUE:
+- É obrigado a abrir uma Pessoa Jurídica (PJ) em seu nome
+- Deve emitir Nota Fiscal (NF) para cada serviço prestado através da plataforma
+- A Nota Fiscal é pré-requisito para o recebimento dos valores pelos serviços prestados
+- A plataforma repassará os valores apenas após a emissão e validação da Nota Fiscal correspondente
+- O prestador é responsável por todas as obrigações fiscais e tributárias de sua PJ
 
-9. Seguro e Responsabilidade
+9. Uniforme e Padronização
+Para padronização e segurança de seus clientes, todos os prestadores são OBRIGADOS a:
+- Usar uniforme da plataforma em todos os atendimentos
+- Manter o uniforme em perfeito estado de conservação e higiene
+- Exibir o crachá identificador da plataforma durante os serviços
+
+Prestadores que se tornarem "Padrão" da plataforma (nível máximo) receberão como benefício exclusivo:
+- Plotagem do nome e logo da plataforma em seu veículo, SEM CUSTOS para a plataforma
+- A plotagem é de propriedade da plataforma e deve ser mantida enquanto o prestador permanecer ativo
+- Caso o prestador deixe de ser "Padrão" ou seja removido, ele deve remover a plotagem em até 30 dias
+
+10. Seguro e Responsabilidade
 Você é responsável por manter seguro adequado para sua atividade. A plataforma não se responsabiliza por danos causados por negligência do prestador ou por uso indevido de equipamento.
 
-10. Modificação dos Termos
+11. Modificação dos Termos
 A plataforma pode modificar estes termos a qualquer momento. Modificações serão notificadas aos prestadores. O uso contínuo da plataforma após as modificações constitui aceitação dos novos termos.`;
 
   useEffect(() => {
