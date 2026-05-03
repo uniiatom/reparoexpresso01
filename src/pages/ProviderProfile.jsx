@@ -78,25 +78,8 @@ export default function ProviderProfile() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-card rounded-3xl overflow-hidden shadow-xl mb-6 border border-border"
       >
-        {/* Background Header — usa cor do nível ou padrão */}
-        {(() => {
-          const lvl = getProviderLevel(provider.total_jobs, provider.rating);
-          const gradientMap = {
-            pro:       'linear-gradient(to right, #3b82f6, #2563eb)',
-            pro_plus:  'linear-gradient(to right, #a855f7, #ec4899)',
-            pro_elite: 'linear-gradient(to right, #10b981, #14b8a6)',
-            pro_lenda: 'linear-gradient(to right, #f59e0b, #f97316)',
-          };
-          const style = lvl
-            ? { background: gradientMap[lvl.key] }
-            : {};
-          return (
-            <div
-              className={cn("h-24", !lvl && "bg-gradient-to-r from-primary/20 to-primary/10")}
-              style={style}
-            />
-          );
-        })()}
+        {/* Background Header */}
+         <div className="h-24 bg-gradient-to-r from-primary/20 to-primary/10" />
 
         {/* Profile Info */}
         <div className="px-6 pb-6">

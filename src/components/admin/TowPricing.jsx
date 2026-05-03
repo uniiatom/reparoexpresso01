@@ -48,28 +48,30 @@ export default function TowPricing() {
   const saveTowConfig = useMutation({
     mutationFn: async () => {
       const updates = [];
-      console.log('FormData ao salvar:', formData);
       
       for (const vehicle of VEHICLE_TYPES) {
         const values = formData[vehicle.key];
-        console.log(`${vehicle.key}:`, values);
-        if (!values || (!values.exit && !values.perKm)) continue;
+        if (!values || (values.exit === '' && values.perKm === '')) continue;
+        
+        const exit = parseFloat(values.exit);
+        const perKm = parseFloat(values.perKm);
+        
+        if (isNaN(exit) && isNaN(perKm)) continue;
         
         const data = {
           service_type: 'reboque',
-          price_min: Number(values.exit) || 0,
-          price_max: Number(values.perKm) || 0,
+          price_min: isNaN(exit) ? 0 : exit,
+          price_max: isNaN(perKm) ? 0 : perKm,
           note: `${vehicle.key}|${vehicle.label}`,
         };
 
-        console.log(`Salvando ${vehicle.key}:`, data);
         if (values.id) {
           updates.push(base44.entities.ServicePricing.update(values.id, data));
         } else {
           updates.push(base44.entities.ServicePricing.create(data));
         }
       }
-      console.log('Total de updates:', updates.length);
+      
       if (updates.length === 0) throw new Error('Nenhum valor preenchido');
       await Promise.all(updates);
     },
@@ -79,7 +81,7 @@ export default function TowPricing() {
       setEditing(false);
     },
     onError: (error) => {
-      console.error('Erro:', error);
+      console.error('Erro ao salvar:', error);
       toast.error('Erro ao salvar: ' + (error.message || 'Tente novamente'));
     },
   });
@@ -120,7 +122,7 @@ export default function TowPricing() {
                             value={data.exit || ''}
                             onChange={(e) => setFormData({
                               ...formData,
-                              [vehicle.key]: { ...data, exit: e.target.value }
+                              [vehicle.key]: { ...(formData[vehicle.key] || {}), exit: e.target.value }
                             })}
                             className="rounded-lg text-sm"
                           />
@@ -134,7 +136,7 @@ export default function TowPricing() {
                             value={data.perKm || ''}
                             onChange={(e) => setFormData({
                               ...formData,
-                              [vehicle.key]: { ...data, perKm: e.target.value }
+                              [vehicle.key]: { ...(formData[vehicle.key] || {}), perKm: e.target.value }
                             })}
                             className="rounded-lg text-sm"
                           />
