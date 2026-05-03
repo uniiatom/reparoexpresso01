@@ -1,0 +1,113 @@
+{
+  "name": "RecurringServiceSchedule",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "ID do cliente"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Nome do cliente (desnormalizado)"
+    },
+    "client_phone": {
+      "type": "string",
+      "description": "Telefone do cliente (desnormalizado)"
+    },
+    "service_type": {
+      "type": "string",
+      "description": "Tipo de servi\u00e7o recorrente"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do servi\u00e7o"
+    },
+    "address": {
+      "type": "string",
+      "description": "Endere\u00e7o do servi\u00e7o"
+    },
+    "city": {
+      "type": "string",
+      "description": "Cidade"
+    },
+    "state": {
+      "type": "string",
+      "description": "Estado/UF"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitude do local"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitude do local"
+    },
+    "recurrence_pattern": {
+      "type": "string",
+      "enum": [
+        "semanal",
+        "quinzenal",
+        "mensal",
+        "bimestral",
+        "trimestral",
+        "semestral",
+        "anual"
+      ],
+      "description": "Frequ\u00eancia de recorr\u00eancia"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de in\u00edcio do agendamento"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de t\u00e9rmino (opcional)"
+    },
+    "next_service_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data do pr\u00f3ximo servi\u00e7o agendado"
+    },
+    "last_service_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data do \u00faltimo servi\u00e7o criado"
+    },
+    "last_service_request_id": {
+      "type": "string",
+      "description": "ID do \u00faltimo ServiceRequest criado"
+    },
+    "client_suggested_price": {
+      "type": "number",
+      "description": "Valor sugerido pelo cliente"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se o agendamento recorrente est\u00e1 ativo"
+    },
+    "total_occurrences_created": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de ordens de servi\u00e7o criadas"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es adicionais"
+    },
+    "preferred_time": {
+      "type": "string",
+      "description": "Hor\u00e1rio preferencial para o servi\u00e7o (HH:MM)"
+    }
+  },
+  "required": [
+    "client_id",
+    "service_type",
+    "description",
+    "address",
+    "recurrence_pattern",
+    "start_date"
+  ]
+}
