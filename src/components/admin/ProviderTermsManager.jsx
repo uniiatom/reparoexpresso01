@@ -195,7 +195,7 @@ A plataforma pode modificar estes termos a qualquer momento. Modificações ser�
     }
 
     try {
-      await base44.functions.invoke('notifyProviderTermsUpdate', {
+      await base44.functions.invoke('notifyTermsUpdate', {
         summary: notifySummary,
         timestamp: new Date().toISOString()
       });
