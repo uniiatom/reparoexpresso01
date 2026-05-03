@@ -98,16 +98,37 @@ A plataforma oferece sistema de bônus e incentivos baseado em:
 
 Os bônus são custeados parcialmente com o Fundo de Reserva retido dos prestadores e podem ser creditados na carteira do prestador ou deduzidos dos próximos repasses.
 
-11. Uniforme e Padronização
-Para padronização e segurança de seus clientes, todos os prestadores são OBRIGADOS a:
-- Usar uniforme da plataforma em todos os atendimentos
-- Manter o uniforme em perfeito estado de conservação e higiene
-- Exibir o crachá identificador da plataforma durante os serviços
+11. Uniforme, Padronização e Identificação Veicular
 
-Prestadores que se tornarem "Padrão" da plataforma (nível máximo) receberão como benefício exclusivo:
-- Plotagem do nome e logo da plataforma em seu veículo, SEM CUSTOS para a plataforma
-- A plotagem é de propriedade da plataforma e deve ser mantida enquanto o prestador permanecer ativo
-- Caso o prestador deixe de ser "Padrão" ou seja removido, ele deve remover a plotagem em até 30 dias
+A. UNIFORME OBRIGATÓRIO:
+Para padronização e segurança de nossos clientes, todos os prestadores são EXPRESSAMENTE OBRIGADOS a:
+- Usar o uniforme da plataforma em TODOS os atendimentos realizados
+- Manter o uniforme em perfeito estado de conservação, limpeza e higiene
+- Exibir permanentemente o crachá identificador da plataforma durante os serviços
+- A não conformidade com esta exigência pode resultar em suspensão ou bloqueio de conta
+
+O uniforme pode ser adquirido pela plataforma ou fornecido pelo prestador conforme especificações aprovadas. Custos de aquisição e reposição são responsabilidade do prestador.
+
+B. PLOTAGEM DE VEÍCULO - BENEFÍCIO PARA PRESTADORES "PADRÃO":
+Prestadores que atingem o nível "Padrão" da plataforma (nível máximo de excelência) receberão como benefício exclusivo:
+
+BENEFÍCIO:
+- Direito a plotagem (adesivo) do nome, logo e cores da plataforma em seu veículo pessoal
+- A plotagem será executada SEM CUSTOS para a plataforma (custos a cargo do prestador)
+- Este é um benefício exclusivo que reforça a marca e gera visibilidade da plataforma
+
+PROPRIEDADE E RESPONSABILIDADES:
+- A plotagem permanece PROPRIEDADE INTELECTUAL da plataforma
+- O veículo plotado não pode ser utilizado para concorrência ou atividades conflitantes
+- O prestador é responsável por manter a plotagem em bom estado durante sua vigência
+- Reparos, reposição ou manutenção da plotagem são custos do prestador
+
+TÉRMINO DO BENEFÍCIO:
+- Caso o prestador deixe de ser "Padrão" (redução de nível), o benefício é revogado
+- Caso a conta seja bloqueada ou cancelada, o benefício é revogado imediatamente
+- O prestador tem PRAZO DE 30 DIAS para remover completamente a plotagem do veículo
+- Veículos que mantiverem plotagem após este prazo podem ser reportados, prejudicando reputação do prestador
+- A plataforma pode solicitar comprovante fotográfico de remoção da plotagem
 
 12. Seguro e Responsabilidade
 Você é responsável por manter seguro adequado para sua atividade. A plataforma não se responsabiliza por danos causados por negligência do prestador ou por uso indevido de equipamento.
