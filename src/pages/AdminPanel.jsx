@@ -21,6 +21,7 @@ import ClientConsultaAdmin from '../components/admin/ClientConsultaAdmin';
 import ServiceMetrics from '../components/admin/ServiceMetrics';
 import ClientBlacklist from '../components/admin/ClientBlacklist';
 import TowPricing from '../components/admin/TowPricing';
+import ExpiringServicesAlert from '../components/admin/ExpiringServicesAlert';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -127,6 +128,9 @@ export default function AdminPanel() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
+      {/* Alerta visual de serviços vencendo */}
+      <ExpiringServicesAlert />
+
       <h1 className="text-2xl font-bold text-foreground mb-6">Painel Administrativo</h1>
 
       {/* Stats */}
