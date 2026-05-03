@@ -54,13 +54,31 @@ A plataforma pode suspender ou bloquear sua conta se:
 - Não manter documentação válida
 - Cometer fraude ou atividade ilegal
 
-8. Comissão e Pagamento
-Os valores de comissão e condições de pagamento são definidos pela plataforma e podem sofrer alterações mediante notificação prévia. O pagamento é realizado via PIX conforme agenda estabelecida. O PRESTADOR ESTÁ CIENTE E CONCORDA QUE:
-- É obrigado a abrir uma Pessoa Jurídica (PJ) em seu nome
-- Deve emitir Nota Fiscal (NF) para cada serviço prestado através da plataforma
-- A Nota Fiscal é pré-requisito para o recebimento dos valores pelos serviços prestados
-- A plataforma repassará os valores apenas após a emissão e validação da Nota Fiscal correspondente
-- O prestador é responsável por todas as obrigações fiscais e tributárias de sua PJ
+8. Comissão, Pagamento e Requisitos Fiscais
+Os valores de comissão e condições de pagamento são definidos pela plataforma e podem sofrer alterações mediante notificação prévia. O pagamento é realizado via PIX conforme agenda estabelecida.
+
+OBRIGATORIEDADE DE PJ E NOTA FISCAL:
+O PRESTADOR DECLARA ESTAR PLENAMENTE CIENTE E CONCORDA EXPRESSAMENTE COM OS SEGUINTES REQUISITOS COMO PRÉ-CONDIÇÃO PARA O RECEBIMENTO DOS VALORES PELOS SERVIÇOS PRESTADOS:
+
+A) ABERTURA DE PESSOA JURÍDICA (PJ):
+- É OBRIGATÓRIO abrir uma Pessoa Jurídica (empresa - CNPJ) em seu nome para continuar operando na plataforma
+- A PJ pode ser constituída como Microempreendedor Individual (MEI), Empresa Individual de Responsabilidade Limitada (EIRELI) ou outra modalidade permitida
+- O registro da PJ e apresentação do CNPJ são requisitos de cadastro e manutenção de conta ativa
+
+B) EMISSÃO DE NOTA FISCAL (NF):
+- É OBRIGATÓRIO emitir Nota Fiscal eletrônica (NFe) ou Recibo (RPS) para CADA serviço executado através da plataforma
+- A Nota Fiscal deve indicar corretamente o serviço realizado, data, valor e dados da plataforma como tomadora
+- A emissão de NF é responsabilidade exclusiva do prestador e deve estar em conformidade com as normas da Receita Federal
+
+C) PRÉ-REQUISITO PARA RECEBIMENTO:
+- A Nota Fiscal é PRÉ-REQUISITO OBRIGATÓRIO para o recebimento de qualquer valor
+- A plataforma repassará os valores APENAS APÓS recebimento, validação e processamento da Nota Fiscal correspondente
+- Sem a Nota Fiscal válida, o pagamento é RETIDO até a regularização
+
+D) RESPONSABILIDADES FISCAIS E TRIBUTÁRIAS:
+- O prestador é 100% responsável pelo cumprimento de todas as obrigações fiscais, tributárias e previdenciárias de sua PJ
+- Inclui-se: recolhimento de impostos, contribuições previdenciárias (INSS), tributos municipais e estaduais
+- A plataforma não se responsabiliza por multas, juros ou penalidades fiscais decorrentes de irregularidade do prestador
 
 9. Fundo de Reserva
 A plataforma retém 3% (três por cento) do valor total de cada serviço executado pelo prestador como Fundo de Reserva. Este fundo serve para:
