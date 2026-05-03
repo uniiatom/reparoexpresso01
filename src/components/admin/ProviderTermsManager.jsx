@@ -196,8 +196,8 @@ A plataforma pode modificar estes termos a qualquer momento. Modificações ser�
 
     try {
       await base44.functions.invoke('notifyTermsUpdate', {
-        summary: notifySummary,
-        timestamp: new Date().toISOString()
+        terms_content: content,
+        change_summary: notifySummary
       });
       toast.success('Prestadores notificados sobre as alterações');
       setShowNotifyModal(false);
