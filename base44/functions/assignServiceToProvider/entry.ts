@@ -41,14 +41,13 @@ Deno.serve(async (req) => {
 
     // Filtrar por especialidade - obrigatório
      if (serviceRequest.service_type) {
-       const specialtyName = serviceRequest.service_type.toLowerCase().trim();
+       const specialtyName = serviceRequest.service_type;
        const filtered = providers.filter(p => {
          if (!p.specialties || !Array.isArray(p.specialties)) return false;
-         // Correspondência exata da especialidade
-         return p.specialties.includes(specialtyName) || 
-                p.specialties.some(s => s.toLowerCase() === specialtyName);
+         // Correspondência exata (case-sensitive)
+         return p.specialties.includes(specialtyName);
        });
-       console.log(`Found ${filtered.length} providers for specialty: ${serviceRequest.service_type}`);
+       console.log(`Found ${filtered.length} providers with exact specialty: ${serviceRequest.service_type}`);
 
       if (filtered.length === 0) {
         console.log(`No providers with specialty ${serviceRequest.service_type}, cannot assign service`);
