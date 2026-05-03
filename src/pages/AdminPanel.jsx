@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, DollarSign, KeyRound, Eye, EyeOff, FileText } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, DollarSign, KeyRound, Eye, EyeOff, FileText, Activity } from "lucide-react";
 import ServicePricing from '../components/admin/ServicePricing';
 import ProviderRepasse from '../components/admin/ProviderRepasse';
 import Analytics from '../components/admin/Analytics';
@@ -18,6 +18,7 @@ import AdminReserveFundDashboard from '../components/AdminReserveFundDashboard';
 import InvoicesAdmin from '../components/admin/InvoicesAdmin';
 import BiweeklyClosingAdmin from '../components/admin/BiweeklyClosingAdmin';
 import ClientConsultaAdmin from '../components/admin/ClientConsultaAdmin';
+import ServiceMetrics from '../components/admin/ServiceMetrics';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -188,6 +189,9 @@ export default function AdminPanel() {
           <TabsTrigger value="consulta-cliente" className="text-xs px-2 py-1">
             🔍 Clientes
           </TabsTrigger>
+          <TabsTrigger value="metricas" className="text-xs px-2 py-1">
+            <Activity className="w-3 h-3 mr-0.5" /> Métricas
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics">
@@ -352,6 +356,10 @@ export default function AdminPanel() {
 
         <TabsContent value="consulta-cliente">
           <ClientConsultaAdmin />
+        </TabsContent>
+
+        <TabsContent value="metricas">
+          <ServiceMetrics />
         </TabsContent>
       </Tabs>
 
