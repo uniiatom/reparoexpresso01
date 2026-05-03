@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
       providers = onlineProviders;
     }
 
-    // Filtrar por especialidade se existir
+    // Filtrar por especialidade - obrigatório
     if (serviceRequest.service_type) {
       const specialtyName = serviceRequest.service_type;
       const filtered = providers.filter(p => {
@@ -51,11 +51,21 @@ Deno.serve(async (req) => {
         );
       });
       console.log(`Found ${filtered.length} providers for specialty: ${serviceRequest.service_type}`);
-      if (filtered.length > 0) {
-        providers = filtered;
-      } else {
-        console.log('No providers with matching specialty, using all online providers');
+
+      if (filtered.length === 0) {
+        console.log(`No providers with specialty ${serviceRequest.service_type}, cannot assign service`);
+        return Response.json({ 
+          success: false,
+          message: `No providers available with skill: ${serviceRequest.service_type}`
+        });
       }
+      providers = filtered;
+    } else {
+      console.log('No service_type specified, cannot filter by specialty');
+      return Response.json({ 
+        success: false,
+        message: 'Service type is required'
+      });
     }
 
     // Calcular distância e encontrar o prestador mais próximo
