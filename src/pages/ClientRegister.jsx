@@ -21,6 +21,8 @@ export default function ClientRegister() {
   });
   const [photoUploading, setPhotoUploading] = useState(false);
   const [done, setDone] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const set = (field, val) => setForm(prev => ({ ...prev, [field]: val }));
 
@@ -42,6 +44,18 @@ export default function ClientRegister() {
   });
 
   const canSubmit = form.name.length > 2 && form.phone.length > 7;
+
+  const handleSubmitClick = () => {
+    setShowTermsModal(true);
+    setTermsAccepted(false);
+  };
+
+  const handleConfirmTerms = () => {
+    if (termsAccepted) {
+      setShowTermsModal(false);
+      createClient.mutate();
+    }
+  };
 
   if (done) {
     return (
@@ -200,25 +214,100 @@ export default function ClientRegister() {
         </div>
 
         {/* Botão */}
-        <Button
-          className="w-full h-14 rounded-2xl font-bold text-base"
-          onClick={() => createClient.mutate()}
-          disabled={!canSubmit || createClient.isPending}
-        >
-          {createClient.isPending ? (
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-              Salvando...
-            </div>
-          ) : (
-            "Criar minha conta ✨"
-          )}
-        </Button>
+         <Button
+           className="w-full h-14 rounded-2xl font-bold text-base"
+           onClick={handleSubmitClick}
+           disabled={!canSubmit || createClient.isPending}
+         >
+           {createClient.isPending ? (
+             <div className="flex items-center gap-2">
+               <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+               Salvando...
+             </div>
+           ) : (
+             "Criar minha conta ✨"
+           )}
+         </Button>
 
-        <p className="text-center text-xs text-muted-foreground pb-4">
-          Ao criar sua conta, você concorda com nossos{' '}
-          <button onClick={() => navigate('/termos-cliente')} className="text-primary underline">termos de uso</button>.
-        </p>
+         <p className="text-center text-xs text-muted-foreground pb-4">
+           Ao criar sua conta, você concorda com nossos{' '}
+           <button onClick={() => navigate('/termos-cliente')} className="text-primary underline">termos de uso</button>.
+         </p>
+
+         {/* Modal de aceite de termos */}
+         {showTermsModal && (
+           <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50">
+             <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+               <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+
+               <h3 className="text-xl font-bold text-foreground mb-4">Aceitar termos</h3>
+
+               <div className="max-h-60 overflow-y-auto mb-6 bg-muted/30 rounded-2xl p-4 text-sm text-foreground/80 space-y-3">
+                 <p><strong>Termos de Uso - Cliente</strong></p>
+                 <p>Ao criar sua conta no Reparo Expresso, você concorda com os seguintes termos e condições:</p>
+
+                 <div>
+                   <p className="font-semibold">1. Uso da Plataforma</p>
+                   <p>Você é responsável por manter a confidencialidade de sua conta e senha. Concorda em usar a plataforma apenas para fins legítimos e não para atividades ilegais ou prejudiciais.</p>
+                 </div>
+
+                 <div>
+                   <p className="font-semibold">2. Dados Pessoais</p>
+                   <p>Seus dados serão utilizados apenas para prover serviços de reparo e não serão compartilhados com terceiros sem consentimento.</p>
+                 </div>
+
+                 <div>
+                   <p className="font-semibold">3. Política de Pagamento</p>
+                   <p>O pagamento pelos serviços pode ser realizado via PIX ou cartão de crédito. Os valores são estabelecidos pelos prestadores de serviço.</p>
+                 </div>
+
+                 <div>
+                   <p className="font-semibold">4. Cancelamento</p>
+                   <p>Você pode cancelar uma solicitação de serviço antes que o prestador chegue. Após isso, o serviço está confirmado.</p>
+                 </div>
+
+                 <div>
+                   <p className="font-semibold">5. Avaliação</p>
+                   <p>Solicitamos que avalie o prestador após o término do serviço para melhorar a qualidade da plataforma.</p>
+                 </div>
+
+                 <div>
+                   <p className="font-semibold">6. Responsabilidade</p>
+                   <p>A plataforma não é responsável por danos causados pelos prestadores de serviço. Recomendamos verificar referências e avaliações antes de confirmar.</p>
+                 </div>
+               </div>
+
+               <div className="flex items-start gap-3 mb-6 p-4 bg-primary/5 rounded-2xl border border-primary/20">
+                 <input
+                   type="checkbox"
+                   checked={termsAccepted}
+                   onChange={(e) => setTermsAccepted(e.target.checked)}
+                   className="w-5 h-5 rounded border-border mt-0.5 cursor-pointer accent-primary"
+                 />
+                 <label className="text-sm text-foreground cursor-pointer flex-1">
+                   Li e aceito os termos de uso e política de privacidade
+                 </label>
+               </div>
+
+               <div className="flex gap-3">
+                 <Button
+                   variant="outline"
+                   className="flex-1 rounded-xl"
+                   onClick={() => setShowTermsModal(false)}
+                 >
+                   Cancelar
+                 </Button>
+                 <Button
+                   className="flex-1 rounded-xl"
+                   onClick={handleConfirmTerms}
+                   disabled={!termsAccepted}
+                 >
+                   Aceitar e Continuar
+                 </Button>
+               </div>
+             </div>
+           </div>
+         )}
       </div>
     </div>
   );
