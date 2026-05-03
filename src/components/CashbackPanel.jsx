@@ -351,7 +351,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
               </div>
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>{servicosNoBloco}/5 no bloco atual</span>
-                <span className="font-semibold text-emerald-700">R$ 20–25 a cada 5 serviços (por nível)</span>
+                <span className="font-semibold text-emerald-700">R$ 2,00–5,00 por serviço (por nível)</span>
               </div>
             </div>
 
@@ -404,11 +404,11 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                   <span className="text-center">Bônus / bloco</span>
                 </div>
                 {[
-                  { emoji: '🌱', nivel: 'Iniciante', minJobs: 0,   maxJobs: 119, minRating: 0,   bonus: 'R$ 20' },
-                  { emoji: '⭐', nivel: 'Pro',        minJobs: 120, maxJobs: 159, minRating: 4,   bonus: 'R$ 22' },
-                  { emoji: '🔥', nivel: 'Pro Plus',   minJobs: 160, maxJobs: 189, minRating: 4,   bonus: 'R$ 23' },
-                  { emoji: '💎', nivel: 'Pro Elite',  minJobs: 190, maxJobs: 219, minRating: 4,   bonus: 'R$ 24' },
-                  { emoji: '👑', nivel: 'Pro Lenda',  minJobs: 220, maxJobs: null, minRating: 5,  bonus: 'R$ 25' },
+                  { emoji: '🌱', nivel: 'Iniciante', minJobs: 0,   maxJobs: 119, minRating: 0,  bonus: 'R$ 2,00/serviço' },
+                  { emoji: '⭐', nivel: 'Pro',        minJobs: 120, maxJobs: 159, minRating: 4,  bonus: 'R$ 3,00/serviço' },
+                  { emoji: '🔥', nivel: 'Pro Plus',   minJobs: 160, maxJobs: 189, minRating: 4,  bonus: 'R$ 3,50/serviço' },
+                  { emoji: '💎', nivel: 'Pro Elite',  minJobs: 190, maxJobs: 219, minRating: 4,  bonus: 'R$ 4,00/serviço' },
+                  { emoji: '👑', nivel: 'Pro Lenda',  minJobs: 220, maxJobs: null, minRating: 5, bonus: 'R$ 5,00/serviço' },
                 ].map(n => {
                   const isAtual = totalServicos >= n.minJobs && (n.maxJobs === null || totalServicos <= n.maxJobs);
                   return (
@@ -427,7 +427,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                 })}
                 <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1">
                   <p className="font-bold">⚠️ Regras:</p>
-                  <p>• Bônus de R$ 20–70 a cada <strong>5 serviços concluídos</strong> (por nível).</p>
+                  <p>• Bônus de <strong>R$ 2,00 a R$ 5,00 por serviço concluído</strong> (conforme nível).</p>
                   <p>• Avaliação média <strong>≥ 4,5 ★</strong> gera R$ 10 extra por serviço.</p>
                   <p>• Bônus calculado ao final de cada quinzena.</p>
                   <p>• Resgate via PIX (mín. R$ 200) ou cursos (× 2.5).</p>

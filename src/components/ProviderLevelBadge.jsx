@@ -11,7 +11,7 @@ export const PROVIDER_LEVELS = [
     color: 'bg-blue-100 text-blue-700 border-blue-300',
     gradientBg: 'from-blue-500 to-blue-600',
     glowColor: 'shadow-blue-200',
-    description: '120 serv./mês + ≥ 4★ · +R$ 2,00/serviço',
+    description: '120+ serviços + ≥ 4★ · +R$ 3,00/serviço',
   },
   {
     key: 'pro_plus',
@@ -22,7 +22,7 @@ export const PROVIDER_LEVELS = [
     color: 'bg-purple-100 text-purple-700 border-purple-300',
     gradientBg: 'from-purple-500 to-pink-500',
     glowColor: 'shadow-purple-200',
-    description: '160 serv./mês + ≥ 4★ · +R$ 3,00/serviço',
+    description: '160+ serviços + ≥ 4★ · +R$ 3,50/serviço',
   },
   {
     key: 'pro_elite',
@@ -33,7 +33,7 @@ export const PROVIDER_LEVELS = [
     color: 'bg-emerald-100 text-emerald-700 border-emerald-300',
     gradientBg: 'from-emerald-500 to-teal-500',
     glowColor: 'shadow-emerald-200',
-    description: '190 serv./mês + ≥ 4★ · +R$ 4,00/serviço',
+    description: '190+ serviços + ≥ 4★ · +R$ 4,00/serviço',
   },
   {
     key: 'pro_lenda',
@@ -44,7 +44,7 @@ export const PROVIDER_LEVELS = [
     color: 'bg-amber-100 text-amber-700 border-amber-300',
     gradientBg: 'from-amber-400 to-orange-500',
     glowColor: 'shadow-amber-200',
-    description: '220 serv./mês + 5★ · +R$ 5,00/serviço',
+    description: '220+ serviços + 5★ · +R$ 5,00/serviço',
   },
 ];
 
