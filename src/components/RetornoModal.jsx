@@ -144,6 +144,30 @@ export default function RetornoModal({ request, onClose }) {
           </div>
         )}
 
+        {/* Alertas de atenção por tipo */}
+        {tipo === 'retorno_peca' && !prazoExpirado && (
+          <div className="bg-red-50 border border-red-300 rounded-2xl px-4 py-3 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-red-800">⚠️ Atenção antes de continuar!</p>
+              <p className="text-xs text-red-700">
+                Se a peça adquirida for <strong>incompatível ou incorreta</strong>, o retorno por peça <strong>não será autorizado</strong> e você perderá o direito a este retorno gratuito. Certifique-se de comprar exatamente a peça indicada pelo prestador.
+              </p>
+            </div>
+          </div>
+        )}
+        {tipo === 'retorno_garantia' && !prazoExpirado && (
+          <div className="bg-amber-50 border border-amber-300 rounded-2xl px-4 py-3 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-amber-800">⚠️ Atenção sobre a cobertura da garantia!</p>
+              <p className="text-xs text-amber-700">
+                A garantia cobre <strong>apenas o local exato</strong> onde o prestador realizou o atendimento original. Se o problema ocorrer em <strong>outro ponto ou por outro motivo</strong>, será necessário um <strong>novo serviço ou visita técnica</strong> com cobrança normal.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Descrição */}
         {tipo && !prazoExpirado && (
           <div className="space-y-1">
