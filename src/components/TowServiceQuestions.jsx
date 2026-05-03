@@ -81,7 +81,7 @@ export default function TowServiceQuestions({ answers, onChange }) {
       )}
 
       {answers.locked_wheel === true && (
-        <div className="bg-orange-50 rounded-2xl p-4 border border-orange-200 space-y-2">
+        <div className="bg-orange-50 rounded-2xl p-4 border border-orange-200 space-y-2 animate-in fade-in slide-in-from-top-2">
           <div className="flex gap-3">
             <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
             <div>
@@ -95,7 +95,7 @@ export default function TowServiceQuestions({ answers, onChange }) {
       )}
 
       {answers.lowered === true && (
-        <div className="bg-red-50 rounded-2xl p-4 border border-red-200 space-y-2">
+        <div className="bg-red-50 rounded-2xl p-4 border border-red-200 space-y-2 animate-in fade-in slide-in-from-top-2">
           <div className="flex gap-3">
             <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
@@ -108,8 +108,8 @@ export default function TowServiceQuestions({ answers, onChange }) {
         </div>
       )}
 
-      {!answers.easy_access && (
-        <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 space-y-3">
+      {answers.easy_access === false && (
+        <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 space-y-3 animate-in fade-in slide-in-from-top-2">
           <div className="flex gap-3">
             <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
