@@ -64,6 +64,9 @@ O pagamento pelos serviços pode ser realizado através das seguintes formas:
 4. Cancelamento
 Você pode cancelar uma solicitação de serviço enquanto o prestador ainda não iniciou o deslocamento. Uma vez que o prestador inicia o deslocamento para sua localização, o serviço não pode mais ser cancelado.
 
+5. Escopo de Serviços
+A plataforma oferece apenas serviços de pequenos reparos. Não realizamos pequenas obras ou obras grandes. O cliente está ciente de que os serviços contratados se limitam a intervenções rápidas e pontuais, e não incluem reformas ou trabalhos de maior envergadura.
+
 5. Avaliação
 Solicitamos que avalie o prestador após o término do serviço para melhorar a qualidade da plataforma.
 
