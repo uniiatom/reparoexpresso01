@@ -29,6 +29,7 @@ import InvoiceManager from '../components/InvoiceManager';
 import BatchProviderChat from '../components/BatchProviderChat';
 import BusyAlertBanner from '../components/BusyAlertBanner';
 import ProviderTermsNotificationBanner from '../components/ProviderTermsNotificationBanner';
+import ProviderNotificationCenter from '../components/ProviderNotificationCenter';
 import { useProviderPush } from '../hooks/useProviderPush';
 
 const SERVICE_LABELS = {
@@ -433,7 +434,8 @@ export default function ProviderApp() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <ProviderNotificationCenter providerId={provider?.id} />
           <Label htmlFor="online-toggle" className={cn("text-sm font-semibold", provider.is_online ? "text-primary" : "text-muted-foreground")}>
             {provider.is_online ? "Online" : "Offline"}
           </Label>

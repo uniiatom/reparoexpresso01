@@ -33,34 +33,25 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, notified: 0 });
     }
 
-    // Envia email para cada prestador
-    const emailPromises = emailsToNotify.map(email =>
-      base44.integrations.Core.SendEmail({
-        to: email,
-        subject: '⚠️ Atualização nos Termos de Serviço - Reparo Expresso',
-        body: `Olá Prestador,
-
-Informamos que os Termos de Serviço para Prestadores do Reparo Expresso foram atualizados.
-
-${change_summary ? `Alterações realizadas:\n${change_summary}\n\n` : ''}
-Por favor, leia atentamente os novos termos em sua conta no aplicativo.
-
-Todos os prestadores DEVEM estar de acordo com os novos termos para continuar operando na plataforma.
-
-Os termos atualizados estão disponíveis na seção "Minha Conta" > "Termos e Condições".
-
-Atenciosamente,
-Equipe Reparo Expresso`
+    // Cria notificações in-app para cada prestador
+    const notificationPromises = allProviders.map(provider =>
+      base44.asServiceRole.entities.ProviderNotification.create({
+        provider_id: provider.id,
+        provider_email: provider.email,
+        type: 'terms_update',
+        title: '📋 Termos de Serviço Atualizados',
+        message: `Os Termos de Serviço para Prestadores foram atualizados.\n\n${change_summary || 'Clique para visualizar as mudanças.'}`,
+        action_url: '/prestador'
       }).catch(err => {
-        console.error(`Erro ao enviar email para ${email}:`, err);
+        console.error(`Erro ao criar notificação para ${provider.email}:`, err);
         return null;
       })
     );
 
-    console.log(`Tentando notificar ${emailsToNotify.length} prestadores`);
-    const results = await Promise.all(emailPromises);
+    console.log(`Criando ${allProviders.length} notificações in-app`);
+    const results = await Promise.all(notificationPromises);
     const successCount = results.filter(r => r !== null).length;
-    console.log(`${successCount} emails enviados com sucesso`);
+    console.log(`${successCount} notificações criadas com sucesso`);
 
     return Response.json({
       success: true,

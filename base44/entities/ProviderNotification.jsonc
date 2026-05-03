@@ -1,0 +1,52 @@
+{
+  "name": "ProviderNotification",
+  "type": "object",
+  "properties": {
+    "provider_id": {
+      "type": "string",
+      "description": "ID do prestador"
+    },
+    "provider_email": {
+      "type": "string",
+      "description": "Email do prestador (desnormalizado)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "terms_update",
+        "level_change",
+        "block",
+        "warning"
+      ],
+      "description": "Tipo de notifica\u00e7\u00e3o"
+    },
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo da notifica\u00e7\u00e3o"
+    },
+    "message": {
+      "type": "string",
+      "description": "Mensagem da notifica\u00e7\u00e3o"
+    },
+    "action_url": {
+      "type": "string",
+      "description": "URL para a\u00e7\u00e3o (ex: /prestador para ver os termos)"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se a notifica\u00e7\u00e3o foi lida"
+    },
+    "read_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Quando foi lida"
+    }
+  },
+  "required": [
+    "provider_id",
+    "type",
+    "title",
+    "message"
+  ]
+}
