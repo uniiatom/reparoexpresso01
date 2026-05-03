@@ -358,7 +358,7 @@ export default function SolicitarServico() {
     const pricing = towPricingTable[towVehicleType];
     if (!pricing) return null;
     
-    const kmCobertos = 20; // Taxa de saída cobre os primeiros 20 km
+    const kmCobertos = 20; // Taxa de saída cobre os primeiros 20 km (desconta dos 70km ida+volta)
     const kmExtras = Math.max(0, form.tow_distance_km - kmCobertos);
     const distanceCharge = kmExtras * pricing.perKm;
     const total = pricing.base + distanceCharge;
@@ -422,7 +422,7 @@ export default function SolicitarServico() {
   // Atualiza distância do reboque quando coordenadas mudam
   React.useEffect(() => {
     if (isTow && form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude) {
-      const distance = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude);
+      const distance = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2;
       if (distance > 0 && distance !== form.tow_distance_km) {
         setForm(prev => ({ ...prev, tow_distance_km: distance }));
       }
@@ -465,7 +465,7 @@ export default function SolicitarServico() {
       };
 
       if (isTow && form.latitude && form.delivery_latitude) {
-        baseData.tow_distance_km = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude);
+        baseData.tow_distance_km = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2;
       }
 
       const results = await Promise.all(
@@ -1474,11 +1474,11 @@ export default function SolicitarServico() {
 
           {form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude && (
             <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
-              <p className="text-sm font-semibold text-blue-900 mb-1">Distância calculada</p>
+              <p className="text-sm font-semibold text-blue-900 mb-1">Distância calculada (ida e volta)</p>
               <p className="text-2xl font-bold text-blue-600">
-                {calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude).toFixed(1)} km
+                {(calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2).toFixed(1)} km
               </p>
-              <p className="text-xs text-blue-700 mt-1">do local de saída até o local de entrega</p>
+              <p className="text-xs text-blue-700 mt-1">do local de saída até entrega e retorno</p>
             </div>
           )}
           {isTow && (!form.delivery_latitude || !form.latitude || !form.delivery_longitude || !form.longitude) && (
