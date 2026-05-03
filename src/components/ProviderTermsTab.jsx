@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from "sonner";
+import { useMutation } from '@tanstack/react-query';
 
 export default function ProviderTermsTab({ providerId }) {
   const [termsContent, setTermsContent] = useState('');
@@ -32,31 +33,33 @@ export default function ProviderTermsTab({ providerId }) {
     }
   }, [providerId]);
 
-  const handleAccept = async () => {
-    setIsAccepting(true);
-    try {
-      // Salva no localStorage que aceitou
-      const now = new Date().toISOString();
-      localStorage.setItem(`provider_terms_accepted_${providerId}`, now);
-      
-      // Marca no banco de dados do prestador
-      await base44.asServiceRole.entities.Provider.update(providerId, {
-        terms_accepted_at: now
+  const acceptMutation = useMutation({
+    mutationFn: async () => {
+      const response = await base44.functions.invoke('acceptProviderTerms', {
+        provider_id: providerId
       });
-
+      return response.data;
+    },
+    onSuccess: (data) => {
+      const now = new Date(data.accepted_at);
+      localStorage.setItem(`provider_terms_accepted_${providerId}`, data.accepted_at);
       setHasAccepted(true);
-      setAcceptedAt(new Date().toLocaleDateString('pt-BR', { 
+      setAcceptedAt(now.toLocaleDateString('pt-BR', { 
         year: 'numeric', 
         month: 'long', 
         day: 'numeric' 
       }));
+      setConfirmAccept(false);
       toast.success('Termos aceitos com sucesso!');
-    } catch (error) {
+    },
+    onError: (error) => {
       toast.error('Erro ao aceitar termos');
       console.error('Erro:', error);
-    } finally {
-      setIsAccepting(false);
     }
+  });
+
+  const handleAccept = () => {
+    acceptMutation.mutate();
   };
 
   return (
@@ -103,10 +106,10 @@ export default function ProviderTermsTab({ providerId }) {
               </div>
               <Button
                 onClick={handleAccept}
-                disabled={isAccepting || !confirmAccept}
+                disabled={acceptMutation.isPending || !confirmAccept}
                 className="w-full bg-primary hover:bg-primary/90 h-10 font-semibold disabled:opacity-50"
               >
-                {isAccepting ? 'Processando...' : 'Aceitar Termos'}
+                {acceptMutation.isPending ? 'Processando...' : 'Aceitar Termos'}
               </Button>
             </>
           )}
