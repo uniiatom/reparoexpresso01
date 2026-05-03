@@ -33,6 +33,20 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, notified: 0 });
     }
 
+    // Reseta o aceite dos termos para todos os prestadores
+    console.log(`Resetando aceite de termos para ${allProviders.length} prestadores`);
+    const resetPromises = allProviders.map(provider =>
+      base44.asServiceRole.entities.Provider.update(provider.id, {
+        terms_accepted_at: null
+      }).catch(err => {
+        console.error(`Erro ao resetar aceite para ${provider.email}:`, err);
+        return null;
+      })
+    );
+
+    await Promise.all(resetPromises);
+    console.log(`Aceites de termos resetados`);
+
     // Cria notificações in-app para cada prestador
     const notificationPromises = allProviders.map(provider =>
       base44.asServiceRole.entities.ProviderNotification.create({
