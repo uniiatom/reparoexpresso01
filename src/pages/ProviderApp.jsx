@@ -662,15 +662,23 @@ export default function ProviderApp() {
             <div className="space-y-3">
               {queuedJobs.map((job, idx) => (
                 <div key={job.id} className="flex gap-4 relative">
-                  {/* Bolinha da timeline */}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 ${idx === 0 ? 'bg-primary border-primary text-primary-foreground' : 'bg-card border-border text-muted-foreground'}`}>
-                    <span className="text-xs font-bold">{idx + 1}</span>
-                  </div>
-                  <div className={`flex-1 bg-card rounded-2xl p-4 border ${idx === 0 ? 'border-primary/40 shadow-sm' : 'border-border'}`}>
-                    <div className="flex items-start justify-between mb-1">
+                {/* Bolinha da timeline */}
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 ${idx === 0 ? 'bg-primary border-primary text-primary-foreground' : 'bg-card border-border text-muted-foreground'}`}>
+                  <span className="text-xs font-bold">{idx + 1}</span>
+                </div>
+                <div className={`flex-1 bg-card rounded-2xl p-4 border ${idx === 0 ? 'border-primary/40 shadow-sm' : 'border-border'}`}>
+                  <div className="flex items-start justify-between mb-1 flex-wrap gap-1">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-bold text-foreground text-sm">{SERVICE_LABELS[job.service_type] || job.service_type}</span>
-                      {idx === 0 && <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Próxima</span>}
+                      {job.description?.startsWith('RETORNO GARANTIA') && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-700 border border-orange-300">🛡️ Garantia</span>
+                      )}
+                      {job.description?.startsWith('RETORNO POR PEÇA') && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 border border-blue-300">🔧 Por Peça</span>
+                      )}
                     </div>
+                    {idx === 0 && <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Próxima</span>}
+                  </div>
                     <p className="text-xs text-muted-foreground mb-1 line-clamp-2">{job.description}</p>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <MapPin className="w-3 h-3" /> {job.address}{job.city ? `, ${job.city}` : ''}
@@ -727,8 +735,16 @@ export default function ProviderApp() {
             <div className="space-y-3">
               {requests.map(req => (
                 <div key={req.id} className="bg-card rounded-3xl p-5 border border-border">
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="font-bold text-foreground">{SERVICE_LABELS[req.service_type]}</span>
+                  <div className="flex items-start justify-between mb-2 flex-wrap gap-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-foreground">{SERVICE_LABELS[req.service_type]}</span>
+                      {req.description?.startsWith('RETORNO GARANTIA') && (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-orange-100 text-orange-700 border border-orange-300">🛡️ Retorno Garantia</span>
+                      )}
+                      {req.description?.startsWith('RETORNO POR PEÇA') && (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-blue-100 text-blue-700 border border-blue-300">🔧 Retorno por Peça</span>
+                      )}
+                    </div>
                     <span className="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-lg">{URGENCY_LABELS[req.urgency]}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">{req.description}</p>

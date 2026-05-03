@@ -58,9 +58,17 @@ export default function NewJobBanner({ job, queueCount = 1, onAccept, onDecline 
               </div>
 
               {/* Detalhes */}
-              <p className="font-bold text-foreground text-lg mb-1">
-                {SERVICE_LABELS[job.service_type] || job.service_type}
-              </p>
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <p className="font-bold text-foreground text-lg">
+                  {SERVICE_LABELS[job.service_type] || job.service_type}
+                </p>
+                {job.description?.startsWith('RETORNO GARANTIA') && (
+                  <span className="text-xs font-bold px-2 py-1 rounded-lg bg-orange-100 text-orange-700 border border-orange-300">🛡️ Retorno Garantia</span>
+                )}
+                {job.description?.startsWith('RETORNO POR PEÇA') && (
+                  <span className="text-xs font-bold px-2 py-1 rounded-lg bg-blue-100 text-blue-700 border border-blue-300">🔧 Retorno por Peça</span>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground mb-1 line-clamp-2">{job.description}</p>
               <p className="text-sm text-muted-foreground flex items-center gap-1 mb-4">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />

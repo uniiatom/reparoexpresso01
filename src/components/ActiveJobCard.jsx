@@ -400,12 +400,18 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
 
       {/* Informações do serviço */}
       <div>
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
           <p className="font-bold text-foreground text-lg">{SERVICE_LABELS[liveJob.service_type] || liveJob.service_type}</p>
           {liveJob.service_number && (
             <span className="text-xs font-mono font-bold text-primary/70 bg-primary/10 px-2 py-0.5 rounded-lg">
               {liveJob.service_number}
             </span>
+          )}
+          {liveJob.description?.startsWith('RETORNO GARANTIA') && (
+            <span className="text-xs font-bold px-2 py-1 rounded-lg bg-orange-100 text-orange-700 border border-orange-300">🛡️ Retorno Garantia</span>
+          )}
+          {liveJob.description?.startsWith('RETORNO POR PEÇA') && (
+            <span className="text-xs font-bold px-2 py-1 rounded-lg bg-blue-100 text-blue-700 border border-blue-300">🔧 Retorno por Peça</span>
           )}
         </div>
         <p className="text-sm text-muted-foreground">{liveJob.description}</p>
