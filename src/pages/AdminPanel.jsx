@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, DollarSign, KeyRound, Eye, EyeOff, FileText, Activity } from "lucide-react";
 import ServicePricing from '../components/admin/ServicePricing';
+import ServicePricingByCategory from '../components/admin/ServicePricingByCategory';
 import ProviderRepasse from '../components/admin/ProviderRepasse';
 import Analytics from '../components/admin/Analytics';
 import ScheduledServicesOptimizer from '../components/admin/ScheduledServicesOptimizer';
@@ -336,6 +337,9 @@ export default function AdminPanel() {
             <ServicePricing />
             <div className="border-t border-border pt-4 mt-4">
               <TowPricing />
+            </div>
+            <div className="border-t border-border pt-4 mt-4">
+              <ServicePricingByCategory />
             </div>
           </div>
         </TabsContent>
