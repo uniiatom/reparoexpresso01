@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import CashbackPanel from '@/components/CashbackPanel';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, LogOut, Calendar, Gift, Camera, Wrench, FileText } from "lucide-react";
+import { ArrowLeft, LogOut, Calendar, Gift, Camera, Wrench, FileText, Wallet } from "lucide-react";
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import ServiceHistory from '@/components/ServiceHistory';
@@ -139,6 +139,11 @@ export default function UserProfile() {
 
       {/* Actions */}
       <div className="space-y-2">
+        <Link to="/carteira" className="block">
+          <Button variant="outline" className="w-full rounded-2xl h-12 font-semibold border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+            <Wallet className="w-4 h-4 mr-2" /> Minha Carteira Digital
+          </Button>
+        </Link>
         <Link to="/minha-ficha" className="block">
           <Button variant="outline" className="w-full rounded-2xl h-12 font-semibold border-primary/30 text-primary hover:bg-primary/10">
             <FileText className="w-4 h-4 mr-2" /> Minha Ficha de Serviços

@@ -26,6 +26,7 @@ import TrackingMap from './pages/TrackingMap';
 import MeusPedidos from './pages/MeusPedidos';
 import PartnerRegister from './pages/PartnerRegister';
 import ProviderDashboard from './pages/ProviderDashboard';
+import WalletPage from './pages/Wallet';
 import ClienteDossie from './pages/ClienteDossie';
 import { Toaster as SonnerToaster } from "sonner";
 
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
         <Route path="/cadastro" element={<ClientRegister />} />
         <Route path="/cadastro-prestador" element={<ProviderRegister />} />
         <Route path="/dashboard-prestador" element={<ProviderDashboard />} />
+        <Route path="/carteira" element={<WalletPage />} />
         <Route path="/minha-ficha" element={<ClienteDossie />} />
         <Route path="/termos-cliente" element={<TermosCliente />} />
         <Route path="/termos-prestador" element={<TermosPrestador />} />
