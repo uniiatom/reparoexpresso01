@@ -9,10 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
-  ArrowLeft, MapPin, Zap, Droplets, Paintbrush, Wrench,
-  Settings, Hammer, Lock, Wind, ChevronRight, Calendar,
-  Clock, Camera, X, Navigation, Loader2, Car, UserPlus, Monitor
-} from "lucide-react";
+    ArrowLeft, MapPin, Zap, Droplets, Paintbrush, Wrench,
+    Settings, Hammer, Lock, Wind, ChevronRight, Calendar,
+    Clock, Camera, X, Navigation, Loader2, Car, UserPlus, Monitor, Battery
+  } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AlertCircle } from "lucide-react";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -40,7 +40,7 @@ const SERVICE_TYPES = [
   { value: "instalacao_suporte_tv", label: "Suporte de TV", icon: Monitor, group: "casa", needsTvSize: true },
   { value: "outros", label: "Outros", icon: Wrench, group: "casa" },
   { value: "troca_pneu", label: "Troca de Pneu", icon: Car, group: "veiculo" },
-  { value: "recarga_bateria", label: "Recarga de Bateria", icon: Zap, group: "veiculo" },
+  { value: "recarga_bateria", label: "Recarga de Bateria", icon: Battery, group: "veiculo" },
   { value: "conserto_pneu", label: "Conserto de Pneu", icon: Car, group: "veiculo" },
   { value: "reboque", label: "Reboque", icon: Car, group: "veiculo" },
   ];
