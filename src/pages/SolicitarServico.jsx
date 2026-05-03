@@ -22,6 +22,7 @@ import ProviderSearchModal from "@/components/ProviderSearchModal";
 import ClientScheduleSelector from "@/components/ClientScheduleSelector";
 import { useScheduleAvailability } from "@/hooks/useScheduleAvailability";
 import TowServiceQuestions from "@/components/TowServiceQuestions";
+import RetornoButton from "@/components/RetornoButton";
 
 const SERVICE_TYPES = [
   { value: "eletrica", label: "Elétrica", icon: Zap, group: "casa" },
@@ -588,9 +589,7 @@ export default function SolicitarServico() {
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
       {/* Progress */}
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => step > (needsRegister ? 0 : 1) ? setStep(s => s - 1) : navigate('/')} className="p-2 hover:bg-accent rounded-xl">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
+        <RetornoButton step={step} needsRegister={needsRegister} onPrevStep={() => setStep(s => s - 1)} />
         <div className="flex-1">
           <p className="text-xs text-muted-foreground mb-1">Passo {step + (needsRegister ? 1 : 0)} de {totalSteps}</p>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
