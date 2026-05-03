@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import {
     ArrowLeft, MapPin, Zap, Droplets, Paintbrush, Wrench,
     Settings, Hammer, Lock, Wind, ChevronRight, Calendar,
-    Clock, Camera, X, Navigation, Loader2, Car, UserPlus, Monitor, Battery
+    Clock, Camera, X, Navigation, Loader2, Car, UserPlus, Monitor, Battery, Grid2X2
   } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AlertCircle } from "lucide-react";
@@ -39,6 +39,7 @@ const SERVICE_TYPES = [
   { value: "reparo_forro_gesso", label: "Reparo Forro de Gesso", icon: Hammer, group: "casa" },
   { value: "desentupimento", label: "Desentupimento", icon: Droplets, group: "casa" },
   { value: "instalacao_suporte_tv", label: "Suporte de TV", icon: Monitor, group: "casa", needsTvSize: true },
+  { value: "pane_seca", label: "Pane Seca", icon: Grid2X2, group: "casa" },
   { value: "outros", label: "Outros", icon: Wrench, group: "casa" },
   { value: "troca_pneu", label: "Troca de Pneu", icon: Car, group: "veiculo" },
   { value: "recarga_bateria", label: "Recarga de Bateria", icon: Battery, group: "veiculo" },
