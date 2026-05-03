@@ -80,10 +80,17 @@ export default function TowServiceQuestions({ answers, onChange }) {
         </div>
       )}
 
-      {allAnswered && answers.locked_wheel && (
-        <div className="bg-orange-50 rounded-2xl p-3 border border-orange-200">
-          <p className="text-xs font-semibold text-orange-900 mb-1">ℹ️ Roda travada detectada</p>
-          <p className="text-xs text-orange-700">O reboque será mais complexo. O prestador será informado na OS.</p>
+      {answers.locked_wheel === true && (
+        <div className="bg-orange-50 rounded-2xl p-4 border border-orange-200 space-y-2">
+          <div className="flex gap-3">
+            <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-orange-700 text-sm">⚠️ Roda travada</p>
+              <p className="text-xs text-orange-600 mt-1">
+                Será necessário usar carrinho para movimentação. <strong>Essa taxa será cobrada à parte no local.</strong>
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
