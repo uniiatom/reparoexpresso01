@@ -341,7 +341,7 @@ export default function SolicitarServico() {
     if (vehicleType) {
       acc[vehicleType.toLowerCase()] = {
         base: pricing.price_min || 0,
-        perKm: (pricing.price_max - (pricing.price_min || 0)) / 10, // Aproximação
+        perKm: pricing.price_max || 0,
       };
     }
     return acc;
