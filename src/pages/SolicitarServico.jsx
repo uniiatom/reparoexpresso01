@@ -443,6 +443,7 @@ export default function SolicitarServico() {
       const baseData = {
         ...cleanData,
         client_suggested_price: cleanData.client_suggested_price ? Number(cleanData.client_suggested_price) : null,
+        estimated_price: cleanData.estimated_price ? Number(cleanData.estimated_price) : null,
         status: 'aguardando',
         estimated_arrival_minutes: cleanData.estimated_arrival_minutes ?? null,
       };
