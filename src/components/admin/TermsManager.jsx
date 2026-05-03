@@ -70,6 +70,11 @@ A plataforma oferece apenas serviços de pequenos reparos. Não realizamos peque
 6. Restrições de Materiais
 Não realizamos manutenção ou reparo em canalizações feitas com cano galvanizado, chumbo ou PPR. Estes tipos de materiais requerem especialização específica não coberta pelos nossos serviços.
 
+7. Limitações por Tipo de Serviço
+- Serviço de Elétrica: Não contempla a troca da totalidade da instalação elétrica de uma casa ou apartamento.
+- Serviço de Hidráulica: Não contempla a troca completa do ramal hidráulico.
+- Serviço de Pintura: Limitado a pequenos retoques pontuais. Não contempla pintar a totalidade de uma casa ou apartamento.
+
 5. Avaliação
 Solicitamos que avalie o prestador após o término do serviço para melhorar a qualidade da plataforma.
 
