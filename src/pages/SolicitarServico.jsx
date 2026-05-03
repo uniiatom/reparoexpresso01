@@ -1267,11 +1267,11 @@ export default function SolicitarServico() {
 
           {form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude && (
             <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
-              <p className="text-sm font-semibold text-blue-900 mb-1">Distância calculada</p>
+              <p className="text-sm font-semibold text-blue-900 mb-1">Distância calculada (ida e volta)</p>
               <p className="text-2xl font-bold text-blue-600">
-                {calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude).toFixed(1)} km
+                {(calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2).toFixed(1)} km
               </p>
-              <p className="text-xs text-blue-700 mt-1">entre o local de saída e entrega</p>
+              <p className="text-xs text-blue-700 mt-1">do local de saída até entrega e retorno</p>
             </div>
           )}
           {isTow && (!form.delivery_latitude || !form.latitude || !form.delivery_longitude || !form.longitude) && (
