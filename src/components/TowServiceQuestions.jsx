@@ -28,33 +28,37 @@ export default function TowServiceQuestions({ answers, onChange }) {
       </div>
 
       <div className="space-y-3">
-        {questions.map((q) => (
-          <div key={q.key} className="space-y-2">
-            <label className="text-sm font-semibold text-foreground">{q.label}</label>
-            <div className="flex gap-3">
-              <button
-                onClick={() => handleAnswer(q.key, true)}
-                className={cn(
-                  "flex-1 py-3 rounded-2xl border-2 font-semibold text-sm transition-all",
-                  answers[q.key] === true
-                    ? "border-green-500 bg-green-50 text-green-700"
-                    : "border-border hover:border-primary/40 text-foreground"
-                )}
-              >
-                Sim
-              </button>
-              <button
-                onClick={() => handleAnswer(q.key, false)}
-                className={cn(
-                  "flex-1 py-3 rounded-2xl border-2 font-semibold text-sm transition-all",
-                  answers[q.key] === false
-                    ? "border-orange-500 bg-orange-50 text-orange-700"
-                    : "border-border hover:border-primary/40 text-foreground"
-                )}
-              >
-                Não
-              </button>
-            </div>
+         {questions.map((q) => (
+           <div key={q.key} className="space-y-2">
+             <label className="text-sm font-semibold text-foreground">{q.label}</label>
+             <div className="flex gap-3">
+               <button
+                 onClick={() => handleAnswer(q.key, true)}
+                 className={cn(
+                   "flex-1 py-3 rounded-2xl border-2 font-semibold text-sm transition-all",
+                   answers[q.key] === true
+                     ? (q.key === 'locked_wheel' || q.key === 'lowered' || q.key === 'has_victims')
+                       ? "border-red-500 bg-red-50 text-red-700"
+                       : "border-green-500 bg-green-50 text-green-700"
+                     : "border-border hover:border-primary/40 text-foreground"
+                 )}
+               >
+                 Sim
+               </button>
+               <button
+                 onClick={() => handleAnswer(q.key, false)}
+                 className={cn(
+                   "flex-1 py-3 rounded-2xl border-2 font-semibold text-sm transition-all",
+                   answers[q.key] === false
+                     ? (q.key === 'locked_wheel' || q.key === 'lowered' || q.key === 'has_victims')
+                       ? "border-green-500 bg-green-50 text-green-700"
+                       : "border-orange-500 bg-orange-50 text-orange-700"
+                     : "border-border hover:border-primary/40 text-foreground"
+                 )}
+               >
+                 Não
+               </button>
+             </div>
             
             {/* Alertas em tempo real abaixo de cada pergunta */}
             {q.key === 'locked_wheel' && answers.locked_wheel === true && (
