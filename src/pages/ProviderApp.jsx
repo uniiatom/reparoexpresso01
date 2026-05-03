@@ -30,6 +30,7 @@ import BatchProviderChat from '../components/BatchProviderChat';
 import BusyAlertBanner from '../components/BusyAlertBanner';
 import ProviderTermsNotificationBanner from '../components/ProviderTermsNotificationBanner';
 import ProviderNotificationCenter from '../components/ProviderNotificationCenter';
+import ProviderTermsTab from '../components/ProviderTermsTab';
 import { useProviderPush } from '../hooks/useProviderPush';
 
 const SERVICE_LABELS = {
@@ -487,6 +488,12 @@ export default function ProviderApp() {
           📋 Histórico
         </button>
         <button
+          onClick={() => setActiveTab('termos')}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'termos' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          ⚖️ Termos
+        </button>
+        <button
           onClick={() => setActiveTab('notas')}
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'notas' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
@@ -503,12 +510,6 @@ export default function ProviderApp() {
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'fotos' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
         >
           📷 Fotos
-        </button>
-        <button
-          onClick={() => setActiveTab('cashback')}
-          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'cashback' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
-        >
-          💸 Bônus
         </button>
         <button
           onClick={() => setActiveTab('fundo')}
@@ -837,6 +838,11 @@ export default function ProviderApp() {
             </div>
           )}
         </div>
+      )}
+
+      {/* ── ABA TERMOS ── */}
+      {activeTab === 'termos' && (
+        <ProviderTermsTab providerId={provider?.id} />
       )}
 
       {/* ── ABA HISTÓRICO ── */}
