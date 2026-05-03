@@ -325,13 +325,29 @@ export default function SolicitarServico() {
 
   const isTow = form.service_type.includes('reboque');
 
-  // Preços base de reboque por tipo de veículo (em R$)
-  const towPricingTable = {
+  // Busca precificação de reboque por categoria de veículo
+  const { data: towPricingData = [] } = useQuery({
+    queryKey: ['tow-pricing'],
+    queryFn: () => base44.entities.ServicePricing.filter({ service_type: 'reboque' }),
+    enabled: isTow,
+  });
+
+  const towPricingTable = towPricingData.reduce((acc, pricing) => {
+    if (pricing.city) return acc; // Ignora precificações por cidade
+    const vehicleType = pricing.note?.split('|')[0]?.trim(); // Parse vehicle type from note
+    if (vehicleType) {
+      acc[vehicleType.toLowerCase()] = {
+        base: pricing.price_min || 0,
+        perKm: (pricing.price_max - (pricing.price_min || 0)) / 10, // Aproximação
+      };
+    }
+    return acc;
+  }, {
     moto: { base: 150, perKm: 3.50 },
     carro: { base: 180, perKm: 5.00 },
     suv: { base: 220, perKm: 6.00 },
     van: { base: 250, perKm: 7.00 },
-  };
+  });
 
   // Calcula preço estimado para reboque
   const calculateTowPrice = () => {
