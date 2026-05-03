@@ -351,7 +351,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
               </div>
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>{servicosNoBloco}/5 no bloco atual</span>
-                <span className="font-semibold text-emerald-700">R$ 20 a cada 5 serviços</span>
+                <span className="font-semibold text-emerald-700">R$ 20–25 a cada 5 serviços (por nível)</span>
               </div>
             </div>
 
