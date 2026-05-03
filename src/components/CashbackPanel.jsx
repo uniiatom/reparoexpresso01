@@ -398,30 +398,32 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                 animate={{ opacity: 1, height: 'auto' }}
                 className="space-y-2"
               >
-                <div className="grid grid-cols-3 text-xs text-muted-foreground font-semibold px-1 mb-1">
+                <div className="grid grid-cols-4 text-xs text-muted-foreground font-semibold px-1 mb-1">
                   <span>Nível</span>
-                  <span className="text-center">Serviços total</span>
-                  <span className="text-center">Bônus / bloco</span>
+                  <span className="text-center">Serviços</span>
+                  <span className="text-center">Estrelas</span>
+                  <span className="text-center">Bônus</span>
                 </div>
                 {[
-                  { emoji: '🌱', nivel: 'Iniciante', minJobs: 0,   maxJobs: 119, minRating: 0,  bonus: 'R$ 2,00/serviço' },
-                  { emoji: '⭐', nivel: 'Pro',        minJobs: 120, maxJobs: 159, minRating: 4,  bonus: 'R$ 3,00/serviço' },
-                  { emoji: '🔥', nivel: 'Pro Plus',   minJobs: 160, maxJobs: 189, minRating: 4,  bonus: 'R$ 3,50/serviço' },
-                  { emoji: '💎', nivel: 'Pro Elite',  minJobs: 190, maxJobs: 219, minRating: 4,  bonus: 'R$ 4,00/serviço' },
-                  { emoji: '👑', nivel: 'Pro Lenda',  minJobs: 220, maxJobs: null, minRating: 5, bonus: 'R$ 5,00/serviço' },
+                  { emoji: '🌱', nivel: 'Iniciante', minJobs: 0,   maxJobs: 119, minRating: 0,  bonus: 'R$ 2,00' },
+                  { emoji: '⭐', nivel: 'Pro',        minJobs: 120, maxJobs: 159, minRating: 4,  bonus: 'R$ 3,00' },
+                  { emoji: '🔥', nivel: 'Pro Plus',   minJobs: 160, maxJobs: 189, minRating: 4,  bonus: 'R$ 3,50' },
+                  { emoji: '💎', nivel: 'Pro Elite',  minJobs: 190, maxJobs: 219, minRating: 4,  bonus: 'R$ 4,00' },
+                  { emoji: '👑', nivel: 'Pro Lenda',  minJobs: 220, maxJobs: null, minRating: 5, bonus: 'R$ 5,00' },
                 ].map(n => {
                   const isAtual = totalServicos >= n.minJobs && (n.maxJobs === null || totalServicos <= n.maxJobs);
                   return (
                     <div
                       key={n.nivel}
                       className={cn(
-                        "grid grid-cols-3 items-center rounded-xl border px-3 py-2 text-xs",
+                        "grid grid-cols-4 items-center rounded-xl border px-3 py-2 text-xs",
                         isAtual ? "border-emerald-300 bg-emerald-50 font-bold text-emerald-900" : "border-transparent bg-muted/40 text-muted-foreground"
                       )}
                     >
                       <span className="flex items-center gap-1">{n.emoji} {n.nivel}</span>
-                      <span className="text-center">{n.minJobs}{n.maxJobs ? `–${n.maxJobs}` : '+'} serv.</span>
-                      <span className="text-center text-emerald-700 font-semibold">{n.bonus}/bloco</span>
+                      <span className="text-center">{n.minJobs}{n.maxJobs ? `–${n.maxJobs}` : '+'}</span>
+                      <span className="text-center">{n.minRating > 0 ? `≥ ${n.minRating}★` : '—'}</span>
+                      <span className="text-center text-emerald-700 font-semibold">{n.bonus}</span>
                     </div>
                   );
                 })}
