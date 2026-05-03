@@ -21,7 +21,7 @@ export default function TowServiceQuestions({ answers, onChange }) {
   const hasVictims = answers.has_victims === true;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div>
         <h3 className="text-xl font-bold text-foreground mb-1">Informações importantes</h3>
         <p className="text-muted-foreground text-sm">Responda as perguntas sobre a situação do veículo</p>
@@ -55,6 +55,43 @@ export default function TowServiceQuestions({ answers, onChange }) {
                 Não
               </button>
             </div>
+            
+            {/* Alertas em tempo real abaixo de cada pergunta */}
+            {q.key === 'locked_wheel' && answers.locked_wheel === true && (
+              <div className="bg-orange-50 rounded-xl p-3 border border-orange-200 space-y-2 mt-2">
+                <div className="flex gap-2">
+                  <AlertTriangle className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-orange-700 text-xs">⚠️ Roda travada</p>
+                    <p className="text-xs text-orange-600">Será necessário usar carrinho. <strong>Taxa adicional no local.</strong></p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {q.key === 'lowered' && answers.lowered === true && (
+              <div className="bg-red-50 rounded-xl p-3 border border-red-200 space-y-2 mt-2">
+                <div className="flex gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-red-700 text-xs">⚠️ Veículo rebaixado</p>
+                    <p className="text-xs text-red-600"><strong>Pode haver danos ao parachoque.</strong> A plataforma e reboquista <strong>não se responsabilizam</strong> por danos durante a remoção.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {q.key === 'easy_access' && answers.easy_access === false && (
+              <div className="bg-amber-50 rounded-xl p-3 border border-amber-200 space-y-2 mt-2">
+                <div className="flex gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-amber-700 text-xs">⚠️ Acesso difícil</p>
+                    <p className="text-xs text-amber-600"><strong>Taxa adicional</strong> se for necessário equipamento especial (correntes, polia, etc.)</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -80,54 +117,15 @@ export default function TowServiceQuestions({ answers, onChange }) {
         </div>
       )}
 
-      {answers.locked_wheel === true && (
-        <div className="bg-orange-50 rounded-2xl p-4 border border-orange-200 space-y-2 animate-in fade-in slide-in-from-top-2">
-          <div className="flex gap-3">
-            <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold text-orange-700 text-sm">⚠️ Roda travada</p>
-              <p className="text-xs text-orange-600 mt-1">
-                Será necessário usar carrinho para movimentação. <strong>Essa taxa será cobrada à parte no local.</strong>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {answers.lowered === true && (
-        <div className="bg-red-50 rounded-2xl p-4 border border-red-200 space-y-2 animate-in fade-in slide-in-from-top-2">
-          <div className="flex gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold text-red-700 text-sm">⚠️ Veículo rebaixado</p>
-              <p className="text-xs text-red-600 mt-1">
-                Você está ciente de que <strong>pode haver danos ao parachoque</strong> durante o reboque. <strong>A plataforma Reparo Expresso e o reboquista não se responsabilizam por danos causados durante a remoção do veículo.</strong>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {answers.easy_access === false && (
-        <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 space-y-3 animate-in fade-in slide-in-from-top-2">
-          <div className="flex gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold text-amber-700 text-sm">⚠️ Acesso difícil</p>
-              <p className="text-xs text-amber-600 mt-1">
-                Se for necessário usar equipamento especial (correntes, polia, etc.), será cobrado uma taxa adicional no local.
-              </p>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-amber-900">Descreva como está o carro:</label>
-            <Textarea
-              placeholder="Ex: Carro virado, em vala, amarrado em árvore, preso em mato, etc."
-              value={answers.vehicle_condition || ''}
-              onChange={(e) => handleAnswer('vehicle_condition', e.target.value)}
-              className="min-h-[80px] rounded-xl text-sm"
-            />
-          </div>
+        <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 space-y-3">
+          <label className="text-xs font-semibold text-amber-900">Descreva como está o carro:</label>
+          <Textarea
+            placeholder="Ex: Carro virado, em vala, amarrado em árvore, preso em mato, etc."
+            value={answers.vehicle_condition || ''}
+            onChange={(e) => handleAnswer('vehicle_condition', e.target.value)}
+            className="min-h-[80px] rounded-xl text-sm"
+          />
         </div>
       )}
     </div>
