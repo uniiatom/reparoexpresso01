@@ -49,6 +49,8 @@ export default function TowPricing() {
       const updates = [];
       for (const vehicle of VEHICLE_TYPES) {
         const values = formData[vehicle.key];
+        if (!values || (!values.exit && !values.perKm)) continue;
+        
         const data = {
           service_type: 'reboque',
           price_min: Number(values.exit) || 0,
@@ -58,16 +60,20 @@ export default function TowPricing() {
 
         if (values.id) {
           updates.push(base44.entities.ServicePricing.update(values.id, data));
-        } else if (values.exit || values.perKm) {
+        } else {
           updates.push(base44.entities.ServicePricing.create(data));
         }
       }
+      if (updates.length === 0) throw new Error('Nenhum valor preenchido');
       await Promise.all(updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tow-pricing-categories'] });
       toast.success('Preços de reboque atualizados!');
       setEditing(false);
+    },
+    onError: (error) => {
+      toast.error('Erro ao salvar: ' + (error.message || 'Tente novamente'));
     },
   });
 
