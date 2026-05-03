@@ -44,7 +44,6 @@ const SERVICE_TYPES = [
   { value: "recarga_bateria", label: "Recarga de Bateria", icon: Battery, group: "veiculo" },
   { value: "conserto_pneu", label: "Conserto de Pneu", icon: Car, group: "veiculo" },
   { value: "pane_seca", label: "Pane Seca", icon: Power, group: "veiculo" },
-  { value: "reboque", label: "Reboque", icon: Car, group: "veiculo" },
   ];
 
 const URGENCY = [
