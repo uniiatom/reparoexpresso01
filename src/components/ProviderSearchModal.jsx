@@ -550,18 +550,18 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
         )}
 
         {/* Fase: nenhum disponível / agendar */}
-        {phase === 'none' && (
-          <div>
-            <div className="bg-orange-50 px-6 pt-6 pb-4 border-b border-border">
-              <div className="flex items-center gap-2 text-orange-700 mb-2">
-                <AlertCircle className="w-5 h-5" />
-                <span className="font-bold text-base">Nenhum prestador disponível agora</span>
-              </div>
-              <p className="text-sm text-orange-700/80">
-                Todos os profissionais estão ocupados no momento. Agende para um horário conveniente!
-              </p>
-            </div>
-            <div className="px-6 py-5 space-y-4">
+         {phase === 'none' && (
+           <div>
+             <div className="bg-orange-50 px-4 py-3 border-b border-border">
+               <div className="flex items-center gap-2 text-orange-700 mb-1">
+                 <AlertCircle className="w-4 h-4" />
+                 <span className="font-bold text-sm">Nenhum prestador disponível agora</span>
+               </div>
+               <p className="text-xs text-orange-700/80">
+                 Todos estão ocupados. Agende para outro horário!
+               </p>
+             </div>
+             <div className="px-4 py-3 space-y-3">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-primary" /> Data
