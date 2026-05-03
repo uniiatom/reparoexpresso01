@@ -13,7 +13,7 @@ const SERVICE_TYPES = [
   'limpeza_caixa_dagua', 'limpeza_calha', 'substituicao_telha', 'limpeza_telhado',
   'instalacao_coifa_parede', 'conversao_vaso_coplado', 'reparo_forro_gesso',
   'desentupimento', 'instalacao_suporte_tv', 'outros', 'troca_pneu', 'recarga_bateria',
-  'conserto_pneu'
+  'conserto_pneu', 'reboque'
 ];
 
 export default function ServicePricingByCategory() {
@@ -27,8 +27,8 @@ export default function ServicePricingByCategory() {
     queryFn: () => base44.entities.ServicePricing.list('-created_date', 100),
   });
 
-  // Filtra apenas as precificações de categoria (sem city/state e sem reboque)
-  const pricings = allPricings.filter(p => !p.city && !p.state && p.service_type !== 'reboque');
+  // Filtra apenas as precificações de categoria (sem city/state)
+  const pricings = allPricings.filter(p => !p.city && !p.state);
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.ServicePricing.update(data.id, data),
