@@ -39,11 +39,11 @@ const SERVICE_TYPES = [
   { value: "reparo_forro_gesso", label: "Reparo Forro de Gesso", icon: Hammer, group: "casa" },
   { value: "desentupimento", label: "Desentupimento", icon: Droplets, group: "casa" },
   { value: "instalacao_suporte_tv", label: "Suporte de TV", icon: Monitor, group: "casa", needsTvSize: true },
-  { value: "pane_seca", label: "Pane Seca", icon: Power, group: "casa" },
   { value: "outros", label: "Outros", icon: Wrench, group: "casa" },
   { value: "troca_pneu", label: "Troca de Pneu", icon: Car, group: "veiculo" },
   { value: "recarga_bateria", label: "Recarga de Bateria", icon: Battery, group: "veiculo" },
   { value: "conserto_pneu", label: "Conserto de Pneu", icon: Car, group: "veiculo" },
+  { value: "pane_seca", label: "Pane Seca", icon: Power, group: "veiculo" },
   { value: "reboque", label: "Reboque", icon: Car, group: "veiculo" },
   ];
 
