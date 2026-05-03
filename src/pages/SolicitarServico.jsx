@@ -150,16 +150,6 @@ export default function SolicitarServico() {
 
   React.useEffect(() => () => { if (liveWatchId !== null) navigator.geolocation.clearWatch(liveWatchId); }, [liveWatchId]);
 
-  // Atualiza distância do reboque quando coordenadas mudam
-  React.useEffect(() => {
-    if (isTow && form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude) {
-      const distance = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2;
-      if (distance > 0 && distance !== form.tow_distance_km) {
-        setForm(prev => ({ ...prev, tow_distance_km: distance }));
-      }
-    }
-  }, [form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude, isTow]);
-
   // descriptions_per_service: { [service_type]: { description, photos } }
   const [descriptionsPerService, setDescriptionsPerService] = useState({});
 
@@ -425,6 +415,16 @@ export default function SolicitarServico() {
   React.useEffect(() => {
     if (location) applyGeolocation();
   }, [location]);
+
+  // Atualiza distância do reboque quando coordenadas mudam
+  React.useEffect(() => {
+    if (isTow && form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude) {
+      const distance = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2;
+      if (distance > 0 && distance !== form.tow_distance_km) {
+        setForm(prev => ({ ...prev, tow_distance_km: distance }));
+      }
+    }
+  }, [form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude, isTow]);
 
   const [registerForm, setRegisterForm] = useState({
     name: currentUser?.full_name || '',
