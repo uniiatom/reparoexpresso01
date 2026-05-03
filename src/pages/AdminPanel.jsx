@@ -22,6 +22,7 @@ import ClientConsultaAdmin from '../components/admin/ClientConsultaAdmin';
 import ServiceMetrics from '../components/admin/ServiceMetrics';
 import ClientBlacklist from '../components/admin/ClientBlacklist';
 import TowPricing from '../components/admin/TowPricing';
+import ProviderDocumentReview from '../components/admin/ProviderDocumentReview';
 import ExpiringServicesAlert from '../components/admin/ExpiringServicesAlert';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -201,6 +202,9 @@ export default function AdminPanel() {
           </TabsTrigger>
           <TabsTrigger value="blacklist" className="text-xs px-2 py-1">
             🚫 Blacklist
+          </TabsTrigger>
+          <TabsTrigger value="documentos" className="text-xs px-2 py-1">
+            📄 Documentos
           </TabsTrigger>
         </TabsList>
 
@@ -382,6 +386,10 @@ export default function AdminPanel() {
 
         <TabsContent value="blacklist">
           <ClientBlacklist />
+        </TabsContent>
+
+        <TabsContent value="documentos">
+          <ProviderDocumentReview />
         </TabsContent>
       </Tabs>
 

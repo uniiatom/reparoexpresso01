@@ -51,6 +51,24 @@
       "default": false,
       "description": "Se h\u00e1 fotos aguardando aprova\u00e7\u00e3o do admin"
     },
+    "cnh_url": {
+      "type": "string",
+      "description": "URL do documento CNH"
+    },
+    "cnh_expiry": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de vencimento da CNH"
+    },
+    "crlv_url": {
+      "type": "string",
+      "description": "URL do documento CRLV"
+    },
+    "crlv_expiry": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de vencimento do CRLV"
+    },
     "specialties": {
       "type": "array",
       "items": {
