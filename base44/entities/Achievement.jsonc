@@ -1,0 +1,59 @@
+{
+  "name": "Achievement",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Identificador \u00fanico da conquista (ex: first_job, master_5_stars)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nome da conquista"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o da conquista"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Emoji ou \u00edcone da conquista"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "jobs",
+        "rating",
+        "milestone",
+        "special"
+      ],
+      "description": "Categoria da conquista"
+    },
+    "requirement_type": {
+      "type": "string",
+      "enum": [
+        "jobs_completed",
+        "average_rating",
+        "jobs_with_perfect_rating",
+        "consecutive_jobs"
+      ],
+      "description": "Tipo de requisito para desbloquear"
+    },
+    "requirement_value": {
+      "type": "number",
+      "description": "Valor do requisito (ex: 10 servi\u00e7os, 4.8 avalia\u00e7\u00e3o)"
+    },
+    "visibility_bonus": {
+      "type": "number",
+      "description": "B\u00f4nus de visibilidade adicional (%)"
+    }
+  },
+  "required": [
+    "key",
+    "name",
+    "description",
+    "icon",
+    "category",
+    "requirement_type",
+    "requirement_value"
+  ]
+}

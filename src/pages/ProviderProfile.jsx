@@ -4,12 +4,13 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, Star, BadgeCheck, Phone, Mail, Award, Briefcase, MessageCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Star, BadgeCheck, Phone, Mail, Award, Briefcase, MessageCircle, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import FavoriteButton from "@/components/FavoriteButton";
 import CriteriaStats from "@/components/CriteriaStats";
-import ProviderLevelBadge, { PROVIDER_LEVELS, getProviderLevel } from "@/components/ProviderLevelBadge";
+import ProviderLevelBadge from "@/components/ProviderLevelBadge";
+import AchievementsPanel from "@/components/AchievementsPanel";
 
 export default function ProviderProfile() {
   const { id } = useParams();
@@ -127,10 +128,10 @@ export default function ProviderProfile() {
             </p>
           )}
 
-          {/* Level Badge — destaque ou nenhum */}
-          {getProviderLevel(provider.total_jobs, provider.rating) && (
+          {/* Level Badge */}
+          {provider.id && (
             <div className="mb-4">
-              <ProviderLevelBadge totalJobs={provider.total_jobs} rating={provider.rating} variant="highlight" />
+              <ProviderLevelBadge providerId={provider.id} showDetails={true} />
             </div>
           )}
 
@@ -207,10 +208,11 @@ export default function ProviderProfile() {
       </motion.div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {[
           { id: 'overview', label: 'Especialidades' },
           { id: 'reviews', label: 'Avaliações' },
+          { id: 'achievements', label: 'Conquistas' },
           { id: 'certifications', label: 'Certificações' },
         ].map(tab => (
           <button
@@ -338,6 +340,16 @@ export default function ProviderProfile() {
           </motion.div>
         )}
 
+        {/* Conquistas */}
+        {selectedTab === 'achievements' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <AchievementsPanel providerId={provider.id} />
+          </motion.div>
+        )}
+
         {/* Certificações */}
         {selectedTab === 'certifications' && (
           <motion.div
@@ -357,28 +369,6 @@ export default function ProviderProfile() {
             <p className="text-xs text-muted-foreground px-2">
               {provider.is_approved ? '✓ Aprovado e homologado' : '⏳ Pendente de aprovação'}
             </p>
-
-            {/* Tabela de níveis */}
-            <div className="bg-card rounded-3xl p-5 border border-border">
-              <p className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
-                <Award className="w-4 h-4 text-primary" /> Níveis de Desempenho
-              </p>
-              <div className="space-y-2">
-                {PROVIDER_LEVELS.map(lvl => {
-                  const current = getProviderLevel(provider.total_jobs, provider.rating);
-                  const isActive = current?.key === lvl.key;
-                  return (
-                    <div key={lvl.key} className={cn(
-                      'flex items-center justify-between rounded-2xl px-4 py-3 border text-sm',
-                      isActive ? lvl.color + ' font-bold' : 'bg-muted/40 border-transparent text-muted-foreground'
-                    )}>
-                      <span className="flex items-center gap-2">{lvl.emoji} {lvl.label}</span>
-                      <span className="text-xs">{lvl.description}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           </motion.div>
         )}
       </div>

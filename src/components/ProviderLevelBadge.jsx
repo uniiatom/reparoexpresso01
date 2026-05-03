@@ -1,110 +1,100 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export const PROVIDER_LEVELS = [
-  {
-    key: 'pro',
-    label: 'Pro',
-    emoji: '⭐',
-    minJobs: 120,
-    minRating: 4,
-    color: 'bg-blue-100 text-blue-700 border-blue-300',
-    gradientBg: 'from-blue-500 to-blue-600',
-    glowColor: 'shadow-blue-200',
-    description: '120+ serviços + ≥ 4★ · +R$ 3,00/serviço',
-  },
-  {
-    key: 'pro_plus',
-    label: 'Pro Plus',
-    emoji: '🔥',
-    minJobs: 160,
-    minRating: 4,
-    color: 'bg-purple-100 text-purple-700 border-purple-300',
-    gradientBg: 'from-purple-500 to-pink-500',
-    glowColor: 'shadow-purple-200',
-    description: '160+ serviços + ≥ 4★ · +R$ 3,50/serviço',
-  },
-  {
-    key: 'pro_elite',
-    label: 'Pro Elite',
-    emoji: '💎',
-    minJobs: 190,
-    minRating: 4,
-    color: 'bg-emerald-100 text-emerald-700 border-emerald-300',
-    gradientBg: 'from-emerald-500 to-teal-500',
-    glowColor: 'shadow-emerald-200',
-    description: '190+ serviços + ≥ 4★ · +R$ 4,00/serviço',
-  },
-  {
-    key: 'pro_lenda',
-    label: 'Pro Lenda',
-    emoji: '👑',
-    minJobs: 220,
-    minRating: 5,
-    color: 'bg-amber-100 text-amber-700 border-amber-300',
-    gradientBg: 'from-amber-400 to-orange-500',
-    glowColor: 'shadow-amber-200',
-    description: '220+ serviços + 5★ · +R$ 5,00/serviço',
-  },
-];
+const LEVEL_CONFIG = {
+  1: { name: 'Bronze', icon: '🥉', color: 'from-amber-600 to-amber-700', textColor: 'text-amber-700', bgColor: 'bg-amber-50' },
+  2: { name: 'Prata', icon: '🥈', color: 'from-slate-400 to-slate-500', textColor: 'text-slate-700', bgColor: 'bg-slate-50' },
+  3: { name: 'Ouro', icon: '🏅', color: 'from-yellow-400 to-yellow-500', textColor: 'text-yellow-700', bgColor: 'bg-yellow-50' },
+  4: { name: 'Platina', icon: '💎', color: 'from-cyan-400 to-blue-500', textColor: 'text-blue-700', bgColor: 'bg-blue-50' },
+  5: { name: 'Lendário', icon: '⭐', color: 'from-purple-500 to-pink-500', textColor: 'text-purple-700', bgColor: 'bg-purple-50' },
+};
 
-export function getProviderLevel(totalJobs, rating) {
-  const jobs = totalJobs || 0;
-  const r = rating || 0;
-  // Verifica do mais alto para o mais baixo
-  for (let i = PROVIDER_LEVELS.length - 1; i >= 0; i--) {
-    const lvl = PROVIDER_LEVELS[i];
-    if (jobs >= lvl.minJobs && r >= lvl.minRating) return lvl;
+const LEVEL_REQUIREMENTS = {
+  1: 'Iniciante',
+  2: '5+ serviços | 4.5+ ⭐',
+  3: '20+ serviços | 4.6+ ⭐',
+  4: '50+ serviços | 4.7+ ⭐',
+  5: '100+ serviços | 4.8+ ⭐',
+};
+
+export default function ProviderLevelBadge({ providerId, showDetails = false, size = 'md' }) {
+  const { data: achievement, isLoading } = useQuery({
+    queryKey: ['provider-achievement', providerId],
+    queryFn: async () => {
+      if (!providerId) return null;
+      const list = await base44.entities.ProviderAchievement.filter({ provider_id: providerId });
+      return list[0] || null;
+    },
+    enabled: !!providerId,
+  });
+
+  if (isLoading) {
+    return <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />;
   }
-  return null;
-}
 
-export default function ProviderLevelBadge({ totalJobs, rating, size = 'md', showDescription = false, variant = 'default' }) {
-  const level = getProviderLevel(totalJobs, rating);
-  if (!level) return null;
+  if (!achievement) return null;
 
-  const sizeClasses = {
-    sm: 'text-xs px-2 py-0.5 gap-1',
-    md: 'text-sm px-3 py-1 gap-1.5',
-    lg: 'text-base px-4 py-2 gap-2',
-  };
+  const level = achievement.level || 1;
+  const config = LEVEL_CONFIG[level];
 
-  const gradientMap = {
-    pro:       'linear-gradient(to right, #3b82f6, #2563eb)',
-    pro_plus:  'linear-gradient(to right, #a855f7, #ec4899)',
-    pro_elite: 'linear-gradient(to right, #10b981, #14b8a6)',
-    pro_lenda: 'linear-gradient(to right, #f59e0b, #f97316)',
-  };
-
-  // variant="highlight" — card destacado para perfil público
-  if (variant === 'highlight') {
+  if (size === 'sm') {
     return (
-      <div
-        className="rounded-2xl p-4 flex items-center gap-4 shadow-lg"
-        style={{ background: gradientMap[level.key] }}
-      >
-        <span className="text-4xl">{level.emoji}</span>
-        <div className="text-white">
-          <p className="text-xs font-semibold uppercase tracking-widest opacity-80">Nível do Prestador</p>
-          <p className="text-xl font-black leading-tight">{level.label}</p>
-          <p className="text-xs opacity-80 mt-0.5">{level.description}</p>
-        </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-xl">{config.icon}</span>
+        <span className="text-xs font-bold text-foreground">{config.name}</span>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <span className={cn(
-        'inline-flex items-center font-bold rounded-full border',
-        level.color,
-        sizeClasses[size]
-      )}>
-        <span>{level.emoji}</span>
-        <span>{level.label}</span>
-      </span>
-      {showDescription && (
-        <span className="text-xs text-muted-foreground">{level.description}</span>
+    <div className={cn('rounded-2xl p-4 border-2', config.bgColor)}>
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className={`text-4xl drop-shadow-sm`}>{config.icon}</div>
+          <div>
+            <p className={cn('text-lg font-black', config.textColor)}>{config.name}</p>
+            <p className="text-xs text-muted-foreground">Nível {level}</p>
+          </div>
+        </div>
+      </div>
+
+      {showDetails && (
+        <div className="space-y-2 pt-3 border-t border-border">
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <p className="text-muted-foreground">Serviços Concluídos</p>
+              <p className={cn('font-bold text-base', config.textColor)}>{achievement.total_jobs_completed}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Avaliação Média</p>
+              <p className={cn('font-bold text-base', config.textColor)}>{achievement.average_rating.toFixed(1)} ⭐</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Visibilidade</p>
+              <p className={cn('font-bold text-base', config.textColor)}>+{achievement.visibility_bonus_percent}%</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Conquistas</p>
+              <p className={cn('font-bold text-base', config.textColor)}>{achievement.achievements_unlocked?.length || 0}</p>
+            </div>
+          </div>
+
+          {level < 5 && (
+            <div className="mt-3 pt-3 border-t border-border">
+              <p className="text-xs font-semibold text-foreground mb-1">Próximo nível:</p>
+              <p className="text-xs text-muted-foreground">{LEVEL_REQUIREMENTS[level + 1]}</p>
+            </div>
+          )}
+
+          {achievement.is_featured && (
+            <div className="mt-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg p-2 text-center">
+              <p className="text-xs font-bold text-purple-700">✨ Em Destaque</p>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
