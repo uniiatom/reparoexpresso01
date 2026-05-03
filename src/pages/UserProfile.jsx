@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import CashbackPanel from '@/components/CashbackPanel';
+import RecurringServiceCalendar from '@/components/RecurringServiceCalendar';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, LogOut, Calendar, Gift, Camera, Wrench, FileText, Wallet } from "lucide-react";
 import { useNavigate, Link } from 'react-router-dom';
@@ -26,6 +27,16 @@ export default function UserProfile() {
     };
     fetchUser();
   }, [navigate]);
+
+  const { data: client } = useQuery({
+    queryKey: ['my-client-profile'],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const list = await base44.entities.Client.filter({ user_id: user.id });
+      return list[0] || null;
+    },
+    enabled: !!user?.id,
+  });
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider-profile'],
@@ -110,6 +121,13 @@ export default function UserProfile() {
           </div>
         </div>
       </div>
+
+      {/* Serviços Preventivos Recorrentes */}
+      {client?.id && (
+        <div className="mb-8">
+          <RecurringServiceCalendar clientId={client.id} />
+        </div>
+      )}
 
       {/* Cashback */}
       {user?.id && (
