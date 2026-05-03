@@ -21,6 +21,7 @@ import MapView from "@/components/MapView";
 import ProviderSearchModal from "@/components/ProviderSearchModal";
 import ClientScheduleSelector from "@/components/ClientScheduleSelector";
 import { useScheduleAvailability } from "@/hooks/useScheduleAvailability";
+import TowServiceQuestions from "@/components/TowServiceQuestions";
 
 const SERVICE_TYPES = [
   { value: "eletrica", label: "Elétrica", icon: Zap, group: "casa" },
@@ -114,6 +115,7 @@ export default function SolicitarServico() {
   const [showNaoSeiAlert, setShowNaoSeiAlert] = useState(false);
   const [showForroGessoModal, setShowForroGessoModal] = useState(false);
   const [forroGessoTipo, setForroGessoTipo] = useState(null);
+  const [towQuestions, setTowQuestions] = useState({});
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
   
   const [sharingLocation, setSharingLocation] = useState(false);
@@ -492,7 +494,15 @@ export default function SolicitarServico() {
   const canNext = () => {
     if (step === 0) return registerForm.name.length > 2 && registerForm.phone.length > 7;
     if (step === 1) return form.service_type.length > 0;
-    if (step === 2) return allDescriptionsFilled();
+    if (step === 2) {
+      // Se é reboque, valida perguntas primeiro
+      if (isTow) {
+        const allAnswered = Object.keys(towQuestions).length === 5;
+        const hasVictims = towQuestions.has_victims === true;
+        if (!allAnswered || hasVictims) return false;
+      }
+      return allDescriptionsFilled();
+    }
     if (step === 3) {
       const hasDelivery = !isTow || (form.delivery_address.length > 3 && form.delivery_latitude && form.delivery_longitude);
       const hasDistance = !isTow || (form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude); // Reboque precisa ter distância calculável
@@ -985,9 +995,23 @@ export default function SolicitarServico() {
         </div>
       )}
 
-      {/* Step 2: Descrição + Fotos */}
+      {/* Step 2: Perguntas de reboque + Descrição + Fotos */}
       {step === 2 && (
         <div className="space-y-5">
+          {/* Se tiver reboque, mostra as perguntas primeiro */}
+          {isTow && (
+            <>
+              <TowServiceQuestions answers={towQuestions} onChange={setTowQuestions} />
+              {towQuestions.has_victims && (
+                <div className="bg-red-100 border-l-4 border-red-600 p-4 rounded">
+                  <p className="text-red-700 font-bold text-sm">⚠️ Não é possível solicitar reboque com vítimas no local</p>
+                  <p className="text-red-600 text-xs mt-1">Aguarde a polícia registrar o ocorrido antes de solicitar o serviço.</p>
+                </div>
+              )}
+              <div className="h-px bg-border" />
+            </>
+          )}
+          
           <div>
             <h2 className="text-2xl font-bold text-foreground mb-1">Descreva o problema</h2>
             <p className="text-muted-foreground mb-4">
