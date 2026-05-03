@@ -11,6 +11,7 @@ export default function ProviderTermsTab({ providerId }) {
   const [hasAccepted, setHasAccepted] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
   const [acceptedAt, setAcceptedAt] = useState(null);
+  const [confirmAccept, setConfirmAccept] = useState(false);
 
   useEffect(() => {
     // Carrega os termos do localStorage (salvos pelo admin)
@@ -92,8 +93,8 @@ export default function ProviderTermsTab({ providerId }) {
               <div className="flex items-center gap-2 bg-muted p-3 rounded-lg">
                 <Checkbox
                   id="accept-terms"
-                  checked={hasAccepted}
-                  disabled
+                  checked={confirmAccept}
+                  onCheckedChange={setConfirmAccept}
                   className="cursor-pointer"
                 />
                 <label htmlFor="accept-terms" className="text-sm font-medium text-foreground cursor-pointer flex-1">
@@ -102,8 +103,8 @@ export default function ProviderTermsTab({ providerId }) {
               </div>
               <Button
                 onClick={handleAccept}
-                disabled={isAccepting}
-                className="w-full bg-primary hover:bg-primary/90 h-10 font-semibold"
+                disabled={isAccepting || !confirmAccept}
+                className="w-full bg-primary hover:bg-primary/90 h-10 font-semibold disabled:opacity-50"
               >
                 {isAccepting ? 'Processando...' : 'Aceitar Termos'}
               </Button>
