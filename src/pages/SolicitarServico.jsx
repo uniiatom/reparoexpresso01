@@ -217,6 +217,27 @@ export default function SolicitarServico() {
   const [loadingCep, setLoadingCep] = useState(false);
   const [cepError, setCepError] = useState('');
 
+  const geocodeAddress = async (street, number, neighborhood, city, state, isDelivery = false) => {
+    const query = [street, number, neighborhood, city, state, 'Brasil'].filter(Boolean).join(', ');
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br`, {
+        headers: { 'Accept-Language': 'pt-BR' }
+      });
+      const data = await res.json();
+      if (data?.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        if (isDelivery) {
+          setForm(prev => ({ ...prev, delivery_latitude: lat, delivery_longitude: lon }));
+        } else {
+          setForm(prev => ({ ...prev, latitude: lat, longitude: lon }));
+        }
+      }
+    } catch (e) {
+      console.warn('Geocode error:', e);
+    }
+  };
+
   const searchByCep = async (cep, isDelivery = false) => {
    const cleanCep = cep.replace(/\D/g, '');
    if (cleanCep.length !== 8) return;
@@ -242,6 +263,8 @@ export default function SolicitarServico() {
          delivery_neighborhood: data.bairro || '',
          delivery_cep: cleanCep,
        }));
+       // Geocodifica endereço de entrega
+       await geocodeAddress(data.logradouro, '', data.bairro, data.localidade, data.uf, true);
      } else {
        setForm(prev => ({
          ...prev,
@@ -251,6 +274,8 @@ export default function SolicitarServico() {
          neighborhood: data.bairro || '',
          cep: cleanCep,
        }));
+       // Geocodifica endereço de saída
+       await geocodeAddress(data.logradouro, '', data.bairro, data.localidade, data.uf, false);
      }
    } catch {
      setCepError('Erro ao buscar CEP');
