@@ -33,19 +33,21 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, notified: 0 });
     }
 
-    // Envia email para cada cliente
+    // Envia email para cada prestador
     const emailPromises = emailsToNotify.map(email =>
       base44.integrations.Core.SendEmail({
         to: email,
-        subject: '⚠️ Atualização nos Termos de Uso - Reparo Expresso',
-        body: `Olá,
+        subject: '⚠️ Atualização nos Termos de Serviço - Reparo Expresso',
+        body: `Olá Prestador,
 
-Informamos que os Termos de Uso do Reparo Expresso foram atualizados.
+Informamos que os Termos de Serviço para Prestadores do Reparo Expresso foram atualizados.
 
-${change_summary ? `Alterações: ${change_summary}\n\n` : ''}
-Pedimos que você leia novamente os novos termos antes de solicitar novos serviços.
+${change_summary ? `Alterações realizadas:\n${change_summary}\n\n` : ''}
+Por favor, leia atentamente os novos termos em sua conta no aplicativo.
 
-Os termos atualizados estão disponíveis em sua conta no aplicativo.
+Todos os prestadores DEVEM estar de acordo com os novos termos para continuar operando na plataforma.
+
+Os termos atualizados estão disponíveis na seção "Minha Conta" > "Termos e Condições".
 
 Atenciosamente,
 Equipe Reparo Expresso`
@@ -55,8 +57,10 @@ Equipe Reparo Expresso`
       })
     );
 
+    console.log(`Tentando notificar ${emailsToNotify.length} prestadores`);
     const results = await Promise.all(emailPromises);
     const successCount = results.filter(r => r !== null).length;
+    console.log(`${successCount} emails enviados com sucesso`);
 
     return Response.json({
       success: true,
