@@ -47,8 +47,11 @@ export default function TowPricing() {
   const saveTowConfig = useMutation({
     mutationFn: async () => {
       const updates = [];
+      console.log('FormData ao salvar:', formData);
+      
       for (const vehicle of VEHICLE_TYPES) {
         const values = formData[vehicle.key];
+        console.log(`${vehicle.key}:`, values);
         if (!values || (!values.exit && !values.perKm)) continue;
         
         const data = {
@@ -58,12 +61,14 @@ export default function TowPricing() {
           note: `${vehicle.key}|${vehicle.label}`,
         };
 
+        console.log(`Salvando ${vehicle.key}:`, data);
         if (values.id) {
           updates.push(base44.entities.ServicePricing.update(values.id, data));
         } else {
           updates.push(base44.entities.ServicePricing.create(data));
         }
       }
+      console.log('Total de updates:', updates.length);
       if (updates.length === 0) throw new Error('Nenhum valor preenchido');
       await Promise.all(updates);
     },
@@ -73,6 +78,7 @@ export default function TowPricing() {
       setEditing(false);
     },
     onError: (error) => {
+      console.error('Erro:', error);
       toast.error('Erro ao salvar: ' + (error.message || 'Tente novamente'));
     },
   });
