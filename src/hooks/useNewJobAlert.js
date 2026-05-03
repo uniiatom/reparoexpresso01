@@ -125,9 +125,9 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
       const data = event.data;
       if (!data) return;
 
-      // Chamado livre ainda sem prestador
+      // Chamado livre — APENAS em 'create' para evitar duplicação quando outro prestador recusa
       const isOpenJob =
-        (event.type === 'create' || event.type === 'update') &&
+        event.type === 'create' &&
         data.status === 'aguardando' &&
         data.modality !== 'agendado';
 
@@ -140,11 +140,15 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
 
       const isNewJob = isOpenJob || isAssignedToMe;
 
-      // Limpa quando job é finalizado
+      // Limpa seenIds APENAS quando job é finalizado (não quando volta p/ aguardando por recusa)
       const isFinalizado = event.type === 'update' && ['cancelado', 'concluido'].includes(data.status);
       if (isFinalizado) {
         seenIds.current.delete(event.id);
       }
+
+      // Garante que job recusado (voltou a aguardando) não re-notifica quem já viu
+      const isRejectedBack = event.type === 'update' && data.status === 'aguardando';
+      if (isRejectedBack) return;
 
       if (isNewJob && !seenIds.current.has(event.id)) {
         seenIds.current.add(event.id);
