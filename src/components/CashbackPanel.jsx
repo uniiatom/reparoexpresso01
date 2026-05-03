@@ -404,13 +404,13 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                   <span className="text-center">Bônus / bloco</span>
                 </div>
                 {[
-                  { emoji: '🌱', nivel: 'Iniciante',  min: 0,   max: 49,  bonus: 'R$ 20' },
-                  { emoji: '⚡', nivel: 'Pro',        min: 50,  max: 149, bonus: 'R$ 30' },
-                  { emoji: '💎', nivel: 'Elite',      min: 150, max: 299, bonus: 'R$ 40' },
-                  { emoji: '🔥', nivel: 'Lendário',   min: 300, max: 499, bonus: 'R$ 55' },
-                  { emoji: '👑', nivel: 'Imperador',  min: 500, max: null, bonus: 'R$ 70' },
+                  { emoji: '🌱', nivel: 'Iniciante', minJobs: 0,   maxJobs: 119, minRating: 0,   bonus: 'R$ 20' },
+                  { emoji: '⭐', nivel: 'Pro',        minJobs: 120, maxJobs: 159, minRating: 4,   bonus: 'R$ 22' },
+                  { emoji: '🔥', nivel: 'Pro Plus',   minJobs: 160, maxJobs: 189, minRating: 4,   bonus: 'R$ 23' },
+                  { emoji: '💎', nivel: 'Pro Elite',  minJobs: 190, maxJobs: 219, minRating: 4,   bonus: 'R$ 24' },
+                  { emoji: '👑', nivel: 'Pro Lenda',  minJobs: 220, maxJobs: null, minRating: 5,  bonus: 'R$ 25' },
                 ].map(n => {
-                  const isAtual = totalServicos >= n.min && (n.max === null || totalServicos <= n.max);
+                  const isAtual = totalServicos >= n.minJobs && (n.maxJobs === null || totalServicos <= n.maxJobs);
                   return (
                     <div
                       key={n.nivel}
@@ -420,8 +420,8 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                       )}
                     >
                       <span className="flex items-center gap-1">{n.emoji} {n.nivel}</span>
-                      <span className="text-center">{n.min}{n.max ? `–${n.max}` : '+'}</span>
-                      <span className="text-center text-emerald-700 font-semibold">{n.bonus}</span>
+                      <span className="text-center">{n.minJobs}{n.maxJobs ? `–${n.maxJobs}` : '+'} serv.</span>
+                      <span className="text-center text-emerald-700 font-semibold">{n.bonus}/bloco</span>
                     </div>
                   );
                 })}
