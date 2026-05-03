@@ -73,7 +73,7 @@ export default function WarrantyBanner({ warrantyServices }) {
                   <div key={req.id} className="bg-white rounded-xl border border-green-200 p-3">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground truncate">{label}</p>
+                        <p className="text-sm font-semibold text-foreground truncate">#{req.service_number} — {label}</p>
                         <p className="text-xs text-muted-foreground truncate">
                           {req.provider_name && `${req.provider_name} · `}{req.address}{req.city ? `, ${req.city}` : ''}
                         </p>
