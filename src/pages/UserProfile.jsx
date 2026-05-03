@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import CashbackPanel from '@/components/CashbackPanel';
 import RecurringServiceCalendar from '@/components/RecurringServiceCalendar';
+import ClientNotificationCenter from '@/components/ClientNotificationCenter';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, LogOut, Calendar, Gift, Camera, Wrench, FileText, Wallet } from "lucide-react";
 import { useNavigate, Link } from 'react-router-dom';
@@ -84,6 +85,7 @@ export default function UserProfile() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-2xl font-bold text-foreground flex-1">Meu Perfil</h1>
+        {client?.id && <ClientNotificationCenter clientId={client.id} />}
       </div>
 
       {/* User Card */}
