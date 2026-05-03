@@ -56,7 +56,10 @@ Você é responsável por manter a confidencialidade de sua conta e senha. Conco
 Seus dados serão utilizados apenas para prover serviços de reparo e não serão compartilhados com terceiros sem consentimento.
 
 3. Política de Pagamento
-O pagamento pelos serviços pode ser realizado via PIX ou cartão de crédito. Os valores são estabelecidos pelos prestadores de serviço.
+O pagamento pelos serviços pode ser realizado através das seguintes formas:
+- PIX (transferência instantânea)
+- Cartão de Débito
+- Cartão de Crédito
 
 4. Cancelamento
 Você pode cancelar uma solicitação de serviço antes que o prestador chegue. Após isso, o serviço está confirmado.
