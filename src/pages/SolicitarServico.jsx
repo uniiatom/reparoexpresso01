@@ -1623,7 +1623,7 @@ export default function SolicitarServico() {
               <p className="text-sm text-muted-foreground">
                 📌 Entrega: {form.delivery_address}{form.delivery_number ? `, ${form.delivery_number}` : ''}{form.delivery_neighborhood ? ` - ${form.delivery_neighborhood}` : ''}{form.delivery_city ? `, ${form.delivery_city}` : ''}
                 {form.latitude && form.delivery_latitude && (
-                  <span className="block mt-1 font-semibold text-blue-600">📏 Distância: {calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude).toFixed(1)} km</span>
+                  <span className="block mt-1 font-semibold text-blue-600">📏 Total: {form.tow_distance_km?.toFixed(1)} km (ida e volta)</span>
                 )}
               </p>
             )}
