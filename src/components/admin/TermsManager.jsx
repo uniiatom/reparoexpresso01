@@ -67,6 +67,9 @@ Você pode cancelar uma solicitação de serviço enquanto o prestador ainda nã
 5. Escopo de Serviços
 A plataforma oferece apenas serviços de pequenos reparos. Não realizamos pequenas obras ou obras grandes. O cliente está ciente de que os serviços contratados se limitam a intervenções rápidas e pontuais, e não incluem reformas ou trabalhos de maior envergadura.
 
+6. Restrições de Materiais
+Não realizamos manutenção ou reparo em canalizações feitas com cano galvanizado, chumbo ou PPR. Estes tipos de materiais requerem especialização específica não coberta pelos nossos serviços.
+
 5. Avaliação
 Solicitamos que avalie o prestador após o término do serviço para melhorar a qualidade da plataforma.
 
