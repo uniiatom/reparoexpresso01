@@ -331,7 +331,6 @@ export default function SolicitarServico() {
     carro: { base: 180, perKm: 5.00 },
     suv: { base: 220, perKm: 6.00 },
     van: { base: 250, perKm: 7.00 },
-    caminhao: { base: 300, perKm: 8.50 },
   };
 
   // Calcula preço estimado para reboque
@@ -1050,7 +1049,6 @@ export default function SolicitarServico() {
                     { value: 'carro', label: '🚗 Carro', desc: 'Sedan/hatch' },
                     { value: 'suv', label: '🚙 SUV', desc: 'SUV/crossover' },
                     { value: 'van', label: '🚐 Van', desc: 'Van/minibus' },
-                    { value: 'caminhao', label: '🚚 Caminhão', desc: 'Caminhão' },
                   ].map(v => (
                     <button
                       key={v.value}
