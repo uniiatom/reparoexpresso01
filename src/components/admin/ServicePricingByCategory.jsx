@@ -22,10 +22,13 @@ export default function ServicePricingByCategory() {
   const [editForm, setEditForm] = useState({});
   const queryClient = useQueryClient();
 
-  const { data: pricings = [], isLoading } = useQuery({
+  const { data: allPricings = [], isLoading } = useQuery({
     queryKey: ['service-pricing'],
     queryFn: () => base44.entities.ServicePricing.list('-created_date', 100),
   });
+
+  // Filtra apenas as precificações de categoria (sem city/state)
+  const pricings = allPricings.filter(p => !p.city && !p.state);
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.ServicePricing.update(data.id, data),
