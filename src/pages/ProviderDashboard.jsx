@@ -44,6 +44,16 @@ export default function ProviderDashboard() {
     enabled: !!provider?.id,
   });
 
+  // Fetch scheduled services
+  const { data: scheduledServices = [] } = useQuery({
+    queryKey: ['scheduledServices', provider?.id],
+    queryFn: () => base44.entities.ServiceRequest.filter({ 
+      provider_id: provider?.id,
+      status: 'agendado'
+    }),
+    enabled: !!provider?.id,
+  });
+
   // Fetch payment history
   const { data: payments = [] } = useQuery({
     queryKey: ['payments', provider?.id],
@@ -171,12 +181,66 @@ export default function ProviderDashboard() {
         </motion.div>
 
         {/* Main Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="overview">Serviços</TabsTrigger>
-            <TabsTrigger value="payments">Pagamentos</TabsTrigger>
-            <TabsTrigger value="availability">Disponibilidade</TabsTrigger>
-          </TabsList>
+         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+           <TabsList className="grid w-full grid-cols-4 mb-6">
+             <TabsTrigger value="scheduled">Agendados</TabsTrigger>
+             <TabsTrigger value="overview">Aceitos</TabsTrigger>
+             <TabsTrigger value="payments">Pagamentos</TabsTrigger>
+             <TabsTrigger value="availability">Disponibilidade</TabsTrigger>
+           </TabsList>
+
+          {/* Tab: Serviços Agendados */}
+          <TabsContent value="scheduled" className="space-y-4">
+            {scheduledServices.length === 0 ? (
+              <Card className="bg-muted/50 border-border">
+                <CardContent className="pt-6 text-center">
+                  <Calendar className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
+                  <p className="text-muted-foreground text-sm">Nenhum serviço agendado</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {scheduledServices.map((service, idx) => (
+                  <motion.div
+                    key={service.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                  >
+                    <Card className="bg-card border-border hover:shadow-lg transition-all border-blue-200 bg-blue-50">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-foreground">{service.service_type}</h3>
+                              <Badge className="bg-blue-100 text-blue-700">Agendado</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
+                            <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3" /> {service.address}, {service.city} - {service.state}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" /> {new Date(service.scheduled_date).toLocaleDateString('pt-BR')} às {service.scheduled_time}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {service.estimated_price && (
+                              <div>
+                                <p className="text-xs text-muted-foreground">Valor estimado</p>
+                                <p className="text-lg font-bold text-primary">R$ {Number(service.estimated_price).toFixed(2)}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
           {/* Tab: Serviços Aceitos */}
           <TabsContent value="overview" className="space-y-4">
