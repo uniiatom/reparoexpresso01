@@ -401,7 +401,7 @@ export default function SolicitarServico() {
       };
 
       if (isTow && form.latitude && form.delivery_latitude) {
-        baseData.tow_distance_km = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude);
+        baseData.tow_distance_km = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2;
       }
 
       const results = await Promise.all(
