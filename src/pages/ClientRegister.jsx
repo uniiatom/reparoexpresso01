@@ -242,39 +242,28 @@ export default function ClientRegister() {
 
                <h3 className="text-xl font-bold text-foreground mb-4">Aceitar termos</h3>
 
-               <div className="max-h-60 overflow-y-auto mb-6 bg-muted/30 rounded-2xl p-4 text-sm text-foreground/80 space-y-3">
-                 <p><strong>Termos de Uso - Cliente</strong></p>
-                 <p>Ao criar sua conta no Reparo Expresso, você concorda com os seguintes termos e condições:</p>
+               <div className="max-h-60 overflow-y-auto mb-6 bg-muted/30 rounded-2xl p-4 text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
+                 {localStorage.getItem('client_terms_content') || `Termos de Uso - Cliente
 
-                 <div>
-                   <p className="font-semibold">1. Uso da Plataforma</p>
-                   <p>Você é responsável por manter a confidencialidade de sua conta e senha. Concorda em usar a plataforma apenas para fins legítimos e não para atividades ilegais ou prejudiciais.</p>
-                 </div>
+               Ao criar sua conta no Reparo Expresso, você concorda com os seguintes termos e condições:
 
-                 <div>
-                   <p className="font-semibold">2. Dados Pessoais</p>
-                   <p>Seus dados serão utilizados apenas para prover serviços de reparo e não serão compartilhados com terceiros sem consentimento.</p>
-                 </div>
+               1. Uso da Plataforma
+               Você é responsável por manter a confidencialidade de sua conta e senha. Concorda em usar a plataforma apenas para fins legítimos e não para atividades ilegais ou prejudiciais.
 
-                 <div>
-                   <p className="font-semibold">3. Política de Pagamento</p>
-                   <p>O pagamento pelos serviços pode ser realizado via PIX ou cartão de crédito. Os valores são estabelecidos pelos prestadores de serviço.</p>
-                 </div>
+               2. Dados Pessoais
+               Seus dados serão utilizados apenas para prover serviços de reparo e não serão compartilhados com terceiros sem consentimento.
 
-                 <div>
-                   <p className="font-semibold">4. Cancelamento</p>
-                   <p>Você pode cancelar uma solicitação de serviço antes que o prestador chegue. Após isso, o serviço está confirmado.</p>
-                 </div>
+               3. Política de Pagamento
+               O pagamento pelos serviços pode ser realizado via PIX ou cartão de crédito. Os valores são estabelecidos pelos prestadores de serviço.
 
-                 <div>
-                   <p className="font-semibold">5. Avaliação</p>
-                   <p>Solicitamos que avalie o prestador após o término do serviço para melhorar a qualidade da plataforma.</p>
-                 </div>
+               4. Cancelamento
+               Você pode cancelar uma solicitação de serviço antes que o prestador chegue. Após isso, o serviço está confirmado.
 
-                 <div>
-                   <p className="font-semibold">6. Responsabilidade</p>
-                   <p>A plataforma não é responsável por danos causados pelos prestadores de serviço. Recomendamos verificar referências e avaliações antes de confirmar.</p>
-                 </div>
+               5. Avaliação
+               Solicitamos que avalie o prestador após o término do serviço para melhorar a qualidade da plataforma.
+
+               6. Responsabilidade
+               A plataforma não é responsável por danos causados pelos prestadores de serviço. Recomendamos verificar referências e avaliações antes de confirmar.`}
                </div>
 
                <div className="flex items-start gap-3 mb-6 p-4 bg-primary/5 rounded-2xl border border-primary/20">
