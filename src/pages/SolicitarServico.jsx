@@ -358,7 +358,9 @@ export default function SolicitarServico() {
     const pricing = towPricingTable[towVehicleType];
     if (!pricing) return null;
     
-    const distanceCharge = form.tow_distance_km * pricing.perKm;
+    const kmCobertos = 20; // Taxa de saída cobre os primeiros 20 km
+    const kmExtras = Math.max(0, form.tow_distance_km - kmCobertos);
+    const distanceCharge = kmExtras * pricing.perKm;
     const total = pricing.base + distanceCharge;
     
     return {
@@ -367,6 +369,7 @@ export default function SolicitarServico() {
       total,
       distance: form.tow_distance_km,
       perKm: pricing.perKm,
+      kmExtras,
     };
   };
 
@@ -1158,15 +1161,15 @@ export default function SolicitarServico() {
                   
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="bg-white/50 rounded-xl p-2">
-                      <p className="text-muted-foreground font-medium">Taxa base</p>
+                      <p className="text-muted-foreground font-medium">Taxa base (cobre 20 km)</p>
                       <p className="font-bold text-foreground">R$ {towPrice.base.toFixed(2)}</p>
                     </div>
                     <div className="bg-white/50 rounded-xl p-2">
-                      <p className="text-muted-foreground font-medium">Distância</p>
+                      <p className="text-muted-foreground font-medium">Distância total</p>
                       <p className="font-bold text-foreground">{towPrice.distance.toFixed(1)} km</p>
                     </div>
                     <div className="col-span-2 bg-white/50 rounded-xl p-2">
-                      <p className="text-muted-foreground font-medium">Distância (ida e volta) × R$ {towPrice.perKm.toFixed(2)}/km</p>
+                      <p className="text-muted-foreground font-medium">{towPrice.kmExtras > 0 ? `Km excedentes (${towPrice.kmExtras.toFixed(1)} km) × R$ ${towPrice.perKm.toFixed(2)}/km` : 'Sem km excedentes (taxa cobre tudo)'}</p>
                       <p className="font-bold text-foreground">R$ {towPrice.distanceCharge.toFixed(2)}</p>
                     </div>
                   </div>
