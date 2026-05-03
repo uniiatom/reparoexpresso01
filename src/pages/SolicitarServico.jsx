@@ -325,51 +325,7 @@ export default function SolicitarServico() {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   };
 
-  const isTow = form.service_type.includes('reboque');
 
-  // Busca precificação de reboque por categoria de veículo
-  const { data: towPricingData = [] } = useQuery({
-    queryKey: ['tow-pricing'],
-    queryFn: () => base44.entities.ServicePricing.filter({ service_type: 'reboque' }),
-    enabled: isTow,
-  });
-
-  const towPricingTable = towPricingData.reduce((acc, pricing) => {
-    if (pricing.city) return acc; // Ignora precificações por cidade
-    const vehicleType = pricing.note?.split('|')[0]?.trim(); // Parse vehicle type from note
-    if (vehicleType) {
-      acc[vehicleType.toLowerCase()] = {
-        base: pricing.price_min || 0,
-        perKm: pricing.price_max || 0,
-      };
-    }
-    return acc;
-  }, {
-    moto: { base: 150, perKm: 3.50 },
-    carro: { base: 180, perKm: 5.00 },
-    suv: { base: 220, perKm: 6.00 },
-    van: { base: 250, perKm: 7.00 },
-  });
-
-  // Calcula preço estimado para reboque
-  const calculateTowPrice = () => {
-    if (!isTow || !towVehicleType || !form.tow_distance_km) return null;
-    const pricing = towPricingTable[towVehicleType];
-    if (!pricing) return null;
-    
-    const distanceCharge = form.tow_distance_km * pricing.perKm;
-    const total = pricing.base + distanceCharge;
-    
-    return {
-      base: pricing.base,
-      distanceCharge,
-      total,
-      distance: form.tow_distance_km,
-      perKm: pricing.perKm,
-    };
-  };
-
-  const towPrice = calculateTowPrice();
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -460,9 +416,7 @@ export default function SolicitarServico() {
         estimated_arrival_minutes: cleanData.estimated_arrival_minutes ?? null,
       };
 
-      if (isTow && form.latitude && form.delivery_latitude) {
-        baseData.tow_distance_km = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2;
-      }
+
 
       const results = await Promise.all(
         serviceTypes.map(type => {
@@ -560,19 +514,10 @@ export default function SolicitarServico() {
     if (step === 0) return registerForm.name.length > 2 && registerForm.phone.length > 7;
     if (step === 1) return form.service_type.length > 0;
     if (step === 2) {
-      // Se é reboque, valida perguntas e tipo de veículo
-      if (isTow) {
-        const allAnswered = Object.keys(towQuestions).length === 5;
-        const hasVictims = towQuestions.has_victims === true;
-        const hasVehicleType = !!towVehicleType;
-        if (!allAnswered || hasVictims || !hasVehicleType) return false;
-      }
       return allDescriptionsFilled();
     }
     if (step === 3) {
-      const hasDelivery = !isTow || (form.delivery_address.length > 3 && form.delivery_latitude && form.delivery_longitude);
-      const hasDistance = !isTow || (form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude); // Reboque precisa ter distância calculável
-      return form.address.length > 3 && hasDelivery && hasDistance;
+      return form.address.length > 3;
     }
     if (step === 4) {
       if (form.modality === 'agendado') return !!form.scheduled_date && !!form.scheduled_time;
@@ -1105,91 +1050,7 @@ export default function SolicitarServico() {
       {/* Step 2: Perguntas de reboque + Descrição + Fotos */}
       {step === 2 && (
         <div className="space-y-5">
-          {/* Se tiver reboque, mostra as perguntas e tipo de veículo */}
-          {isTow && (
-            <>
-              <TowServiceQuestions answers={towQuestions} onChange={setTowQuestions} />
-              {towQuestions.has_victims && (
-                <div className="bg-red-100 border-l-4 border-red-600 p-4 rounded">
-                  <p className="text-red-700 font-bold text-sm">⚠️ Não é possível solicitar reboque com vítimas no local</p>
-                  <p className="text-red-600 text-xs mt-1">Aguarde a polícia registrar o ocorrido antes de solicitar o serviço.</p>
-                </div>
-              )}
-              <div className="h-px bg-border" />
-
-              {/* Seleção de tipo de veículo */}
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-foreground">Qual o tipo do veículo?</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { value: 'moto', label: '🏍️ Moto', desc: 'Motocicleta/scooter' },
-                    { value: 'carro', label: '🚗 Carro', desc: 'Sedan/hatch' },
-                    { value: 'suv', label: '🚙 SUV', desc: 'SUV/crossover' },
-                    { value: 'van', label: '🚐 Van', desc: 'Van/minibus' },
-                  ].map(v => (
-                    <button
-                      key={v.value}
-                      onClick={() => setTowVehicleType(v.value)}
-                      className={cn(
-                        "flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all text-center",
-                        towVehicleType === v.value
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/40"
-                      )}
-                    >
-                      <span className="text-2xl">{v.label.split(' ')[0]}</span>
-                      <span className="text-xs font-semibold text-foreground">{v.label.split(' ').slice(1).join(' ')}</span>
-                      <span className="text-[10px] text-muted-foreground">{v.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Previsão de preço */}
-              {towVehicleType && form.tow_distance_km && towPrice && (
-                <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-4 border border-primary/20 space-y-3">
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground mb-1">ESTIMATIVA DE PREÇO</p>
-                    <div className="text-3xl font-black text-primary">
-                      R$ {towPrice.total.toFixed(2)}
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="bg-white/50 rounded-xl p-2">
-                      <p className="text-muted-foreground font-medium">Taxa base</p>
-                      <p className="font-bold text-foreground">R$ {towPrice.base.toFixed(2)}</p>
-                    </div>
-                    <div className="bg-white/50 rounded-xl p-2">
-                      <p className="text-muted-foreground font-medium">Distância</p>
-                      <p className="font-bold text-foreground">{towPrice.distance.toFixed(1)} km</p>
-                    </div>
-                    <div className="col-span-2 bg-white/50 rounded-xl p-2">
-                      <p className="text-muted-foreground font-medium">Distância (ida e volta) × R$ {towPrice.perKm.toFixed(2)}/km</p>
-                      <p className="font-bold text-foreground">R$ {towPrice.distanceCharge.toFixed(2)}</p>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-muted-foreground bg-white/50 rounded-xl p-2">
-                    <p>⚠️ Preço estimado. O valor final pode variar conforme:</p>
-                    <ul className="list-disc list-inside mt-1 space-y-0.5">
-                      <li>Condições de acesso ao veículo</li>
-                      <li>Necessidade de equipamento especial (veículo rebaixado)</li>
-                      <li>Roda travada ou danos adicionais</li>
-                    </ul>
-                  </div>
-                </div>
-              )}
-
-              {!towVehicleType && (
-                <div className="bg-blue-50 rounded-2xl p-3 border border-blue-200">
-                  <p className="text-xs text-blue-700">📍 Selecione o tipo de veículo para calcular o preço</p>
-                </div>
-              )}
-
-              <div className="h-px bg-border" />
-            </>
-          )}
+    
           
           <div>
             <h2 className="text-2xl font-bold text-foreground mb-1">Descreva o problema</h2>
@@ -1369,122 +1230,7 @@ export default function SolicitarServico() {
           </div>
           )}
 
-          {/* Step 3b: Localização de Entrega (apenas para Reboque) */}
-          {step === 3 && isTow && (
-          <div className="space-y-5 mt-8 pt-8 border-t border-border">
-          <div>
-            <h3 className="text-xl font-bold text-foreground mb-1">Local de entrega do veículo</h3>
-            <p className="text-muted-foreground mb-4">Onde o veículo será rebocado?</p>
-          </div>
 
-          <button
-            onClick={() => {
-              getLocation();
-              setTimeout(() => {
-                if (location) {
-                  setForm(prev => ({
-                    ...prev,
-                    delivery_address: location.address || prev.delivery_address,
-                    delivery_city: location.city || prev.delivery_city,
-                    delivery_state: location.state || prev.delivery_state,
-                    delivery_latitude: location.latitude,
-                    delivery_longitude: location.longitude,
-                  }));
-                }
-              }, 500);
-            }}
-            disabled={geoLoading}
-            className={cn(
-              "w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left",
-              form.delivery_latitude ? "border-primary bg-primary/5" : "border-dashed border-border hover:border-primary/50"
-            )}
-          >
-            {geoLoading ? (
-              <Loader2 className="w-5 h-5 text-primary animate-spin flex-shrink-0" />
-            ) : (
-              <Navigation className={cn("w-5 h-5 flex-shrink-0", form.delivery_latitude ? "text-primary" : "text-muted-foreground")} />
-            )}
-            <div>
-              <p className={cn("font-semibold text-sm", form.delivery_latitude ? "text-primary" : "text-foreground")}>
-                {geoLoading ? "Obtendo localização..." : form.delivery_latitude ? "Localização entrega obtida ✓" : "Usar minha localização atual"}
-              </p>
-              {form.delivery_latitude && <p className="text-xs text-muted-foreground mt-0.5">Localização de entrega confirmada</p>}
-            </div>
-          </button>
-
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs text-muted-foreground">ou digite o endereço</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <div className="space-y-3">
-            <div className="space-y-2">
-              <Label>CEP de entrega</Label>
-              <div className="relative">
-                <Input
-                  placeholder="00000-000"
-                  value={form.delivery_cep}
-                  onChange={e => set('delivery_cep', e.target.value)}
-                  onBlur={() => searchByCep(form.delivery_cep, true)}
-                  disabled={loadingCep}
-                  className="rounded-2xl"
-                />
-                {loadingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />}
-              </div>
-              {cepError && <p className="text-xs text-destructive">{cepError}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label>Rua de entrega</Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Nome da rua..."
-                  value={form.delivery_address}
-                  onChange={e => set('delivery_address', e.target.value)}
-                  className="pl-10 rounded-2xl"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Número</Label>
-                <Input placeholder="Nº" value={form.delivery_number} onChange={e => set('delivery_number', e.target.value)} className="rounded-2xl" />
-              </div>
-              <div className="space-y-2">
-                <Label>Bairro</Label>
-                <Input placeholder="Bairro" value={form.delivery_neighborhood} onChange={e => set('delivery_neighborhood', e.target.value)} className="rounded-2xl" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Cidade</Label>
-                <Input placeholder="Cidade" value={form.delivery_city} onChange={e => set('delivery_city', e.target.value)} className="rounded-2xl" />
-              </div>
-              <div className="space-y-2">
-                <Label>Estado</Label>
-                <Input placeholder="UF" value={form.delivery_state} onChange={e => set('delivery_state', e.target.value)} className="rounded-2xl" maxLength={2} />
-              </div>
-            </div>
-          </div>
-
-          {form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude && (
-            <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
-              <p className="text-sm font-semibold text-blue-900 mb-1">Distância calculada (ida e volta)</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {(calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2).toFixed(1)} km
-              </p>
-              <p className="text-xs text-blue-700 mt-1">do local de saída até entrega e retorno</p>
-            </div>
-          )}
-          {isTow && (!form.delivery_latitude || !form.latitude || !form.delivery_longitude || !form.longitude) && (
-            <div className="bg-orange-50 rounded-2xl p-4 border border-orange-200">
-              <p className="text-sm font-semibold text-orange-900 mb-1">⚠️ Distância não calculada</p>
-              <p className="text-xs text-orange-700">Informe o endereço de saída e entrega para calcular a cobrança do reboque</p>
-            </div>
-          )}
-          </div>
-          )}
 
     
 
@@ -1615,19 +1361,7 @@ export default function SolicitarServico() {
             <p className="text-sm text-muted-foreground">📍 {form.address}{form.number ? `, ${form.number}` : ''}{form.neighborhood ? ` - ${form.neighborhood}` : ''}{form.city ? `, ${form.city}` : ''}</p>
             {form.latitude && <p className="text-sm text-muted-foreground">📡 Localização GPS ativada</p>}
             {form.client_latitude && <p className="text-sm text-green-600 font-semibold">🟢 Localização em tempo real ativa</p>}
-            {isTow && form.delivery_address && (
-              <p className="text-sm text-muted-foreground">
-                📌 Entrega: {form.delivery_address}{form.delivery_number ? `, ${form.delivery_number}` : ''}{form.delivery_neighborhood ? ` - ${form.delivery_neighborhood}` : ''}{form.delivery_city ? `, ${form.delivery_city}` : ''}
-                {form.latitude && form.delivery_latitude && (
-                  <span className="block mt-1 font-semibold text-blue-600">📏 Distância: {calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude).toFixed(1)} km</span>
-                )}
-              </p>
-            )}
-            {isTow && towPrice && (
-              <p className="text-sm text-blue-600 font-bold">
-                💰 Estimado: R$ {towPrice.total.toFixed(2)} ({towVehicleType})
-              </p>
-            )}
+
             {form.problem_photos.length > 0 && <p className="text-sm text-muted-foreground">📷 {form.problem_photos.length} foto(s) anexada(s)</p>}
              {form.client_suggested_price && <p className="text-sm text-muted-foreground">💰 Sugestão de valor: R$ {Number(form.client_suggested_price).toFixed(2)}</p>}
              <p className="text-sm text-muted-foreground">
