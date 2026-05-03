@@ -16,25 +16,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'terms_content is required' }, { status: 400 });
     }
 
-    // Busca todos os clientes cadastrados
-    const allClients = await base44.asServiceRole.entities.Client.list();
+    // Busca todos os prestadores cadastrados
+    const allProviders = await base44.asServiceRole.entities.Provider.list();
     
-    if (allClients.length === 0) {
+    if (allProviders.length === 0) {
       return Response.json({ success: true, notified: 0 });
     }
 
-    // Busca emails dos clientes via User entity
-    const userEmails = new Set();
-    const allUsers = await base44.asServiceRole.entities.User.list();
-    
-    allUsers.forEach(user => {
-      if (user.email) userEmails.add(user.email);
-    });
-
-    // Monta lista de emails para notificação
-    const emailsToNotify = allClients
-      .filter(c => c.user_id && allUsers.find(u => u.id === c.user_id))
-      .map(c => allUsers.find(u => u.id === c.user_id)?.email)
+    // Monta lista de emails dos prestadores para notificação
+    const emailsToNotify = allProviders
+      .filter(p => p.email)
+      .map(p => p.email)
       .filter(Boolean);
 
     if (emailsToNotify.length === 0) {
@@ -69,7 +61,7 @@ Equipe Reparo Expresso`
     return Response.json({
       success: true,
       notified: successCount,
-      total_clients: allClients.length,
+      total_providers: allProviders.length,
       timestamp: new Date().toISOString()
     });
 
