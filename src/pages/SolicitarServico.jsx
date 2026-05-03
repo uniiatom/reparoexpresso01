@@ -295,7 +295,7 @@ export default function SolicitarServico() {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   };
 
-  const isTow = form.service_type === 'reboque';
+  const isTow = form.service_type.includes('reboque');
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
