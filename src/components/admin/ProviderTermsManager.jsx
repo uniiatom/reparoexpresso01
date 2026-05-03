@@ -130,10 +130,37 @@ TÉRMINO DO BENEFÍCIO:
 - Veículos que mantiverem plotagem após este prazo podem ser reportados, prejudicando reputação do prestador
 - A plataforma pode solicitar comprovante fotográfico de remoção da plotagem
 
-12. Seguro e Responsabilidade
+12. Exigência de Maior de Idade na Residência do Cliente
+
+REQUISITO OBRIGATÓRIO:
+O prestador NÃO PODE, SOB NENHUMA CIRCUNSTÂNCIA, entrar na residência ou local de trabalho do cliente se não houver um MAIOR DE IDADE (18 anos ou mais) presente para acompanhar os serviços.
+
+PROCEDIMENTO EM CASO DE NÃO CONFORMIDADE:
+- Caso o prestador chegue ao local de atendimento e encontre APENAS menores de idade presentes:
+  1. O prestador se recusa a executar o serviço
+  2. O prestador informa ao cliente via aplicativo que o serviço não pode ser realizado por falta de responsável
+  3. O prestador se retira imediatamente do local SEM EXECUTAR QUALQUER ATIVIDADE
+
+COBRANÇAS E PENALIDADES:
+- A plataforma COBRARÁ do cliente o valor total da VISITA/DESLOCAMENTO como ato falho do cliente
+- O cliente NÃO TERÁ DIREITO a retorno ou agendamento sem custos adicionais
+- O prestador receberá normalmente o valor de sua comissão pela visita realizada (deslocamento)
+- O cliente deverá reagendar o serviço com um responsável adulto presente
+
+EXCEÇÕES:
+- Não há exceções para esta regra
+- A presença de menores acompanhados apenas por outros menores NÃO atende ao requisito
+- Apenas maiores de idade legalmente responsáveis são aceitos
+
+RESPONSABILIDADE DO CLIENTE:
+- É exclusivamente responsabilidade do cliente garantir que um maior de idade esteja presente
+- A plataforma notifica o cliente desta exigência no momento da solicitação do serviço
+- O cliente concorda tacitamente com esta regra ao solicitar o serviço
+
+13. Seguro e Responsabilidade
 Você é responsável por manter seguro adequado para sua atividade. A plataforma não se responsabiliza por danos causados por negligência do prestador ou por uso indevido de equipamento.
 
-13. Modificação dos Termos
+14. Modificação dos Termos
 A plataforma pode modificar estes termos a qualquer momento. Modificações serão notificadas aos prestadores. O uso contínuo da plataforma após as modificações constitui aceitação dos novos termos.`;
 
   useEffect(() => {
