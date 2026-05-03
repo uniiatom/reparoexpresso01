@@ -82,13 +82,24 @@ export default function TowServiceQuestions({ answers, onChange }) {
             )}
 
             {q.key === 'easy_access' && answers.easy_access === false && (
-              <div className="bg-amber-50 rounded-xl p-3 border border-amber-200 space-y-2 mt-2">
-                <div className="flex gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-bold text-amber-700 text-xs">⚠️ Acesso difícil</p>
-                    <p className="text-xs text-amber-600"><strong>Taxa adicional</strong> se for necessário equipamento especial (correntes, polia, etc.)</p>
+              <div className="space-y-2 mt-2">
+                <div className="bg-amber-50 rounded-xl p-3 border border-amber-200 space-y-2">
+                  <div className="flex gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-amber-700 text-xs">⚠️ Acesso difícil ao veículo</p>
+                      <p className="text-xs text-amber-600"><strong>Se for necessário usar equipamento especial</strong> (correntes, polias, guinchos, etc.), será cobrada uma <strong>taxa adicional no local</strong> conforme a avaliação do técnico.</p>
+                    </div>
                   </div>
+                </div>
+                <div className="bg-blue-50 rounded-xl p-3 border border-blue-200">
+                  <label className="text-xs font-semibold text-blue-900">📝 Como está o carro?</label>
+                  <Textarea
+                    placeholder="Ex: Carro virado, em vala, amarrado em árvore, preso em mato, dentro de buraco, encostado em cerca, etc."
+                    value={answers.vehicle_condition || ''}
+                    onChange={(e) => handleAnswer('vehicle_condition', e.target.value)}
+                    className="min-h-[70px] rounded-lg text-xs mt-2"
+                  />
                 </div>
               </div>
             )}
