@@ -36,10 +36,11 @@ export default function TowPricing() {
         const config = towConfigs.find(c => c.note?.includes(`${vehicle.key}|`));
         data[vehicle.key] = {
           id: config?.id,
-          exit: config?.price_min || '',
-          perKm: config?.price_max || '',
+          exit: config?.price_min?.toString() || '',
+          perKm: config?.price_max?.toString() || '',
         };
       });
+      console.log('Dados carregados para edição:', data);
       setFormData(data);
     }
   }, [editing, towConfigs]);
