@@ -73,15 +73,21 @@ export default function RecurringServiceForm({ clientId, clientName, clientPhone
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
+      // Garante que start_date e end_date sejam strings de data válidas (YYYY-MM-DD)
+      const startDate = data.start_date ? new Date(data.start_date).toISOString().split('T')[0] : null;
+      const endDate = data.end_date ? new Date(data.end_date).toISOString().split('T')[0] : null;
+      
       return base44.entities.RecurringServiceSchedule.create({
         client_id: clientId,
         client_name: clientName,
         client_phone: clientPhone,
         ...data,
+        start_date: startDate,
+        end_date: endDate,
         client_suggested_price: data.client_suggested_price ? Number(data.client_suggested_price) : null,
         latitude: data.latitude ? Number(data.latitude) : null,
         longitude: data.longitude ? Number(data.longitude) : null,
-        next_service_date: data.start_date
+        next_service_date: startDate
       });
     },
     onSuccess: () => {
