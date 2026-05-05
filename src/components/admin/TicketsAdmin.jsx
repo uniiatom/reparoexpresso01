@@ -4,15 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, Send, ChevronDown, ChevronUp, User } from 'lucide-react';
+import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, Send, ChevronDown, ChevronUp, User, Settings } from 'lucide-react';
 import { toast } from "sonner";
-
-// Atendentes cadastrados (login/senha)
-const ATTENDANTS = [
-  { login: 'atendente1', password: 'reparo@2024', name: 'Ana Souza' },
-  { login: 'atendente2', password: 'reparo@2024', name: 'Carlos Lima' },
-  { login: 'supervisor', password: 'super@2024', name: 'Supervisora Maria' },
-];
+import AttendantsManager, { loadAttendants } from './AttendantsManager';
 
 const TICKET_TYPES = {
   reclamacao: { label: 'Reclamação', icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50 border-red-200' },
@@ -40,7 +34,7 @@ function LoginPanel({ onLogin }) {
   const [passwordInput, setPasswordInput] = useState('');
 
   const handleLogin = () => {
-    const attendant = ATTENDANTS.find(a => a.login === loginInput && a.password === passwordInput);
+    const attendant = loadAttendants().find(a => a.login === loginInput && a.password === passwordInput);
     if (attendant) {
       onLogin(attendant);
       toast.success(`Bem-vindo(a), ${attendant.name}!`);
@@ -226,6 +220,7 @@ export default function TicketsAdmin() {
   const [attendant, setAttendant] = useState(null);
   const [filterStatus, setFilterStatus] = useState('todos');
   const [filterType, setFilterType] = useState('todos');
+  const [showManage, setShowManage] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: tickets = [], refetch } = useQuery({
@@ -248,7 +243,19 @@ export default function TicketsAdmin() {
   };
 
   if (!attendant) {
-    return <LoginPanel onLogin={setAttendant} />;
+    return (
+      <div>
+        <div className="flex justify-end mb-3">
+          <Button variant="outline" size="sm" className="gap-2 rounded-xl text-xs" onClick={() => setShowManage(!showManage)}>
+            <Settings className="w-3.5 h-3.5" /> {showManage ? 'Voltar ao login' : 'Gerenciar atendentes'}
+          </Button>
+        </div>
+        {showManage
+          ? <AttendantsManager onClose={() => setShowManage(false)} />
+          : <LoginPanel onLogin={setAttendant} />
+        }
+      </div>
+    );
   }
 
   return (
