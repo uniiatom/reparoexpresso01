@@ -32,6 +32,8 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
     queryKey: ['my-tickets', clientId],
     queryFn: () => base44.entities.Ticket.filter({ client_id: clientId }, '-created_date'),
     enabled: !!clientId,
+    refetchInterval: 20000,
+    refetchOnWindowFocus: true,
   });
 
   // Busca últimos 10 serviços com prestador (qualquer status)
@@ -122,6 +124,7 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
   };
 
   const openTickets = tickets.filter(t => t.status !== 'fechado' && t.status !== 'resolvido');
+  const ticketsWithResponse = tickets.filter(t => t.response && !showHistory);
 
   return (
     <div className="mb-8">
@@ -191,6 +194,38 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
               </div>
             )}
           </div>
+
+          {/* Respostas recebidas em destaque */}
+          {ticketsWithResponse.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-primary flex items-center gap-1">
+                💬 Você recebeu resposta do suporte:
+              </p>
+              {ticketsWithResponse.map(ticket => {
+                const typeConfig = TICKET_TYPES.find(t => t.value === ticket.type);
+                const statusConfig = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.aberto;
+                const Icon = typeConfig?.icon || MessageSquare;
+                return (
+                  <Card key={ticket.id} className="border-primary/30 bg-primary/5">
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Icon className={`w-3.5 h-3.5 ${typeConfig?.color.split(' ')[0]}`} />
+                        <span className="font-semibold text-sm text-foreground flex-1 truncate">{ticket.subject}</span>
+                        <Badge className={`text-xs border-0 ${statusConfig.color}`}>{statusConfig.label}</Badge>
+                      </div>
+                      <div className="bg-white border border-primary/20 rounded-xl p-3">
+                        <p className="text-xs font-semibold text-primary mb-1">✅ Resposta do suporte:</p>
+                        <p className="text-sm text-foreground">{ticket.response}</p>
+                        {ticket.attendant_name && (
+                          <p className="text-xs text-muted-foreground mt-1">— {ticket.attendant_name}</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
 
           {tickets.length > 0 && (
             <button
