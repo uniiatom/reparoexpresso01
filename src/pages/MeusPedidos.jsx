@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, MapPin, Calendar, DollarSign, Star, Clock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChevronRight, MapPin, Calendar, DollarSign, Star, Clock, CheckCircle2, AlertCircle, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from 'react-router-dom';
 
@@ -70,126 +71,153 @@ export default function MeusPedidos() {
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground mb-2">Meus Pedidos</h1>
-        <p className="text-muted-foreground">Acompanhe seus serviços solicitados</p>
+        <p className="text-muted-foreground text-sm">Solicite, acompanhe e gerencie seus serviços</p>
       </div>
 
-      {/* Serviços Ativos */}
-      {activeRequests.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Serviços Ativos</h2>
-          <div className="space-y-3">
-            {activeRequests.map(req => {
-              const statusConfig = STATUS_CONFIG[req.status];
-              const StatusIcon = statusConfig.icon;
-              return (
-                <Card key={req.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <CardContent className="p-4">
-                    <button
-                      onClick={() => navigate(`/acompanhar/${req.id}`)}
-                      className="w-full text-left space-y-3"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-foreground">{SERVICE_LABELS[req.service_type] || req.service_type}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{req.description?.substring(0, 60)}...</p>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
-                      </div>
+      <Tabs defaultValue="new" className="w-full">
+        <TabsList className="w-full grid grid-cols-3 mb-6">
+          <TabsTrigger value="new">Novo Serviço</TabsTrigger>
+          <TabsTrigger value="active">
+            Ativos {activeRequests.length > 0 && <span className="ml-1 text-xs bg-primary text-primary-foreground rounded-full px-2">({activeRequests.length})</span>}
+          </TabsTrigger>
+          <TabsTrigger value="history">
+            Histórico {completedRequests.length > 0 && <span className="ml-1 text-xs bg-muted text-muted-foreground rounded-full px-2">({completedRequests.length})</span>}
+          </TabsTrigger>
+        </TabsList>
 
-                      <div className="flex items-center justify-between">
-                        <Badge className={cn("text-xs border-0", statusConfig.color)}>
-                          <StatusIcon className="w-3 h-3 mr-1" />
-                          {statusConfig.label}
-                        </Badge>
-                        {req.final_price && (
-                          <p className="font-semibold text-primary">R$ {req.final_price.toFixed(2)}</p>
-                        )}
-                      </div>
-
-                      <div className="text-xs text-muted-foreground flex items-center gap-3">
-                        {req.address && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" /> {req.city || req.address}
-                          </span>
-                        )}
-                        {req.scheduled_date && (
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" /> {req.scheduled_date}
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  </CardContent>
-                </Card>
-              );
-            })}
+        {/* Tab: Novo Serviço */}
+        <TabsContent value="new" className="space-y-4">
+          <div className="bg-card rounded-lg border border-border p-8 text-center space-y-4">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <Plus className="w-6 h-6 text-primary" />
+            </div>
+            <h3 className="font-semibold text-foreground">Solicitar um Novo Serviço</h3>
+            <p className="text-sm text-muted-foreground">Clique abaixo para solicitar um serviço em sua casa</p>
+            <Button 
+              onClick={() => navigate('/solicitar')}
+              className="w-full mt-4"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Solicitar Serviço
+            </Button>
           </div>
-        </div>
-      )}
+        </TabsContent>
 
-      {/* Histórico */}
-      {completedRequests.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Histórico</h2>
-          <div className="space-y-3">
-            {completedRequests.map(req => {
-              const statusConfig = STATUS_CONFIG[req.status];
-              const StatusIcon = statusConfig.icon;
-              return (
-                <Card key={req.id} className="overflow-hidden hover:shadow-lg transition-shadow opacity-75">
-                  <CardContent className="p-4">
-                    <button
-                      onClick={() => navigate(`/acompanhar/${req.id}`)}
-                      className="w-full text-left space-y-3"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-foreground">{SERVICE_LABELS[req.service_type] || req.service_type}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{req.description?.substring(0, 60)}...</p>
+        {/* Tab: Serviços Ativos */}
+        <TabsContent value="active" className="space-y-3">
+          {activeRequests.length > 0 ? (
+            <div className="space-y-3">
+              {activeRequests.map(req => {
+                const statusConfig = STATUS_CONFIG[req.status];
+                const StatusIcon = statusConfig.icon;
+                return (
+                  <Card key={req.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <CardContent className="p-4">
+                      <button
+                        onClick={() => navigate(`/acompanhar/${req.id}`)}
+                        className="w-full text-left space-y-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-foreground">{SERVICE_LABELS[req.service_type] || req.service_type}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{req.description?.substring(0, 60)}...</p>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
-                      </div>
 
-                      <div className="flex items-center justify-between">
-                        <Badge className={cn("text-xs border-0", statusConfig.color)}>
-                          <StatusIcon className="w-3 h-3 mr-1" />
-                          {statusConfig.label}
-                        </Badge>
-                        {req.final_price && (
-                          <p className="font-semibold text-primary">R$ {req.final_price.toFixed(2)}</p>
-                        )}
-                      </div>
-
-                      {req.rating_client && (
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="flex items-center gap-1 text-yellow-600">
-                            <Star className="w-3 h-3 fill-current" />
-                            {req.rating_client.toFixed(1)}
-                          </span>
-                          {req.rating_comment && (
-                            <span className="text-muted-foreground">"{req.rating_comment.substring(0, 30)}..."</span>
+                        <div className="flex items-center justify-between">
+                          <Badge className={cn("text-xs border-0", statusConfig.color)}>
+                            <StatusIcon className="w-3 h-3 mr-1" />
+                            {statusConfig.label}
+                          </Badge>
+                          {req.final_price && (
+                            <p className="font-semibold text-primary">R$ {req.final_price.toFixed(2)}</p>
                           )}
                         </div>
-                      )}
-                    </button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
-      {requests.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground mb-4">Você ainda não tem pedidos</p>
-          <Button onClick={() => navigate('/solicitar')}>
-            Solicitar um Serviço
-          </Button>
-        </div>
-      )}
+                        <div className="text-xs text-muted-foreground flex items-center gap-3">
+                          {req.address && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" /> {req.city || req.address}
+                            </span>
+                          )}
+                          {req.scheduled_date && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" /> {req.scheduled_date}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground text-sm">Nenhum serviço em andamento</p>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Tab: Histórico (Serviços Executados) */}
+        <TabsContent value="history" className="space-y-3">
+          {completedRequests.length > 0 ? (
+            <div className="space-y-3">
+              {completedRequests.map(req => {
+                const statusConfig = STATUS_CONFIG[req.status];
+                const StatusIcon = statusConfig.icon;
+                return (
+                  <Card key={req.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <CardContent className="p-4">
+                      <button
+                        onClick={() => navigate(`/acompanhar/${req.id}`)}
+                        className="w-full text-left space-y-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-foreground">{SERVICE_LABELS[req.service_type] || req.service_type}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{req.description?.substring(0, 60)}...</p>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Badge className={cn("text-xs border-0", statusConfig.color)}>
+                            <StatusIcon className="w-3 h-3 mr-1" />
+                            {statusConfig.label}
+                          </Badge>
+                          {req.final_price && (
+                            <p className="font-semibold text-primary">R$ {req.final_price.toFixed(2)}</p>
+                          )}
+                        </div>
+
+                        {req.rating_client && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="flex items-center gap-1 text-yellow-600">
+                              <Star className="w-3 h-3 fill-current" />
+                              {req.rating_client.toFixed(1)}
+                            </span>
+                            {req.rating_comment && (
+                              <span className="text-muted-foreground">"{req.rating_comment.substring(0, 30)}..."</span>
+                            )}
+                          </div>
+                        )}
+                      </button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground text-sm">Nenhum serviço finalizado</p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
