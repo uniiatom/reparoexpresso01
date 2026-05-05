@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
@@ -285,11 +285,17 @@ export default function TicketsAdmin() {
   // Sistema de notificações push para atendentes
   useAttendantPush(attendant);
 
+  // Refetch imediato ao logar
+  useEffect(() => {
+    if (attendant) refetch();
+  }, [attendant]);
+
   const { data: tickets = [], refetch } = useQuery({
     queryKey: ['admin-tickets'],
-    queryFn: () => base44.entities.Ticket.list('-created_date', 100),
+    queryFn: () => base44.entities.Ticket.list('-created_date', 200),
     enabled: !!attendant,
-    refetchInterval: 30000,
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
   });
 
   const filtered = tickets.filter(t => {
@@ -303,6 +309,9 @@ export default function TicketsAdmin() {
     em_atendimento: tickets.filter(t => t.status === 'em_atendimento').length,
     resolvido: tickets.filter(t => t.status === 'resolvido').length,
   };
+
+  // Tickets abertos sem atendente (novos chegando)
+  const unattendedCount = tickets.filter(t => t.status === 'aberto' && !t.attendant_login).length;
 
   if (!attendant) {
     return (
@@ -389,6 +398,15 @@ export default function TicketsAdmin() {
       )}
 
       {activeTab === 'tickets' && <>
+
+      {/* Alerta de tickets sem atendente */}
+      {unattendedCount > 0 && (
+        <div className="bg-yellow-50 border border-yellow-300 rounded-xl px-4 py-2 flex items-center gap-2 text-sm text-yellow-800 font-semibold animate-pulse">
+          <span>🔔</span>
+          <span>{unattendedCount} ticket(s) novo(s) sem atendente!</span>
+          <button onClick={() => refetch()} className="ml-auto text-xs underline">Atualizar</button>
+        </div>
+      )}
 
       {/* Resumo */}
       <div className="grid grid-cols-3 gap-2">

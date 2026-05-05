@@ -36,13 +36,21 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
 
   // Busca últimos 10 serviços com prestador (qualquer status)
   const { data: recentServices = [] } = useQuery({
-    queryKey: ['client-recent-providers', clientId],
+    queryKey: ['client-recent-providers', clientId, clientEmail],
     queryFn: async () => {
-      const all = await base44.entities.ServiceRequest.filter(
-        { client_id: clientId },
-        '-created_date',
-        100
-      );
+      // Busca por email (created_by) que é o campo mais confiável
+      const byEmail = clientEmail
+        ? await base44.entities.ServiceRequest.filter({ created_by: clientEmail }, '-created_date', 200)
+        : [];
+      // Também busca por client_id como fallback
+      const byClientId = clientId
+        ? await base44.entities.ServiceRequest.filter({ client_id: clientId }, '-created_date', 200)
+        : [];
+      // Merge e deduplica por id
+      const allMap = {};
+      [...byEmail, ...byClientId].forEach(s => { allMap[s.id] = s; });
+      const all = Object.values(allMap).sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+
       // Deduplica por provider_id, mantém o mais recente
       const seen = new Set();
       const unique = [];
@@ -53,21 +61,23 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
           if (unique.length >= 10) break;
         }
       }
-      // Busca fotos dos prestadores individualmente via list e filtragem local
       if (unique.length === 0) return [];
+
+      // Busca fotos dos prestadores
       const allProviders = await base44.entities.Provider.list();
       const provMap = {};
       allProviders.forEach(p => { provMap[p.id] = p; });
+
       return unique.map(s => ({
         service_request_id: s.id,
         provider_id: s.provider_id,
-        provider_name: s.provider_name || 'Prestador',
+        provider_name: s.provider_name || provMap[s.provider_id]?.name || 'Prestador',
         provider_photo: provMap[s.provider_id]?.photo_url || null,
         service_type: s.service_type,
         created_date: s.created_date,
       }));
     },
-    enabled: !!clientId,
+    enabled: !!(clientId || clientEmail),
   });
 
   const createTicket = useMutation({
