@@ -49,20 +49,30 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
 
   const submitCompletion = useMutation({
     mutationFn: async () => {
+      if (!selectedOption) {
+        throw new Error('Selecione uma opção de conclusão');
+      }
+
       const completionData = {
         service_request_id: service.id,
         completion_type: selectedOption.id,
         reason: reason.trim() || null,
       };
 
-      return base44.functions.invoke('completeServiceRequest', completionData);
+      console.log('Enviando conclusão:', completionData);
+
+      const response = await base44.functions.invoke('completeServiceRequest', completionData);
+      console.log('Resposta:', response);
+      return response;
     },
     onSuccess: () => {
+      console.log('✓ Serviço concluído com sucesso');
       toast.success('Serviço atualizado com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['acceptedServices'] });
       if (onSuccess) onSuccess();
     },
     onError: (error) => {
+      console.error('Erro ao completar:', error);
       toast.error(error.message || 'Erro ao completar serviço');
     },
   });
@@ -72,6 +82,7 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
     if (option.requiresReason) {
       setStep('reason');
     } else {
+      // Sucesso direto sem justificativa
       submitCompletion.mutate();
     }
   };
@@ -86,17 +97,13 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-background rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden"
-      >
+      <div className="bg-background rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="border-b border-border p-6 flex items-center justify-between bg-muted/30">
           <div>
             <h2 className="text-xl font-bold text-foreground">Concluir Serviço</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {service.service_number} - {service.service_type}
+              {service?.service_number || 'Serviço'} - {service?.service_type}
             </p>
           </div>
           <button
@@ -107,7 +114,7 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-6 max-h-[70vh] overflow-y-auto">
           {step === 'select' ? (
             // Tela de seleção
             <div className="space-y-3">
@@ -116,6 +123,7 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
                 return (
                   <button
                     key={option.id}
+                    type="button"
                     onClick={() => handleSelectOption(option)}
                     className={`w-full p-4 rounded-xl border-2 transition-all text-left ${option.color}`}
                   >
@@ -169,13 +177,18 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
 
               <div className="flex gap-3">
                 <Button
+                  type="button"
                   variant="outline"
-                  onClick={() => setStep('select')}
+                  onClick={() => {
+                    setStep('select');
+                    setReason('');
+                  }}
                   className="flex-1 rounded-xl h-11"
                 >
                   Voltar
                 </Button>
                 <Button
+                  type="button"
                   onClick={handleSubmitReason}
                   disabled={submitCompletion.isPending || !reason.trim()}
                   className="flex-1 rounded-xl h-11 bg-primary text-primary-foreground hover:bg-primary/90"
@@ -193,7 +206,7 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
