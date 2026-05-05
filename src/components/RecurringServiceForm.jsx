@@ -115,7 +115,7 @@ export default function RecurringServiceForm({ clientId, clientName, clientPhone
         </div>
 
         {/* Conteúdo com scroll */}
-        <div className="overflow-y-auto flex-1 p-6 pt-0">
+        <div className="overflow-y-auto flex-1 p-6 pt-0 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/50">
           <div className="space-y-4">
             {/* Tipo de serviço */}
             <div className="space-y-2">
