@@ -193,12 +193,12 @@ export default function CouponsAdmin() {
 
   const { data: coupons = [] } = useQuery({
     queryKey: ['coupons'],
-    queryFn: () => base44.asServiceRole.entities.Coupon.list('-created_date', 100),
+    queryFn: () => base44.entities.Coupon.list('-created_date', 100),
   });
 
   const { data: providers = [] } = useQuery({
     queryKey: ['all-providers-coupons'],
-    queryFn: () => base44.asServiceRole.entities.Provider.list(),
+    queryFn: () => base44.entities.Provider.list(),
   });
 
   const createCoupon = useMutation({
@@ -215,7 +215,7 @@ export default function CouponsAdmin() {
   });
 
   const updateCoupon = useMutation({
-    mutationFn: ({ id, data }) => base44.asServiceRole.entities.Coupon.update(id, data),
+    mutationFn: ({ id, data }) => base44.entities.Coupon.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coupons'] });
       toast.success('Cupom atualizado');
@@ -224,7 +224,7 @@ export default function CouponsAdmin() {
   });
 
   const deleteCoupon = useMutation({
-    mutationFn: (id) => base44.asServiceRole.entities.Coupon.delete(id),
+    mutationFn: (id) => base44.entities.Coupon.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coupons'] });
       toast.success('Cupom removido');
