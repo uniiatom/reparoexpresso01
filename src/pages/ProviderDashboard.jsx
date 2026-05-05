@@ -5,17 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, DollarSign, CheckCircle2, Clock, MapPin, Star, TrendingUp, AlertCircle } from "lucide-react";
+import { Calendar, DollarSign, CheckCircle2, Clock, MapPin, Star, TrendingUp, AlertCircle, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import ProviderTicketForm from '@/components/ProviderTicketForm';
 import ProviderEarningsWithdrawal from '@/components/ProviderEarningsWithdrawal';
+import ServiceRefusalForm from '@/components/ServiceRefusalForm';
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [provider, setProvider] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [refusalService, setRefusalService] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -105,6 +107,34 @@ export default function ProviderDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Modal de Recusa */}
+      {refusalService && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-background rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+          >
+            <div className="sticky top-0 bg-background border-b border-border p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-foreground">Registrar Recusa Técnica</h2>
+              <button
+                onClick={() => setRefusalService(null)}
+                className="p-1 hover:bg-accent rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <ServiceRefusalForm
+                serviceRequest={refusalService}
+                onSuccess={() => setRefusalService(null)}
+              />
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto px-4 py-6">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
@@ -267,32 +297,42 @@ export default function ProviderDashboard() {
                     <Card className="bg-card border-border hover:shadow-lg transition-all">
                       <CardContent className="pt-6">
                         <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-foreground">{service.service_type}</h3>
-                              <Badge className={statusColors[service.status]}>
-                                {statusLabels[service.status]}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3" /> {service.city}, {service.state}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" /> {new Date(service.created_date).toLocaleDateString('pt-BR')}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            {service.final_price && (
-                              <div>
-                                <p className="text-xs text-muted-foreground">Valor final</p>
-                                <p className="text-lg font-bold text-primary">R$ {service.final_price.toFixed(2)}</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                           <div className="flex-1">
+                             <div className="flex items-center gap-2 mb-2">
+                               <h3 className="font-semibold text-foreground">{service.service_type}</h3>
+                               <Badge className={statusColors[service.status]}>
+                                 {statusLabels[service.status]}
+                               </Badge>
+                             </div>
+                             <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
+                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                               <span className="flex items-center gap-1">
+                                 <MapPin className="w-3 h-3" /> {service.city}, {service.state}
+                               </span>
+                               <span className="flex items-center gap-1">
+                                 <Calendar className="w-3 h-3" /> {new Date(service.created_date).toLocaleDateString('pt-BR')}
+                               </span>
+                             </div>
+                           </div>
+                           <div className="text-right space-y-2">
+                             {service.final_price && (
+                               <div>
+                                 <p className="text-xs text-muted-foreground">Valor final</p>
+                                 <p className="text-lg font-bold text-primary">R$ {service.final_price.toFixed(2)}</p>
+                               </div>
+                             )}
+                             {(service.status === 'aceito' || service.status === 'a_caminho') && (
+                               <Button 
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={() => setRefusalService(service)}
+                                 className="w-full h-8 text-xs rounded-lg border-red-200 text-red-600 hover:bg-red-50"
+                               >
+                                 Recusar Serviço
+                               </Button>
+                             )}
+                           </div>
+                         </div>
                       </CardContent>
                     </Card>
                   </motion.div>
