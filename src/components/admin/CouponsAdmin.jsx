@@ -76,9 +76,9 @@ function CouponForm({ coupon, providers, onSubmit, onCancel }) {
               </label>
               <input
                 type="number"
-                value={form.discount_value}
-                onChange={(e) => setForm({ ...form, discount_value: parseFloat(e.target.value) || 0 })}
-                min="0"
+                value={form.discount_value || ''}
+                onChange={(e) => setForm({ ...form, discount_value: e.target.value ? parseFloat(e.target.value) : 0 })}
+                min="0.1"
                 step={form.discount_type === 'percentage' ? '0.1' : '0.01'}
                 className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
