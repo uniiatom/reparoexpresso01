@@ -64,6 +64,15 @@ Deno.serve(async (req) => {
       is_used: false
     });
 
+    // Incrementa uso do cupom se código foi fornecido
+    if (couponCode) {
+      try {
+        await base44.asServiceRole.functions.invoke('incrementCouponUsage', { couponCode });
+      } catch (err) {
+        console.error(`Falha ao incrementar cupom ${couponCode}:`, err.message);
+      }
+    }
+
     console.log(`✓ Bônus de R$ ${bonusAmount.toFixed(2)} criado para ${user.full_name} (será creditado automaticamente)`);
 
     return Response.json({
