@@ -252,6 +252,16 @@ export default function RecurringServiceForm({ clientId, clientName, clientPhone
               />
             </div>
 
+            {/* Preview da próxima data */}
+            {form.start_date && form.recurrence_pattern && (
+              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200 text-sm">
+                <p className="text-blue-900 font-medium">📅 Próximo serviço</p>
+                <p className="text-blue-700 mt-1">
+                  {new Date(form.start_date).toLocaleDateString('pt-BR')}
+                </p>
+              </div>
+            )}
+
             {/* Valor sugerido */}
             <div className="space-y-2">
               <Label>Valor sugerido (opcional)</Label>
