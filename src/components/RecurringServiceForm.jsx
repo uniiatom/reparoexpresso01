@@ -99,6 +99,7 @@ export default function RecurringServiceForm({ clientId, clientName, clientPhone
   const canSubmit = () => {
     return form.service_type && 
            form.description && 
+           form.cep &&
            form.address && 
            form.city && 
            form.state &&
