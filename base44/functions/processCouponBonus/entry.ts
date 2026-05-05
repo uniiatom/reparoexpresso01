@@ -15,11 +15,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Dados incompletos' }, { status: 400 });
     }
 
-    // Verifica se houve desconto excedente
-    const discountAmount = originalPrice - finalAmount;
-    const excessAmount = Math.max(0, discountAmount - originalPrice);
+    // Calcula desconto e bônus excedente (cupom vale mais que o serviço)
+    const totalDiscount = originalPrice - finalAmount;
 
-    if (excessAmount <= 0) {
+    // Se desconto é maior que o preço original, gera bônus para o cliente
+    const bonusAmount = totalDiscount > originalPrice ? totalDiscount - originalPrice : 0;
+
+    if (bonusAmount <= 0) {
+      console.log(`Sem bônus excedente: desconto R$ ${totalDiscount.toFixed(2)}, preço original R$ ${originalPrice.toFixed(2)}`);
       return Response.json({ 
         success: true, 
         bonusGenerated: false,
@@ -48,25 +51,27 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Cria bônus
+    // Cria bônus (dispara automação creditBonusToWallet)
     const bonus = await base44.asServiceRole.entities.WalletBonus.create({
       wallet_id: wallet.id,
       owner_id: user.id,
       owner_name: user.full_name,
-      amount: excessAmount,
+      owner_email: user.email,
+      amount: bonusAmount,
       reason: 'coupon_excess',
       related_coupon_code: couponCode || null,
-      related_service_request_id: serviceRequestId
+      related_service_request_id: serviceRequestId,
+      is_used: false
     });
 
-    console.log(`Bônus criado: R$ ${excessAmount.toFixed(2)} para cliente ${user.full_name} (ID: ${user.id})`);
+    console.log(`✓ Bônus de R$ ${bonusAmount.toFixed(2)} criado para ${user.full_name} (será creditado automaticamente)`);
 
     return Response.json({
       success: true,
       bonusGenerated: true,
-      bonusAmount: excessAmount,
+      bonusAmount: bonusAmount,
       bonusId: bonus.id,
-      message: `Bônus de R$ ${excessAmount.toFixed(2)} adicionado à sua carteira!`
+      message: `Bônus de R$ ${bonusAmount.toFixed(2)} será adicionado à sua carteira!`
     });
 
   } catch (error) {
