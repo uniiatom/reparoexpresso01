@@ -202,7 +202,7 @@ export default function CouponsAdmin() {
   });
 
   const createCoupon = useMutation({
-    mutationFn: (data) => base44.asServiceRole.entities.Coupon.create(data),
+    mutationFn: (data) => base44.entities.Coupon.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coupons'] });
       toast.success('Cupom criado com sucesso');
