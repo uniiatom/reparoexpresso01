@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, Send, ChevronDown, ChevronUp, User, Settings } from 'lucide-react';
 import { toast } from "sonner";
 import AttendantsManager, { loadAttendants } from './AttendantsManager';
+import { logAdminAction } from '@/lib/adminLog';
 
 const TICKET_TYPES = {
   reclamacao: { label: 'Reclamação', icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50 border-red-200' },
@@ -95,10 +96,35 @@ function TicketCard({ ticket, attendant, onUpdate }) {
 
   const updateTicket = useMutation({
     mutationFn: (data) => base44.entities.Ticket.update(ticket.id, data),
-    onSuccess: () => {
+    onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-tickets'] });
       toast.success('Ticket atualizado com sucesso');
       onUpdate();
+      // Log de status alterado
+      if (data.status && data.status !== ticket.status) {
+        logAdminAction({
+          action: 'ticket_status_changed',
+          actorName: attendant.name,
+          actorEmail: attendant.login,
+          entityType: 'Ticket',
+          entityId: ticket.id,
+          entityLabel: ticket.subject,
+          oldValue: ticket.status,
+          newValue: data.status,
+        });
+      }
+      // Log de resposta enviada
+      if (data.response && !ticket.responded_at) {
+        logAdminAction({
+          action: 'ticket_responded',
+          actorName: attendant.name,
+          actorEmail: attendant.login,
+          entityType: 'Ticket',
+          entityId: ticket.id,
+          entityLabel: ticket.subject,
+          details: data.response.substring(0, 120),
+        });
+      }
     },
   });
 

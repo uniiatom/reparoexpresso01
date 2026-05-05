@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import {
   CheckCircle2, XCircle, Clock, Wallet, ArrowUpRight,
   ArrowDownLeft, ChevronDown, ChevronUp, RefreshCw, DollarSign, User
 } from "lucide-react";
+import { logAdminAction } from '@/lib/adminLog';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -208,6 +209,8 @@ export default function ReembolsosRepasses() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('repasses');
   const [processingId, setProcessingId] = useState(null);
+  const [adminUser, setAdminUser] = useState(null);
+  React.useEffect(() => { base44.auth.me().then(u => setAdminUser(u)).catch(() => {}); }, []);
 
   // Serviços concluídos sem repasse processado
   const { data: pendingRepasses = [], isLoading: loadingRepasses } = useQuery({
@@ -252,11 +255,11 @@ export default function ReembolsosRepasses() {
   });
   const historicWithdrawals = completedWithdrawals.filter(t => t.status !== 'pending');
 
-  // APROVAR REPASSE: chama a função backend que já existe
+  // APROVAR REPASSE
   const approveRepasse = useMutation({
     mutationFn: async (serviceRequestId) => {
       const res = await base44.functions.invoke('processProviderRepayment', { serviceRequestId });
-      return res.data;
+      return { ...res.data, serviceRequestId };
     },
     onMutate: (id) => setProcessingId(id),
     onSettled: () => setProcessingId(null),
@@ -264,11 +267,21 @@ export default function ReembolsosRepasses() {
       toast.success(`Repasse de R$ ${data.provider_amount?.toFixed(2)} aprovado para o prestador!`);
       queryClient.invalidateQueries({ queryKey: ['pending-repasses'] });
       queryClient.invalidateQueries({ queryKey: ['processed-repasses'] });
+      const req = pendingRepasses.find(r => r.id === data.serviceRequestId);
+      logAdminAction({
+        action: 'repasse_approved',
+        actorName: adminUser?.full_name || 'Admin',
+        actorEmail: adminUser?.email || '',
+        entityType: 'ServiceRequest',
+        entityId: data.serviceRequestId,
+        entityLabel: req ? `${req.provider_name} - R$ ${data.provider_amount?.toFixed(2)}` : data.serviceRequestId,
+        newValue: `R$ ${data.provider_amount?.toFixed(2)}`,
+      });
     },
     onError: (err) => toast.error('Erro ao processar repasse: ' + err.message),
   });
 
-  // REJEITAR REPASSE: marca como cancelado manualmente
+  // REJEITAR REPASSE
   const rejectRepasse = useMutation({
     mutationFn: (serviceRequestId) =>
       base44.entities.ServiceRequest.update(serviceRequestId, {
@@ -277,31 +290,49 @@ export default function ReembolsosRepasses() {
       }),
     onMutate: (id) => setProcessingId(id),
     onSettled: () => setProcessingId(null),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       toast.success('Repasse rejeitado.');
       queryClient.invalidateQueries({ queryKey: ['pending-repasses'] });
+      const req = pendingRepasses.find(r => r.id === id);
+      logAdminAction({
+        action: 'repasse_rejected',
+        actorName: adminUser?.full_name || 'Admin',
+        actorEmail: adminUser?.email || '',
+        entityType: 'ServiceRequest',
+        entityId: id,
+        entityLabel: req ? `${req.provider_name} - R$ ${(req.final_price || 0).toFixed(2)}` : id,
+      });
     },
     onError: (err) => toast.error('Erro: ' + err.message),
   });
 
-  // CONFIRMAR SAQUE: marca transação como completed
+  // CONFIRMAR SAQUE
   const confirmWithdrawal = useMutation({
     mutationFn: (transactionId) =>
       base44.entities.WalletTransaction.update(transactionId, { status: 'completed' }),
     onMutate: (id) => setProcessingId(id),
     onSettled: () => setProcessingId(null),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       toast.success('Saque confirmado como pago!');
       queryClient.invalidateQueries({ queryKey: ['pending-withdrawals'] });
       queryClient.invalidateQueries({ queryKey: ['completed-withdrawals'] });
+      const tx = pendingWithdrawals.find(t => t.id === id);
+      logAdminAction({
+        action: 'withdrawal_confirmed',
+        actorName: adminUser?.full_name || 'Admin',
+        actorEmail: adminUser?.email || '',
+        entityType: 'WalletTransaction',
+        entityId: id,
+        entityLabel: tx ? `R$ ${(tx.amount || 0).toFixed(2)} - ${tx.pix_key || ''}` : id,
+        newValue: 'pago',
+      });
     },
     onError: (err) => toast.error('Erro: ' + err.message),
   });
 
-  // ESTORNAR SAQUE: devolve o saldo para a carteira
+  // ESTORNAR SAQUE
   const revertWithdrawal = useMutation({
     mutationFn: async ({ transactionId, walletId, amount }) => {
-      // Busca saldo atual
       const walls = await base44.entities.Wallet.filter({ id: walletId });
       const w = walls[0];
       if (!w) throw new Error('Carteira não encontrada');
@@ -311,14 +342,24 @@ export default function ReembolsosRepasses() {
         total_withdrawn: Math.max(0, (w.total_withdrawn || 0) - amount),
       });
       await base44.entities.WalletTransaction.update(transactionId, { status: 'cancelled' });
+      return { transactionId, amount };
     },
     onMutate: ({ transactionId }) => setProcessingId(transactionId),
     onSettled: () => setProcessingId(null),
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Saque estornado e saldo devolvido!');
       queryClient.invalidateQueries({ queryKey: ['pending-withdrawals'] });
       queryClient.invalidateQueries({ queryKey: ['completed-withdrawals'] });
       queryClient.invalidateQueries({ queryKey: ['wallets-for-withdrawals'] });
+      logAdminAction({
+        action: 'withdrawal_reverted',
+        actorName: adminUser?.full_name || 'Admin',
+        actorEmail: adminUser?.email || '',
+        entityType: 'WalletTransaction',
+        entityId: data.transactionId,
+        entityLabel: `R$ ${(data.amount || 0).toFixed(2)} estornado`,
+        newValue: 'estornado',
+      });
     },
     onError: (err) => toast.error('Erro ao estornar: ' + err.message),
   });

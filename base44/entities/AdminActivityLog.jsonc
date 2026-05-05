@@ -1,0 +1,47 @@
+{
+  "name": "AdminActivityLog",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "description": "Tipo de a\u00e7\u00e3o realizada (ex: ticket_status_changed, provider_approved)"
+    },
+    "actor_name": {
+      "type": "string",
+      "description": "Nome de quem realizou a a\u00e7\u00e3o (admin ou atendente)"
+    },
+    "actor_email": {
+      "type": "string",
+      "description": "Email do admin ou login do atendente"
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "Entidade afetada (Ticket, Provider, ServiceRequest, WalletTransaction)"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID do registro afetado"
+    },
+    "entity_label": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o leg\u00edvel do registro (ex: nome do prestador, assunto do ticket)"
+    },
+    "old_value": {
+      "type": "string",
+      "description": "Valor anterior (quando aplic\u00e1vel)"
+    },
+    "new_value": {
+      "type": "string",
+      "description": "Novo valor ap\u00f3s a a\u00e7\u00e3o"
+    },
+    "details": {
+      "type": "string",
+      "description": "Detalhes adicionais sobre a a\u00e7\u00e3o"
+    }
+  },
+  "required": [
+    "action",
+    "actor_name",
+    "entity_type"
+  ]
+}

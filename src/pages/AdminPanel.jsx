@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,8 @@ import ProviderTermsManager from '../components/admin/ProviderTermsManager';
 import ClientTermsManager from '../components/admin/ClientTermsManager';
 import TicketsAdmin from '../components/admin/TicketsAdmin';
 import ReembolsosRepasses from '../components/admin/ReembolsosRepasses';
+import ActivityLog from '../components/admin/ActivityLog';
+import { logAdminAction } from '@/lib/adminLog';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Link } from 'react-router-dom';
@@ -58,6 +60,12 @@ export default function AdminPanel() {
   const [revealedPasswords, setRevealedPasswords] = useState({});
   const [cancelConfirm, setCancelConfirm] = useState(null);
   const [selectedProvider, setSelectedProvider] = useState(null);
+  const [adminUser, setAdminUser] = useState(null);
+
+  // Carrega usuário admin uma vez
+  React.useEffect(() => {
+    base44.auth.me().then(u => setAdminUser(u)).catch(() => {});
+  }, []);
 
   const togglePassword = (reqId) => {
     setRevealedPasswords(prev => ({ ...prev, [reqId]: !prev[reqId] }));
@@ -65,10 +73,21 @@ export default function AdminPanel() {
 
   const cancelRequest = useMutation({
     mutationFn: (id) => base44.entities.ServiceRequest.update(id, { status: 'cancelado' }),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['all-requests'] });
       toast.success("Atendimento cancelado.");
       setCancelConfirm(null);
+      const req = requests.find(r => r.id === id);
+      logAdminAction({
+        action: 'service_cancelled',
+        actorName: adminUser?.full_name || 'Admin',
+        actorEmail: adminUser?.email || '',
+        entityType: 'ServiceRequest',
+        entityId: id,
+        entityLabel: req ? `${req.service_type} - ${req.client_name}` : id,
+        oldValue: 'em_andamento',
+        newValue: 'cancelado',
+      });
     },
   });
 
@@ -87,39 +106,68 @@ export default function AdminPanel() {
 
   const approveProvider = useMutation({
     mutationFn: ({ id, approved }) => base44.entities.Provider.update(id, { is_approved: approved }),
-    onSuccess: (_, { approved }) => {
+    onSuccess: (_, { id, approved, providerName }) => {
       queryClient.invalidateQueries({ queryKey: ['all-providers'] });
       toast.success(approved ? "Prestador aprovado!" : "Prestador reprovado");
+      logAdminAction({
+        action: approved ? 'provider_approved' : 'provider_rejected',
+        actorName: adminUser?.full_name || 'Admin',
+        actorEmail: adminUser?.email || '',
+        entityType: 'Provider',
+        entityId: id,
+        entityLabel: providerName || id,
+        newValue: approved ? 'aprovado' : 'reprovado',
+      });
     },
   });
 
   const rejectProvider = useMutation({
-    mutationFn: ({ providerId, rejectReason }) => base44.entities.Provider.update(providerId, {
+    mutationFn: ({ providerId, rejectReason, providerName }) => base44.entities.Provider.update(providerId, {
       is_rejected: true,
       rejection_reason: rejectReason,
       rejected_at: new Date().toISOString(),
       is_approved: false,
       is_archived: true,
     }),
-    onSuccess: () => {
+    onSuccess: (_, { providerId, rejectReason, providerName }) => {
       queryClient.invalidateQueries({ queryKey: ['all-providers'] });
       toast.success("Prestador reprovado e arquivado com sucesso");
       setSelectedProvider(null);
+      logAdminAction({
+        action: 'provider_rejected',
+        actorName: adminUser?.full_name || 'Admin',
+        actorEmail: adminUser?.email || '',
+        entityType: 'Provider',
+        entityId: providerId,
+        entityLabel: providerName || providerId,
+        newValue: 'reprovado',
+        details: rejectReason,
+      });
     },
   });
 
   const blockProvider = useMutation({
-    mutationFn: ({ providerId, blockReason }) => base44.entities.Provider.update(providerId, {
+    mutationFn: ({ providerId, blockReason, providerName }) => base44.entities.Provider.update(providerId, {
       is_blocked: true,
       block_reason: blockReason,
       blocked_at: new Date().toISOString(),
       is_approved: false,
       is_archived: true,
     }),
-    onSuccess: () => {
+    onSuccess: (_, { providerId, blockReason, providerName }) => {
       queryClient.invalidateQueries({ queryKey: ['all-providers'] });
       toast.success("Prestador bloqueado e arquivado com sucesso");
       setSelectedProvider(null);
+      logAdminAction({
+        action: 'provider_blocked',
+        actorName: adminUser?.full_name || 'Admin',
+        actorEmail: adminUser?.email || '',
+        entityType: 'Provider',
+        entityId: providerId,
+        entityLabel: providerName || providerId,
+        newValue: 'bloqueado',
+        details: blockReason,
+      });
     },
   });
 
@@ -231,6 +279,9 @@ export default function AdminPanel() {
           <TabsTrigger value="reembolsos" className="text-xs px-2 py-1">
             💸 Repasses/Saques
           </TabsTrigger>
+          <TabsTrigger value="logs" className="text-xs px-2 py-1">
+            📜 Logs
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics">
@@ -340,7 +391,7 @@ export default function AdminPanel() {
                       </Button>
                       {!prov.is_approved && (
                         <>
-                          <Button size="sm" className="rounded-xl bg-green-600 text-white hover:bg-green-700" onClick={() => approveProvider.mutate({ id: prov.id, approved: true })}>
+                          <Button size="sm" className="rounded-xl bg-green-600 text-white hover:bg-green-700" onClick={() => approveProvider.mutate({ id: prov.id, approved: true, providerName: prov.name })}>
                             <CheckCircle2 className="w-4 h-4 mr-1" /> Aprovar
                           </Button>
                           <Button size="sm" variant="outline" className="rounded-xl text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => setSelectedProvider(prov)}>
@@ -349,7 +400,7 @@ export default function AdminPanel() {
                         </>
                       )}
                       {prov.is_approved && (
-                        <Button size="sm" variant="outline" className="rounded-xl text-destructive border-destructive/30" onClick={() => approveProvider.mutate({ id: prov.id, approved: false })}>
+                        <Button size="sm" variant="outline" className="rounded-xl text-destructive border-destructive/30" onClick={() => approveProvider.mutate({ id: prov.id, approved: false, providerName: prov.name })}>
                           <XCircle className="w-4 h-4 mr-1" /> Bloquear
                         </Button>
                       )}
@@ -432,15 +483,19 @@ export default function AdminPanel() {
         <TabsContent value="reembolsos">
           <ReembolsosRepasses />
         </TabsContent>
+
+        <TabsContent value="logs">
+          <ActivityLog />
+        </TabsContent>
       </Tabs>
 
       {selectedProvider && (
         <ProviderDetailsModal
           provider={selectedProvider}
           onClose={() => setSelectedProvider(null)}
-          onApprove={(id, approved) => approveProvider.mutate({ id, approved })}
-          onReject={(id, reason) => rejectProvider.mutate({ providerId: id, rejectReason: reason })}
-          onBlock={(id, reason) => blockProvider.mutate({ providerId: id, blockReason: reason })}
+          onApprove={(id, approved) => approveProvider.mutate({ id, approved, providerName: selectedProvider.name })}
+          onReject={(id, reason) => rejectProvider.mutate({ providerId: id, rejectReason: reason, providerName: selectedProvider.name })}
+          onBlock={(id, reason) => blockProvider.mutate({ providerId: id, blockReason: reason, providerName: selectedProvider.name })}
         />
       )}
     </div>
