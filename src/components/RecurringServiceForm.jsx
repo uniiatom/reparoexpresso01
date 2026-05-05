@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, Clock, Loader2, Plus, X } from 'lucide-react';
+import { Calendar, Clock, Loader2, Plus, X, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const RECURRENCE_OPTIONS = [
@@ -26,6 +26,7 @@ export default function RecurringServiceForm({ clientId, clientName, clientPhone
     address: '',
     city: '',
     state: '',
+    cep: '',
     latitude: null,
     longitude: null,
     recurrence_pattern: 'mensal',
@@ -36,7 +37,39 @@ export default function RecurringServiceForm({ clientId, clientName, clientPhone
     notes: ''
   });
 
+  const [loadingCep, setLoadingCep] = useState(false);
+  const [cepError, setCepError] = useState('');
+
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const searchByCep = async (cep) => {
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length !== 8) return;
+
+    setLoadingCep(true);
+    setCepError('');
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await res.json();
+
+      if (data.erro) {
+        setCepError('CEP não encontrado');
+        setLoadingCep(false);
+        return;
+      }
+
+      setForm(prev => ({
+        ...prev,
+        address: data.logradouro || '',
+        city: data.localidade || '',
+        state: data.uf || '',
+        cep: cleanCep,
+      }));
+    } catch {
+      setCepError('Erro ao buscar CEP');
+    }
+    setLoadingCep(false);
+  };
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
@@ -107,6 +140,23 @@ export default function RecurringServiceForm({ clientId, clientName, clientPhone
               onChange={e => set('description', e.target.value)}
               className="min-h-[80px] rounded-lg"
             />
+          </div>
+
+          {/* CEP */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2"><MapPin className="w-4 h-4" /> CEP do local</Label>
+            <div className="relative">
+              <Input
+                placeholder="00000-000"
+                value={form.cep}
+                onChange={e => set('cep', e.target.value)}
+                onBlur={() => searchByCep(form.cep)}
+                disabled={loadingCep}
+                className="rounded-lg"
+              />
+              {loadingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />}
+            </div>
+            {cepError && <p className="text-xs text-destructive">{cepError}</p>}
           </div>
 
           {/* Endereço */}
