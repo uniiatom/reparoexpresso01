@@ -29,6 +29,7 @@ import PartnerRegister from './pages/PartnerRegister';
 import ProviderDashboard from './pages/ProviderDashboard';
 import WalletPage from './pages/Wallet';
 import DashboardAdmin from './pages/DashboardAdmin';
+import ProviderAwards from './pages/ProviderAwards';
 import ClienteDossie from './pages/ClienteDossie';
 import { Toaster as SonnerToaster } from "sonner";
 
@@ -74,6 +75,7 @@ const AuthenticatedApp = () => {
         <Route path="/dashboard-prestador" element={<ProviderDashboard />} />
         <Route path="/carteira" element={<WalletPage />} />
         <Route path="/dashboard-admin" element={<DashboardAdmin />} />
+        <Route path="/premiacao" element={<ProviderAwards />} />
         <Route path="/minha-ficha" element={<ClienteDossie />} />
         <Route path="/termos-cliente" element={<TermosCliente />} />
         <Route path="/termos-prestador" element={<TermosPrestador />} />

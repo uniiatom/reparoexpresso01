@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, DollarSign, KeyRound, Eye, EyeOff, FileText, Activity } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, DollarSign, KeyRound, Eye, EyeOff, FileText, Activity, Trophy } from "lucide-react";
 import ServicePricing from '../components/admin/ServicePricing';
 import ServicePricingByCategory from '../components/admin/ServicePricingByCategory';
 import ProviderRepasse from '../components/admin/ProviderRepasse';
@@ -190,11 +190,18 @@ export default function AdminPanel() {
 
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-foreground">Painel Administrativo</h1>
-        <Link to="/dashboard-admin">
-          <Button size="sm" className="gap-2 rounded-xl bg-primary">
-            <Activity className="w-4 h-4" /> Dashboard Executivo
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link to="/premiacao">
+            <Button size="sm" variant="outline" className="gap-2 rounded-xl">
+              <Trophy className="w-4 h-4 text-amber-500" /> Premiação
+            </Button>
+          </Link>
+          <Link to="/dashboard-admin">
+            <Button size="sm" className="gap-2 rounded-xl bg-primary">
+              <Activity className="w-4 h-4" /> Dashboard Executivo
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
