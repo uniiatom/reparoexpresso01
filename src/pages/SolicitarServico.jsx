@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import {
     ArrowLeft, MapPin, Zap, Droplets, Paintbrush, Wrench,
     Settings, Hammer, Lock, Wind, ChevronRight, Calendar,
@@ -671,23 +672,56 @@ export default function SolicitarServico() {
       {/* Tab: Solicitar Retorno */}
       {tabSolicitar === 'retorno' && (
         <div className="space-y-6">
-          <div className="bg-card rounded-lg border border-border p-8 text-center space-y-4">
-            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
-              <RotateCcw className="w-6 h-6 text-primary" />
-            </div>
-            <h3 className="font-semibold text-foreground">Solicitar Retorno do Prestador</h3>
-            <p className="text-sm text-muted-foreground">Deseja chamar o mesmo prestador novamente?</p>
-            <p className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
-              Acesse "Meus Pedidos" para visualizar seus serviços anteriores e solicitar retorno
-            </p>
-            <Button 
-              onClick={() => navigate('/meus-pedidos')}
-              className="w-full mt-4"
-            >
-              <ChevronRight className="w-4 h-4 mr-2" />
-              Ir para Meus Pedidos
-            </Button>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground mb-1">Serviços realizados</h2>
+            <p className="text-muted-foreground mb-4">Solicite retorno para o mesmo prestador</p>
           </div>
+          {warrantyServices.length > 0 ? (
+            <div className="space-y-3">
+              <WarrantyBanner warrantyServices={warrantyServices} />
+              <div className="space-y-3">
+                {warrantyServices.map(service => (
+                  <Card key={service.id} className="overflow-hidden">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-foreground">
+                              {SERVICE_TYPES.find(s => s.value === service.service_type)?.label || service.service_type}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">{service.description?.substring(0, 60)}...</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">
+                            {new Date(service.updated_date).toLocaleDateString('pt-BR')}
+                          </span>
+                          {service.provider_name && (
+                            <span className="text-primary font-semibold">{service.provider_name}</span>
+                          )}
+                        </div>
+                        <Button
+                          onClick={() => navigate(`/solicitar?tipo=${service.service_type}`)}
+                          className="w-full text-sm"
+                          variant="outline"
+                        >
+                          Solicitar Retorno
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-card rounded-lg border border-border p-8 text-center space-y-4">
+              <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
+                <RotateCcw className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground">Nenhum serviço realizado</h3>
+              <p className="text-sm text-muted-foreground">Você ainda não tem serviços concluídos na garantia</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -748,7 +782,6 @@ export default function SolicitarServico() {
       {/* Step 1: Tipo de serviço */}
       {step === 1 && (
         <div>
-          <WarrantyBanner warrantyServices={warrantyServices} />
           <h2 className="text-2xl font-bold text-foreground mb-1">Qual serviço?</h2>
           <p className="text-muted-foreground mb-4">Selecione um ou mais serviços — cada um gera uma OS com senha própria</p>
           <div className="flex gap-2 mb-5">
