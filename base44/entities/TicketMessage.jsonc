@@ -1,0 +1,32 @@
+{
+  "name": "TicketMessage",
+  "type": "object",
+  "properties": {
+    "ticket_id": {
+      "type": "string",
+      "description": "ID do ticket"
+    },
+    "sender_role": {
+      "type": "string",
+      "enum": [
+        "cliente",
+        "atendente"
+      ],
+      "description": "Quem enviou a mensagem"
+    },
+    "sender_name": {
+      "type": "string",
+      "description": "Nome de quem enviou"
+    },
+    "text": {
+      "type": "string",
+      "description": "Texto da mensagem"
+    }
+  },
+  "required": [
+    "ticket_id",
+    "sender_role",
+    "sender_name",
+    "text"
+  ]
+}

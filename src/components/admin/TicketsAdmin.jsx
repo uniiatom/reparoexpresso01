@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, Send, ChevronDown, ChevronUp, User, Settings, Zap, History, CalendarDays } from 'lucide-react';
+import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, Send, ChevronDown, ChevronUp, User, Settings, Zap, History, CalendarDays, MessageCircle } from 'lucide-react';
+import TicketChat from '@/components/TicketChat';
 import { toast } from "sonner";
 import AttendantsManager, { loadAttendants } from './AttendantsManager';
 import { logAdminAction } from '@/lib/adminLog';
@@ -91,6 +92,7 @@ function LoginPanel({ onLogin }) {
 function TicketCard({ ticket, attendant, onUpdate }) {
   const [expanded, setExpanded] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [response, setResponse] = useState(ticket.response || '');
   const [notes, setNotes] = useState(ticket.internal_notes || '');
   const [status, setStatus] = useState(ticket.status);
@@ -195,6 +197,13 @@ function TicketCard({ ticket, attendant, onUpdate }) {
               <History className="w-4 h-4" />
             </button>
             <button
+              onClick={() => setShowChat(s => !s)}
+              title="Chat com cliente"
+              className={`p-1.5 rounded-lg transition-colors ${showChat ? 'bg-blue-100 text-blue-600' : 'hover:bg-muted text-muted-foreground'}`}
+            >
+              <MessageCircle className="w-4 h-4" />
+            </button>
+            <button
               onClick={() => setExpanded(!expanded)}
               className="p-1.5 hover:bg-muted rounded-lg"
             >
@@ -204,6 +213,17 @@ function TicketCard({ ticket, attendant, onUpdate }) {
         </div>
 
         <p className="text-sm text-foreground mb-2 line-clamp-2">{ticket.message}</p>
+
+        {/* Chat em tempo real */}
+        {showChat && (
+          <div className="mt-3 border border-blue-200 rounded-2xl overflow-hidden">
+            <TicketChat
+              ticketId={ticket.id}
+              senderRole="atendente"
+              senderName={attendant.name}
+            />
+          </div>
+        )}
 
         {expanded && (
           <div className="space-y-4 mt-4 border-t border-border pt-4">

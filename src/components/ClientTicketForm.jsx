@@ -4,8 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Plus, X, ChevronDown, ChevronUp, User, ArrowLeft } from 'lucide-react';
+import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Plus, X, ChevronDown, ChevronUp, User, ArrowLeft, MessageCircle } from 'lucide-react';
 import { toast } from "sonner";
+import TicketChat from '@/components/TicketChat';
 
 const TICKET_TYPES = [
   { value: 'reclamacao', label: 'Reclamação', icon: AlertCircle, color: 'text-red-500 bg-red-50 border-red-200' },
@@ -24,8 +25,9 @@ const STATUS_CONFIG = {
 export default function ClientTicketForm({ clientId, clientName, clientEmail }) {
   const [showForm, setShowForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState(null); // { provider_id, provider_name, service_request_id }
+  const [selectedProvider, setSelectedProvider] = useState(null);
   const [form, setForm] = useState({ type: '', subject: '', message: '' });
+  const [openChatTicketId, setOpenChatTicketId] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: tickets = [] } = useQuery({
@@ -205,21 +207,40 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
                 const typeConfig = TICKET_TYPES.find(t => t.value === ticket.type);
                 const statusConfig = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.aberto;
                 const Icon = typeConfig?.icon || MessageSquare;
+                const chatOpen = openChatTicketId === ticket.id;
                 return (
-                  <Card key={ticket.id} className="border-primary/30 bg-primary/5">
+                  <Card key={ticket.id} className="border-primary/30 bg-primary/5 overflow-hidden">
                     <CardContent className="p-3">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Icon className={`w-3.5 h-3.5 ${typeConfig?.color.split(' ')[0]}`} />
                         <span className="font-semibold text-sm text-foreground flex-1 truncate">{ticket.subject}</span>
                         <Badge className={`text-xs border-0 ${statusConfig.color}`}>{statusConfig.label}</Badge>
                       </div>
-                      <div className="bg-white border border-primary/20 rounded-xl p-3">
+                      <div className="bg-white border border-primary/20 rounded-xl p-3 mb-2">
                         <p className="text-xs font-semibold text-primary mb-1">✅ Resposta do suporte:</p>
                         <p className="text-sm text-foreground">{ticket.response}</p>
                         {ticket.attendant_name && (
                           <p className="text-xs text-muted-foreground mt-1">— {ticket.attendant_name}</p>
                         )}
                       </div>
+                      <button
+                        onClick={() => setOpenChatTicketId(chatOpen ? null : ticket.id)}
+                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                          chatOpen ? 'bg-blue-100 text-blue-700' : 'bg-primary/10 text-primary hover:bg-primary/20'
+                        }`}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        {chatOpen ? 'Fechar chat' : 'Responder pelo chat'}
+                      </button>
+                      {chatOpen && (
+                        <div className="mt-2 border border-blue-200 rounded-2xl overflow-hidden">
+                          <TicketChat
+                            ticketId={ticket.id}
+                            senderRole="cliente"
+                            senderName={clientName || 'Cliente'}
+                          />
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
@@ -243,15 +264,27 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
                 const typeConfig = TICKET_TYPES.find(t => t.value === ticket.type);
                 const statusConfig = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.aberto;
                 const Icon = typeConfig?.icon || MessageSquare;
+                const chatOpen = openChatTicketId === ticket.id;
                 return (
-                  <Card key={ticket.id} className="border-border">
+                  <Card key={ticket.id} className="border-border overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2">
                           <Icon className={`w-4 h-4 ${typeConfig?.color.split(' ')[0]}`} />
                           <span className="font-semibold text-sm text-foreground">{ticket.subject}</span>
                         </div>
-                        <Badge className={`text-xs border-0 ${statusConfig.color}`}>{statusConfig.label}</Badge>
+                        <div className="flex items-center gap-1.5">
+                          <Badge className={`text-xs border-0 ${statusConfig.color}`}>{statusConfig.label}</Badge>
+                          {ticket.status !== 'fechado' && (
+                            <button
+                              onClick={() => setOpenChatTicketId(chatOpen ? null : ticket.id)}
+                              className={`p-1.5 rounded-lg transition-colors ${chatOpen ? 'bg-blue-100 text-blue-600' : 'hover:bg-muted text-muted-foreground'}`}
+                              title="Chat com atendente"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{ticket.message}</p>
                       {ticket.response && (
@@ -264,6 +297,17 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
                         {new Date(ticket.created_date).toLocaleDateString('pt-BR')}
                         {ticket.attendant_name && ` · Atendente: ${ticket.attendant_name}`}
                       </p>
+
+                      {/* Chat em tempo real */}
+                      {chatOpen && (
+                        <div className="mt-3 border border-blue-200 rounded-2xl overflow-hidden">
+                          <TicketChat
+                            ticketId={ticket.id}
+                            senderRole="cliente"
+                            senderName={clientName || 'Cliente'}
+                          />
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
