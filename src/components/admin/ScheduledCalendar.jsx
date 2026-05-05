@@ -231,6 +231,12 @@ export default function ScheduledCalendar() {
     [services, dayKeys]
   );
 
+  // Serviços novos (aguardando, sem prestador, sem data agendada)
+  const newServices = useMemo(() =>
+    services.filter(s => s.status === 'aguardando' && !s.provider_id && !s.scheduled_date),
+    [services]
+  );
+
   // Verifica se há serviços sem prestador nos 3 dias para mostrar coluna
   const hasUnassignedInDays = useMemo(() =>
     dayKeys.some(dk =>
@@ -305,7 +311,26 @@ export default function ScheduledCalendar() {
         ))}
       </div>
 
-      {/* Serviços sem prestador */}
+      {/* Serviços NOVOS (sem data agendada) */}
+      {newServices.length > 0 && (
+        <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
+          <p className="text-xs font-bold text-red-700 mb-3">
+            🆕 {newServices.length} NOVO(S) SERVIÇO(S) — Abrir e redirecionar para prestador
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {newServices.map(s => (
+              <button key={s.id}
+                onClick={() => setSelectedService(s)}
+                className="flex items-center gap-1.5 px-3 py-2 bg-red-100 border border-red-400 text-red-800 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors">
+                <Wrench className="w-4 h-4" />
+                {SERVICE_LABELS[s.service_type] || s.service_type} · {s.client_name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Serviços sem prestador (com data agendada) */}
       {unassignedServices.length > 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
           <p className="text-xs font-bold text-yellow-800 mb-2">
