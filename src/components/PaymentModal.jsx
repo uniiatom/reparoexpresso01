@@ -259,32 +259,46 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
             </>
           )}
 
-          {/* Method Buttons */}
-          {paymentMethod === 'stripe' && (
-            <div className="grid grid-cols-2 gap-2 pt-1">
+          {/* Method Buttons or Free Message */}
+          {paymentMethod === 'stripe' && finalAmount === 0 ? (
+            <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+              <p className="text-sm font-semibold text-green-900 text-center mb-2">
+                ✓ Serviço 100% Grátis!
+              </p>
               <Button
-                onClick={handlePayment}
-                disabled={isPaying || paymentStatus === 'redirecting'}
-                className="rounded-lg h-9 font-semibold bg-primary text-primary-foreground text-sm"
+                onClick={onClose}
+                className="w-full rounded-lg h-9 font-semibold bg-green-600 hover:bg-green-700 text-white text-sm"
               >
-                {isPaying ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                ) : (
-                  <>
-                    <DollarSign className="w-3 h-3 mr-1" />
-                    Cartão
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={handlePixPayment}
-                disabled={isPaying || paymentStatus === 'redirecting'}
-                variant="outline"
-                className="rounded-lg h-9 font-semibold text-sm"
-              >
-                PIX
+                Confirmar
               </Button>
             </div>
+          ) : (
+            paymentMethod === 'stripe' && (
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Button
+                  onClick={handlePayment}
+                  disabled={isPaying || paymentStatus === 'redirecting'}
+                  className="rounded-lg h-9 font-semibold bg-primary text-primary-foreground text-sm"
+                >
+                  {isPaying ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <>
+                      <DollarSign className="w-3 h-3 mr-1" />
+                      Cartão
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={handlePixPayment}
+                  disabled={isPaying || paymentStatus === 'redirecting'}
+                  variant="outline"
+                  className="rounded-lg h-9 font-semibold text-sm"
+                >
+                  PIX
+                </Button>
+              </div>
+            )
           )}
         </div>
 
