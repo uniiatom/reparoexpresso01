@@ -12,9 +12,10 @@ export default function CouponUsagePanel() {
   const { data: services = [] } = useQuery({
     queryKey: ['services-with-coupons'],
     queryFn: async () => {
-      const allServices = await base44.entities.ServiceRequest.list('-created_date', 500);
-      return allServices.filter(s => s.coupon_code);
+      const allServices = await base44.entities.ServiceRequest.list('-updated_date', 1000);
+      return allServices.filter(s => s.coupon_code && s.coupon_code.trim());
     },
+    refetchInterval: 5000, // Atualiza a cada 5 segundos
   });
 
   const filteredServices = searchCoupon
