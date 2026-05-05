@@ -194,19 +194,19 @@ export default function MeusPedidos() {
                 );
               })}
             </div>
-          ) : (
+            ) : (
             <div className="text-center py-8">
               <p className="text-muted-foreground text-sm">Nenhum serviço em andamento</p>
             </div>
-          )}
-          </div>
-          )}
+            )}
+            </div>
+            )}
 
-          {/* Tab: Histórico (Serviços Executados) */}
-          {activeTab === 'history' && (
-          <div className="space-y-3">
-          {completedRequests.length > 0 ? (
-           <div className="space-y-3">
+            {/* Tab: Histórico (Serviços Executados) */}
+            {activeTab === 'history' && (
+            <div className="space-y-3">
+            {completedRequests.length > 0 ? (
+            <div className="space-y-3">
              {completedRequests.map(req => {
                const statusConfig = STATUS_CONFIG[req.status];
                const StatusIcon = statusConfig.icon;
@@ -251,14 +251,14 @@ export default function MeusPedidos() {
                  </Card>
                );
              })}
-           </div>
-          ) : (
-           <div className="text-center py-8">
+            </div>
+            ) : (
+            <div className="text-center py-8">
              <p className="text-muted-foreground text-sm">Nenhum serviço finalizado</p>
-           </div>
-          )}
-          </div>
-          )}
+            </div>
+            )}
+            </div>
+            )}
     </div>
   );
 }
