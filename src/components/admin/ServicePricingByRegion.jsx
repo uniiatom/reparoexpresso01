@@ -59,35 +59,55 @@ const ALL_SERVICES = [
 
 function CityPricingSection({ service, city, zones, pricings, onAdd, onDelete }) {
   const [expanded, setExpanded] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [selectedZone, setSelectedZone] = useState('');
-  const [min, setMin] = useState('');
-  const [max, setMax] = useState('');
-  const [note, setNote] = useState('');
+  const [zoneValues, setZoneValues] = useState({});
 
   const cityPricings = pricings.filter(p => p.service_type === service.type && p.city === city);
 
-  const handleAddPrice = () => {
+  const initializeZoneValues = () => {
+    const values = {};
+    zones.forEach(zone => {
+      const existing = cityPricings.find(p => p.zone === zone);
+      values[zone] = {
+        min: existing?.price_min || '',
+        max: existing?.price_max || '',
+        note: existing?.note || '',
+        id: existing?.id || null
+      };
+    });
+    setZoneValues(values);
+  };
+
+  const handleSaveZone = (zone) => {
+    const { min, max, note, id } = zoneValues[zone];
+    if (!min || !max) {
+      toast.error('Preencha valores mín e máx');
+      return;
+    }
     const data = {
       service_type: service.type,
       city,
-      zone: selectedZone,
+      zone,
       price_min: Number(min),
       price_max: Number(max),
       note
     };
     onAdd(data);
-    setSelectedZone('');
-    setMin('');
-    setMax('');
-    setNote('');
-    setEditing(false);
+  };
+
+  const handleDeleteZone = (zone) => {
+    const { id } = zoneValues[zone];
+    if (id) {
+      onDelete(id);
+    }
   };
 
   return (
     <div className="border rounded-lg overflow-hidden">
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => {
+          setExpanded(!expanded);
+          if (!expanded) initializeZoneValues();
+        }}
         className="w-full flex items-center justify-between gap-3 p-3 hover:bg-muted/50 transition-colors"
       >
         <div className="flex items-center gap-2">
@@ -98,66 +118,71 @@ function CityPricingSection({ service, city, zones, pricings, onAdd, onDelete })
       </button>
 
       {expanded && (
-        <div className="bg-muted/30 p-3 border-t space-y-2">
-          {cityPricings.map(pricing => (
-            <div key={pricing.id} className="flex items-center justify-between gap-2 p-2 bg-white rounded-lg border">
-              <div className="text-xs">
-                <p className="font-semibold text-foreground">
-                  R$ {pricing.price_min} – R$ {pricing.price_max}
-                </p>
-                <p className="text-muted-foreground">
-                  {pricing.zone || 'Todos os bairros'} {pricing.note && `· ${pricing.note}`}
-                </p>
-              </div>
-              <button
-                onClick={() => onDelete(pricing.id)}
-                className="p-1 hover:bg-red-100 rounded-lg transition-colors text-red-600"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-
-          {editing ? (
-            <div className="space-y-2 p-2 bg-white rounded-lg border-2 border-primary/20">
-              <select
-                value={selectedZone}
-                onChange={e => setSelectedZone(e.target.value)}
-                className="w-full h-8 text-xs border rounded-md px-2 bg-white"
-              >
-                <option value="">Todos os bairros/zonas</option>
-                {zones.map(zone => (
-                  <option key={zone} value={zone}>{zone}</option>
-                ))}
-              </select>
+        <div className="bg-muted/30 p-4 border-t space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {zones.map(zone => {
+              const values = zoneValues[zone] || {};
+              const isSaved = values.id;
               
-              <div className="flex gap-1">
-                <Input value={min} onChange={e => setMin(e.target.value)} placeholder="Mín" className="w-20 h-7 text-xs" type="number" />
-                <span className="text-xs text-muted-foreground py-1">R$</span>
-                <Input value={max} onChange={e => setMax(e.target.value)} placeholder="Máx" className="w-20 h-7 text-xs" type="number" />
-              </div>
-              
-              <Input value={note} onChange={e => setNote(e.target.value)} placeholder="Observação (opcional)" className="h-7 text-xs" />
+              return (
+                <div key={zone} className={`p-3 rounded-lg border-2 transition-colors ${isSaved ? 'bg-white border-green-200' : 'bg-white border-border'}`}>
+                  <p className="font-semibold text-foreground text-sm mb-2">{zone}</p>
+                  
+                  <div className="space-y-2 mb-2">
+                    <div className="flex gap-1">
+                      <Input 
+                        value={values.min || ''} 
+                        onChange={e => setZoneValues(prev => ({
+                          ...prev, 
+                          [zone]: { ...prev[zone], min: e.target.value }
+                        }))} 
+                        placeholder="Mín" 
+                        className="w-16 h-7 text-xs" 
+                        type="number" 
+                      />
+                      <span className="text-xs text-muted-foreground py-1">R$</span>
+                      <Input 
+                        value={values.max || ''} 
+                        onChange={e => setZoneValues(prev => ({
+                          ...prev, 
+                          [zone]: { ...prev[zone], max: e.target.value }
+                        }))} 
+                        placeholder="Máx" 
+                        className="w-16 h-7 text-xs" 
+                        type="number" 
+                      />
+                    </div>
+                    <Input 
+                      value={values.note || ''} 
+                      onChange={e => setZoneValues(prev => ({
+                        ...prev, 
+                        [zone]: { ...prev[zone], note: e.target.value }
+                      }))} 
+                      placeholder="Obs (ex: por ponto)" 
+                      className="h-7 text-xs" 
+                    />
+                  </div>
 
-              <div className="flex gap-1">
-                <Button size="icon" className="h-7 w-7 rounded-lg bg-green-600 text-white" onClick={handleAddPrice}><Plus className="w-3 h-3" /></Button>
-                <Button size="icon" variant="outline" className="h-7 w-7 rounded-lg" onClick={() => {
-                  setEditing(false);
-                  setSelectedZone('');
-                  setMin('');
-                  setMax('');
-                  setNote('');
-                }}>✕</Button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => setEditing(true)}
-              className="w-full py-2 rounded-lg border-2 border-dashed border-border hover:border-primary transition-colors text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1"
-            >
-              <Plus className="w-3 h-3" /> Adicionar preço
-            </button>
-          )}
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleSaveZone(zone)}
+                      className="flex-1 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors"
+                    >
+                      {isSaved ? '✓ Salvo' : 'Salvar'}
+                    </button>
+                    {isSaved && (
+                      <button
+                        onClick={() => handleDeleteZone(zone)}
+                        className="p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
