@@ -115,172 +115,171 @@ export default function RecurringServiceForm({ clientId, clientName, clientPhone
         </div>
 
         {/* Conteúdo com scroll */}
-        <div className="overflow-y-auto flex-1 p-6">
-        <div className="space-y-4">
-          {/* Tipo de serviço */}
-          <div className="space-y-2">
-            <Label>Tipo de serviço *</Label>
-            <select
-              value={form.service_type}
-              onChange={e => set('service_type', e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border border-input bg-transparent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              <option value="">Selecione um serviço</option>
-              <option value="eletrica">Elétrica</option>
-              <option value="hidraulica">Hidráulica</option>
-              <option value="limpeza_calha">Limpeza de Calha</option>
-              <option value="limpeza_caixa_dagua">Limpeza Caixa d'Água</option>
-              <option value="ar_condicionado">Ar Condicionado</option>
-              <option value="manutencao">Manutenção Preventiva</option>
-            </select>
-          </div>
-
-          {/* Descrição */}
-          <div className="space-y-2">
-            <Label>Descrição do serviço *</Label>
-            <Textarea
-              placeholder="Detalhe o serviço de manutenção..."
-              value={form.description}
-              onChange={e => set('description', e.target.value)}
-              className="min-h-[80px] rounded-lg"
-            />
-          </div>
-
-          {/* CEP */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2"><MapPin className="w-4 h-4" /> CEP do local</Label>
-            <div className="relative">
-              <Input
-                placeholder="00000-000"
-                value={form.cep}
-                onChange={e => set('cep', e.target.value)}
-                onBlur={() => searchByCep(form.cep)}
-                disabled={loadingCep}
-                className="rounded-lg"
-              />
-              {loadingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />}
-            </div>
-            {cepError && <p className="text-xs text-destructive">{cepError}</p>}
-          </div>
-
-          {/* Endereço */}
-          <div className="space-y-2">
-            <Label>Endereço *</Label>
-            <Input
-              placeholder="Rua e número"
-              value={form.address}
-              onChange={e => set('address', e.target.value)}
-              className="rounded-lg"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
+        <div className="overflow-y-auto flex-1 p-6 pt-0">
+          <div className="space-y-4">
+            {/* Tipo de serviço */}
             <div className="space-y-2">
-              <Label>Cidade *</Label>
-              <Input
-                placeholder="Cidade"
-                value={form.city}
-                onChange={e => set('city', e.target.value)}
-                className="rounded-lg"
-              />
+              <Label>Tipo de serviço *</Label>
+              <select
+                value={form.service_type}
+                onChange={e => set('service_type', e.target.value)}
+                className="w-full h-10 px-3 rounded-lg border border-input bg-transparent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="">Selecione um serviço</option>
+                <option value="eletrica">Elétrica</option>
+                <option value="hidraulica">Hidráulica</option>
+                <option value="limpeza_calha">Limpeza de Calha</option>
+                <option value="limpeza_caixa_dagua">Limpeza Caixa d'Água</option>
+                <option value="ar_condicionado">Ar Condicionado</option>
+                <option value="manutencao">Manutenção Preventiva</option>
+              </select>
             </div>
+
+            {/* CEP - Visível de primeira */}
+            <div className="space-y-2 bg-primary/5 p-4 -mx-6 px-6 rounded-lg mt-4">
+              <Label className="flex items-center gap-2"><MapPin className="w-4 h-4" /> CEP do local *</Label>
+              <div className="relative">
+                <Input
+                  placeholder="00000-000"
+                  value={form.cep}
+                  onChange={e => set('cep', e.target.value)}
+                  onBlur={() => searchByCep(form.cep)}
+                  disabled={loadingCep}
+                  className="rounded-lg"
+                />
+                {loadingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />}
+              </div>
+              {cepError && <p className="text-xs text-destructive">{cepError}</p>}
+            </div>
+
+            {/* Descrição */}
             <div className="space-y-2">
-              <Label>Estado *</Label>
-              <Input
-                placeholder="UF"
-                value={form.state}
-                onChange={e => set('state', e.target.value.toUpperCase())}
-                maxLength={2}
-                className="rounded-lg"
+              <Label>Descrição do serviço *</Label>
+              <Textarea
+                placeholder="Detalhe o serviço de manutenção..."
+                value={form.description}
+                onChange={e => set('description', e.target.value)}
+                className="min-h-[80px] rounded-lg"
               />
             </div>
-          </div>
 
-          {/* Frequência */}
-          <div className="space-y-2">
-            <Label>Frequência de recorrência *</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {RECURRENCE_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => set('recurrence_pattern', opt.value)}
-                  className={cn(
-                    "p-3 rounded-lg border-2 text-sm font-medium transition-all text-center",
-                    form.recurrence_pattern === opt.value
-                      ? "border-primary bg-primary/5 text-primary"
-                      : "border-border hover:border-primary/40 text-foreground"
-                  )}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Datas */}
-          <div className="grid grid-cols-2 gap-3">
+            {/* Endereço */}
             <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Data início *</Label>
+              <Label>Endereço *</Label>
               <Input
-                type="date"
-                value={form.start_date}
-                onChange={e => set('start_date', e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
+                placeholder="Rua e número"
+                value={form.address}
+                onChange={e => set('address', e.target.value)}
                 className="rounded-lg"
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Cidade *</Label>
+                <Input
+                  placeholder="Cidade"
+                  value={form.city}
+                  onChange={e => set('city', e.target.value)}
+                  className="rounded-lg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Estado *</Label>
+                <Input
+                  placeholder="UF"
+                  value={form.state}
+                  onChange={e => set('state', e.target.value.toUpperCase())}
+                  maxLength={2}
+                  className="rounded-lg"
+                />
+              </div>
+            </div>
+
+            {/* Frequência */}
             <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Data término</Label>
+              <Label>Frequência de recorrência *</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {RECURRENCE_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => set('recurrence_pattern', opt.value)}
+                    className={cn(
+                      "p-3 rounded-lg border-2 text-sm font-medium transition-all text-center",
+                      form.recurrence_pattern === opt.value
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border hover:border-primary/40 text-foreground"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Datas */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Data início *</Label>
+                <Input
+                  type="date"
+                  value={form.start_date}
+                  onChange={e => set('start_date', e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="rounded-lg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Data término</Label>
+                <Input
+                  type="date"
+                  value={form.end_date}
+                  onChange={e => set('end_date', e.target.value)}
+                  min={form.start_date}
+                  className="rounded-lg"
+                />
+              </div>
+            </div>
+
+            {/* Horário preferencial */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2"><Clock className="w-4 h-4" /> Horário preferencial</Label>
               <Input
-                type="date"
-                value={form.end_date}
-                onChange={e => set('end_date', e.target.value)}
-                min={form.start_date}
+                type="time"
+                value={form.preferred_time}
+                onChange={e => set('preferred_time', e.target.value)}
                 className="rounded-lg"
               />
             </div>
-          </div>
 
-          {/* Horário preferencial */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2"><Clock className="w-4 h-4" /> Horário preferencial</Label>
-            <Input
-              type="time"
-              value={form.preferred_time}
-              onChange={e => set('preferred_time', e.target.value)}
-              className="rounded-lg"
-            />
-          </div>
+            {/* Valor sugerido */}
+            <div className="space-y-2">
+              <Label>Valor sugerido (opcional)</Label>
+              <Input
+                type="number"
+                placeholder="R$ 0,00"
+                value={form.client_suggested_price}
+                onChange={e => set('client_suggested_price', e.target.value)}
+                step="0.01"
+                min="0"
+                className="rounded-lg"
+              />
+            </div>
 
-          {/* Valor sugerido */}
-          <div className="space-y-2">
-            <Label>Valor sugerido (opcional)</Label>
-            <Input
-              type="number"
-              placeholder="R$ 0,00"
-              value={form.client_suggested_price}
-              onChange={e => set('client_suggested_price', e.target.value)}
-              step="0.01"
-              min="0"
-              className="rounded-lg"
-            />
-          </div>
+            {/* Notas */}
+            <div className="space-y-2">
+              <Label>Observações adicionais</Label>
+              <Textarea
+                placeholder="Qualquer informação importante..."
+                value={form.notes}
+                onChange={e => set('notes', e.target.value)}
+                className="min-h-[60px] rounded-lg"
+              />
+            </div>
 
-          {/* Notas */}
-          <div className="space-y-2">
-            <Label>Observações adicionais</Label>
-            <Textarea
-              placeholder="Qualquer informação importante..."
-              value={form.notes}
-              onChange={e => set('notes', e.target.value)}
-              className="min-h-[60px] rounded-lg"
-            />
-          </div>
-
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200 text-xs text-blue-700">
-            ℹ️ Os serviços serão criados automaticamente nas datas agendadas. Você receberá notificações para cada novo agendamento.
-          </div>
-
+            <div className="bg-blue-50 rounded-lg p-3 border border-blue-200 text-xs text-blue-700">
+              ℹ️ Os serviços serão criados automaticamente nas datas agendadas. Você receberá notificações para cada novo agendamento.
+            </div>
           </div>
         </div>
 
