@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, Send, ChevronDown, ChevronUp, User, Settings, Zap } from 'lucide-react';
+import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, Send, ChevronDown, ChevronUp, User, Settings, Zap, History } from 'lucide-react';
 import { toast } from "sonner";
 import AttendantsManager, { loadAttendants } from './AttendantsManager';
 import { logAdminAction } from '@/lib/adminLog';
@@ -12,6 +12,7 @@ import { useAttendantPush } from '@/hooks/useAttendantPush';
 import AttendantPushBanner from './AttendantPushBanner';
 import { QuickReplyPicker } from './QuickReplies';
 import QuickRepliesManager from './QuickReplies';
+import ClientHistoryPanel from './ClientHistoryPanel';
 
 const TICKET_TYPES = {
   reclamacao: { label: 'Reclamação', icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50 border-red-200' },
@@ -88,6 +89,7 @@ function LoginPanel({ onLogin }) {
 
 function TicketCard({ ticket, attendant, onUpdate }) {
   const [expanded, setExpanded] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [response, setResponse] = useState(ticket.response || '');
   const [notes, setNotes] = useState(ticket.internal_notes || '');
   const [status, setStatus] = useState(ticket.status);
@@ -150,8 +152,19 @@ function TicketCard({ ticket, attendant, onUpdate }) {
   };
 
   return (
-    <Card className={`border ${expanded ? 'border-primary/30' : 'border-border'}`}>
-      <CardContent className="p-4">
+    <div className={`rounded-xl border overflow-hidden ${expanded ? 'border-primary/30' : 'border-border'}`}>
+      {/* Painel lateral de histórico */}
+      {showHistory && (
+        <div className="border-b border-border" style={{ maxHeight: 420 }}>
+          <ClientHistoryPanel
+            clientId={ticket.client_id}
+            clientName={ticket.client_name}
+            onClose={() => setShowHistory(false)}
+          />
+        </div>
+      )}
+
+      <div className="bg-card p-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-start gap-3 flex-1">
@@ -172,18 +185,28 @@ function TicketCard({ ticket, attendant, onUpdate }) {
               )}
             </div>
           </div>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="p-1.5 hover:bg-muted rounded-lg flex-shrink-0"
-          >
-            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button
+              onClick={() => setShowHistory(s => !s)}
+              title="Histórico do cliente"
+              className={`p-1.5 rounded-lg transition-colors ${showHistory ? 'bg-primary/10 text-primary' : 'hover:bg-muted text-muted-foreground'}`}
+            >
+              <History className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="p-1.5 hover:bg-muted rounded-lg"
+            >
+              {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
         <p className="text-sm text-foreground mb-2 line-clamp-2">{ticket.message}</p>
 
         {expanded && (
           <div className="space-y-4 mt-4 border-t border-border pt-4">
+
             <div className="bg-muted/50 rounded-xl p-3">
               <p className="text-xs font-semibold text-muted-foreground mb-1">Mensagem completa:</p>
               <p className="text-sm text-foreground whitespace-pre-wrap">{ticket.message}</p>
@@ -244,8 +267,8 @@ function TicketCard({ ticket, attendant, onUpdate }) {
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
