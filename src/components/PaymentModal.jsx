@@ -102,6 +102,21 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
         originalPrice: baseAmount,
       });
 
+      // Processa bônus se houver cupom com desconto excedente
+      if (appliedCoupon?.code && discountAmount > baseAmount) {
+        try {
+          await base44.functions.invoke('processCouponBonus', {
+            serviceRequestId: serviceData.id,
+            finalAmount: finalAmount,
+            couponCode: appliedCoupon.code,
+            originalPrice: baseAmount,
+          });
+        } catch (bonusErr) {
+          console.error('Erro ao processar bônus:', bonusErr);
+          // Não bloqueia o pagamento se o bônus falhar
+        }
+      }
+
       if (response.data.sessionUrl) {
         setPaymentStatus('redirecting');
         window.location.href = response.data.sessionUrl;

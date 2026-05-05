@@ -1,0 +1,62 @@
+{
+  "name": "WalletBonus",
+  "type": "object",
+  "properties": {
+    "wallet_id": {
+      "type": "string",
+      "description": "ID da carteira do cliente"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "ID do cliente"
+    },
+    "owner_name": {
+      "type": "string",
+      "description": "Nome do cliente (desnormalizado)"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Valor do b\u00f4nus em R$"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "coupon_excess"
+      ],
+      "description": "Motivo do b\u00f4nus"
+    },
+    "related_coupon_code": {
+      "type": "string",
+      "description": "C\u00f3digo do cupom que gerou o b\u00f4nus"
+    },
+    "related_service_request_id": {
+      "type": "string",
+      "description": "ID da solicita\u00e7\u00e3o de servi\u00e7o relacionada"
+    },
+    "is_used": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o b\u00f4nus j\u00e1 foi convertido em atendimento"
+    },
+    "used_on_service_id": {
+      "type": "string",
+      "description": "ID do servi\u00e7o em que o b\u00f4nus foi usado"
+    },
+    "used_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora que o b\u00f4nus foi utilizado"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data de expira\u00e7\u00e3o do b\u00f4nus (null = sem expira\u00e7\u00e3o)"
+    }
+  },
+  "required": [
+    "wallet_id",
+    "owner_id",
+    "amount",
+    "reason"
+  ]
+}
