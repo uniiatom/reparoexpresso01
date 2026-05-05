@@ -4,12 +4,14 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, Send, ChevronDown, ChevronUp, User, Settings } from 'lucide-react';
+import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, Send, ChevronDown, ChevronUp, User, Settings, Zap } from 'lucide-react';
 import { toast } from "sonner";
 import AttendantsManager, { loadAttendants } from './AttendantsManager';
 import { logAdminAction } from '@/lib/adminLog';
 import { useAttendantPush } from '@/hooks/useAttendantPush';
 import AttendantPushBanner from './AttendantPushBanner';
+import { QuickReplyPicker } from './QuickReplies';
+import QuickRepliesManager from './QuickReplies';
 
 const TICKET_TYPES = {
   reclamacao: { label: 'Reclamação', icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50 border-red-200' },
@@ -211,11 +213,14 @@ function TicketCard({ ticket, attendant, onUpdate }) {
 
             {/* Resposta ao cliente */}
             <div>
-              <label className="text-xs font-semibold text-foreground block mb-1.5">Resposta ao cliente</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-foreground">Resposta ao cliente</label>
+                <QuickReplyPicker onSelect={(text) => setResponse(prev => prev ? prev + '\n\n' + text : text)} />
+              </div>
               <textarea
                 value={response}
                 onChange={e => setResponse(e.target.value)}
-                placeholder="Escreva uma resposta para o cliente..."
+                placeholder="Escreva uma resposta ou use uma resposta rápida..."
                 rows={3}
                 className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
               />
@@ -249,6 +254,7 @@ export default function TicketsAdmin() {
   const [filterStatus, setFilterStatus] = useState('todos');
   const [filterType, setFilterType] = useState('todos');
   const [showManage, setShowManage] = useState(false);
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
   const queryClient = useQueryClient();
 
   // Sistema de notificações push para atendentes
@@ -305,10 +311,28 @@ export default function TicketsAdmin() {
             <p className="text-xs text-muted-foreground">@{attendant.login}</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" className="gap-2 rounded-xl" onClick={() => setAttendant(null)}>
-          <LogOut className="w-4 h-4" /> Sair
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 rounded-xl text-xs"
+            onClick={() => { setShowQuickReplies(s => !s); }}
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-500" />
+            {showQuickReplies ? 'Fechar' : 'Respostas'}
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2 rounded-xl" onClick={() => setAttendant(null)}>
+            <LogOut className="w-4 h-4" /> Sair
+          </Button>
+        </div>
       </div>
+
+      {/* Gerenciador de respostas rápidas */}
+      {showQuickReplies && (
+        <div className="border border-amber-200 bg-amber-50/30 rounded-2xl p-4">
+          <QuickRepliesManager />
+        </div>
+      )}
 
       {/* Resumo */}
       <div className="grid grid-cols-3 gap-2">
