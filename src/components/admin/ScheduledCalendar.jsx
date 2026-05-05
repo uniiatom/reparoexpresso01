@@ -190,41 +190,49 @@ export default function ScheduledCalendar() {
     return approved.filter(p => p.name?.toLowerCase().includes(providerSearch.toLowerCase()));
   }, [allProviders, providerSearch]);
 
+  // Verifica se há serviços sem prestador nos 3 dias para mostrar coluna
+  const hasUnassignedInDays = useMemo(() =>
+    dayKeys.some(dk =>
+      HOURS.some(h => serviceMap['__none__']?.[dk]?.[h]?.length > 0) ||
+      serviceMap['__none__']?.[dk]?.['none']?.length > 0
+    ), [serviceMap, dayKeys]);
+
+  const dayKeys = useMemo(() => days.map(d => format(d, 'yyyy-MM-dd')), [days]);
+
   // Serviços dos 3 dias por prestador e hora
   // serviceMap[providerId][dayKey][hour] = [service, ...]
   const serviceMap = useMemo(() => {
     const map = {};
-    // Inicializa estrutura para todos os prestadores
-    allProviders.forEach(p => {
-      map[p.id] = {};
-      days.forEach(d => {
-        const dk = format(d, 'yyyy-MM-dd');
-        map[p.id][dk] = {};
-        HOURS.forEach(h => { map[p.id][dk][h] = []; });
-        map[p.id][dk]['none'] = [];
+    // Coluna especial para sem prestador
+    const allKeys = [...allProviders.map(p => p.id), '__none__'];
+    allKeys.forEach(key => {
+      map[key] = {};
+      dayKeys.forEach(dk => {
+        map[key][dk] = {};
+        HOURS.forEach(h => { map[key][dk][h] = []; });
+        map[key][dk]['none'] = [];
       });
     });
     // Preenche serviços
     services.forEach(s => {
-      if (!s.provider_id) return;
       const dateKey = getServiceDateKey(s);
       if (!dateKey) return;
-      if (!map[s.provider_id]) return;
-      if (!map[s.provider_id][dateKey]) return; // dia fora do range
+      if (!dayKeys.includes(dateKey)) return; // dia fora do range
+      const provKey = s.provider_id && map[s.provider_id] ? s.provider_id : '__none__';
       const hour = getServiceHour(s);
       if (hour !== null) {
-        map[s.provider_id][dateKey][hour].push(s);
+        map[provKey][dateKey][hour].push(s);
       } else {
-        map[s.provider_id][dateKey]['none'].push(s);
+        map[provKey][dateKey]['none'].push(s);
       }
     });
     return map;
-  }, [services, allProviders, days]);
+  }, [services, allProviders, dayKeys]);
 
-  // Serviços sem prestador (aguardando alocação)
+  // Serviços sem prestador nos 3 dias
   const unassignedServices = useMemo(() =>
-    services.filter(s => !s.provider_id && days.some(d => format(d, 'yyyy-MM-dd') === getServiceDateKey(s))),
-    [services, days]
+    services.filter(s => !s.provider_id && dayKeys.includes(getServiceDateKey(s))),
+    [services, dayKeys]
   );
 
   // Scroll para hora atual ao montar
@@ -348,6 +356,19 @@ export default function ScheduledCalendar() {
                     {/* Header prestadores */}
                     <div className="flex border-b border-border sticky top-0 bg-card z-10">
                       <div className="w-[52px] flex-shrink-0 border-r border-border py-2" />
+                      {/* Coluna sem prestador */}
+                      {hasUnassignedInDays && (
+                        <div style={{ width: totalColWidth }}
+                          className="flex-shrink-0 border-r border-border px-2 py-2 text-center bg-yellow-50">
+                          <div className="flex items-center justify-center gap-1 mb-0.5">
+                            <div className="w-6 h-6 rounded-full bg-yellow-200 flex items-center justify-center">
+                              <Wrench className="w-3 h-3 text-yellow-700" />
+                            </div>
+                          </div>
+                          <p className="text-[10px] font-bold text-yellow-800">Sem Prestador</p>
+                          <p className="text-[9px] text-yellow-600">Aguardando</p>
+                        </div>
+                      )}
                       {providers.map(p => (
                         <div key={p.id}
                           style={{ width: totalColWidth }}
@@ -384,6 +405,23 @@ export default function ScheduledCalendar() {
                                 {String(hour).padStart(2, '0')}:00
                               </span>
                             </div>
+                            {/* Coluna sem prestador */}
+                            {hasUnassignedInDays && (() => {
+                              const slotServices = serviceMap['__none__']?.[dayKey]?.[hour] || [];
+                              return (
+                                <div style={{ width: totalColWidth }}
+                                  className="flex-shrink-0 border-r border-border p-1 min-h-[44px] bg-yellow-50/40">
+                                  {slotServices.map(s => (
+                                    <button key={s.id}
+                                      onClick={() => setSelectedService(s)}
+                                      className="w-full text-left flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium mb-0.5 hover:opacity-80 transition-opacity bg-yellow-50 border-yellow-300 text-yellow-800">
+                                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-yellow-500" />
+                                      <span className="truncate">{SERVICE_LABELS[s.service_type] || s.service_type}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                             {/* Célula por prestador */}
                             {providers.map(p => {
                               const slotServices = serviceMap[p.id]?.[dayKey]?.[hour] || [];
@@ -410,11 +448,29 @@ export default function ScheduledCalendar() {
                       })}
 
                       {/* Linha de serviços sem horário */}
-                      {providers.some(p => serviceMap[p.id]?.[dayKey]?.['none']?.length > 0) && (
+                      {(providers.some(p => serviceMap[p.id]?.[dayKey]?.['none']?.length > 0) ||
+                        serviceMap['__none__']?.[dayKey]?.['none']?.length > 0) && (
                         <div className="flex border-t-2 border-border bg-muted/30">
                           <div className="w-[52px] flex-shrink-0 border-r border-border flex items-center justify-center py-2 px-1">
                             <span className="text-[9px] text-muted-foreground font-semibold text-center leading-tight">s/ hora</span>
                           </div>
+                          {/* Sem prestador */}
+                          {hasUnassignedInDays && (() => {
+                            const slotServices = serviceMap['__none__']?.[dayKey]?.['none'] || [];
+                            return (
+                              <div style={{ width: totalColWidth }}
+                                className="flex-shrink-0 border-r border-border p-1 min-h-[36px] bg-yellow-50/40">
+                                {slotServices.map(s => (
+                                  <button key={s.id}
+                                    onClick={() => setSelectedService(s)}
+                                    className="w-full text-left flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium mb-0.5 hover:opacity-80 transition-opacity bg-yellow-50 border-yellow-300 text-yellow-800">
+                                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-yellow-500" />
+                                    <span className="truncate">{SERVICE_LABELS[s.service_type] || s.service_type}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            );
+                          })()}
                           {providers.map(p => {
                             const slotServices = serviceMap[p.id]?.[dayKey]?.['none'] || [];
                             return (
