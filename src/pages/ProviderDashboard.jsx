@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, DollarSign, CheckCircle2, Clock, MapPin, Star, TrendingUp, AlertCircle, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import ProviderTicketForm from '@/components/ProviderTicketForm';
 import ProviderEarningsWithdrawal from '@/components/ProviderEarningsWithdrawal';
@@ -108,8 +108,24 @@ export default function ProviderDashboard() {
     cancelado: 'Cancelado',
   };
 
+  console.log('[ProviderDashboard] completionService:', completionService);
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Modal de Conclusão */}
+      <AnimatePresence>
+        {completionService && (
+          <ServiceCompletionModal
+            service={completionService}
+            onSuccess={() => {
+              setCompletionService(null);
+              acceptedServicesQuery.refetch();
+            }}
+            onCancel={() => setCompletionService(null)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Modal de Recusa */}
       {refusalService && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -139,18 +155,6 @@ export default function ProviderDashboard() {
             </div>
           </motion.div>
         </div>
-      )}
-
-      {/* Modal de Conclusão */}
-      {completionService && (
-        <ServiceCompletionModal
-          service={completionService}
-          onSuccess={() => {
-            setCompletionService(null);
-            acceptedServicesQuery.refetch();
-          }}
-          onCancel={() => setCompletionService(null)}
-        />
       )}
 
       <div className="max-w-5xl mx-auto px-4 py-6">
