@@ -218,7 +218,13 @@ export default function SolicitarServico() {
    client_name: clientProfile?.name || '',
    client_phone: clientProfile?.phone || '',
    referral_code: urlParams.get('ref') || '',
+   coupon_code: '',
   });
+
+  const [couponCode, setCouponCode] = useState('');
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
 
   const [loadingCep, setLoadingCep] = useState(false);
   const [cepError, setCepError] = useState('');
@@ -316,6 +322,39 @@ export default function SolicitarServico() {
   };
 
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const validateAndApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setValidatingCoupon(true);
+    setCouponError('');
+    try {
+      const response = await base44.functions.invoke('validateCoupon', {
+        coupon_code: couponCode.toUpperCase(),
+        service_amount: form.client_suggested_price || 0,
+        service_types: form.service_type,
+      });
+
+      if (response.data.valid) {
+        setAppliedCoupon({
+          code: couponCode.toUpperCase(),
+          discount_type: response.data.discount_type,
+          discount_value: response.data.discount_value,
+        });
+        setCouponCode('');
+      } else {
+        setCouponError(response.data.message || 'Cupom inválido ou expirado');
+      }
+    } catch (err) {
+      setCouponError(err.response?.data?.message || 'Erro ao validar cupom');
+    }
+    setValidatingCoupon(false);
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
+  };
 
   const calcDistance = (lat1, lon1, lat2, lon2) => {
     if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -1686,6 +1725,52 @@ export default function SolicitarServico() {
               <Label>Código de indicação <span className="text-muted-foreground font-normal">(opcional)</span></Label>
               <Input placeholder="Ex: AMIGO123" value={form.referral_code} onChange={e => set('referral_code', e.target.value.toUpperCase())} className="rounded-2xl" />
             </div>
+
+            {/* Cupom */}
+            <div className="space-y-2 border-t border-border pt-4">
+              <Label className="flex items-center gap-1 text-sm font-semibold">🎟️ Cupom de desconto</Label>
+              {!appliedCoupon ? (
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => {
+                      setCouponCode(e.target.value.toUpperCase());
+                      setCouponError(null);
+                    }}
+                    placeholder="Código do cupom"
+                    disabled={validatingCoupon}
+                    className="flex-1 rounded-2xl"
+                  />
+                  <Button
+                    onClick={validateAndApplyCoupon}
+                    disabled={!couponCode.trim() || validatingCoupon}
+                    variant="outline"
+                    className="rounded-2xl"
+                  >
+                    {validatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : 'OK'}
+                  </Button>
+                </div>
+              ) : (
+                <div className="bg-green-50 rounded-2xl p-3 border border-green-200 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">✓</span>
+                    <div>
+                      <p className="font-semibold text-green-900 text-sm">{appliedCoupon.code}</p>
+                      <p className="text-xs text-green-700">
+                        {appliedCoupon.discount_type === 'percentage'
+                          ? `${appliedCoupon.discount_value}% OFF`
+                          : `R$ ${appliedCoupon.discount_value.toFixed(2)}`}
+                      </p>
+                    </div>
+                  </div>
+                  <button onClick={removeCoupon} className="text-green-700 hover:text-green-900">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              {couponError && <p className="text-xs text-destructive">{couponError}</p>}
+            </div>
           </div>
           {/* Resumo */}
           <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20 space-y-1">
@@ -1780,6 +1865,7 @@ export default function SolicitarServico() {
           form={{
             ...form,
             tv_size: tvSize,
+            coupon_code: appliedCoupon?.code || '',
             requires_two_providers: (form.service_type.includes('instalacao_suporte_tv') && tvSize === 'acima55') ||
               (form.service_type.includes('limpeza_caixa_dagua') && caixaDaguaTipo === 'condominio'),
           }}
