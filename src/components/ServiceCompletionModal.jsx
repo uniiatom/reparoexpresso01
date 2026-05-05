@@ -190,7 +190,7 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
                 <Button
                   type="button"
                   onClick={handleSubmitReason}
-                  disabled={submitCompletion.isPending || !reason.trim()}
+                  disabled={submitCompletion.isPending || (selectedOption?.requiresReason && !reason.trim())}
                   className="flex-1 rounded-xl h-11 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   {submitCompletion.isPending ? (

@@ -21,8 +21,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Serviço não encontrado' }, { status: 404 });
     }
 
+    // Buscar provider do usuário
+    const providers = await base44.asServiceRole.entities.Provider.filter({ user_id: user.id });
+    const provider = providers?.[0];
+    if (!provider) {
+      return Response.json({ error: 'Prestador não encontrado' }, { status: 404 });
+    }
+
     // Validar permissão (apenas prestador do serviço)
-    if (serviceRequest.provider_id !== user.id) {
+    if (serviceRequest.provider_id !== provider.id) {
       return Response.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
