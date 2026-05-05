@@ -8,8 +8,9 @@ import { motion } from 'framer-motion';
 import WalletCard from '@/components/wallet/WalletCard';
 import TransactionList from '@/components/wallet/TransactionList';
 import WithdrawModal from '@/components/wallet/WithdrawModal';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Gift } from 'lucide-react';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Wallet() {
   const navigate = useNavigate();
@@ -61,6 +62,15 @@ export default function Wallet() {
       50
     ),
     enabled: !!wallet?.id,
+  });
+
+  const { data: bonuses = [], refetch: refetchBonuses } = useQuery({
+    queryKey: ['wallet-bonuses', user?.id],
+    queryFn: () => base44.entities.WalletBonus.filter(
+      { owner_id: user.id, is_used: false },
+      '-created_date'
+    ),
+    enabled: !!user?.id && ownerType === 'cliente',
   });
 
   const filtered = filter === 'all'
@@ -154,34 +164,98 @@ export default function Wallet() {
         </div>
       )}
 
-      {/* Transaction filter */}
-      <div className="flex items-center gap-2 mb-4">
-        <Filter className="w-4 h-4 text-muted-foreground" />
-        <p className="text-sm font-bold text-foreground flex-1">Extrato</p>
-        <div className="flex gap-1">
-          {[
-            { key: 'all', label: 'Todos' },
-            { key: 'in', label: 'Entradas' },
-            { key: 'out', label: 'Saídas' },
-          ].map(f => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${filter === f.key ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'}`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Tabs */}
+      <Tabs defaultValue="transactions" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="transactions">Extrato</TabsTrigger>
+          {bonuses.length > 0 && (
+            <TabsTrigger value="bonuses" className="relative">
+              Bônus
+              <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                {bonuses.length}
+              </span>
+            </TabsTrigger>
+          )}
+        </TabsList>
 
-      {txLoading ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="w-6 h-6 text-primary animate-spin" />
-        </div>
-      ) : (
-        <TransactionList transactions={filtered} />
-      )}
+        <TabsContent value="transactions" className="space-y-3">
+          {/* Transaction filter */}
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <p className="text-sm font-bold text-foreground flex-1">Filtro</p>
+            <div className="flex gap-1">
+              {[
+                { key: 'all', label: 'Todos' },
+                { key: 'in', label: 'Entradas' },
+                { key: 'out', label: 'Saídas' },
+              ].map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setFilter(f.key)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${filter === f.key ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'}`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {txLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-6 h-6 text-primary animate-spin" />
+            </div>
+          ) : (
+            <TransactionList transactions={filtered} />
+          )}
+        </TabsContent>
+
+        {bonuses.length > 0 && (
+          <TabsContent value="bonuses" className="space-y-3">
+            <div className="space-y-2">
+              {bonuses.map(bonus => (
+                <motion.div
+                  key={bonus.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="text-2xl">🎁</div>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-foreground">Bônus de Cupom</p>
+                        <p className="text-xs text-muted-foreground">{bonus.related_coupon_code}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-amber-700">
+                        R$ {bonus.amount.toFixed(2)}
+                      </p>
+                      <Button
+                        size="sm"
+                        className="mt-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg h-7 text-xs"
+                        onClick={async () => {
+                          try {
+                            await base44.functions.invoke('creditBonusToWallet', { bonusId: bonus.id });
+                            toast.success('Bônus adicionado à carteira!');
+                            refetchBonuses();
+                            refetchWallet();
+                            refetchTx();
+                          } catch (err) {
+                            toast.error('Erro ao adicionar bônus');
+                          }
+                        }}
+                      >
+                        Adicionar
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </TabsContent>
+        )}
+      </Tabs>
 
       {showWithdraw && wallet && (
         <WithdrawModal
