@@ -18,12 +18,19 @@ const RECURRENCE_LABELS = {
 };
 
 const SERVICE_LABELS = {
-  eletrica: 'Elétrica',
-  hidraulica: 'Hidráulica',
-  limpeza_calha: 'Limpeza de Calha',
-  limpeza_caixa_dagua: 'Limpeza Caixa d\'Água',
-  ar_condicionado: 'Ar Condicionado',
-  manutencao: 'Manutenção Preventiva'
+   eletrica: 'Elétrica',
+   hidraulica: 'Hidráulica',
+   limpeza_calha: 'Limpeza de Calha',
+   limpeza_caixa_dagua: 'Limpeza Caixa d\'Água',
+   ar_condicionado: 'Ar Condicionado',
+   manutencao: 'Manutenção Preventiva'
+};
+
+const formatDateSafely = (dateString) => {
+  if (!dateString) return '—';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime()) || date.getFullYear() < 2000) return '—';
+  return date.toLocaleDateString('pt-BR');
 };
 
 export default function RecurringServicesList({ clientId }) {
@@ -117,31 +124,31 @@ export default function RecurringServicesList({ clientId }) {
               </div>
 
               <div className="flex items-start gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-foreground">Próximo serviço</p>
-                  <p className="text-muted-foreground">
-                    {schedule.next_service_date && new Date(schedule.next_service_date).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-              </div>
+                 <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                 <div>
+                   <p className="font-medium text-foreground">Próximo serviço</p>
+                   <p className="text-muted-foreground">
+                     {formatDateSafely(schedule.next_service_date)}
+                   </p>
+                 </div>
+               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border">
-              <div>
-                <p className="text-muted-foreground">Início</p>
-                <p className="font-medium text-foreground">
-                  {new Date(schedule.start_date).toLocaleDateString('pt-BR')}
-                </p>
-              </div>
-              {schedule.end_date && (
-                <div>
-                  <p className="text-muted-foreground">Término</p>
-                  <p className="font-medium text-foreground">
-                    {new Date(schedule.end_date).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-              )}
+               <div>
+                 <p className="text-muted-foreground">Início</p>
+                 <p className="font-medium text-foreground">
+                   {formatDateSafely(schedule.start_date)}
+                 </p>
+               </div>
+               {schedule.end_date && (
+                 <div>
+                   <p className="text-muted-foreground">Término</p>
+                   <p className="font-medium text-foreground">
+                     {formatDateSafely(schedule.end_date)}
+                   </p>
+                 </div>
+               )}
               <div>
                 <p className="text-muted-foreground">Serviços criados</p>
                 <p className="font-medium text-foreground">{schedule.total_occurrences_created}</p>
