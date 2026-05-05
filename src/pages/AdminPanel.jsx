@@ -28,6 +28,7 @@ import TermsManager from '../components/admin/TermsManager';
 import ProviderTermsManager from '../components/admin/ProviderTermsManager';
 import ClientTermsManager from '../components/admin/ClientTermsManager';
 import TicketsAdmin from '../components/admin/TicketsAdmin';
+import ScheduledCalendar from '../components/admin/ScheduledCalendar';
 import ReembolsosRepasses from '../components/admin/ReembolsosRepasses';
 import ActivityLog from '../components/admin/ActivityLog';
 import { logAdminAction } from '@/lib/adminLog';
@@ -230,6 +231,7 @@ export default function AdminPanel() {
       <Tabs defaultValue="analytics">
         <TabsList className="mb-3 flex flex-wrap gap-1 h-auto p-1">
           <TabsTrigger value="analytics" className="text-xs px-2 py-1">📊 Analytics</TabsTrigger>
+          <TabsTrigger value="calendario" className="text-xs px-2 py-1">📅 Calendário</TabsTrigger>
           <TabsTrigger value="optimizer" className="text-xs px-2 py-1">🎯 Rotas</TabsTrigger>
           <TabsTrigger value="requests" className="text-xs px-2 py-1">Chamados</TabsTrigger>
           <TabsTrigger value="providers" className="text-xs px-2 py-1">
@@ -286,6 +288,10 @@ export default function AdminPanel() {
 
         <TabsContent value="analytics">
           <Analytics />
+        </TabsContent>
+
+        <TabsContent value="calendario">
+          <ScheduledCalendar />
         </TabsContent>
 
         <TabsContent value="optimizer">
