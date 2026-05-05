@@ -26,6 +26,16 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, message: 'Bônus já foi utilizado' }, { status: 200 });
     }
 
+    // Valida se o bônus foi validado pelo prestador
+    if (targetBonus.validation_status !== 'validated') {
+      console.log(`Bônus ${bonusId} aguardando validação do prestador (status: ${targetBonus.validation_status})`);
+      return Response.json({ 
+        success: false, 
+        message: 'Bônus ainda não foi validado pelo prestador',
+        validation_status: targetBonus.validation_status
+      }, { status: 200 });
+    }
+
     // Busca ou cria carteira do cliente
     const wallets = await base44.entities.Wallet.filter({
       owner_id: targetBonus.owner_id,

@@ -33,6 +33,25 @@
       "type": "string",
       "description": "ID da solicita\u00e7\u00e3o de servi\u00e7o relacionada"
     },
+    "validation_status": {
+      "type": "string",
+      "enum": [
+        "pending_provider_confirmation",
+        "validated",
+        "expired"
+      ],
+      "default": "pending_provider_confirmation",
+      "description": "Status de valida\u00e7\u00e3o do b\u00f4nus"
+    },
+    "validated_by": {
+      "type": "string",
+      "description": "Email do prestador que validou"
+    },
+    "validated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora da valida\u00e7\u00e3o"
+    },
     "is_used": {
       "type": "boolean",
       "default": false,
