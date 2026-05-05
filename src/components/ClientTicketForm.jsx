@@ -53,12 +53,17 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
           if (unique.length >= 10) break;
         }
       }
-      // Busca fotos dos prestadores
+      // Busca fotos dos prestadores individualmente
       if (unique.length === 0) return [];
-      const providerIds = unique.map(s => s.provider_id);
-      const providers = await base44.entities.Provider.list('-created_date', 200);
+      const providerResults = await Promise.all(
+        unique.map(s =>
+          base44.entities.Provider.filter({ id: s.provider_id }, '-created_date', 1)
+            .then(res => res[0] || null)
+            .catch(() => null)
+        )
+      );
       const provMap = {};
-      providers.forEach(p => { provMap[p.id] = p; });
+      providerResults.forEach(p => { if (p) provMap[p.id] = p; });
       return unique.map(s => ({
         service_request_id: s.id,
         provider_id: s.provider_id,
