@@ -190,13 +190,6 @@ export default function ScheduledCalendar() {
     return approved.filter(p => p.name?.toLowerCase().includes(providerSearch.toLowerCase()));
   }, [allProviders, providerSearch]);
 
-  // Verifica se há serviços sem prestador nos 3 dias para mostrar coluna
-  const hasUnassignedInDays = useMemo(() =>
-    dayKeys.some(dk =>
-      HOURS.some(h => serviceMap['__none__']?.[dk]?.[h]?.length > 0) ||
-      serviceMap['__none__']?.[dk]?.['none']?.length > 0
-    ), [serviceMap, dayKeys]);
-
   const dayKeys = useMemo(() => days.map(d => format(d, 'yyyy-MM-dd')), [days]);
 
   // Serviços dos 3 dias por prestador e hora
@@ -234,6 +227,13 @@ export default function ScheduledCalendar() {
     services.filter(s => !s.provider_id && dayKeys.includes(getServiceDateKey(s))),
     [services, dayKeys]
   );
+
+  // Verifica se há serviços sem prestador nos 3 dias para mostrar coluna
+  const hasUnassignedInDays = useMemo(() =>
+    dayKeys.some(dk =>
+      HOURS.some(h => serviceMap['__none__']?.[dk]?.[h]?.length > 0) ||
+      serviceMap['__none__']?.[dk]?.['none']?.length > 0
+    ), [serviceMap, dayKeys]);
 
   // Scroll para hora atual ao montar
   useEffect(() => {
