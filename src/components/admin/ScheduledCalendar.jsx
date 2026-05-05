@@ -93,11 +93,15 @@ function getServiceDateKey(s) {
   return null;
 }
 
-function DayCell({ day, services, conflicts, currentMonth, onServiceClick }) {
+function DayCell({ day, services, providers, conflicts, currentMonth, onServiceClick }) {
   const isCurrentMonth = isSameMonth(day, currentMonth);
   const dayKey = format(day, 'yyyy-MM-dd');
   const dayServices = services.filter(s => getServiceDateKey(s) === dayKey);
   const hasConflict = dayServices.some(s => conflicts.has(s.id));
+
+  // Prestadores com serviço neste dia
+  const providerIdsInDay = new Set(dayServices.filter(s => s.provider_id).map(s => s.provider_id));
+  const providersInDay = providers.filter(p => providerIdsInDay.has(p.id));
 
   return (
     <Droppable droppableId={dayKey}>
@@ -124,6 +128,20 @@ function DayCell({ day, services, conflicts, currentMonth, onServiceClick }) {
               <AlertTriangle className="w-3 h-3 text-red-500" />
             )}
           </div>
+
+          {/* Contadores do dia */}
+          {dayServices.length > 0 && (
+            <div className="flex gap-1 mb-0.5 flex-wrap">
+              <span className="flex items-center gap-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[9px] font-bold px-1 py-0.5 rounded">
+                <Wrench className="w-2 h-2" />{dayServices.length}
+              </span>
+              {providersInDay.length > 0 && (
+                <span className="flex items-center gap-0.5 bg-green-50 border border-green-200 text-green-700 text-[9px] font-bold px-1 py-0.5 rounded">
+                  <User className="w-2 h-2" />{providersInDay.length}
+                </span>
+              )}
+            </div>
+          )}
           <div className="space-y-px">
             {dayServices.slice(0, 3).map((s, i) => (
               <ServiceChip
@@ -374,6 +392,7 @@ export default function ScheduledCalendar() {
                   key={day.toISOString()}
                   day={day}
                   services={services}
+                  providers={providers}
                   conflicts={conflicts}
                   currentMonth={currentMonth}
                   onServiceClick={setSelectedService}
