@@ -44,8 +44,10 @@ function detectConflicts(services) {
   const conflicts = new Set();
   const byProvider = {};
   services.forEach(s => {
-    if (!s.provider_id || !s.scheduled_date) return;
-    const key = `${s.provider_id}_${s.scheduled_date}`;
+    if (!s.provider_id) return;
+    const dateKey = s.scheduled_date || (s.created_date ? s.created_date.slice(0, 10) : null);
+    if (!dateKey) return;
+    const key = `${s.provider_id}_${dateKey}`;
     if (!byProvider[key]) byProvider[key] = [];
     byProvider[key].push(s.id);
   });
@@ -83,10 +85,18 @@ function ServiceChip({ service, index, isConflict, onClick }) {
   );
 }
 
+// Retorna a data efetiva do serviço para exibição no calendário
+function getServiceDateKey(s) {
+  if (s.scheduled_date) return s.scheduled_date;
+  // Serviços imediatos sem data agendada: usa data de criação
+  if (s.created_date) return s.created_date.slice(0, 10);
+  return null;
+}
+
 function DayCell({ day, services, conflicts, currentMonth, onServiceClick }) {
   const isCurrentMonth = isSameMonth(day, currentMonth);
   const dayKey = format(day, 'yyyy-MM-dd');
-  const dayServices = services.filter(s => s.scheduled_date === dayKey);
+  const dayServices = services.filter(s => getServiceDateKey(s) === dayKey);
   const hasConflict = dayServices.some(s => conflicts.has(s.id));
 
   return (
@@ -220,24 +230,12 @@ export default function ScheduledCalendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedService, setSelectedService] = useState(null);
 
-  const { data: allServices = [] } = useQuery({
+  // Busca todos os serviços ativos (aguardando, aceito, em_andamento, agendado)
+  const { data: services = [] } = useQuery({
     queryKey: ['scheduled-calendar-services'],
-    queryFn: () => base44.entities.ServiceRequest.filter(
-      { status: 'agendado' },
-      '-scheduled_date',
-      200
-    ),
+    queryFn: () => base44.entities.ServiceRequest.list('-created_date', 500),
     refetchInterval: 30000,
-  });
-
-  // Inclui também serviços aguardando/aceitos com data agendada
-  const { data: otherScheduled = [] } = useQuery({
-    queryKey: ['scheduled-calendar-other'],
-    queryFn: async () => {
-      const r = await base44.entities.ServiceRequest.list('-scheduled_date', 300);
-      return r.filter(s => s.scheduled_date && ['aguardando', 'aceito', 'em_andamento'].includes(s.status));
-    },
-    refetchInterval: 30000,
+    select: (r) => r.filter(s => ['aguardando', 'aceito', 'em_andamento', 'agendado'].includes(s.status)),
   });
 
   const { data: providers = [] } = useQuery({
@@ -245,23 +243,12 @@ export default function ScheduledCalendar() {
     queryFn: () => base44.entities.Provider.list(),
   });
 
-  const services = useMemo(() => {
-    const combined = [...allServices, ...otherScheduled];
-    const seen = new Set();
-    return combined.filter(s => {
-      if (seen.has(s.id)) return false;
-      seen.add(s.id);
-      return true;
-    });
-  }, [allServices, otherScheduled]);
-
   const conflicts = useMemo(() => detectConflicts(services), [services]);
 
   const updateService = useMutation({
     mutationFn: ({ id, updates }) => base44.entities.ServiceRequest.update(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-calendar-services'] });
-      queryClient.invalidateQueries({ queryKey: ['scheduled-calendar-other'] });
       toast.success('Serviço atualizado');
     },
     onError: () => toast.error('Erro ao atualizar serviço'),
@@ -297,9 +284,10 @@ export default function ScheduledCalendar() {
 
   const conflictCount = conflicts.size;
   const monthServices = services.filter(s => {
-    if (!s.scheduled_date) return false;
+    const dateKey = getServiceDateKey(s);
+    if (!dateKey) return false;
     try {
-      return isSameMonth(parseISO(s.scheduled_date), currentMonth);
+      return isSameMonth(parseISO(dateKey), currentMonth);
     } catch { return false; }
   });
 
