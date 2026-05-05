@@ -102,16 +102,20 @@ export default function RecurringServiceForm({ clientId, clientName, clientPhone
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={onCancel}>
-      <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-        
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-bold text-foreground">Agendar serviço recorrente</h3>
-          <button onClick={onCancel} className="text-muted-foreground hover:text-foreground">
-            <X className="w-5 h-5" />
-          </button>
+      <div className="bg-card w-full max-w-lg rounded-t-3xl flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+        {/* Cabeçalho fixo */}
+        <div className="p-6 pb-4 border-b border-border flex-shrink-0">
+          <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-foreground">Agendar serviço recorrente</h3>
+            <button onClick={onCancel} className="text-muted-foreground hover:text-foreground">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
+        {/* Conteúdo com scroll */}
+        <div className="overflow-y-auto flex-1 p-6">
         <div className="space-y-4">
           {/* Tipo de serviço */}
           <div className="space-y-2">
@@ -277,25 +281,27 @@ export default function RecurringServiceForm({ clientId, clientName, clientPhone
             ℹ️ Os serviços serão criados automaticamente nas datas agendadas. Você receberá notificações para cada novo agendamento.
           </div>
 
-          {/* Botões */}
-          <div className="flex gap-3 pt-4 border-t border-border">
-            <Button variant="outline" onClick={onCancel} className="flex-1 rounded-lg">
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => createMutation.mutate(form)}
-              disabled={!canSubmit() || createMutation.isPending}
-              className="flex-1 rounded-lg"
-            >
-              {createMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <Plus className="w-4 h-4 mr-2" /> Agendar
-                </>
-              )}
-            </Button>
           </div>
+        </div>
+
+        {/* Botões fixos no rodapé */}
+        <div className="flex gap-3 p-6 pt-4 border-t border-border flex-shrink-0 bg-card">
+          <Button variant="outline" onClick={onCancel} className="flex-1 rounded-lg">
+            Cancelar
+          </Button>
+          <Button
+            onClick={() => createMutation.mutate(form)}
+            disabled={!canSubmit() || createMutation.isPending}
+            className="flex-1 rounded-lg"
+          >
+            {createMutation.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-2" /> Agendar
+              </>
+            )}
+          </Button>
         </div>
       </div>
     </div>
