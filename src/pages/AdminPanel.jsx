@@ -30,6 +30,7 @@ import ClientTermsManager from '../components/admin/ClientTermsManager';
 import TicketsAdmin from '../components/admin/TicketsAdmin';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Link } from 'react-router-dom';
 
 const STATUS_COLORS = {
   aguardando: "bg-yellow-100 text-yellow-800",
@@ -137,7 +138,14 @@ export default function AdminPanel() {
       {/* Alerta visual de serviços vencendo */}
       <ExpiringServicesAlert />
 
-      <h1 className="text-2xl font-bold text-foreground mb-6">Painel Administrativo</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-foreground">Painel Administrativo</h1>
+        <Link to="/dashboard-admin">
+          <Button size="sm" className="gap-2 rounded-xl bg-primary">
+            <Activity className="w-4 h-4" /> Dashboard Executivo
+          </Button>
+        </Link>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-4">
