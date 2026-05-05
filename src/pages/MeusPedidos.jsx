@@ -4,7 +4,6 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronRight, MapPin, Calendar, DollarSign, Star, Clock, CheckCircle2, AlertCircle, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from 'react-router-dom';
