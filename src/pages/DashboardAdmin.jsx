@@ -12,7 +12,23 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  BarChart, Bar, PieChart, Pie, Cell, Legend
+} from 'recharts';
+
+const STATUS_LABELS_FULL = {
+  aguardando: 'Aguardando', aceito: 'Aceito', a_caminho: 'A caminho',
+  em_andamento: 'Em andamento', concluido: 'Concluído', cancelado: 'Cancelado', agendado: 'Agendado',
+};
+
+const STATUS_CHART_COLORS = {
+  aguardando: '#f59e0b', aceito: '#6366f1', a_caminho: '#3b82f6',
+  em_andamento: '#8b5cf6', concluido: '#22c55e', cancelado: '#ef4444', agendado: '#0ea5e9',
+};
+
+const TICKET_COLORS = ['#ef4444', '#22c55e', '#3b82f6', '#f59e0b'];
+const TICKET_TYPE_LABELS = { reclamacao: 'Reclamação', elogio: 'Elogio', sugestao: 'Sugestão', duvida: 'Dúvida' };
 
 const SERVICE_LABELS = {
   eletrica: 'Elétrica', hidraulica: 'Hidráulica', pintura: 'Pintura',
@@ -149,6 +165,42 @@ export default function DashboardAdmin() {
       .slice(0, 5)
       .map(([type, count]) => ({ type, count }));
 
+    // Gráfico 1: serviços por status
+    const statusGroups = {};
+    requests.forEach(r => {
+      statusGroups[r.status] = (statusGroups[r.status] || 0) + 1;
+    });
+    const servicesByStatus = Object.entries(statusGroups)
+      .filter(([s]) => s !== 'cancelado' || statusGroups[s] > 0)
+      .sort((a, b) => b[1] - a[1])
+      .map(([status, total]) => ({
+        name: STATUS_LABELS_FULL[status] || status,
+        total,
+        fill: STATUS_CHART_COLORS[status] || '#94a3b8',
+      }));
+
+    // Gráfico 2: tickets por tipo
+    const ticketTypeGroups = {};
+    tickets.filter(t => t.status !== 'fechado').forEach(t => {
+      ticketTypeGroups[t.type] = (ticketTypeGroups[t.type] || 0) + 1;
+    });
+    const ticketsByType = Object.entries(ticketTypeGroups).map(([type, value]) => ({
+      name: TICKET_TYPE_LABELS[type] || type,
+      value,
+    }));
+
+    // Gráfico 3: top prestadores por serviços concluídos
+    const providerJobMap = {};
+    requests.filter(r => r.status === 'concluido' && r.provider_id).forEach(r => {
+      if (!providerJobMap[r.provider_id]) {
+        providerJobMap[r.provider_id] = { name: r.provider_name || 'Prestador', concluidos: 0 };
+      }
+      providerJobMap[r.provider_id].concluidos += 1;
+    });
+    const topProviders = Object.values(providerJobMap)
+      .sort((a, b) => b.concluidos - a.concluidos)
+      .slice(0, 8);
+
     return {
       monthRevenue,
       monthCompleted: monthCompleted.length,
@@ -164,6 +216,9 @@ export default function DashboardAdmin() {
       revenueTrend,
       pendingByType,
       pendingList: pending.slice(0, 8),
+      servicesByStatus,
+      ticketsByType,
+      topProviders,
     };
   }, [requests, providers, tickets]);
 
@@ -327,6 +382,129 @@ export default function DashboardAdmin() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── NOVOS GRÁFICOS DE DESEMPENHO ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {/* Gráfico 1: Serviços por Status */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Activity className="w-4 h-4 text-primary" /> Serviços por Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {stats.servicesByStatus.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-10">Sem dados</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={stats.servicesByStatus} layout="vertical" margin={{ left: 8, right: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                  <XAxis type="number" style={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
+                  <YAxis type="category" dataKey="name" width={95} style={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12 }}
+                    formatter={(v) => [v, 'Serviços']}
+                  />
+                  <Bar dataKey="total" radius={[0, 6, 6, 0]}>
+                    {stats.servicesByStatus.map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Gráfico 2: Tickets Abertos por Tipo */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <FileText className="w-4 h-4 text-blue-600" /> Tickets por Tipo
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {stats.ticketsByType.length === 0 ? (
+              <div className="text-center py-8">
+                <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Sem tickets abertos</p>
+              </div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={160}>
+                  <PieChart>
+                    <Pie
+                      data={stats.ticketsByType}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={70}
+                      dataKey="value"
+                      paddingAngle={3}
+                    >
+                      {stats.ticketsByType.map((_, i) => (
+                        <Cell key={i} fill={TICKET_COLORS[i % TICKET_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12 }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex flex-col gap-1 mt-1">
+                  {stats.ticketsByType.map((entry, i) => (
+                    <div key={entry.name} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: TICKET_COLORS[i % TICKET_COLORS.length] }} />
+                        <span className="text-muted-foreground">{entry.name}</span>
+                      </div>
+                      <span className="font-bold text-foreground">{entry.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Gráfico 3: Top Prestadores */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Star className="w-4 h-4 text-amber-500" /> Top Prestadores — Serviços Concluídos
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {stats.topProviders.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">Nenhum serviço concluído ainda</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {stats.topProviders.map((prov, i) => (
+                <div key={prov.name} className="flex items-center gap-3 p-3 bg-muted/50 border border-border rounded-xl">
+                  <div className={cn(
+                    'w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-sm flex-shrink-0',
+                    i === 0 ? 'bg-amber-400 text-white' :
+                    i === 1 ? 'bg-slate-300 text-slate-700' :
+                    i === 2 ? 'bg-orange-300 text-orange-800' :
+                    'bg-muted text-muted-foreground'
+                  )}>
+                    {i + 1}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-foreground truncate">{prov.name}</p>
+                    <p className="text-xs text-muted-foreground">{prov.concluidos} concluído{prov.concluidos !== 1 ? 's' : ''}</p>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <div className="text-lg font-extrabold text-primary">{prov.concluidos}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Linha 3: Serviços pendentes + Prestadores aguardando + Alertas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
