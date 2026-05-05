@@ -163,9 +163,8 @@ export default function ScheduledCalendar() {
     queryFn: () => base44.entities.ServiceRequest.list('-created_date', 500),
     refetchInterval: 30000,
     select: (r) => r.filter(s => 
-      // Serviços ativos + agendados com data
-      (['aguardando', 'aceito', 'em_andamento'].includes(s.status)) ||
-      (s.status === 'agendado' && s.scheduled_date)
+      // Inclui: aguardando (novo), aceito, em_andamento, agendado com data
+      (['aguardando', 'aceito', 'em_andamento', 'agendado'].includes(s.status))
     ),
   });
 
