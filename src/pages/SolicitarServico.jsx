@@ -329,23 +329,23 @@ export default function SolicitarServico() {
     setCouponError('');
     try {
       const response = await base44.functions.invoke('validateCoupon', {
-        coupon_code: couponCode.toUpperCase(),
-        service_amount: form.client_suggested_price || 0,
-        service_types: form.service_type,
+        couponCode: couponCode.toUpperCase(),
+        amount: form.client_suggested_price ? Number(form.client_suggested_price) : 0,
+        service_type: form.service_type[0],
       });
 
       if (response.data.valid) {
         setAppliedCoupon({
-          code: couponCode.toUpperCase(),
-          discount_type: response.data.discount_type,
-          discount_value: response.data.discount_value,
+          code: response.data.coupon.code,
+          discount_type: response.data.coupon.discount_type,
+          discount_value: response.data.coupon.discount_value,
         });
         setCouponCode('');
       } else {
         setCouponError(response.data.message || 'Cupom inválido ou expirado');
       }
     } catch (err) {
-      setCouponError(err.response?.data?.message || 'Erro ao validar cupom');
+      setCouponError(err.response?.data?.error || 'Erro ao validar cupom');
     }
     setValidatingCoupon(false);
   };
