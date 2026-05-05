@@ -194,71 +194,71 @@ export default function MeusPedidos() {
                 );
               })}
             </div>
-            ) : (
+          ) : (
             <div className="text-center py-8">
               <p className="text-muted-foreground text-sm">Nenhum serviço em andamento</p>
             </div>
-            )}
-            </div>
-            )}
+          )}
+        </div>
+      )}
 
-            {/* Tab: Histórico (Serviços Executados) */}
-            {activeTab === 'history' && (
+      {/* Tab: Histórico (Serviços Executados) */}
+      {activeTab === 'history' && (
+        <div className="space-y-3">
+          {completedRequests.length > 0 ? (
             <div className="space-y-3">
-            {completedRequests.length > 0 ? (
-            <div className="space-y-3">
-             {completedRequests.map(req => {
-               const statusConfig = STATUS_CONFIG[req.status];
-               const StatusIcon = statusConfig.icon;
-               return (
-                 <Card key={req.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                   <CardContent className="p-4">
-                     <button
-                       onClick={() => navigate(`/acompanhar/${req.id}`)}
-                       className="w-full text-left space-y-3"
-                     >
-                       <div className="flex items-start justify-between gap-3">
-                         <div>
-                           <p className="font-semibold text-foreground">{SERVICE_LABELS[req.service_type] || req.service_type}</p>
-                           <p className="text-xs text-muted-foreground mt-1">{req.description?.substring(0, 60)}...</p>
-                         </div>
-                         <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
-                       </div>
+              {completedRequests.map(req => {
+                const statusConfig = STATUS_CONFIG[req.status];
+                const StatusIcon = statusConfig.icon;
+                return (
+                  <Card key={req.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <CardContent className="p-4">
+                      <button
+                        onClick={() => navigate(`/acompanhar/${req.id}`)}
+                        className="w-full text-left space-y-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-foreground">{SERVICE_LABELS[req.service_type] || req.service_type}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{req.description?.substring(0, 60)}...</p>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
+                        </div>
 
-                       <div className="flex items-center justify-between">
-                         <Badge className={cn("text-xs border-0", statusConfig.color)}>
-                           <StatusIcon className="w-3 h-3 mr-1" />
-                           {statusConfig.label}
-                         </Badge>
-                         {req.final_price && (
-                           <p className="font-semibold text-primary">R$ {req.final_price.toFixed(2)}</p>
-                         )}
-                       </div>
+                        <div className="flex items-center justify-between">
+                          <Badge className={cn("text-xs border-0", statusConfig.color)}>
+                            <StatusIcon className="w-3 h-3 mr-1" />
+                            {statusConfig.label}
+                          </Badge>
+                          {req.final_price && (
+                            <p className="font-semibold text-primary">R$ {req.final_price.toFixed(2)}</p>
+                          )}
+                        </div>
 
-                       {req.rating_client && (
-                         <div className="flex items-center gap-2 text-xs">
-                           <span className="flex items-center gap-1 text-yellow-600">
-                             <Star className="w-3 h-3 fill-current" />
-                             {req.rating_client.toFixed(1)}
-                           </span>
-                           {req.rating_comment && (
-                             <span className="text-muted-foreground">"{req.rating_comment.substring(0, 30)}..."</span>
-                           )}
-                         </div>
-                       )}
-                     </button>
-                   </CardContent>
-                 </Card>
-               );
-             })}
+                        {req.rating_client && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="flex items-center gap-1 text-yellow-600">
+                              <Star className="w-3 h-3 fill-current" />
+                              {req.rating_client.toFixed(1)}
+                            </span>
+                            {req.rating_comment && (
+                              <span className="text-muted-foreground">"{req.rating_comment.substring(0, 30)}..."</span>
+                            )}
+                          </div>
+                        )}
+                      </button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
-            ) : (
+          ) : (
             <div className="text-center py-8">
-             <p className="text-muted-foreground text-sm">Nenhum serviço finalizado</p>
+              <p className="text-muted-foreground text-sm">Nenhum serviço finalizado</p>
             </div>
-            )}
-            </div>
-            )}
+          )}
+        </div>
+      )}
     </div>
   );
 }
