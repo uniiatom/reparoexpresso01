@@ -412,24 +412,24 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
 
       {/* Modal foto ampliada */}
       {expandedPhoto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setExpandedPhoto(null)}>
-          <div className="bg-card rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="aspect-square overflow-hidden bg-muted">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4" onClick={() => setExpandedPhoto(null)}>
+          <div className="bg-card rounded-3xl w-full max-w-xs overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="aspect-square overflow-hidden bg-muted max-h-72">
               <img
                 src={expandedPhoto.provider_photo}
                 alt={expandedPhoto.provider_name}
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-4 space-y-3">
               <div>
                 <p className="text-xs text-muted-foreground">Prestador</p>
-                <p className="text-lg font-bold text-foreground">{expandedPhoto.provider_name}</p>
+                <p className="font-bold text-foreground">{expandedPhoto.provider_name}</p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <button
                   onClick={() => setExpandedPhoto(null)}
-                  className="flex-1 py-3 rounded-2xl border-2 border-border text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors"
+                  className="flex-1 py-2 rounded-xl border-2 border-border text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors"
                 >
                   Recusar
                 </button>
@@ -438,7 +438,7 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
                     handleProviderClick(expandedPhoto);
                     setExpandedPhoto(null);
                   }}
-                  className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+                  className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
                 >
                   Confirmar
                 </button>
