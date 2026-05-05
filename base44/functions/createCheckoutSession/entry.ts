@@ -32,6 +32,15 @@ Deno.serve(async (req) => {
       console.error(`Failed to update ServiceRequest ${serviceRequestId}:`, err.message);
     }
 
+    // Increment coupon usage
+    if (couponCode) {
+      try {
+        await base44.asServiceRole.functions.invoke('incrementCouponUsage', { couponCode });
+      } catch (err) {
+        console.error(`Failed to increment coupon usage for ${couponCode}:`, err.message);
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [

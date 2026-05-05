@@ -43,6 +43,16 @@ Deno.serve(async (req) => {
       return Response.json({ valid: false, message: 'Cupom atingiu o limite de usos' }, { status: 400 });
     }
 
+    // Verifica se o cliente já usou este cupom (máx 1 uso por cliente)
+    const userServices = await base44.entities.ServiceRequest.filter({ 
+      coupon_code: couponCode.toUpperCase(),
+      created_by: user.email
+    });
+    
+    if (userServices.length > 0) {
+      return Response.json({ valid: false, message: 'Você já usou este cupom' }, { status: 400 });
+    }
+
     // Valida valor mínimo
     if (coupon.min_amount && amount < coupon.min_amount) {
       return Response.json({ 
