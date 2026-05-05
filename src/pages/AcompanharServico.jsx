@@ -17,6 +17,7 @@ import SatisfactionSurveyModal from '../components/SatisfactionSurveyModal';
 import { useServiceNotifications } from '../hooks/useServiceNotifications';
 import BatchProvidersPanel from '../components/BatchProvidersPanel';
 import BatchProviderChat from '../components/BatchProviderChat';
+import ClientTicketForm from '../components/ClientTicketForm';
 
 const STATUS_STEPS = [
   { key: "aguardando", label: "Aguardando prestador", icon: Clock },
@@ -377,6 +378,13 @@ export default function AcompanharServico() {
           </div>
         );
       })()}
+
+      {/* Falar com atendente */}
+      <ClientTicketForm 
+        clientId={request.client_id}
+        clientName={request.client_name}
+        clientEmail={user?.email || request.created_by}
+      />
 
       {/* Aguardando animation */}
       {request.status === 'aguardando' && (
