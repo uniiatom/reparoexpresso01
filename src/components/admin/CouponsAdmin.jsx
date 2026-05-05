@@ -300,11 +300,11 @@ export default function CouponsAdmin() {
               </div>
             ) : (
               coupons.map(coupon => (
-                <Card key={coupon.id} className="border-border overflow-hidden">
+                <Card key={coupon.id} className="border-border relative">
                   <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3 mb-3 relative">
+                    <div className="flex items-start justify-between gap-3 mb-3">
                       {isFinal(coupon) && (
-                        <div className="absolute -top-3 -right-3 bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm rotate-12 shadow-lg">
+                        <div className="absolute -top-4 -right-4 bg-red-500 text-white px-5 py-2.5 rounded-full font-bold text-base rotate-12 shadow-lg z-10">
                           FINALIZADO
                         </div>
                       )}
