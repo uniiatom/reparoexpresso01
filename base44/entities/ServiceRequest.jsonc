@@ -217,6 +217,22 @@
     "final_price": {
       "type": "number"
     },
+    "coupon_id": {
+      "type": "string",
+      "description": "ID do cupom aplicado ao servi\u00e7o"
+    },
+    "coupon_code": {
+      "type": "string",
+      "description": "C\u00f3digo do cupom aplicado"
+    },
+    "discount_amount": {
+      "type": "number",
+      "description": "Valor do desconto aplicado em R$"
+    },
+    "original_price": {
+      "type": "number",
+      "description": "Pre\u00e7o original antes do desconto"
+    },
     "night_surcharge": {
       "type": "boolean",
       "default": false,

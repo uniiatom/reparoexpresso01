@@ -11,10 +11,20 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
-    const { serviceRequestId, amount, serviceName } = await req.json();
+    const { serviceRequestId, amount, serviceName, couponId, couponCode, discountAmount, originalPrice } = await req.json();
 
     if (!serviceRequestId || !amount || amount <= 0) {
       return new Response(JSON.stringify({ error: 'Invalid amount or request ID' }), { status: 400 });
+    }
+
+    // Save coupon info to service request if provided
+    if (couponId || couponCode) {
+      await base44.entities.ServiceRequest.update(serviceRequestId, {
+        coupon_id: couponId || null,
+        coupon_code: couponCode || null,
+        discount_amount: discountAmount || 0,
+        original_price: originalPrice || amount,
+      });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -40,6 +50,8 @@ Deno.serve(async (req) => {
         serviceRequestId,
         userId: user.id,
         userEmail: user.email,
+        couponId: couponId || null,
+        couponCode: couponCode || null,
         base44_app_id: Deno.env.get('BASE44_APP_ID'),
       },
     });
