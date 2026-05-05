@@ -3,43 +3,42 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { bonusId } = await req.json();
+    
+    // Handle both manual API calls and automation triggers
+    const body = await req.json();
+    const bonusId = body.bonusId || body.event?.entity_id;
+    const isAutomation = !!body.event;
 
     if (!bonusId) {
       return Response.json({ error: 'bonusId é obrigatório' }, { status: 400 });
     }
 
-    // Busca o bônus
-    const bonus = await base44.entities.WalletBonus.list();
-    const targetBonus = bonus.find(b => b.id === bonusId);
+    // Busca o bônus pelo ID direto
+    const allBonuses = await base44.entities.WalletBonus.list('-created_date', 100);
+    const targetBonus = allBonuses.find(b => b.id === bonusId);
 
     if (!targetBonus) {
       return Response.json({ error: 'Bônus não encontrado' }, { status: 404 });
     }
 
     if (targetBonus.is_used) {
-      return Response.json({ error: 'Bônus já foi utilizado' }, { status: 400 });
+      console.log(`Bônus ${bonusId} já foi utilizado, pulando...`);
+      return Response.json({ success: false, message: 'Bônus já foi utilizado' }, { status: 200 });
     }
 
-    // Busca ou cria carteira
+    // Busca ou cria carteira do cliente
     const wallets = await base44.entities.Wallet.filter({
-      owner_id: user.id,
+      owner_id: targetBonus.owner_id,
       owner_type: 'cliente'
     });
 
     let wallet = wallets[0];
     if (!wallet) {
       wallet = await base44.entities.Wallet.create({
-        owner_id: user.id,
+        owner_id: targetBonus.owner_id,
         owner_type: 'cliente',
-        owner_name: user.full_name,
-        owner_email: user.email,
+        owner_name: targetBonus.owner_name,
+        owner_email: targetBonus.owner_email || '',
         balance: 0,
         pending_balance: 0,
         total_earned: 0,
@@ -76,12 +75,13 @@ Deno.serve(async (req) => {
       used_at: new Date().toISOString(),
     });
 
-    console.log(`Bônus de R$ ${targetBonus.amount.toFixed(2)} creditado à carteira do cliente ${user.full_name}`);
+    console.log(`✓ Bônus de R$ ${targetBonus.amount.toFixed(2)} creditado à carteira do cliente ${targetBonus.owner_name}`);
 
     return Response.json({
       success: true,
-      message: `Bônus de R$ ${targetBonus.amount.toFixed(2)} adicionado à sua carteira!`,
+      message: `Bônus de R$ ${targetBonus.amount.toFixed(2)} adicionado à carteira!`,
       newBalance,
+      walletId: wallet.id,
     });
 
   } catch (error) {
