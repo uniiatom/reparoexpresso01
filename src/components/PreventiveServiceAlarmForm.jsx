@@ -104,7 +104,7 @@ export default function PreventiveServiceAlarmForm({ clientId, clientName, onSuc
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={onCancel}>
-      <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+      <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8 max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
         
         <div className="flex items-center justify-between mb-5">
@@ -119,7 +119,7 @@ export default function PreventiveServiceAlarmForm({ clientId, clientName, onSuc
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-y-auto flex-1">
           {/* Tipo de serviço */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold">Tipo de serviço preventivo *</Label>
