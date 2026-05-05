@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, AlertCircle, Ban, RotateCw, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -151,7 +149,7 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
                   {selectedOption?.id === 'not_service_type' && 'Por que não fazem esse tipo de serviço?'}
                   {selectedOption?.id === 'needs_return' && 'Por que é necessário um retorno?'}
                 </p>
-                <Textarea
+                <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder={
@@ -161,7 +159,8 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
                       ? 'Explique por que seu serviço não cobre este tipo de atendimento...'
                       : 'Descreva o que precisa ser feito no próximo retorno...'
                   }
-                  className="h-28"
+                  className="w-full h-28 p-3 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                  maxLength={500}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   {reason.length}/500 caracteres
