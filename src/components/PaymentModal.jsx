@@ -120,34 +120,33 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-primary" />
-            Finalizar Pagamento
+      <DialogContent className="sm:max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <DollarSign className="w-4 h-4 text-primary" />
+            Pagamento
           </DialogTitle>
-          <DialogDescription>
-            Pague o valor final do serviço com segurança
+          <DialogDescription className="text-xs">
+            Finalize o pagamento do seu serviço
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-3 py-2">
           {/* Reference Code */}
           {referenceCode && (
-            <div className="bg-green-50 rounded-2xl p-4 border border-green-200">
-              <p className="text-xs text-green-700 font-semibold mb-1">Código de Referência</p>
-              <p className="text-lg font-bold text-green-900 font-mono">{referenceCode}</p>
-              <p className="text-xs text-green-600 mt-2">Use este código para acompanhar seu pedido</p>
+            <div className="bg-green-50 rounded-lg p-2 border border-green-200">
+              <p className="text-xs text-green-700 font-semibold mb-0.5">Código de Referência</p>
+              <p className="text-sm font-bold text-green-900 font-mono">{referenceCode}</p>
             </div>
           )}
 
           {/* Coupon Input */}
           {!appliedCoupon && (
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                <Ticket className="w-4 h-4" /> Cupom de Desconto
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                <Ticket className="w-3 h-3" /> Cupom
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 <input
                   type="text"
                   value={couponCode}
@@ -155,21 +154,21 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
                     setCouponCode(e.target.value.toUpperCase());
                     setCouponError(null);
                   }}
-                  placeholder="Digite seu código"
+                  placeholder="Código"
                   disabled={validatingCoupon}
-                  className="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="flex-1 px-2 py-1.5 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <Button
                   onClick={validateAndApplyCoupon}
                   disabled={!couponCode.trim() || validatingCoupon}
                   variant="outline"
                   size="sm"
-                  className="rounded-lg"
+                  className="rounded-lg h-auto px-2"
                 >
                   {validatingCoupon ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
-                    'Aplicar'
+                    'OK'
                   )}
                 </Button>
               </div>
@@ -181,10 +180,10 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
 
           {/* Applied Coupon Badge */}
           {appliedCoupon && (
-            <div className="bg-green-50 rounded-2xl p-3 border border-green-200 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-600" />
-                <div className="text-sm">
+            <div className="bg-green-50 rounded-lg p-2 border border-green-200 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-green-600 flex-shrink-0" />
+                <div className="text-xs">
                   <p className="font-semibold text-green-900">{appliedCoupon.code}</p>
                   <p className="text-xs text-green-700">
                     {appliedCoupon.discount_type === 'percentage'
@@ -197,35 +196,35 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
                 onClick={removeCoupon}
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 text-green-700 hover:text-green-900"
+                className="h-5 w-5 text-green-700 hover:text-green-900 flex-shrink-0"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3 h-3" />
               </Button>
             </div>
           )}
 
           {/* Amount */}
-          <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <p className="text-xs text-muted-foreground">Valor original</p>
-                <p className="text-sm font-semibold text-foreground">R$ {baseAmount.toFixed(2)}</p>
+          <div className="bg-primary/5 rounded-lg p-2.5 border border-primary/20">
+            <div className="space-y-1">
+              <div className="flex justify-between items-center text-xs">
+                <p className="text-muted-foreground">Original</p>
+                <p className="font-semibold text-foreground">R$ {baseAmount.toFixed(2)}</p>
               </div>
               {discountAmount > 0 && (
-                <div className="flex justify-between items-center text-green-600">
-                  <p className="text-xs">Desconto</p>
-                  <p className="text-sm font-semibold">-R$ {discountAmount.toFixed(2)}</p>
+                <div className="flex justify-between items-center text-xs text-green-600">
+                  <p>Desconto</p>
+                  <p className="font-semibold">-R$ {discountAmount.toFixed(2)}</p>
                 </div>
               )}
-              <div className="border-t border-primary/20 pt-2 flex justify-between items-center">
-                <p className="text-sm font-bold text-primary">Total a pagar</p>
-                <p className="text-2xl font-bold text-primary">R$ {finalAmount.toFixed(2)}</p>
+              <div className="border-t border-primary/20 pt-1 flex justify-between items-center">
+                <p className="text-xs font-bold text-primary">Total</p>
+                <p className="text-lg font-bold text-primary">R$ {finalAmount.toFixed(2)}</p>
               </div>
             </div>
           </div>
 
           {/* Service Name */}
-          <div className="text-sm text-muted-foreground text-center">
+          <div className="text-xs text-muted-foreground text-center py-1">
             Serviço: <span className="font-semibold text-foreground">{serviceData.type}</span>
           </div>
 
@@ -234,27 +233,27 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
             <>
               {/* Error */}
               {error && (
-                <div className="flex items-start gap-3 p-3 bg-destructive/10 rounded-xl border border-destructive/20">
-                  <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-destructive">{error}</p>
+                <div className="flex items-start gap-2 p-2 bg-destructive/10 rounded-lg border border-destructive/20">
+                  <AlertCircle className="w-3 h-3 text-destructive flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-destructive">{error}</p>
                 </div>
               )}
 
               {/* Info */}
               {paymentStatus !== 'redirecting' && (
-                <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
-                  <div className="w-1 h-1 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+                <div className="flex items-start gap-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="w-1 h-1 bg-blue-600 rounded-full mt-1 flex-shrink-0" />
                   <p className="text-xs text-blue-700">
-                    Você será redirecionado para a página segura de pagamento da Stripe
+                    Redirecionamento seguro para Stripe
                   </p>
                 </div>
               )}
 
               {/* Success Message */}
               {paymentStatus === 'redirecting' && (
-                <div className="flex items-center justify-center gap-2 text-primary">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm font-semibold">Redirecionando...</span>
+                <div className="flex items-center justify-center gap-2 text-primary py-1">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span className="text-xs font-semibold">Redirecionando...</span>
                 </div>
               )}
             </>
@@ -262,17 +261,17 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
 
           {/* Method Buttons */}
           {paymentMethod === 'stripe' && (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 pt-1">
               <Button
                 onClick={handlePayment}
                 disabled={isPaying || paymentStatus === 'redirecting'}
-                className="rounded-2xl h-11 font-semibold bg-primary text-primary-foreground"
+                className="rounded-lg h-9 font-semibold bg-primary text-primary-foreground text-sm"
               >
                 {isPaying ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-3 h-3 animate-spin" />
                 ) : (
                   <>
-                    <DollarSign className="w-4 h-4 mr-1" />
+                    <DollarSign className="w-3 h-3 mr-1" />
                     Cartão
                   </>
                 )}
@@ -281,7 +280,7 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
                 onClick={handlePixPayment}
                 disabled={isPaying || paymentStatus === 'redirecting'}
                 variant="outline"
-                className="rounded-2xl h-11 font-semibold"
+                className="rounded-lg h-9 font-semibold text-sm"
               >
                 PIX
               </Button>
@@ -289,20 +288,20 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
           )}
         </div>
 
-        <div className="space-y-2 pt-4 border-t border-border">
-          {paymentMethod === 'stripe' && (
-            <>
-              <Button
-                onClick={onClose}
-                disabled={isPaying || paymentStatus === 'redirecting'}
-                variant="outline"
-                className="w-full rounded-2xl"
-              >
-                Cancelar
-              </Button>
-            </>
-          )}
-        </div>
+        <div className="space-y-1 pt-2 border-t border-border">
+           {paymentMethod === 'stripe' && (
+             <>
+               <Button
+                 onClick={onClose}
+                 disabled={isPaying || paymentStatus === 'redirecting'}
+                 variant="outline"
+                 className="w-full rounded-lg h-9 text-sm"
+               >
+                 Cancelar
+               </Button>
+             </>
+           )}
+         </div>
       </DialogContent>
     </Dialog>
   );
