@@ -8,6 +8,8 @@ import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, 
 import { toast } from "sonner";
 import AttendantsManager, { loadAttendants } from './AttendantsManager';
 import { logAdminAction } from '@/lib/adminLog';
+import { useAttendantPush } from '@/hooks/useAttendantPush';
+import AttendantPushBanner from './AttendantPushBanner';
 
 const TICKET_TYPES = {
   reclamacao: { label: 'Reclamação', icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50 border-red-200' },
@@ -249,6 +251,9 @@ export default function TicketsAdmin() {
   const [showManage, setShowManage] = useState(false);
   const queryClient = useQueryClient();
 
+  // Sistema de notificações push para atendentes
+  useAttendantPush(attendant);
+
   const { data: tickets = [], refetch } = useQuery({
     queryKey: ['admin-tickets'],
     queryFn: () => base44.entities.Ticket.list('-created_date', 100),
@@ -286,6 +291,9 @@ export default function TicketsAdmin() {
 
   return (
     <div className="space-y-4">
+      {/* Banner de permissão push */}
+      <AttendantPushBanner />
+
       {/* Header do atendente */}
       <div className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-2xl p-4">
         <div className="flex items-center gap-3">
