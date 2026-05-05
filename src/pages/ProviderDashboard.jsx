@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import ProviderTicketForm from '@/components/ProviderTicketForm';
 import ProviderEarningsWithdrawal from '@/components/ProviderEarningsWithdrawal';
 import ServiceRefusalForm from '@/components/ServiceRefusalForm';
+import ServiceCompletionModal from '@/components/ServiceCompletionModal';
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function ProviderDashboard() {
   const [provider, setProvider] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [refusalService, setRefusalService] = useState(null);
+  const [completionService, setCompletionService] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -133,6 +135,15 @@ export default function ProviderDashboard() {
             </div>
           </motion.div>
         </div>
+      )}
+
+      {/* Modal de Conclusão */}
+      {completionService && (
+        <ServiceCompletionModal
+          service={completionService}
+          onSuccess={() => setCompletionService(null)}
+          onCancel={() => setCompletionService(null)}
+        />
       )}
 
       <div className="max-w-5xl mx-auto px-4 py-6">
@@ -320,6 +331,15 @@ export default function ProviderDashboard() {
                                  <p className="text-xs text-muted-foreground">Valor final</p>
                                  <p className="text-lg font-bold text-primary">R$ {service.final_price.toFixed(2)}</p>
                                </div>
+                             )}
+                             {service.status === 'em_andamento' && (
+                               <Button 
+                                 size="sm"
+                                 onClick={() => setCompletionService(service)}
+                                 className="w-full h-8 text-xs rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
+                               >
+                                 Concluir Serviço
+                               </Button>
                              )}
                              {(service.status === 'aceito' || service.status === 'a_caminho') && (
                                <Button 
