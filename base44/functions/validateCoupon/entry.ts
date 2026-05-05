@@ -11,8 +11,8 @@ Deno.serve(async (req) => {
 
     const { couponCode, amount, service_type, provider_id } = await req.json();
 
-    if (!couponCode || !amount) {
-      return Response.json({ error: 'Código e valor do serviço são obrigatórios' }, { status: 400 });
+    if (!couponCode) {
+      return Response.json({ error: 'Código do cupom é obrigatório' }, { status: 400 });
     }
 
     // Busca o cupom
