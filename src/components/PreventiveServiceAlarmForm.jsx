@@ -103,23 +103,27 @@ export default function PreventiveServiceAlarmForm({ clientId, clientName, onSuc
   const selectedService = PREVENTIVE_SERVICES.find(s => s.value === form.service_type);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={onCancel}>
-      <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8 max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-        
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Bell className="w-5 h-5 text-primary" />
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4" onClick={onCancel}>
+      <div className="bg-card w-full max-w-lg rounded-t-3xl flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+        {/* Header fixo */}
+        <div className="p-6 pb-4 border-b border-border flex-shrink-0">
+          <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Bell className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Alarme de Manutenção</h3>
             </div>
-            <h3 className="text-lg font-bold text-foreground">Alarme de Manutenção</h3>
+            <button onClick={onCancel} className="text-muted-foreground hover:text-foreground">
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button onClick={onCancel} className="text-muted-foreground hover:text-foreground">
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
-        <div className="space-y-4 overflow-y-auto flex-1">
+        {/* Conteúdo com scroll */}
+        <div className="overflow-y-auto flex-1 p-6 space-y-4">
           {/* Tipo de serviço */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold">Tipo de serviço preventivo *</Label>
@@ -238,26 +242,26 @@ export default function PreventiveServiceAlarmForm({ clientId, clientName, onSuc
               </div>
             </>
           )}
+        </div>
 
-          {/* Botões */}
-          <div className="flex gap-3 pt-4 border-t border-border">
-            <Button variant="outline" onClick={onCancel} className="flex-1 rounded-xl">
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => createMutation.mutate(form)}
-              disabled={!canSubmit() || createMutation.isPending}
-              className="flex-1 rounded-xl"
-            >
-              {createMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <Plus className="w-4 h-4 mr-2" /> Criar Alarme
-                </>
-              )}
-            </Button>
-          </div>
+        {/* Botões fixos no rodapé */}
+        <div className="flex gap-3 p-6 pt-4 border-t border-border flex-shrink-0 bg-card">
+          <Button variant="outline" onClick={onCancel} className="flex-1 rounded-xl">
+            Cancelar
+          </Button>
+          <Button
+            onClick={() => createMutation.mutate(form)}
+            disabled={!canSubmit() || createMutation.isPending}
+            className="flex-1 rounded-xl"
+          >
+            {createMutation.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-2" /> Criar Alarme
+              </>
+            )}
+          </Button>
         </div>
       </div>
     </div>
