@@ -5,23 +5,31 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  ChevronLeft, ChevronRight, AlertTriangle, Calendar, User, Wrench, Clock, X, Info
+  ChevronLeft, ChevronRight, AlertTriangle, Calendar, User, Wrench, Clock, X
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths, parseISO, isToday } from 'date-fns';
+import { format, addDays, parseISO, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { cn } from '@/lib/utils';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
   reparo_geral: "Reparo Geral", montagem: "Montagem", alvenaria: "Alvenaria",
-  fechadura: "Fechadura", ar_condicionado: "Ar Condicionado",
+  fechadura: "Fechadura", ar_condicionado: "Ar Cond.",
   limpeza_caixa_dagua: "Caixa D'água", limpeza_calha: "Calha",
-  desentupimento: "Desentupimento", reboque: "Reboque", outros: "Outros",
+  desentupimento: "Desentup.", reboque: "Reboque", outros: "Outros",
 };
 
-const STATUS_COLORS = {
+const STATUS_BG = {
+  agendado: 'bg-blue-50 border-blue-300 text-blue-800',
+  aguardando: 'bg-yellow-50 border-yellow-300 text-yellow-800',
+  aceito: 'bg-indigo-50 border-indigo-300 text-indigo-800',
+  em_andamento: 'bg-purple-50 border-purple-300 text-purple-800',
+  concluido: 'bg-green-50 border-green-300 text-green-800',
+  cancelado: 'bg-red-50 border-red-300 text-red-600',
+};
+
+const STATUS_DOT = {
   agendado: 'bg-blue-500',
   aguardando: 'bg-yellow-500',
   aceito: 'bg-indigo-500',
@@ -30,165 +38,47 @@ const STATUS_COLORS = {
   cancelado: 'bg-red-400',
 };
 
-const STATUS_BG = {
-  agendado: 'bg-blue-50 border-blue-200 text-blue-800',
-  aguardando: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-  aceito: 'bg-indigo-50 border-indigo-200 text-indigo-800',
-  em_andamento: 'bg-purple-50 border-purple-200 text-purple-800',
-  concluido: 'bg-green-50 border-green-200 text-green-800',
-  cancelado: 'bg-red-50 border-red-200 text-red-400',
-};
+const HOURS = Array.from({ length: 24 }, (_, i) => i); // 0..23
 
-// Detecta conflito: mesmo prestador, mesma data/hora
-function detectConflicts(services) {
-  const conflicts = new Set();
-  const byProvider = {};
-  services.forEach(s => {
-    if (!s.provider_id) return;
-    const dateKey = s.scheduled_date || (s.created_date ? s.created_date.slice(0, 10) : null);
-    if (!dateKey) return;
-    const key = `${s.provider_id}_${dateKey}`;
-    if (!byProvider[key]) byProvider[key] = [];
-    byProvider[key].push(s.id);
-  });
-  Object.values(byProvider).forEach(ids => {
-    if (ids.length > 1) ids.forEach(id => conflicts.add(id));
-  });
-  return conflicts;
+function getServiceHour(s) {
+  if (s.scheduled_time) {
+    const h = parseInt(s.scheduled_time.split(':')[0], 10);
+    return isNaN(h) ? null : h;
+  }
+  return null;
 }
 
-function ServiceChip({ service, index, isConflict, onClick }) {
-  const label = SERVICE_LABELS[service.service_type] || service.service_type;
-  const dot = STATUS_COLORS[service.status] || 'bg-gray-400';
-
-  return (
-    <Draggable draggableId={service.id} index={index}>
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          onClick={() => onClick(service)}
-          className={cn(
-            'flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium cursor-grab select-none border transition-all mb-0.5',
-            isConflict ? 'border-red-400 bg-red-50 text-red-700' : 'border-border bg-white text-foreground',
-            snapshot.isDragging && 'shadow-lg ring-2 ring-primary/40 scale-105 opacity-90',
-          )}
-          style={{ ...provided.draggableProps.style }}
-        >
-          <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', dot)} />
-          <span className="truncate max-w-[80px]">{label}</span>
-          {isConflict && <AlertTriangle className="w-2.5 h-2.5 text-red-500 flex-shrink-0" />}
-        </div>
-      )}
-    </Draggable>
-  );
-}
-
-// Retorna a data efetiva do serviço para exibição no calendário
 function getServiceDateKey(s) {
   if (s.scheduled_date) return s.scheduled_date;
-  // Serviços imediatos sem data agendada: usa data de criação
   if (s.created_date) return s.created_date.slice(0, 10);
   return null;
 }
 
-function DayCell({ day, services, providers, conflicts, currentMonth, onServiceClick }) {
-  const isCurrentMonth = isSameMonth(day, currentMonth);
-  const dayKey = format(day, 'yyyy-MM-dd');
-  const dayServices = services.filter(s => getServiceDateKey(s) === dayKey);
-  const hasConflict = dayServices.some(s => conflicts.has(s.id));
-
-  // Prestadores com serviço neste dia
-  const providerIdsInDay = new Set(dayServices.filter(s => s.provider_id).map(s => s.provider_id));
-  const providersInDay = providers.filter(p => providerIdsInDay.has(p.id));
-
-  return (
-    <Droppable droppableId={dayKey}>
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.droppableProps}
-          className={cn(
-            'min-h-[90px] border border-border rounded-lg p-1 transition-colors',
-            !isCurrentMonth && 'opacity-40 bg-muted/30',
-            isToday(day) && 'ring-2 ring-primary/60 bg-primary/5',
-            snapshot.isDraggingOver && 'bg-primary/10 border-primary/40',
-            hasConflict && 'ring-1 ring-red-300',
-          )}
-        >
-          <div className="flex items-center justify-between mb-0.5">
-            <span className={cn(
-              'text-xs font-semibold w-5 h-5 flex items-center justify-center rounded-full',
-              isToday(day) ? 'bg-primary text-primary-foreground' : 'text-foreground',
-            )}>
-              {format(day, 'd')}
-            </span>
-            {hasConflict && (
-              <AlertTriangle className="w-3 h-3 text-red-500" />
-            )}
-          </div>
-
-          {/* Contadores do dia */}
-          {dayServices.length > 0 && (
-            <div className="flex gap-1 mb-0.5 flex-wrap">
-              <span className="flex items-center gap-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[9px] font-bold px-1 py-0.5 rounded">
-                <Wrench className="w-2 h-2" />{dayServices.length}
-              </span>
-              {providersInDay.length > 0 && (
-                <span className="flex items-center gap-0.5 bg-green-50 border border-green-200 text-green-700 text-[9px] font-bold px-1 py-0.5 rounded">
-                  <User className="w-2 h-2" />{providersInDay.length}
-                </span>
-              )}
-            </div>
-          )}
-          <div className="space-y-px">
-            {dayServices.slice(0, 3).map((s, i) => (
-              <ServiceChip
-                key={s.id}
-                service={s}
-                index={i}
-                isConflict={conflicts.has(s.id)}
-                onClick={onServiceClick}
-              />
-            ))}
-            {dayServices.length > 3 && (
-              <p className="text-[9px] text-muted-foreground px-1">+{dayServices.length - 3} mais</p>
-            )}
-          </div>
-          {provided.placeholder}
-        </div>
-      )}
-    </Droppable>
-  );
-}
-
-function ServiceDetailModal({ service, providers, onClose, onUpdate, onReschedule }) {
+function ServiceDetailModal({ service, providers, onClose, onUpdate }) {
   const [newDate, setNewDate] = useState(service.scheduled_date || '');
+  const [newTime, setNewTime] = useState(service.scheduled_time || '');
   const [newProviderId, setNewProviderId] = useState(service.provider_id || '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
     const provider = providers.find(p => p.id === newProviderId);
-    const updates = {
+    await onUpdate(service.id, {
       scheduled_date: newDate || null,
+      scheduled_time: newTime || null,
       provider_id: newProviderId || null,
       provider_name: provider?.name || service.provider_name,
       provider_phone: provider?.phone || service.provider_phone,
-    };
-    await onUpdate(service.id, updates);
+    });
     setSaving(false);
     onClose();
   };
-
-  const label = SERVICE_LABELS[service.service_type] || service.service_type;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <Card className="w-full max-w-sm" onClick={e => e.stopPropagation()}>
         <CardHeader className="pb-3 flex-row items-center justify-between">
-          <CardTitle className="text-base">{label}</CardTitle>
+          <CardTitle className="text-base">{SERVICE_LABELS[service.service_type] || service.service_type}</CardTitle>
           <button onClick={onClose} className="p-1 hover:bg-muted rounded-lg">
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
@@ -206,31 +96,26 @@ function ServiceDetailModal({ service, providers, onClose, onUpdate, onReschedul
               <p className="text-xs text-muted-foreground line-clamp-2">{service.description}</p>
             )}
           </div>
-
           <div>
             <label className="text-xs font-semibold text-foreground block mb-1">Data agendada</label>
-            <input
-              type="date"
-              value={newDate}
-              onChange={e => setNewDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
+            <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
           </div>
-
+          <div>
+            <label className="text-xs font-semibold text-foreground block mb-1">Horário</label>
+            <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+          </div>
           <div>
             <label className="text-xs font-semibold text-foreground block mb-1">Prestador</label>
-            <select
-              value={newProviderId}
-              onChange={e => setNewProviderId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
+            <select value={newProviderId} onChange={e => setNewProviderId(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring">
               <option value="">Sem prestador</option>
               {providers.filter(p => p.is_approved).map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
           </div>
-
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1 rounded-xl" onClick={onClose}>Cancelar</Button>
             <Button className="flex-1 rounded-xl" onClick={handleSave} disabled={saving}>
@@ -245,10 +130,11 @@ function ServiceDetailModal({ service, providers, onClose, onUpdate, onReschedul
 
 export default function ScheduledCalendar() {
   const queryClient = useQueryClient();
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [startDay, setStartDay] = useState(new Date());
   const [selectedService, setSelectedService] = useState(null);
 
-  // Busca todos os serviços ativos (aguardando, aceito, em_andamento, agendado)
+  const days = [startDay, addDays(startDay, 1), addDays(startDay, 2)];
+
   const { data: services = [] } = useQuery({
     queryKey: ['scheduled-calendar-services'],
     queryFn: () => base44.entities.ServiceRequest.list('-created_date', 500),
@@ -261,8 +147,6 @@ export default function ScheduledCalendar() {
     queryFn: () => base44.entities.Provider.list(),
   });
 
-  const conflicts = useMemo(() => detectConflicts(services), [services]);
-
   const updateService = useMutation({
     mutationFn: ({ id, updates }) => base44.entities.ServiceRequest.update(id, updates),
     onSuccess: () => {
@@ -272,165 +156,198 @@ export default function ScheduledCalendar() {
     onError: () => toast.error('Erro ao atualizar serviço'),
   });
 
-  const days = eachDayOfInterval({
-    start: startOfMonth(currentMonth),
-    end: endOfMonth(currentMonth),
-  });
-
-  // Pad days to start on Sunday
-  const startPad = startOfMonth(currentMonth).getDay();
-  const paddedDays = Array(startPad).fill(null).concat(days);
-
-  const handleDragEnd = (result) => {
-    const { destination, source, draggableId } = result;
-    if (!destination || destination.droppableId === source.droppableId) return;
-
-    const newDate = destination.droppableId; // formato yyyy-MM-dd
-    const service = services.find(s => s.id === draggableId);
-    if (!service) return;
-
-    updateService.mutate({
-      id: draggableId,
-      updates: { scheduled_date: newDate, status: service.status === 'aguardando' ? 'agendado' : service.status },
-    });
-    toast.info(`Serviço movido para ${format(parseISO(newDate), "dd 'de' MMMM", { locale: ptBR })}`);
-  };
-
   const handleServiceUpdate = async (id, updates) => {
     await updateService.mutateAsync({ id, updates });
   };
 
-  const conflictCount = conflicts.size;
-  const monthServices = services.filter(s => {
-    const dateKey = getServiceDateKey(s);
-    if (!dateKey) return false;
-    try {
-      return isSameMonth(parseISO(dateKey), currentMonth);
-    } catch { return false; }
+  // Agrupa serviços por dia e hora
+  const servicesByDayHour = useMemo(() => {
+    const map = {};
+    days.forEach(d => {
+      const dayKey = format(d, 'yyyy-MM-dd');
+      map[dayKey] = {};
+      HOURS.forEach(h => { map[dayKey][h] = []; });
+    });
+    services.forEach(s => {
+      const dateKey = getServiceDateKey(s);
+      if (!dateKey || !map[dateKey]) return;
+      const hour = getServiceHour(s);
+      if (hour !== null) {
+        map[dateKey][hour].push(s);
+      } else {
+        // Sem horário definido → coloca no slot "sem horário" (representado por -1)
+        if (!map[dateKey][-1]) map[dateKey][-1] = [];
+        map[dateKey][-1].push(s);
+      }
+    });
+    return map;
+  }, [services, days]);
+
+  // Slots de horas que têm serviços em algum dos 3 dias (ou todas as horas comerciais)
+  const activeHours = useMemo(() => {
+    const withServices = new Set();
+    days.forEach(d => {
+      const dayKey = format(d, 'yyyy-MM-dd');
+      HOURS.forEach(h => {
+        if (servicesByDayHour[dayKey]?.[h]?.length > 0) withServices.add(h);
+      });
+    });
+    // Sempre mostrar horas comerciais (7-20) + horas com serviços
+    const base = Array.from({ length: 14 }, (_, i) => i + 7); // 7..20
+    base.forEach(h => withServices.add(h));
+    return Array.from(withServices).sort((a, b) => a - b);
+  }, [servicesByDayHour, days]);
+
+  // Verifica se há serviços sem horário definido
+  const hasNoTimeServices = days.some(d => {
+    const dayKey = format(d, 'yyyy-MM-dd');
+    return servicesByDayHour[dayKey]?.[-1]?.length > 0;
   });
 
-  const WEEK_DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const totalServices = services.filter(s => {
+    const dk = getServiceDateKey(s);
+    return days.some(d => format(d, 'yyyy-MM-dd') === dk);
+  }).length;
 
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />
             Calendário de Agendamentos
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {monthServices.length} serviço(s) neste mês
+            {totalServices} serviço(s) nos próximos 3 dias
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" className="rounded-xl h-8 w-8" onClick={() => setCurrentMonth(m => subMonths(m, 1))}>
+          <Button variant="outline" size="icon" className="rounded-xl h-8 w-8"
+            onClick={() => setStartDay(d => addDays(d, -3))}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <span className="text-sm font-semibold capitalize min-w-[120px] text-center">
-            {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
-          </span>
-          <Button variant="outline" size="icon" className="rounded-xl h-8 w-8" onClick={() => setCurrentMonth(m => addMonths(m, 1))}>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-          <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={() => setCurrentMonth(new Date())}>
+          <Button variant="outline" size="sm" className="rounded-xl text-xs"
+            onClick={() => setStartDay(new Date())}>
             Hoje
+          </Button>
+          <Button variant="outline" size="icon" className="rounded-xl h-8 w-8"
+            onClick={() => setStartDay(d => addDays(d, 3))}>
+            <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
       </div>
-
-      {/* Conflitos */}
-      {conflictCount > 0 && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
-          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-          <p className="text-sm text-red-700 font-semibold">
-            {conflictCount} conflito(s) de agenda detectado(s) — mesmo prestador, mesma data
-          </p>
-        </div>
-      )}
 
       {/* Legenda */}
       <div className="flex flex-wrap gap-3 text-xs">
-        {[
-          { label: 'Agendado', dot: 'bg-blue-500' },
-          { label: 'Aguardando', dot: 'bg-yellow-500' },
-          { label: 'Aceito', dot: 'bg-indigo-500' },
-          { label: 'Em andamento', dot: 'bg-purple-500' },
-          { label: 'Conflito', dot: 'bg-red-500', icon: true },
-        ].map(l => (
-          <div key={l.label} className="flex items-center gap-1">
-            <span className={cn('w-2 h-2 rounded-full', l.dot)} />
-            {l.icon && <AlertTriangle className="w-2.5 h-2.5 text-red-500" />}
-            <span className="text-muted-foreground">{l.label}</span>
+        {Object.entries(STATUS_DOT).map(([status, dot]) => (
+          <div key={status} className="flex items-center gap-1">
+            <span className={cn('w-2 h-2 rounded-full', dot)} />
+            <span className="text-muted-foreground capitalize">{status.replace('_', ' ')}</span>
           </div>
         ))}
-        <div className="flex items-center gap-1">
-          <Info className="w-3 h-3 text-muted-foreground" />
-          <span className="text-muted-foreground">Arraste para reagendar</span>
-        </div>
       </div>
 
-      {/* Calendário */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          {/* Dias da semana */}
-          <div className="grid grid-cols-7 border-b border-border">
-            {WEEK_DAYS.map(d => (
-              <div key={d} className="py-2 text-center text-xs font-semibold text-muted-foreground">
-                {d}
+      {/* Grade 3 dias × horas */}
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        {/* Cabeçalhos dos dias */}
+        <div className="grid border-b border-border" style={{ gridTemplateColumns: '52px repeat(3, 1fr)' }}>
+          <div className="py-2 border-r border-border" />
+          {days.map(d => {
+            const dayKey = format(d, 'yyyy-MM-dd');
+            const dayTotal = Object.values(servicesByDayHour[dayKey] || {}).flat().length;
+            return (
+              <div key={dayKey}
+                className={cn('py-2 px-2 text-center border-r border-border last:border-r-0',
+                  isToday(d) && 'bg-primary/5')}>
+                <p className={cn('text-xs font-bold uppercase',
+                  isToday(d) ? 'text-primary' : 'text-muted-foreground')}>
+                  {format(d, 'EEE', { locale: ptBR })}
+                </p>
+                <p className={cn('text-base font-extrabold',
+                  isToday(d) ? 'text-primary' : 'text-foreground')}>
+                  {format(d, 'd')}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {format(d, 'MMM', { locale: ptBR })}
+                </p>
+                {dayTotal > 0 && (
+                  <span className="inline-flex items-center gap-0.5 mt-0.5 bg-primary/10 text-primary text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                    <Wrench className="w-2 h-2" /> {dayTotal}
+                  </span>
+                )}
               </div>
-            ))}
-          </div>
+            );
+          })}
+        </div>
 
-          {/* Grid */}
-          <div className="grid grid-cols-7 gap-1 p-2">
-            {paddedDays.map((day, idx) => {
-              if (!day) return <div key={`pad-${idx}`} className="min-h-[90px]" />;
+        {/* Serviços sem horário definido */}
+        {hasNoTimeServices && (
+          <div className="grid border-b border-border bg-muted/20"
+            style={{ gridTemplateColumns: '52px repeat(3, 1fr)' }}>
+            <div className="flex items-center justify-center border-r border-border py-2 px-1">
+              <span className="text-[9px] text-muted-foreground font-semibold text-center leading-tight">s/ hora</span>
+            </div>
+            {days.map(d => {
+              const dayKey = format(d, 'yyyy-MM-dd');
+              const slotServices = servicesByDayHour[dayKey]?.[-1] || [];
               return (
-                <DayCell
-                  key={day.toISOString()}
-                  day={day}
-                  services={services}
-                  providers={providers}
-                  conflicts={conflicts}
-                  currentMonth={currentMonth}
-                  onServiceClick={setSelectedService}
-                />
+                <div key={dayKey}
+                  className={cn('border-r border-border last:border-r-0 p-1 min-h-[36px]',
+                    isToday(d) && 'bg-primary/5')}>
+                  {slotServices.map(s => (
+                    <button key={s.id}
+                      onClick={() => setSelectedService(s)}
+                      className={cn('w-full text-left flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium mb-0.5 truncate hover:opacity-80 transition-opacity',
+                        STATUS_BG[s.status] || 'bg-gray-50 border-gray-200 text-gray-700')}>
+                      <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', STATUS_DOT[s.status] || 'bg-gray-400')} />
+                      <span className="truncate">{SERVICE_LABELS[s.service_type] || s.service_type}</span>
+                    </button>
+                  ))}
+                </div>
               );
             })}
           </div>
-        </div>
-      </DragDropContext>
+        )}
 
-      {/* Lista de conflitos */}
-      {conflictCount > 0 && (
-        <div className="space-y-2">
-          <h3 className="text-sm font-bold text-red-700 flex items-center gap-1">
-            <AlertTriangle className="w-4 h-4" /> Serviços com conflito
-          </h3>
-          {services.filter(s => conflicts.has(s.id)).map(s => (
-            <div
-              key={s.id}
-              className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-xl cursor-pointer hover:bg-red-100 transition-colors"
-              onClick={() => setSelectedService(s)}
-            >
-              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-red-800">
-                  {SERVICE_LABELS[s.service_type] || s.service_type} — {s.client_name}
-                </p>
-                <p className="text-xs text-red-600">
-                  📅 {s.scheduled_date} · 🔧 {s.provider_name || 'Sem prestador'}
-                </p>
+        {/* Linhas de horas */}
+        <div className="overflow-y-auto max-h-[600px]">
+          {activeHours.map(hour => (
+            <div key={hour} className="grid border-b border-border last:border-b-0"
+              style={{ gridTemplateColumns: '52px repeat(3, 1fr)' }}>
+              {/* Rótulo da hora */}
+              <div className="flex items-start justify-center pt-1 border-r border-border py-2">
+                <span className="text-[10px] font-semibold text-muted-foreground">
+                  {String(hour).padStart(2, '0')}:00
+                </span>
               </div>
-              <Button size="sm" variant="outline" className="rounded-xl text-xs border-red-300 text-red-700 hover:bg-red-100">
-                Resolver
-              </Button>
+              {/* Células de cada dia */}
+              {days.map(d => {
+                const dayKey = format(d, 'yyyy-MM-dd');
+                const slotServices = servicesByDayHour[dayKey]?.[hour] || [];
+                return (
+                  <div key={dayKey}
+                    className={cn('border-r border-border last:border-r-0 p-1 min-h-[44px]',
+                      isToday(d) && 'bg-primary/5')}>
+                    {slotServices.map(s => (
+                      <button key={s.id}
+                        onClick={() => setSelectedService(s)}
+                        className={cn('w-full text-left flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium mb-0.5 truncate hover:opacity-80 transition-opacity',
+                          STATUS_BG[s.status] || 'bg-gray-50 border-gray-200 text-gray-700')}>
+                        <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', STATUS_DOT[s.status] || 'bg-gray-400')} />
+                        <span className="truncate">{SERVICE_LABELS[s.service_type] || s.service_type}</span>
+                        {s.provider_name && (
+                          <span className="text-[9px] opacity-60 truncate hidden sm:inline">· {s.provider_name.split(' ')[0]}</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>
-      )}
+      </div>
 
       {/* Modal de detalhe */}
       {selectedService && (
