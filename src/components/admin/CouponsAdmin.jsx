@@ -302,7 +302,12 @@ export default function CouponsAdmin() {
               coupons.map(coupon => (
                 <Card key={coupon.id} className="border-border overflow-hidden">
                   <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-start justify-between gap-3 mb-3 relative">
+                      {isFinal(coupon) && (
+                        <div className="absolute -top-3 -right-3 bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm rotate-12 shadow-lg">
+                          FINALIZADO
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-mono font-bold text-lg text-primary">{coupon.code}</span>
