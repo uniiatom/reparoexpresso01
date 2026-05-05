@@ -41,7 +41,7 @@ export default function ProviderDashboard() {
   }, [providers]);
 
   // Fetch accepted services
-  const { data: acceptedServices = [] } = useQuery({
+  const acceptedServicesQuery = useQuery({
     queryKey: ['acceptedServices', provider?.id],
     queryFn: () => base44.entities.ServiceRequest.filter({ 
       provider_id: provider?.id,
@@ -49,6 +49,7 @@ export default function ProviderDashboard() {
     }),
     enabled: !!provider?.id,
   });
+  const { data: acceptedServices = [] } = acceptedServicesQuery;
 
   // Fetch scheduled services
   const { data: scheduledServices = [] } = useQuery({
@@ -130,7 +131,10 @@ export default function ProviderDashboard() {
             <div className="p-6">
               <ServiceRefusalForm
                 serviceRequest={refusalService}
-                onSuccess={() => setRefusalService(null)}
+                onSuccess={() => {
+                  setRefusalService(null);
+                  acceptedServicesQuery.refetch();
+                }}
               />
             </div>
           </motion.div>
@@ -141,7 +145,10 @@ export default function ProviderDashboard() {
       {completionService && (
         <ServiceCompletionModal
           service={completionService}
-          onSuccess={() => setCompletionService(null)}
+          onSuccess={() => {
+            setCompletionService(null);
+            acceptedServicesQuery.refetch();
+          }}
           onCancel={() => setCompletionService(null)}
         />
       )}
