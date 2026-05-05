@@ -9,6 +9,7 @@ import { Calendar, DollarSign, CheckCircle2, Clock, MapPin, Star, TrendingUp, Al
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import ProviderTicketForm from '@/components/ProviderTicketForm';
+import ProviderEarningsWithdrawal from '@/components/ProviderEarningsWithdrawal';
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
@@ -183,13 +184,14 @@ export default function ProviderDashboard() {
 
         {/* Main Tabs */}
          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-           <TabsList className="grid w-full grid-cols-5 mb-6">
-             <TabsTrigger value="scheduled">Agendados</TabsTrigger>
-             <TabsTrigger value="overview">Aceitos</TabsTrigger>
-             <TabsTrigger value="payments">Pagamentos</TabsTrigger>
-             <TabsTrigger value="availability">Disponibilidade</TabsTrigger>
-             <TabsTrigger value="support">Suporte</TabsTrigger>
-           </TabsList>
+            <TabsList className="grid w-full grid-cols-6 mb-6">
+              <TabsTrigger value="scheduled">Agendados</TabsTrigger>
+              <TabsTrigger value="overview">Aceitos</TabsTrigger>
+              <TabsTrigger value="earnings">Ganhos</TabsTrigger>
+              <TabsTrigger value="payments">Pagamentos</TabsTrigger>
+              <TabsTrigger value="availability">Disponibilidade</TabsTrigger>
+              <TabsTrigger value="support">Suporte</TabsTrigger>
+            </TabsList>
 
           {/* Tab: Serviços Agendados */}
           <TabsContent value="scheduled" className="space-y-4">
@@ -297,6 +299,14 @@ export default function ProviderDashboard() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Tab: Ganhos & Saques */}
+          <TabsContent value="earnings" className="space-y-4">
+            <ProviderEarningsWithdrawal
+              providerId={provider.id}
+              providerName={provider.name}
+            />
           </TabsContent>
 
           {/* Tab: Histórico de Pagamentos */}
