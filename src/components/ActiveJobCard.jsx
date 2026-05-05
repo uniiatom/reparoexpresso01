@@ -381,7 +381,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           const active = idx === currentStepIndex;
           const StIcon = step.icon;
           return (
-            <React.Fragment key={step.status}>
+            <div key={step.status} className="flex items-center gap-1">
               <div className={cn(
                 "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center",
                 done ? "bg-primary text-primary-foreground" :
@@ -393,7 +393,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
               {idx < STEPS.length - 1 && (
                 <div className={cn("flex-1 h-1 rounded-full", done ? "bg-primary" : "bg-muted")} />
               )}
-            </React.Fragment>
+              </div>
           );
         })}
       </div>
