@@ -34,14 +34,14 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
     enabled: !!clientId,
   });
 
-  // Busca últimos 10 serviços concluídos com prestador
+  // Busca últimos 10 serviços com prestador (qualquer status)
   const { data: recentServices = [] } = useQuery({
     queryKey: ['client-recent-providers', clientId],
     queryFn: async () => {
       const all = await base44.entities.ServiceRequest.filter(
-        { client_id: clientId, status: 'concluido' },
+        { client_id: clientId },
         '-created_date',
-        30
+        100
       );
       // Deduplica por provider_id, mantém o mais recente
       const seen = new Set();
@@ -128,56 +128,59 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
 
       {!showForm ? (
         <div className="space-y-4">
-          {/* Últimos prestadores */}
-          {recentServices.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                Clique no prestador para abrir uma tratativa
-              </p>
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                {recentServices.map(prov => (
-                  <button
-                    key={prov.provider_id}
-                    onClick={() => handleProviderClick(prov)}
-                    className="flex flex-col items-center gap-1.5 flex-shrink-0 group"
-                  >
-                    <div className="relative">
-                      {prov.provider_photo ? (
-                        <img
-                          src={prov.provider_photo}
-                          alt={prov.provider_name}
-                          className="w-16 h-16 rounded-2xl object-cover border-2 border-border group-hover:border-primary transition-all shadow-sm"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-2xl bg-primary/10 border-2 border-border group-hover:border-primary transition-all flex items-center justify-center">
-                          <User className="w-7 h-7 text-primary/60" />
-                        </div>
-                      )}
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                        <MessageSquare className="w-3 h-3 text-white" />
-                      </div>
-                    </div>
-                    <span className="text-xs text-foreground font-medium w-16 text-center truncate leading-tight">
-                      {prov.provider_name.split(' ')[0]}
-                    </span>
-                  </button>
-                ))}
+          {/* Área principal: Abrir reclamação/elogio + fotos de prestadores */}
+          <div className="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-2xl p-4 space-y-4">
+            <button
+              onClick={handleOpenFormGeneral}
+              className="w-full flex items-center gap-3 text-left"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <Plus className="w-5 h-5 text-primary" />
               </div>
-            </div>
-          )}
+              <div>
+                <p className="font-semibold text-foreground text-sm">Abrir reclamação ou elogio</p>
+                <p className="text-xs text-muted-foreground">Fale sobre um serviço ou experiência</p>
+              </div>
+            </button>
 
-          <button
-            onClick={handleOpenFormGeneral}
-            className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-2xl hover:from-primary/10 hover:to-primary/15 transition-all text-left"
-          >
-            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-              <Plus className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <p className="font-semibold text-foreground text-sm">Abrir reclamação ou elogio</p>
-              <p className="text-xs text-muted-foreground">Fale sobre um serviço ou experiência</p>
-            </div>
-          </button>
+            {/* Fotos dos últimos prestadores */}
+            {recentServices.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2">
+                  Ou selecione um prestador que te atendeu:
+                </p>
+                <div className="flex gap-3 overflow-x-auto pb-1">
+                  {recentServices.map(prov => (
+                    <button
+                      key={prov.provider_id}
+                      onClick={() => handleProviderClick(prov)}
+                      className="flex flex-col items-center gap-1.5 flex-shrink-0 group"
+                    >
+                      <div className="relative">
+                        {prov.provider_photo ? (
+                          <img
+                            src={prov.provider_photo}
+                            alt={prov.provider_name}
+                            className="w-16 h-16 rounded-2xl object-cover border-2 border-white group-hover:border-primary transition-all shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-2xl bg-white border-2 border-white group-hover:border-primary transition-all flex items-center justify-center shadow-sm">
+                            <User className="w-7 h-7 text-primary/60" />
+                          </div>
+                        )}
+                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                          <MessageSquare className="w-3 h-3 text-white" />
+                        </div>
+                      </div>
+                      <span className="text-xs text-foreground font-medium w-16 text-center truncate leading-tight">
+                        {prov.provider_name.split(' ')[0]}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {tickets.length > 0 && (
             <button
