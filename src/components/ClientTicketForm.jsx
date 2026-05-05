@@ -23,12 +23,13 @@ const STATUS_CONFIG = {
 };
 
 export default function ClientTicketForm({ clientId, clientName, clientEmail }) {
-  const [showForm, setShowForm] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState(null);
-  const [form, setForm] = useState({ type: '', subject: '', message: '' });
-  const [openChatTicketId, setOpenChatTicketId] = useState(null);
-  const queryClient = useQueryClient();
+   const [showForm, setShowForm] = useState(false);
+   const [showHistory, setShowHistory] = useState(false);
+   const [selectedProvider, setSelectedProvider] = useState(null);
+   const [form, setForm] = useState({ type: '', subject: '', message: '' });
+   const [openChatTicketId, setOpenChatTicketId] = useState(null);
+   const [expandedPhoto, setExpandedPhoto] = useState(null);
+   const queryClient = useQueryClient();
 
   const { data: tickets = [] } = useQuery({
     queryKey: ['my-tickets', clientId],
@@ -165,34 +166,34 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
                   Ou selecione um prestador que te atendeu:
                 </p>
                 <div className="flex gap-3 overflow-x-auto pb-1">
-                  {recentServices.map(prov => (
-                    <button
-                      key={prov.provider_id}
-                      onClick={() => handleProviderClick(prov)}
-                      className="flex flex-col items-center gap-1.5 flex-shrink-0 group"
-                    >
-                      <div className="relative">
-                        {prov.provider_photo ? (
-                          <img
-                            src={prov.provider_photo}
-                            alt={prov.provider_name}
-                            className="w-16 h-16 rounded-2xl object-cover border-2 border-white group-hover:border-primary transition-all shadow-sm"
-                          />
-                        ) : (
-                          <div className="w-16 h-16 rounded-2xl bg-white border-2 border-white group-hover:border-primary transition-all flex items-center justify-center shadow-sm">
-                            <User className="w-7 h-7 text-primary/60" />
-                          </div>
-                        )}
-                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                          <MessageSquare className="w-3 h-3 text-white" />
-                        </div>
-                      </div>
-                      <span className="text-xs text-foreground font-medium w-16 text-center truncate leading-tight">
-                        {prov.provider_name.split(' ')[0]}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                   {recentServices.map(prov => (
+                     <button
+                       key={prov.provider_id}
+                       onClick={() => prov.provider_photo ? setExpandedPhoto(prov) : handleProviderClick(prov)}
+                       className="flex flex-col items-center gap-1.5 flex-shrink-0 group"
+                     >
+                       <div className="relative">
+                         {prov.provider_photo ? (
+                           <img
+                             src={prov.provider_photo}
+                             alt={prov.provider_name}
+                             className="w-16 h-16 rounded-2xl object-cover border-2 border-white group-hover:border-primary transition-all shadow-sm cursor-pointer"
+                           />
+                         ) : (
+                           <div className="w-16 h-16 rounded-2xl bg-white border-2 border-white group-hover:border-primary transition-all flex items-center justify-center shadow-sm cursor-pointer">
+                             <User className="w-7 h-7 text-primary/60" />
+                           </div>
+                         )}
+                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                           <MessageSquare className="w-3 h-3 text-white" />
+                         </div>
+                       </div>
+                       <span className="text-xs text-foreground font-medium w-16 text-center truncate leading-tight">
+                         {prov.provider_name.split(' ')[0]}
+                       </span>
+                     </button>
+                   ))}
+                 </div>
               </div>
             )}
           </div>
@@ -408,6 +409,44 @@ export default function ClientTicketForm({ clientId, clientName, clientEmail }) 
           </CardContent>
         </Card>
       )}
-    </div>
-  );
-}
+
+      {/* Modal foto ampliada */}
+      {expandedPhoto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setExpandedPhoto(null)}>
+          <div className="bg-card rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="aspect-square overflow-hidden bg-muted">
+              <img
+                src={expandedPhoto.provider_photo}
+                alt={expandedPhoto.provider_name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <p className="text-xs text-muted-foreground">Prestador</p>
+                <p className="text-lg font-bold text-foreground">{expandedPhoto.provider_name}</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setExpandedPhoto(null)}
+                  className="flex-1 py-3 rounded-2xl border-2 border-border text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors"
+                >
+                  Recusar
+                </button>
+                <button
+                  onClick={() => {
+                    handleProviderClick(expandedPhoto);
+                    setExpandedPhoto(null);
+                  }}
+                  className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
+      );
+      }
