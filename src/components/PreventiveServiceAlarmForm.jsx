@@ -123,7 +123,7 @@ export default function PreventiveServiceAlarmForm({ clientId, clientName, onSuc
         </div>
 
         {/* Conteúdo com scroll */}
-        <div className="overflow-y-auto flex-1 p-6 space-y-4">
+        <div className="overflow-y-auto flex-1 p-6 pt-0 space-y-4">
           {/* Tipo de serviço */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold">Tipo de serviço preventivo *</Label>
@@ -148,10 +148,8 @@ export default function PreventiveServiceAlarmForm({ clientId, clientName, onSuc
             </div>
           </div>
 
-          {selectedService && (
-            <>
-              {/* CEP */}
-              <div className="space-y-2">
+          {/* CEP - Visível de primeira */}
+          <div className="space-y-2 bg-primary/5 p-4 -mx-6 px-6 rounded-lg mt-4">
                 <Label className="flex items-center gap-2"><MapPin className="w-4 h-4" /> CEP do local</Label>
                 <div className="relative">
                   <Input
@@ -165,14 +163,16 @@ export default function PreventiveServiceAlarmForm({ clientId, clientName, onSuc
                   {loadingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />}
                 </div>
                 {cepError && <p className="text-xs text-destructive">{cepError}</p>}
-                {form.address && (
-                  <div className="mt-2 bg-primary/5 rounded-lg p-2 text-xs border border-primary/20">
-                    <p className="text-foreground font-medium">{form.address}</p>
-                    <p className="text-muted-foreground">{form.city}, {form.state}</p>
-                  </div>
-                )}
-              </div>
+              {form.address && (
+                <div className="mt-2 bg-white rounded-lg p-2 text-xs border border-primary/20">
+                  <p className="text-foreground font-medium">{form.address}</p>
+                  <p className="text-muted-foreground">{form.city}, {form.state}</p>
+                </div>
+              )}
+            </div>
 
+          {selectedService && (
+            <>
               {/* Data do último serviço */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
