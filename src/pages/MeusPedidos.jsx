@@ -47,6 +47,7 @@ const SERVICE_LABELS = {
 export default function MeusPedidos() {
   const navigate = useNavigate();
   const [user, setUser] = React.useState(null);
+  const [activeTab, setActiveTab] = React.useState('new');
 
   React.useEffect(() => {
     base44.auth.me().then(u => setUser(u)).catch(() => navigate('/'));
@@ -76,19 +77,56 @@ export default function MeusPedidos() {
         <p className="text-muted-foreground text-sm">Solicite, acompanhe e gerencie seus serviços</p>
       </div>
 
-      <Tabs defaultValue="new" className="w-full">
-        <TabsList className="w-full grid grid-cols-3 mb-6">
-          <TabsTrigger value="new">Novo Serviço</TabsTrigger>
-          <TabsTrigger value="active">
-            Ativos {activeRequests.length > 0 && <span className="ml-1 text-xs bg-primary text-primary-foreground rounded-full px-2">({activeRequests.length})</span>}
-          </TabsTrigger>
-          <TabsTrigger value="history">
-            Histórico {completedRequests.length > 0 && <span className="ml-1 text-xs bg-muted text-muted-foreground rounded-full px-2">({completedRequests.length})</span>}
-          </TabsTrigger>
-        </TabsList>
+      {/* Abas */}
+      <div className="flex gap-2 mb-6 border-b border-border">
+        <button
+          onClick={() => setActiveTab('new')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+            activeTab === 'new'
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Novo Serviço
+        </button>
+        <button
+          onClick={() => setActiveTab('active')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium border-b-2 transition-colors relative",
+            activeTab === 'active'
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Ativos
+          {activeRequests.length > 0 && (
+            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs bg-primary text-primary-foreground rounded-full">
+              {activeRequests.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium border-b-2 transition-colors relative",
+            activeTab === 'history'
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Histórico
+          {completedRequests.length > 0 && (
+            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs bg-muted text-muted-foreground rounded-full">
+              {completedRequests.length}
+            </span>
+          )}
+        </button>
+      </div>
 
-        {/* Tab: Novo Serviço */}
-        <TabsContent value="new" className="space-y-4">
+      {/* Tab: Novo Serviço */}
+      {activeTab === 'new' && (
+        <div className="space-y-4">
           <div className="bg-card rounded-lg border border-border p-8 text-center space-y-4">
             <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
               <Plus className="w-6 h-6 text-primary" />
@@ -103,10 +141,12 @@ export default function MeusPedidos() {
               Solicitar Serviço
             </Button>
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* Tab: Serviços Ativos */}
-        <TabsContent value="active" className="space-y-3">
+      {/* Tab: Serviços Ativos */}
+      {activeTab === 'active' && (
+        <div className="space-y-3">
           {activeRequests.length > 0 ? (
             <div className="space-y-3">
               {activeRequests.map(req => {
@@ -160,64 +200,66 @@ export default function MeusPedidos() {
               <p className="text-muted-foreground text-sm">Nenhum serviço em andamento</p>
             </div>
           )}
-        </TabsContent>
-
-        {/* Tab: Histórico (Serviços Executados) */}
-        <TabsContent value="history" className="space-y-3">
-          {completedRequests.length > 0 ? (
-            <div className="space-y-3">
-              {completedRequests.map(req => {
-                const statusConfig = STATUS_CONFIG[req.status];
-                const StatusIcon = statusConfig.icon;
-                return (
-                  <Card key={req.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                      <button
-                        onClick={() => navigate(`/acompanhar/${req.id}`)}
-                        className="w-full text-left space-y-3"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="font-semibold text-foreground">{SERVICE_LABELS[req.service_type] || req.service_type}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{req.description?.substring(0, 60)}...</p>
-                          </div>
-                          <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <Badge className={cn("text-xs border-0", statusConfig.color)}>
-                            <StatusIcon className="w-3 h-3 mr-1" />
-                            {statusConfig.label}
-                          </Badge>
-                          {req.final_price && (
-                            <p className="font-semibold text-primary">R$ {req.final_price.toFixed(2)}</p>
-                          )}
-                        </div>
-
-                        {req.rating_client && (
-                          <div className="flex items-center gap-2 text-xs">
-                            <span className="flex items-center gap-1 text-yellow-600">
-                              <Star className="w-3 h-3 fill-current" />
-                              {req.rating_client.toFixed(1)}
-                            </span>
-                            {req.rating_comment && (
-                              <span className="text-muted-foreground">"{req.rating_comment.substring(0, 30)}..."</span>
-                            )}
-                          </div>
-                        )}
-                      </button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground text-sm">Nenhum serviço finalizado</p>
-            </div>
+          </div>
           )}
-        </TabsContent>
-      </Tabs>
+
+          {/* Tab: Histórico (Serviços Executados) */}
+          {activeTab === 'history' && (
+          <div className="space-y-3">
+          {completedRequests.length > 0 ? (
+           <div className="space-y-3">
+             {completedRequests.map(req => {
+               const statusConfig = STATUS_CONFIG[req.status];
+               const StatusIcon = statusConfig.icon;
+               return (
+                 <Card key={req.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                   <CardContent className="p-4">
+                     <button
+                       onClick={() => navigate(`/acompanhar/${req.id}`)}
+                       className="w-full text-left space-y-3"
+                     >
+                       <div className="flex items-start justify-between gap-3">
+                         <div>
+                           <p className="font-semibold text-foreground">{SERVICE_LABELS[req.service_type] || req.service_type}</p>
+                           <p className="text-xs text-muted-foreground mt-1">{req.description?.substring(0, 60)}...</p>
+                         </div>
+                         <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
+                       </div>
+
+                       <div className="flex items-center justify-between">
+                         <Badge className={cn("text-xs border-0", statusConfig.color)}>
+                           <StatusIcon className="w-3 h-3 mr-1" />
+                           {statusConfig.label}
+                         </Badge>
+                         {req.final_price && (
+                           <p className="font-semibold text-primary">R$ {req.final_price.toFixed(2)}</p>
+                         )}
+                       </div>
+
+                       {req.rating_client && (
+                         <div className="flex items-center gap-2 text-xs">
+                           <span className="flex items-center gap-1 text-yellow-600">
+                             <Star className="w-3 h-3 fill-current" />
+                             {req.rating_client.toFixed(1)}
+                           </span>
+                           {req.rating_comment && (
+                             <span className="text-muted-foreground">"{req.rating_comment.substring(0, 30)}..."</span>
+                           )}
+                         </div>
+                       )}
+                     </button>
+                   </CardContent>
+                 </Card>
+               );
+             })}
+           </div>
+          ) : (
+           <div className="text-center py-8">
+             <p className="text-muted-foreground text-sm">Nenhum serviço finalizado</p>
+           </div>
+          )}
+          </div>
+          )}
     </div>
   );
 }
