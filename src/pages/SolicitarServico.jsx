@@ -1590,6 +1590,31 @@ export default function SolicitarServico() {
 
           {form.modality === 'agendado' && (
             <div className="space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <Label className="flex items-center gap-2"><MapPin className="w-4 h-4" /> CEP do local do agendamento</Label>
+                  <p className="text-xs text-muted-foreground mb-2">Preencher para confirmar endereço</p>
+                  <div className="relative">
+                    <Input
+                      placeholder="00000-000"
+                      value={form.cep}
+                      onChange={e => set('cep', e.target.value)}
+                      onBlur={() => searchByCep(form.cep)}
+                      disabled={loadingCep}
+                      className="rounded-2xl"
+                    />
+                    {loadingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />}
+                  </div>
+                  {cepError && <p className="text-xs text-destructive mt-1">{cepError}</p>}
+                  {form.address && (
+                    <div className="mt-2 bg-primary/5 rounded-xl p-3 text-sm border border-primary/20">
+                      <p className="text-foreground font-medium">{form.address}{form.number ? `, ${form.number}` : ''}</p>
+                      <p className="text-muted-foreground text-xs">{form.neighborhood}{form.city ? ` - ${form.city}` : ''}, {form.state}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Data preferida</Label>
                 <Input
