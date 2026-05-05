@@ -93,12 +93,13 @@ export default function PaymentModal({ isOpen, onClose, serviceData }) {
       setReferenceCode(code);
 
       const response = await base44.functions.invoke('createCheckoutSession', {
+        serviceRequestId: serviceData.id,
         amount: finalAmount,
         serviceName: `${serviceData.type} - ${serviceData.subtipo}`,
-        serviceData: serviceData,
-        referenceCode: code,
         couponId: appliedCoupon?.id,
+        couponCode: appliedCoupon?.code,
         discountAmount: discountAmount,
+        originalPrice: baseAmount,
       });
 
       if (response.data.sessionUrl) {
