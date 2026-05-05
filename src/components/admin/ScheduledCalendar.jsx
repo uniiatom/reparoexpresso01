@@ -162,7 +162,11 @@ export default function ScheduledCalendar() {
     queryKey: ['scheduled-calendar-services'],
     queryFn: () => base44.entities.ServiceRequest.list('-created_date', 500),
     refetchInterval: 30000,
-    select: (r) => r.filter(s => ['aguardando', 'aceito', 'em_andamento', 'agendado'].includes(s.status)),
+    select: (r) => r.filter(s => 
+      // Serviços ativos + agendados com data
+      (['aguardando', 'aceito', 'em_andamento'].includes(s.status)) ||
+      (s.status === 'agendado' && s.scheduled_date)
+    ),
   });
 
   const { data: allProviders = [] } = useQuery({
