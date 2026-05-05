@@ -20,7 +20,7 @@ const SERVICE_LABELS = {
 const STATUS_BG = {
   agendado: 'bg-blue-50 border-blue-300 text-blue-800',
   aguardando: 'bg-yellow-50 border-yellow-300 text-yellow-800',
-  aceito: 'bg-indigo-50 border-indigo-300 text-indigo-800',
+  aceito: 'bg-emerald-50 border-emerald-400 text-emerald-800',
   em_andamento: 'bg-purple-50 border-purple-300 text-purple-800',
   concluido: 'bg-green-50 border-green-300 text-green-800',
   cancelado: 'bg-red-50 border-red-300 text-red-600',
@@ -29,7 +29,7 @@ const STATUS_BG = {
 const STATUS_DOT = {
   agendado: 'bg-blue-500',
   aguardando: 'bg-yellow-500',
-  aceito: 'bg-indigo-500',
+  aceito: 'bg-emerald-500',
   em_andamento: 'bg-purple-500',
   concluido: 'bg-green-500',
   cancelado: 'bg-red-400',
