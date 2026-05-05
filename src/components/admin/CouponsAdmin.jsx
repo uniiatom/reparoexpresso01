@@ -31,8 +31,12 @@ function CouponForm({ coupon, providers, onSubmit, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.code || !form.discount_value || form.discount_value <= 0) {
-      toast.error('Preencha código e valor do desconto');
+    if (!form.code) {
+      toast.error('Código do cupom é obrigatório');
+      return;
+    }
+    if (!form.discount_value || Number(form.discount_value) <= 0) {
+      toast.error('Valor do desconto deve ser maior que 0');
       return;
     }
     onSubmit(form);
@@ -204,6 +208,10 @@ export default function CouponsAdmin() {
       toast.success('Cupom criado com sucesso');
       setShowForm(false);
     },
+    onError: (error) => {
+      console.error('Erro ao criar cupom:', error);
+      toast.error('Erro ao criar cupom: ' + (error.message || 'Tente novamente'));
+    }
   });
 
   const updateCoupon = useMutation({
