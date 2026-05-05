@@ -160,12 +160,20 @@ export default function ScheduledCalendar() {
 
   const { data: services = [] } = useQuery({
     queryKey: ['scheduled-calendar-services'],
-    queryFn: () => base44.entities.ServiceRequest.list('-created_date', 500),
+    queryFn: async () => {
+      const all = await base44.entities.ServiceRequest.list('-created_date', 500);
+      console.log('[ScheduledCalendar] Total services fetched:', all.length);
+      return all;
+    },
     refetchInterval: 30000,
-    select: (r) => r.filter(s => 
-      // Inclui: aguardando (novo), aceito, em_andamento, agendado com data
-      (['aguardando', 'aceito', 'em_andamento', 'agendado'].includes(s.status))
-    ),
+    select: (r) => {
+      const filtered = r.filter(s => 
+        (['aguardando', 'aceito', 'em_andamento', 'agendado'].includes(s.status)) &&
+        (s.scheduled_date || s.status === 'aguardando')
+      );
+      console.log('[ScheduledCalendar] Filtered services:', filtered.length, 'from', r.length);
+      return filtered;
+    },
   });
 
   const { data: allProviders = [] } = useQuery({
