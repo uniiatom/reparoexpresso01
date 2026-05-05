@@ -9,14 +9,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { code, service_amount, service_type, provider_id } = await req.json();
+    const { couponCode, amount, service_type, provider_id } = await req.json();
 
-    if (!code || !service_amount) {
+    if (!couponCode || !amount) {
       return Response.json({ error: 'Código e valor do serviço são obrigatórios' }, { status: 400 });
     }
 
     // Busca o cupom
-    const coupons = await base44.asServiceRole.entities.Coupon.filter({ code: code.toUpperCase() });
+    const coupons = await base44.entities.Coupon.filter({ code: couponCode.toUpperCase() });
     
     if (coupons.length === 0) {
       return Response.json({ valid: false, message: 'Cupom não encontrado' }, { status: 400 });
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     }
 
     // Valida valor mínimo
-    if (coupon.min_amount && service_amount < coupon.min_amount) {
+    if (coupon.min_amount && amount < coupon.min_amount) {
       return Response.json({ 
         valid: false, 
         message: `Valor mínimo é R$ ${coupon.min_amount.toFixed(2)}` 
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
     // Calcula desconto
     let discount_amount = 0;
     if (coupon.discount_type === 'percentage') {
-      discount_amount = (service_amount * coupon.discount_value) / 100;
+      discount_amount = (amount * coupon.discount_value) / 100;
       if (coupon.max_discount_amount) {
         discount_amount = Math.min(discount_amount, coupon.max_discount_amount);
       }
@@ -72,11 +72,17 @@ Deno.serve(async (req) => {
       discount_amount = coupon.discount_value;
     }
 
-    const final_amount = Math.max(0, service_amount - discount_amount);
+    const final_amount = Math.max(0, amount - discount_amount);
 
     return Response.json({
       valid: true,
-      coupon_id: coupon.id,
+      coupon: {
+        id: coupon.id,
+        code: coupon.code,
+        discount_type: coupon.discount_type,
+        discount_value: coupon.discount_value,
+        max_discount_amount: coupon.max_discount_amount
+      },
       discount_amount: Math.round(discount_amount * 100) / 100,
       final_amount: Math.round(final_amount * 100) / 100,
       message: `Cupom aplicado! Desconto de R$ ${discount_amount.toFixed(2)}`
