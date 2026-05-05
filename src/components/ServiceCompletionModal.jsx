@@ -47,6 +47,8 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
   const [reason, setReason] = useState('');
   const queryClient = useQueryClient();
 
+  console.log('[ServiceCompletionModal] Service:', service);
+
   const submitCompletion = useMutation({
     mutationFn: async () => {
       if (!selectedOption) {
@@ -95,15 +97,22 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
     submitCompletion.mutate();
   };
 
+  if (!service) return null;
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-background rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden"
+      >
         {/* Header */}
         <div className="border-b border-border p-6 flex items-center justify-between bg-muted/30">
           <div>
             <h2 className="text-xl font-bold text-foreground">Concluir Serviço</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {service?.service_number || 'Serviço'} - {service?.service_type}
+              {service.service_number || 'Serviço'} - {service.service_type}
             </p>
           </div>
           <button
@@ -116,14 +125,15 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
 
         <div className="p-6 max-h-[70vh] overflow-y-auto">
           {step === 'select' ? (
-            // Tela de seleção
             <div className="space-y-3">
               {COMPLETION_OPTIONS.map((option) => {
                 const Icon = option.icon;
                 return (
-                  <button
+                  <motion.button
                     key={option.id}
                     type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => handleSelectOption(option)}
                     className={`w-full p-4 rounded-xl border-2 transition-all text-left ${option.color}`}
                   >
@@ -136,18 +146,21 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
                         </p>
                       </div>
                     </div>
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
           ) : (
-            // Tela de justificativa
             <div className="space-y-4">
               <div className="p-4 rounded-xl bg-muted/50 border border-border">
                 <p className="text-sm text-muted-foreground mb-1">Opção selecionada:</p>
                 <div className="flex items-center gap-2">
-                  {selectedOption && <selectedOption.icon className="w-5 h-5 text-primary" />}
-                  <p className="font-semibold text-foreground">{selectedOption?.label}</p>
+                  {selectedOption && (
+                    <>
+                      <selectedOption.icon className="w-5 h-5 text-primary" />
+                      <p className="font-semibold text-foreground">{selectedOption.label}</p>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -206,7 +219,7 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
