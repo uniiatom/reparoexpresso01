@@ -28,6 +28,7 @@ import TermsManager from '../components/admin/TermsManager';
 import ProviderTermsManager from '../components/admin/ProviderTermsManager';
 import ClientTermsManager from '../components/admin/ClientTermsManager';
 import TicketsAdmin from '../components/admin/TicketsAdmin';
+import ReembolsosRepasses from '../components/admin/ReembolsosRepasses';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Link } from 'react-router-dom';
@@ -227,6 +228,9 @@ export default function AdminPanel() {
           <TabsTrigger value="tickets" className="text-xs px-2 py-1">
             🎧 Atendimento
           </TabsTrigger>
+          <TabsTrigger value="reembolsos" className="text-xs px-2 py-1">
+            💸 Repasses/Saques
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics">
@@ -423,6 +427,10 @@ export default function AdminPanel() {
 
         <TabsContent value="tickets">
           <TicketsAdmin />
+        </TabsContent>
+
+        <TabsContent value="reembolsos">
+          <ReembolsosRepasses />
         </TabsContent>
       </Tabs>
 
