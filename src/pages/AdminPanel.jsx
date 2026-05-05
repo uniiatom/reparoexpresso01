@@ -27,6 +27,7 @@ import ExpiringServicesAlert from '../components/admin/ExpiringServicesAlert';
 import TermsManager from '../components/admin/TermsManager';
 import ProviderTermsManager from '../components/admin/ProviderTermsManager';
 import ClientTermsManager from '../components/admin/ClientTermsManager';
+import TicketsAdmin from '../components/admin/TicketsAdmin';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -214,6 +215,9 @@ export default function AdminPanel() {
           </TabsTrigger>
           <TabsTrigger value="termos-prestador" className="text-xs px-2 py-1">
             📋 Termos Prestadores
+          </TabsTrigger>
+          <TabsTrigger value="tickets" className="text-xs px-2 py-1">
+            🎧 Atendimento
           </TabsTrigger>
         </TabsList>
 
@@ -407,6 +411,10 @@ export default function AdminPanel() {
 
         <TabsContent value="termos-prestador">
           <ProviderTermsManager />
+        </TabsContent>
+
+        <TabsContent value="tickets">
+          <TicketsAdmin />
         </TabsContent>
       </Tabs>
 

@@ -5,6 +5,7 @@ import RecurringServiceCalendar from '@/components/RecurringServiceCalendar';
 import ClientNotificationCenter from '@/components/ClientNotificationCenter';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, LogOut, Calendar, Gift, Camera, Wrench, FileText, Wallet } from "lucide-react";
+import ClientTicketForm from '@/components/ClientTicketForm';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import ServiceHistory from '@/components/ServiceHistory';
@@ -139,6 +140,15 @@ export default function UserProfile() {
           </h3>
           <CashbackPanel userId={user.id} ownerType="cliente" />
         </div>
+      )}
+
+      {/* Fale Conosco */}
+      {client?.id && (
+        <ClientTicketForm
+          clientId={client.id}
+          clientName={user?.full_name}
+          clientEmail={user?.email}
+        />
       )}
 
       {/* Service History */}
