@@ -31,6 +31,7 @@ import TicketsAdmin from '../components/admin/TicketsAdmin';
 import ScheduledCalendar from '../components/admin/ScheduledCalendar';
 import ReembolsosRepasses from '../components/admin/ReembolsosRepasses';
 import ActivityLog from '../components/admin/ActivityLog';
+import CouponsAdmin from '../components/admin/CouponsAdmin';
 import { logAdminAction } from '@/lib/adminLog';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -288,6 +289,9 @@ export default function AdminPanel() {
           <TabsTrigger value="reembolsos" className="text-xs px-2 py-1">
             💸 Repasses/Saques
           </TabsTrigger>
+          <TabsTrigger value="coupons" className="text-xs px-2 py-1">
+            🎫 Cupons
+          </TabsTrigger>
           <TabsTrigger value="logs" className="text-xs px-2 py-1">
             📜 Logs
           </TabsTrigger>
@@ -495,6 +499,10 @@ export default function AdminPanel() {
 
         <TabsContent value="reembolsos">
           <ReembolsosRepasses />
+        </TabsContent>
+
+        <TabsContent value="coupons">
+          <CouponsAdmin />
         </TabsContent>
 
         <TabsContent value="logs">

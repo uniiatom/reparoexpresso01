@@ -1,0 +1,89 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { code, service_amount, service_type, provider_id } = await req.json();
+
+    if (!code || !service_amount) {
+      return Response.json({ error: 'Código e valor do serviço são obrigatórios' }, { status: 400 });
+    }
+
+    // Busca o cupom
+    const coupons = await base44.asServiceRole.entities.Coupon.filter({ code: code.toUpperCase() });
+    
+    if (coupons.length === 0) {
+      return Response.json({ valid: false, message: 'Cupom não encontrado' }, { status: 400 });
+    }
+
+    const coupon = coupons[0];
+
+    // Valida se está ativo
+    if (!coupon.is_active) {
+      return Response.json({ valid: false, message: 'Cupom desativado' }, { status: 400 });
+    }
+
+    // Valida datas
+    const today = new Date().toISOString().split('T')[0];
+    if (coupon.valid_from && today < coupon.valid_from) {
+      return Response.json({ valid: false, message: 'Cupom ainda não está válido' }, { status: 400 });
+    }
+    if (coupon.valid_until && today > coupon.valid_until) {
+      return Response.json({ valid: false, message: 'Cupom expirou' }, { status: 400 });
+    }
+
+    // Valida número de usos
+    if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) {
+      return Response.json({ valid: false, message: 'Cupom atingiu o limite de usos' }, { status: 400 });
+    }
+
+    // Valida valor mínimo
+    if (coupon.min_amount && service_amount < coupon.min_amount) {
+      return Response.json({ 
+        valid: false, 
+        message: `Valor mínimo é R$ ${coupon.min_amount.toFixed(2)}` 
+      }, { status: 400 });
+    }
+
+    // Valida tipos de serviço
+    if (coupon.service_types && coupon.service_types.length > 0 && !coupon.service_types.includes(service_type)) {
+      return Response.json({ valid: false, message: 'Cupom não é válido para este serviço' }, { status: 400 });
+    }
+
+    // Valida prestadores
+    if (coupon.applicable_to_providers && coupon.applicable_to_providers.length > 0 && provider_id && !coupon.applicable_to_providers.includes(provider_id)) {
+      return Response.json({ valid: false, message: 'Cupom não é válido para este prestador' }, { status: 400 });
+    }
+
+    // Calcula desconto
+    let discount_amount = 0;
+    if (coupon.discount_type === 'percentage') {
+      discount_amount = (service_amount * coupon.discount_value) / 100;
+      if (coupon.max_discount_amount) {
+        discount_amount = Math.min(discount_amount, coupon.max_discount_amount);
+      }
+    } else {
+      discount_amount = coupon.discount_value;
+    }
+
+    const final_amount = Math.max(0, service_amount - discount_amount);
+
+    return Response.json({
+      valid: true,
+      coupon_id: coupon.id,
+      discount_amount: Math.round(discount_amount * 100) / 100,
+      final_amount: Math.round(final_amount * 100) / 100,
+      message: `Cupom aplicado! Desconto de R$ ${discount_amount.toFixed(2)}`
+    });
+
+  } catch (error) {
+    console.error('Erro ao validar cupom:', error);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});

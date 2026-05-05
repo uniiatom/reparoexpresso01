@@ -18,6 +18,7 @@ import { useServiceNotifications } from '../hooks/useServiceNotifications';
 import BatchProvidersPanel from '../components/BatchProvidersPanel';
 import BatchProviderChat from '../components/BatchProviderChat';
 import ClientTicketForm from '../components/ClientTicketForm';
+import CouponInput from '../components/CouponInput';
 
 const STATUS_STEPS = [
   { key: "aguardando", label: "Aguardando prestador", icon: Clock },
@@ -45,6 +46,7 @@ export default function AcompanharServico() {
   const [previousStatus, setPreviousStatus] = useState(null);
   const previousStatusRef = useRef(null);
   const [user, setUser] = useState(null);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -428,6 +430,15 @@ export default function AcompanharServico() {
       {/* Preço estimado ou final */}
       {(request.final_price || request.estimated_price || request.client_suggested_price) && (
         <div className="bg-card rounded-3xl p-5 border border-border mb-5 space-y-4">
+          {/* Cupom de desconto */}
+          <CouponInput
+            serviceAmount={request.final_price || request.estimated_price || request.client_suggested_price}
+            serviceType={request.service_type}
+            providerId={request.provider_id}
+            onCouponApplied={(coupon) => setAppliedCoupon(coupon)}
+            onCouponRemoved={() => setAppliedCoupon(null)}
+          />
+
           <div className="flex items-center justify-between">
             <span className="font-semibold text-foreground">
               {request.final_price ? 'Valor do serviço' : 'Valor estimado'}
@@ -436,6 +447,20 @@ export default function AcompanharServico() {
               R$ {(request.final_price || request.estimated_price || request.client_suggested_price)?.toFixed(2)}
             </span>
           </div>
+
+          {/* Desconto aplicado */}
+          {appliedCoupon && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-3 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-green-800 font-semibold">Desconto:</span>
+                <span className="text-green-800 font-bold">-R$ {appliedCoupon.discount_amount.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between text-lg font-bold border-t border-green-200 pt-2">
+                <span className="text-green-800">Total:</span>
+                <span className="text-green-700">R$ {appliedCoupon.final_amount.toFixed(2)}</span>
+              </div>
+            </div>
+          )}
           {request.estimated_price && !request.final_price && (
             <p className="text-xs text-muted-foreground text-center">
               ℹ️ Este é um valor estimado. O valor final será confirmado após o atendimento.
