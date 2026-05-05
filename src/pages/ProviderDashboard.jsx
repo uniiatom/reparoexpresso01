@@ -332,24 +332,26 @@ export default function ProviderDashboard() {
                                  <p className="text-lg font-bold text-primary">R$ {service.final_price.toFixed(2)}</p>
                                </div>
                              )}
-                             {service.status === 'em_andamento' && (
-                               <Button 
-                                 size="sm"
-                                 onClick={() => setCompletionService(service)}
-                                 className="w-full h-8 text-xs rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
-                               >
-                                 Concluir Serviço
-                               </Button>
-                             )}
-                             {(service.status === 'aceito' || service.status === 'a_caminho') && (
-                               <Button 
-                                 size="sm"
-                                 variant="outline"
-                                 onClick={() => setRefusalService(service)}
-                                 className="w-full h-8 text-xs rounded-lg border-red-200 text-red-600 hover:bg-red-50"
-                               >
-                                 Recusar Serviço
-                               </Button>
+                             {(service.status === 'em_andamento' || service.status === 'aceito' || service.status === 'a_caminho') && (
+                               <div className="space-y-2 w-full">
+                                 <Button 
+                                   size="sm"
+                                   onClick={() => setCompletionService(service)}
+                                   className="w-full h-8 text-xs rounded-lg bg-green-600 text-white hover:bg-green-700"
+                                 >
+                                   Concluir Serviço
+                                 </Button>
+                                 {(service.status === 'aceito' || service.status === 'a_caminho') && (
+                                   <Button 
+                                     size="sm"
+                                     variant="outline"
+                                     onClick={() => setRefusalService(service)}
+                                     className="w-full h-8 text-xs rounded-lg border-red-200 text-red-600 hover:bg-red-50"
+                                   >
+                                     Recusar Serviço
+                                   </Button>
+                                 )}
+                               </div>
                              )}
                            </div>
                          </div>

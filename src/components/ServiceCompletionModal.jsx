@@ -25,10 +25,10 @@ const COMPLETION_OPTIONS = [
   },
   {
     id: 'not_service_type',
-    label: 'Não Fazemos Esse Tipo',
+    label: 'Finalizar na Visita',
     icon: Ban,
-    color: 'bg-red-50 border-red-200 hover:bg-red-100',
-    description: 'Serviço fora do escopo de atuação',
+    color: 'bg-orange-50 border-orange-200 hover:bg-orange-100',
+    description: 'Serviço será finalizado em uma próxima visita',
     requiresReason: true,
   },
   {
@@ -154,7 +154,7 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
               <div>
                 <p className="font-semibold text-foreground mb-2">
                   {selectedOption?.id === 'unsuccessful' && 'Por que o serviço não teve sucesso?'}
-                  {selectedOption?.id === 'not_service_type' && 'Por que não fazem esse tipo de serviço?'}
+                  {selectedOption?.id === 'not_service_type' && 'Por que será necessário uma visita adicional?'}
                   {selectedOption?.id === 'needs_return' && 'Por que é necessário um retorno?'}
                 </p>
                 <textarea
