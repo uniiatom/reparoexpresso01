@@ -121,7 +121,7 @@ export default function RecurringServicesList({ clientId }) {
                 <div>
                   <p className="font-medium text-foreground">Próximo serviço</p>
                   <p className="text-muted-foreground">
-                    {new Date(schedule.next_service_date).toLocaleDateString('pt-BR')}
+                    {schedule.next_service_date && new Date(schedule.next_service_date).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
               </div>
