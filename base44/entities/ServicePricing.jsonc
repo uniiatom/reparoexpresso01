@@ -1,0 +1,49 @@
+{
+  "name": "ServicePricing",
+  "type": "object",
+  "properties": {
+    "service_type": {
+      "type": "string",
+      "description": "Tipo de servi\u00e7o (ex: eletrica, hidraulica)"
+    },
+    "zone": {
+      "type": "string",
+      "description": "Zona/Bairro (ex: Centro, Zona Sul - deixe em branco para precifica\u00e7\u00e3o padr\u00e3o)"
+    },
+    "city": {
+      "type": "string",
+      "description": "Cidade (deixe em branco para precifica\u00e7\u00e3o padr\u00e3o)"
+    },
+    "state": {
+      "type": "string",
+      "description": "Estado/UF (deixe em branco para precifica\u00e7\u00e3o padr\u00e3o)"
+    },
+    "price_min": {
+      "type": "number",
+      "description": "Pre\u00e7o m\u00ednimo sugerido"
+    },
+    "price_max": {
+      "type": "number",
+      "description": "Pre\u00e7o m\u00e1ximo sugerido"
+    },
+    "note": {
+      "type": "string",
+      "description": "Observa\u00e7\u00e3o sobre a precifica\u00e7\u00e3o (ex: por ponto, por metro)"
+    },
+    "repasse_value": {
+      "type": "number",
+      "description": "Valor fixo de repasse ao prestador (em R$)"
+    },
+    "repasse_percent": {
+      "type": "number",
+      "description": "Porcentagem do valor cobrado repassada ao prestador"
+    },
+    "repasse_note": {
+      "type": "string",
+      "description": "Observa\u00e7\u00e3o sobre o repasse"
+    }
+  },
+  "required": [
+    "service_type"
+  ]
+}
