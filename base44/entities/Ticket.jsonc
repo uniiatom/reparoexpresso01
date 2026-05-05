@@ -14,13 +14,28 @@
       "type": "string",
       "description": "Email do cliente"
     },
+    "provider_id": {
+      "type": "string",
+      "description": "ID do prestador (se ticket do prestador)"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Nome do prestador (se ticket do prestador)"
+    },
+    "provider_email": {
+      "type": "string",
+      "description": "Email do prestador (se ticket do prestador)"
+    },
     "type": {
       "type": "string",
       "enum": [
         "reclamacao",
         "elogio",
         "sugestao",
-        "duvida"
+        "duvida",
+        "problema_tecnico",
+        "pagamento",
+        "outro"
       ],
       "description": "Tipo do ticket"
     },
@@ -30,7 +45,7 @@
     },
     "message": {
       "type": "string",
-      "description": "Mensagem do cliente"
+      "description": "Mensagem do cliente ou prestador"
     },
     "service_request_id": {
       "type": "string",
@@ -72,7 +87,7 @@
     },
     "response": {
       "type": "string",
-      "description": "Resposta ao cliente"
+      "description": "Resposta ao cliente ou prestador"
     },
     "responded_at": {
       "type": "string",

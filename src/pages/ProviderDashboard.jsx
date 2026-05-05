@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, DollarSign, CheckCircle2, Clock, MapPin, Star, TrendingUp, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
+import ProviderTicketForm from '@/components/ProviderTicketForm';
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
@@ -182,11 +183,12 @@ export default function ProviderDashboard() {
 
         {/* Main Tabs */}
          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-           <TabsList className="grid w-full grid-cols-4 mb-6">
+           <TabsList className="grid w-full grid-cols-5 mb-6">
              <TabsTrigger value="scheduled">Agendados</TabsTrigger>
              <TabsTrigger value="overview">Aceitos</TabsTrigger>
              <TabsTrigger value="payments">Pagamentos</TabsTrigger>
              <TabsTrigger value="availability">Disponibilidade</TabsTrigger>
+             <TabsTrigger value="support">Suporte</TabsTrigger>
            </TabsList>
 
           {/* Tab: Serviços Agendados */}
@@ -391,10 +393,19 @@ export default function ProviderDashboard() {
               >
                 Editar Horários
               </Button>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-}
+              )}
+              </TabsContent>
+
+              {/* Tab: Suporte Técnico */}
+              <TabsContent value="support" className="space-y-4">
+              <ProviderTicketForm 
+               providerId={provider.id}
+               providerName={provider.name}
+               providerEmail={user.email}
+              />
+              </TabsContent>
+              </Tabs>
+              </div>
+              </div>
+              );
+              }
