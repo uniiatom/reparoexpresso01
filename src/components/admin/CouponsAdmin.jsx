@@ -258,6 +258,8 @@ export default function CouponsAdmin() {
 
   const isExhausted = (coupon) => coupon.max_uses && coupon.current_uses >= coupon.max_uses;
 
+  const isFinal = (coupon) => isExpired(coupon) || isNotStarted(coupon) || isExhausted(coupon) || !coupon.is_active;
+
   return (
     <div className="space-y-4">
       <Tabs defaultValue="manage">
@@ -353,24 +355,26 @@ export default function CouponsAdmin() {
                     {isExhausted(coupon) && <p className="text-xs text-red-600 font-semibold mb-2">❌ Limite de usos atingido</p>}
                     {!coupon.is_active && <p className="text-xs text-gray-600 font-semibold mb-2">⊘ Cupom desativado</p>}
 
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 rounded-xl h-8"
-                        onClick={() => setEditingCoupon(coupon)}
-                      >
-                        <Edit2 className="w-3 h-3 mr-1" /> Editar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 rounded-xl h-8 text-destructive border-destructive/30 hover:bg-destructive/10"
-                        onClick={() => deleteCoupon.mutate(coupon.id)}
-                      >
-                        <Trash2 className="w-3 h-3 mr-1" /> Remover
-                      </Button>
-                    </div>
+                    {!isFinal(coupon) && (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 rounded-xl h-8"
+                          onClick={() => setEditingCoupon(coupon)}
+                        >
+                          <Edit2 className="w-3 h-3 mr-1" /> Editar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 rounded-xl h-8 text-destructive border-destructive/30 hover:bg-destructive/10"
+                          onClick={() => deleteCoupon.mutate(coupon.id)}
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" /> Remover
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))
