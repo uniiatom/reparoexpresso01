@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import {
     ArrowLeft, MapPin, Zap, Droplets, Paintbrush, Wrench,
     Settings, Hammer, Lock, Wind, ChevronRight, Calendar,
-    Clock, Camera, X, Navigation, Loader2, Car, UserPlus, Monitor, Battery, Power
+    Clock, Camera, X, Navigation, Loader2, Car, UserPlus, Monitor, Battery, Power, RotateCcw
   } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AlertCircle } from "lucide-react";
@@ -60,10 +60,11 @@ const HOUR_SLOTS = Array.from({ length: 11 }, (_, i) => {
 });
 
 export default function SolicitarServico() {
-  const navigate = useNavigate();
-  const urlParams = new URLSearchParams(window.location.search);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [userLoaded, setUserLoaded] = useState(false);
+   const navigate = useNavigate();
+   const urlParams = new URLSearchParams(window.location.search);
+   const [currentUser, setCurrentUser] = useState(null);
+   const [userLoaded, setUserLoaded] = useState(false);
+   const [tabSolicitar, setTabSolicitar] = useState('novo');
 
   useEffect(() => {
     base44.auth.me().then(u => { setCurrentUser(u); setUserLoaded(true); }).catch(() => setUserLoaded(true));
@@ -641,6 +642,58 @@ export default function SolicitarServico() {
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
+      {/* Abas */}
+      <div className="flex gap-2 mb-6 border-b border-border">
+        <button
+          onClick={() => setTabSolicitar('novo')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+            tabSolicitar === 'novo'
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Novo Serviço
+        </button>
+        <button
+          onClick={() => setTabSolicitar('retorno')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+            tabSolicitar === 'retorno'
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Solicitar Retorno
+        </button>
+      </div>
+
+      {/* Tab: Solicitar Retorno */}
+      {tabSolicitar === 'retorno' && (
+        <div className="space-y-6">
+          <div className="bg-card rounded-lg border border-border p-8 text-center space-y-4">
+            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
+              <RotateCcw className="w-6 h-6 text-primary" />
+            </div>
+            <h3 className="font-semibold text-foreground">Solicitar Retorno do Prestador</h3>
+            <p className="text-sm text-muted-foreground">Deseja chamar o mesmo prestador novamente?</p>
+            <p className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
+              Acesse "Meus Pedidos" para visualizar seus serviços anteriores e solicitar retorno
+            </p>
+            <Button 
+              onClick={() => navigate('/meus-pedidos')}
+              className="w-full mt-4"
+            >
+              <ChevronRight className="w-4 h-4 mr-2" />
+              Ir para Meus Pedidos
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Novo Serviço */}
+      {tabSolicitar === 'novo' && (
+      <div>
       {/* Progress */}
       <div className="flex items-center gap-3 mb-6">
         <RetornoButton step={step} needsRegister={needsRegister} onPrevStep={() => setStep(s => s - 1)} />
@@ -1875,6 +1928,8 @@ export default function SolicitarServico() {
           onBusyAlertCreated={(id) => setActiveBusyAlertId(id)}
           onProviderResponded={() => setShowProviderSearch(false)}
         />
+      )}
+      </div>
       )}
     </div>
   );
