@@ -31,7 +31,7 @@ function CouponForm({ coupon, providers, onSubmit, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.code || form.discount_value <= 0) {
+    if (!form.code || !form.discount_value || form.discount_value <= 0) {
       toast.error('Preencha código e valor do desconto');
       return;
     }
