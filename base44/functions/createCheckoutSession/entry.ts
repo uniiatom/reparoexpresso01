@@ -17,14 +17,19 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Invalid amount or request ID' }), { status: 400 });
     }
 
-    // Save coupon info to service request if provided
-    if (couponId || couponCode) {
-      await base44.entities.ServiceRequest.update(serviceRequestId, {
-        coupon_id: couponId || null,
-        coupon_code: couponCode || null,
-        discount_amount: discountAmount || 0,
-        original_price: originalPrice || amount,
-      });
+    // Save coupon info to service request
+    const updateData = {
+      coupon_id: couponId || null,
+      coupon_code: couponCode || null,
+      discount_amount: discountAmount || 0,
+      original_price: originalPrice || amount,
+    };
+    
+    try {
+      await base44.entities.ServiceRequest.update(serviceRequestId, updateData);
+      console.log(`Updated ServiceRequest ${serviceRequestId} with coupon: ${couponCode}`, updateData);
+    } catch (err) {
+      console.error(`Failed to update ServiceRequest ${serviceRequestId}:`, err.message);
     }
 
     const session = await stripe.checkout.sessions.create({
