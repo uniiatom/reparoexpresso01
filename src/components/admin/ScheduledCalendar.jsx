@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Calendar, User, Wrench, X, ArrowRight, Search } from 'lucide-react';
+import DelayRiskChart from '@/components/admin/DelayRiskChart';
 import { toast } from 'sonner';
 import { format, addDays, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -336,6 +337,13 @@ export default function ScheduledCalendar() {
           </div>
         ))}
       </div>
+
+      {/* Mapa de Risco de Atraso */}
+      <DelayRiskChart
+        services={services}
+        providers={allProviders}
+        onSelectService={(s) => setSelectedService(s)}
+      />
 
       {/* Serviços NOVOS (sem data agendada) */}
       {newServices.length > 0 && (
