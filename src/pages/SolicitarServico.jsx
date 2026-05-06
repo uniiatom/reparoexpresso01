@@ -24,6 +24,7 @@ import ClientScheduleSelector from "@/components/ClientScheduleSelector";
 import { useScheduleAvailability } from "@/hooks/useScheduleAvailability";
 import TowServiceQuestions from "@/components/TowServiceQuestions";
 import RetornoButton from "@/components/RetornoButton";
+import ProviderMiniPhoto from "@/components/ProviderMiniPhoto";
 
 const SERVICE_TYPES = [
   { value: "eletrica", label: "Elétrica", icon: Zap, group: "casa" },
@@ -684,8 +685,9 @@ export default function SolicitarServico() {
                   <Card key={service.id} className="overflow-hidden">
                     <CardContent className="p-4">
                       <div className="space-y-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
+                        <div className="flex items-start gap-3">
+                          {service.provider_id && <ProviderMiniPhoto providerId={service.provider_id} />}
+                          <div className="flex-1">
                             <p className="font-semibold text-foreground">
                               {SERVICE_TYPES.find(s => s.value === service.service_type)?.label || service.service_type}
                             </p>
