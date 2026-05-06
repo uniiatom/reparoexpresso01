@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, AlertCircle, MapPin, Star, Calendar, Zap, X, Heart } from "lucide-react";
@@ -59,15 +60,16 @@ const isHolidayOrSunday = (date) => {
 };
 
 function PhotoZoom({ src, alt, onClose }) {
-  return (
-    <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
       <div className="relative max-w-xs w-full" onClick={e => e.stopPropagation()}>
         <img src={src} alt={alt} className="w-full rounded-2xl object-contain max-h-[80vh]" />
         <button onClick={onClose} className="absolute top-2 right-2 bg-black/60 rounded-full p-1">
           <X className="w-5 h-5 text-white" />
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
