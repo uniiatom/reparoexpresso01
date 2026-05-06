@@ -31,7 +31,24 @@ export default function FavoritesList() {
 
   const { data: favorites = [] } = useQuery({
     queryKey: ['favorites', user?.id],
-    queryFn: () => base44.entities.Favorite.filter({ client_id: user?.id }),
+    queryFn: async () => {
+      const favs = await base44.entities.Favorite.filter({ client_id: user?.id });
+      if (!favs?.length) return favs;
+      // Busca dados atualizados dos prestadores para ter foto atualizada
+      const providerIds = [...new Set(favs.map(f => f.provider_id).filter(Boolean))];
+      const providers = await Promise.all(
+        providerIds.map(id => base44.entities.Provider.filter({ id }).then(r => r[0]).catch(() => null))
+      );
+      const providerMap = Object.fromEntries(providers.filter(Boolean).map(p => [p.id, p]));
+      return favs.map(f => ({
+        ...f,
+        provider_photo_url: providerMap[f.provider_id]?.photo_url || f.provider_photo_url,
+        provider_name: providerMap[f.provider_id]?.name || f.provider_name,
+        provider_rating: providerMap[f.provider_id]?.rating || f.provider_rating,
+        provider_city: providerMap[f.provider_id]?.city || f.provider_city,
+        provider_state: providerMap[f.provider_id]?.state || f.provider_state,
+      }));
+    },
     enabled: !!user?.id,
   });
 
