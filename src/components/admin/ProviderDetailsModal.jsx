@@ -1,10 +1,49 @@
-import React, { useState } from 'react';
-import { X, Star, Phone, Mail, MapPin, Briefcase, Calendar, User, IdCard, ShieldCheck, ShieldOff } from 'lucide-react';
+import React, { useState, useMutation } from 'react';
+import { X, Star, Phone, Mail, MapPin, Briefcase, Calendar, User, IdCard, ShieldCheck, ShieldOff, Plus, Trash2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { toast } from 'sonner';
+
+const SPECIALTY_OPTIONS = [
+  { key: 'Elétrica', label: 'Elétrica' },
+  { key: 'Hidráulica', label: 'Hidráulica' },
+  { key: 'Pintura', label: 'Pintura' },
+  { key: 'Montagem', label: 'Montagem' },
+  { key: 'Reparo Geral', label: 'Reparo Geral' },
+  { key: 'Alvenaria', label: 'Alvenaria' },
+  { key: 'Fechadura / Serralheria', label: 'Fechadura / Serralheria' },
+  { key: 'Ar Condicionado', label: 'Ar Condicionado' },
+  { key: "Limpeza Caixa d'Água", label: "Limpeza Caixa d'Água" },
+  { key: 'Limpeza de Calha', label: 'Limpeza de Calha' },
+  { key: 'Substituição de Telha', label: 'Substituição de Telha' },
+  { key: 'Limpeza de Telhado', label: 'Limpeza de Telhado' },
+  { key: 'Coifa de Parede', label: 'Coifa de Parede' },
+  { key: 'Coifa Ilha', label: 'Coifa Ilha' },
+  { key: 'Conversão Vaso CX Acoplada', label: 'Conversão Vaso CX Acoplada' },
+  { key: 'Vaso Monobloco', label: 'Vaso Monobloco' },
+  { key: 'Reparo Forro de Gesso', label: 'Reparo Forro de Gesso' },
+  { key: 'Desentupimento', label: 'Desentupimento' },
+  { key: 'Troca de Pneu', label: 'Troca de Pneu' },
+  { key: 'Recarga de Bateria', label: 'Recarga de Bateria' },
+  { key: 'Conserto de Pneu', label: 'Conserto de Pneu' },
+  { key: 'Reboque', label: 'Reboque' },
+  { key: 'Veículo Outros', label: 'Veículo Outros' },
+  { key: 'Caça Vazamento', label: 'Caça Vazamento' },
+  { key: 'Check-up', label: 'Check-up' },
+  { key: 'Portão Eletrônico', label: 'Portão Eletrônico' },
+  { key: 'Interfone', label: 'Interfone' },
+  { key: 'Rejunte', label: 'Rejunte' },
+  { key: 'Pressurizador', label: 'Pressurizador' },
+  { key: 'Alarme / Cerca Elétrica', label: 'Alarme / Cerca Elétrica' },
+  { key: 'Concertina', label: 'Concertina' },
+  { key: 'Câmera / CFTV', label: 'Câmera / CFTV' },
+  { key: 'Instalação Suporte TV', label: 'Instalação Suporte TV' },
+  { key: 'Outros', label: 'Outros' },
+];
 
 const SPECIALTY_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -17,6 +56,9 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onR
   const [showBlockForm, setShowBlockForm] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
+  const [editingSpecialties, setEditingSpecialties] = useState(false);
+  const [specialties, setSpecialties] = useState(provider.specialties || []);
+  const [savingSpecialties, setSavingSpecialties] = useState(false);
 
   if (!provider) return null;
 
@@ -49,6 +91,30 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onR
       setShowRejectForm(false);
       onClose();
     }
+  };
+
+  const handleSaveSpecialties = async () => {
+    setSavingSpecialties(true);
+    try {
+      await base44.entities.Provider.update(provider.id, { specialties });
+      toast.success('Especialidades atualizadas com sucesso');
+      setEditingSpecialties(false);
+    } catch (err) {
+      toast.error('Erro ao salvar especialidades');
+      console.error(err);
+    } finally {
+      setSavingSpecialties(false);
+    }
+  };
+
+  const addSpecialty = (specialty) => {
+    if (!specialties.includes(specialty)) {
+      setSpecialties([...specialties, specialty]);
+    }
+  };
+
+  const removeSpecialty = (specialty) => {
+    setSpecialties(specialties.filter(s => s !== specialty));
   };
 
   return (
@@ -141,18 +207,99 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onR
           </div>
 
           {/* Especialidades */}
-          {provider.specialties?.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Especialidades</p>
-              <div className="flex flex-wrap gap-2">
-                {provider.specialties.map(s => (
-                  <span key={s} className="bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full">
-                    {SPECIALTY_LABELS[s] || s}
-                  </span>
-                ))}
-              </div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Especialidades</p>
+              {!editingSpecialties && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-6 px-2 text-xs rounded-lg"
+                  onClick={() => setEditingSpecialties(true)}
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Editar
+                </Button>
+              )}
             </div>
-          )}
+
+            {editingSpecialties ? (
+              <div className="space-y-3">
+                {/* Especialidades selecionadas */}
+                {specialties.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {specialties.map(s => (
+                      <div
+                        key={s}
+                        className="flex items-center gap-2 bg-primary/10 border border-primary/30 text-primary text-xs font-semibold px-3 py-1.5 rounded-full"
+                      >
+                        <span>{s}</span>
+                        <button
+                          onClick={() => removeSpecialty(s)}
+                          className="hover:opacity-70 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Dropdown de opções */}
+                <div className="grid grid-cols-2 gap-2">
+                  {SPECIALTY_OPTIONS.map(opt => (
+                    <button
+                      key={opt.key}
+                      onClick={() => addSpecialty(opt.key)}
+                      disabled={specialties.includes(opt.key)}
+                      className={cn(
+                        'px-3 py-2 rounded-lg text-xs font-medium border transition-all text-left',
+                        specialties.includes(opt.key)
+                          ? 'bg-primary/20 border-primary/40 text-primary cursor-not-allowed opacity-50'
+                          : 'bg-muted border-border hover:border-primary/50 text-foreground'
+                      )}
+                    >
+                      <Plus className="w-3 h-3 inline mr-1" />
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Botões de ação */}
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    className="flex-1 h-8 rounded-lg text-xs bg-primary"
+                    onClick={handleSaveSpecialties}
+                    disabled={savingSpecialties}
+                  >
+                    {savingSpecialties ? 'Salvando...' : 'Salvar'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 h-8 rounded-lg text-xs"
+                    onClick={() => {
+                      setEditingSpecialties(false);
+                      setSpecialties(provider.specialties || []);
+                    }}
+                    disabled={savingSpecialties}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {specialties.length > 0 ? (
+                  specialties.map(s => (
+                    <span key={s} className="bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full">
+                      {s}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">Nenhuma especialidade cadastrada</p>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Formulário de reprovação */}
           {showRejectForm && (
