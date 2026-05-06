@@ -137,6 +137,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [currentUser, setCurrentUser] = useState(null);
   const [busyAlertId, setBusyAlertId] = useState(null);
   const busyAlertCreated = useRef(false);
+  const [zoomedFavPhoto, setZoomedFavPhoto] = useState(null);
 
   useEffect(() => {
     // Busca favoritos
@@ -418,6 +419,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   return (
+    <>
+    {zoomedFavPhoto && <PhotoZoom src={zoomedFavPhoto} alt="Foto do prestador" onClose={() => setZoomedFavPhoto(null)} />}
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4">
       <div className="bg-card w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden">
 
@@ -453,9 +456,17 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                     selectedFavorite?.id === fav.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
                   )}
                 >
-                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-primary/10 flex items-center justify-center flex-shrink-0 border border-border">
+                  <div
+                    className={cn("w-14 h-14 rounded-xl overflow-hidden bg-primary/10 flex items-center justify-center flex-shrink-0 border border-border relative group", fav.provider_photo_url && "cursor-zoom-in")}
+                    onClick={fav.provider_photo_url ? (e) => { e.stopPropagation(); setZoomedFavPhoto(fav.provider_photo_url); } : undefined}
+                  >
                     {fav.provider_photo_url ? (
-                      <img src={fav.provider_photo_url} alt="" className="w-full h-full object-cover" />
+                      <>
+                        <img src={fav.provider_photo_url} alt="" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-xl">
+                          <span className="text-white text-lg">🔍</span>
+                        </div>
+                      </>
                     ) : (
                       <span className="text-lg font-bold text-primary">{fav.provider_name?.charAt(0)}</span>
                     )}
@@ -674,5 +685,6 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
         )}
       </div>
     </div>
+    </>
   );
 }
