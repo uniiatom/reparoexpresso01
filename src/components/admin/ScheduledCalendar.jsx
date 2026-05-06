@@ -211,8 +211,9 @@ export default function ScheduledCalendar() {
   // serviceMap[providerId][dayKey][hour] = [service, ...]
   const serviceMap = useMemo(() => {
     const map = {};
-    // Coluna especial para sem prestador
-    const allKeys = [...allProviders.map(p => p.id), '__none__'];
+    // Inclui IDs de todos os prestadores + IDs dos serviços que têm prestador + '__none__'
+    const serviceProviderIds = services.map(s => s.provider_id).filter(Boolean);
+    const allKeys = [...new Set([...allProviders.map(p => p.id), ...serviceProviderIds, '__none__'])];
     allKeys.forEach(key => {
       map[key] = {};
       dayKeys.forEach(dk => {
@@ -222,11 +223,13 @@ export default function ScheduledCalendar() {
       });
     });
     // Preenche serviços
+    const approvedProviderIds = new Set(allProviders.filter(p => p.is_approved && !p.is_blocked && !p.is_archived).map(p => p.id));
     services.forEach(s => {
       const dateKey = getServiceDateKey(s);
       if (!dateKey) return;
-      if (!dayKeys.includes(dateKey)) return; // dia fora do range
-      const provKey = s.provider_id && map[s.provider_id] ? s.provider_id : '__none__';
+      if (!dayKeys.includes(dateKey)) return;
+      // Se o prestador existe mas não está na lista de aprovados visíveis, vai para __none__
+      const provKey = (s.provider_id && approvedProviderIds.has(s.provider_id)) ? s.provider_id : '__none__';
       const hour = getServiceHour(s);
       if (hour !== null) {
         map[provKey][dateKey][hour].push(s);
@@ -237,10 +240,18 @@ export default function ScheduledCalendar() {
     return map;
   }, [services, allProviders, dayKeys]);
 
-  // Serviços sem prestador nos 3 dias
+  // Serviços sem prestador (ou com prestador não aprovado) nos 3 dias
+  const approvedProviderIdSet = useMemo(() =>
+    new Set(allProviders.filter(p => p.is_approved && !p.is_blocked && !p.is_archived).map(p => p.id)),
+    [allProviders]
+  );
+
   const unassignedServices = useMemo(() =>
-    services.filter(s => !s.provider_id && dayKeys.includes(getServiceDateKey(s))),
-    [services, dayKeys]
+    services.filter(s =>
+      (!s.provider_id || !approvedProviderIdSet.has(s.provider_id)) &&
+      dayKeys.includes(getServiceDateKey(s))
+    ),
+    [services, dayKeys, approvedProviderIdSet]
   );
 
   // Serviços novos (aguardando, sem prestador, sem data agendada)
