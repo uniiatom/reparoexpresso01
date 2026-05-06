@@ -75,50 +75,75 @@ function PhotoZoom({ src, alt, onClose }) {
 
 function ProviderCard({ provider, label }) {
   const [zoomedPhoto, setZoomedPhoto] = useState(null);
+  const rating = provider.rating || 5.0;
+  const fullStars = Math.floor(rating);
+  const hasHalf = rating - fullStars >= 0.5;
 
   return (
     <>
       {zoomedPhoto && <PhotoZoom src={zoomedPhoto.src} alt={zoomedPhoto.alt} onClose={() => setZoomedPhoto(null)} />}
-      <div className="flex gap-2">
-        <div className="flex flex-col items-center gap-1">
+      <div className="flex gap-3 items-start">
+        {/* Foto principal */}
+        <div className="flex flex-col items-center gap-1 flex-shrink-0">
           <button
             onClick={() => provider.photo_url && setZoomedPhoto({ src: provider.photo_url, alt: 'rosto' })}
-            className={cn("w-12 h-12 rounded-xl bg-primary/10 overflow-hidden flex items-center justify-center border-2 border-primary/20 flex-shrink-0", provider.photo_url && "cursor-zoom-in hover:opacity-80 transition-opacity")}
+            className={cn(
+              "w-16 h-16 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center border-2 border-primary/30",
+              provider.photo_url && "cursor-zoom-in hover:opacity-80 transition-opacity"
+            )}
           >
             {provider.photo_url ? (
               <img src={provider.photo_url} alt="rosto" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-base font-bold text-primary">{provider.name?.charAt(0)}</span>
+              <span className="text-xl font-bold text-primary">{provider.name?.charAt(0)}</span>
             )}
           </button>
           {label && <span className="text-[10px] text-primary font-bold">{label}</span>}
         </div>
-        {provider.photo_body_url && (
-          <div className="flex flex-col items-center gap-1">
-            <button
-              onClick={() => setZoomedPhoto({ src: provider.photo_body_url, alt: 'corpo' })}
-              className="w-12 h-12 rounded-xl bg-muted overflow-hidden border-2 border-border flex-shrink-0 cursor-zoom-in hover:opacity-80 transition-opacity"
-            >
-              <img src={provider.photo_body_url} alt="corpo" className="w-full h-full object-cover" />
-            </button>
-            <span className="text-[10px] text-muted-foreground">Corpo</span>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-foreground text-sm leading-tight">{provider.name}</p>
+
+          {/* Estrelas */}
+          <div className="flex items-center gap-1 mt-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                className={cn(
+                  "w-3.5 h-3.5",
+                  i < fullStars
+                    ? "text-yellow-400 fill-yellow-400"
+                    : i === fullStars && hasHalf
+                    ? "text-yellow-400 fill-yellow-200"
+                    : "text-gray-300 fill-gray-100"
+                )}
+              />
+            ))}
+            <span className="text-xs font-semibold text-foreground ml-0.5">{rating.toFixed(1)}</span>
+            <span className="text-xs text-muted-foreground">({provider.total_reviews || 0})</span>
           </div>
-        )}
-        <div className="flex flex-col justify-center gap-1 flex-1">
-          <p className="font-bold text-foreground text-sm">{provider.name}</p>
-          <div className="flex items-center gap-1">
-            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-            <span className="text-sm text-foreground font-medium">{provider.rating?.toFixed(1) || '5.0'}</span>
-            <span className="text-xs text-muted-foreground">({provider.total_reviews || 0} aval.)</span>
+
+          {/* Nível */}
+          <div className="mt-1.5">
+            <ProviderLevelBadge providerId={provider.id} size="sm" />
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1">
-              <Zap className="w-3 h-3 text-primary" />
-              <span className="text-xs font-semibold text-primary">Disponível agora</span>
-            </div>
-            <ProviderLevelBadge totalJobs={provider.total_jobs} rating={provider.rating} size="sm" />
+
+          <div className="flex items-center gap-1 mt-1">
+            <Zap className="w-3 h-3 text-primary" />
+            <span className="text-xs font-semibold text-primary">Disponível agora</span>
           </div>
         </div>
+
+        {/* Foto corpo (menor, no canto) */}
+        {provider.photo_body_url && (
+          <button
+            onClick={() => setZoomedPhoto({ src: provider.photo_body_url, alt: 'corpo' })}
+            className="w-10 h-10 rounded-xl bg-muted overflow-hidden border border-border flex-shrink-0 cursor-zoom-in hover:opacity-80 transition-opacity"
+          >
+            <img src={provider.photo_body_url} alt="corpo" className="w-full h-full object-cover" />
+          </button>
+        )}
       </div>
     </>
   );
