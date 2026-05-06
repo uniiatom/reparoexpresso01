@@ -167,12 +167,25 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [zoomedFavPhoto, setZoomedFavPhoto] = useState(null);
 
   useEffect(() => {
-    // Busca favoritos
-    base44.auth.me().catch(() => null).then(u => {
+    // Busca favoritos com dados atualizados dos prestadores
+    base44.auth.me().catch(() => null).then(async u => {
       if (u?.id) {
-        base44.entities.Favorite.filter({ client_id: u.id })
-          .then(favs => setFavorites(favs || []))
-          .catch(() => {});
+        try {
+          const favs = await base44.entities.Favorite.filter({ client_id: u.id });
+          if (!favs?.length) { setFavorites([]); return; }
+          const providerIds = [...new Set(favs.map(f => f.provider_id).filter(Boolean))];
+          const providers = await Promise.all(
+            providerIds.map(id => base44.entities.Provider.filter({ id }).then(r => r[0]).catch(() => null))
+          );
+          const providerMap = Object.fromEntries(providers.filter(Boolean).map(p => [p.id, p]));
+          setFavorites(favs.map(f => ({
+            ...f,
+            provider_photo_url: providerMap[f.provider_id]?.photo_url || f.provider_photo_url,
+            provider_name: providerMap[f.provider_id]?.name || f.provider_name,
+            provider_rating: providerMap[f.provider_id]?.rating || f.provider_rating,
+            provider_city: providerMap[f.provider_id]?.city || f.provider_city,
+          })));
+        } catch { setFavorites([]); }
       }
     });
 
