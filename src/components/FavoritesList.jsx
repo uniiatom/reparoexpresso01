@@ -1,14 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Star, MapPin, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Star, MapPin, MessageCircle, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+function PhotoZoom({ src, onClose }) {
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative max-w-xs w-full" onClick={e => e.stopPropagation()}>
+        <img src={src} alt="Foto" className="w-full rounded-2xl object-contain max-h-[80vh]" />
+        <button onClick={onClose} className="absolute top-2 right-2 bg-black/60 rounded-full p-1">
+          <X className="w-5 h-5 text-white" />
+        </button>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 export default function FavoritesList() {
   const [user, setUser] = useState(null);
+  const [zoomedPhoto, setZoomedPhoto] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(u => setUser(u)).catch(() => {});
@@ -39,6 +54,8 @@ export default function FavoritesList() {
   }
 
   return (
+    <>
+      {zoomedPhoto && <PhotoZoom src={zoomedPhoto} onClose={() => setZoomedPhoto(null)} />}
     <div className="space-y-3">
       {favorites.map((fav, idx) => (
         <motion.div
@@ -51,9 +68,17 @@ export default function FavoritesList() {
           <Link to={`/prestador/${fav.provider_id}`} className="block p-4">
             <div className="flex items-start gap-3">
               {/* Foto */}
-              <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <div
+                className={cn("w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden relative group", fav.provider_photo_url && "cursor-zoom-in")}
+                onClick={fav.provider_photo_url ? (e) => { e.preventDefault(); e.stopPropagation(); setZoomedPhoto(fav.provider_photo_url); } : undefined}
+              >
                 {fav.provider_photo_url ? (
-                  <img src={fav.provider_photo_url} alt={fav.provider_name} className="w-full h-full object-cover" />
+                  <>
+                    <img src={fav.provider_photo_url} alt={fav.provider_name} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <span className="text-white text-lg">🔍</span>
+                    </div>
+                  </>
                 ) : (
                   <span className="text-xl font-bold text-primary">{fav.provider_name?.charAt(0)}</span>
                 )}
@@ -88,5 +113,6 @@ export default function FavoritesList() {
         </motion.div>
       ))}
     </div>
+    </>
   );
 }
