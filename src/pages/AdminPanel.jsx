@@ -29,6 +29,7 @@ import ProviderTermsManager from '../components/admin/ProviderTermsManager';
 import ClientTermsManager from '../components/admin/ClientTermsManager';
 import TicketsAdmin from '../components/admin/TicketsAdmin';
 import ScheduledCalendar from '../components/admin/ScheduledCalendar';
+import UndoProviderAction from '../components/admin/UndoProviderAction';
 import ReembolsosRepasses from '../components/admin/ReembolsosRepasses';
 import ActivityLog from '../components/admin/ActivityLog';
 import CouponsAdmin from '../components/admin/CouponsAdmin';
@@ -348,6 +349,11 @@ export default function AdminPanel() {
                           : <Eye className="w-4 h-4 text-amber-700" />}
                       </button>
                     </div>
+                  )}
+
+                  {/* Desfazer ação do prestador */}
+                  {!['cancelado', 'concluido', 'aguardando'].includes(req.status) && (
+                    <UndoProviderAction request={req} adminUser={adminUser} />
                   )}
 
                   {/* Cancelar atendimento */}
