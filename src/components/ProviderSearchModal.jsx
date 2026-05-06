@@ -271,6 +271,50 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     return null;
   };
 
+  // Mapeamento service_type (snake_case) → labels das especialidades do prestador
+  const SPECIALTY_MAP = {
+    eletrica: ['Elétrica', 'Eletrica'],
+    hidraulica: ['Hidráulica', 'Hidraulica'],
+    pintura: ['Pintura'],
+    montagem: ['Montagem'],
+    reparo_geral: ['Reparo Geral'],
+    alvenaria: ['Alvenaria'],
+    fechadura: ['Fechadura / Serralheria', 'Fechadura', 'Serralheria'],
+    ar_condicionado: ['Ar Condicionado'],
+    limpeza_caixa_dagua: ["Limpeza Caixa d'Água", 'Limpeza Caixa de Agua'],
+    limpeza_calha: ['Limpeza de Calha', 'Limpeza Calha'],
+    substituicao_telha: ['Substituição de Telha'],
+    limpeza_telhado: ['Limpeza de Telhado', 'Limpeza Telhado'],
+    instalacao_coifa_parede: ['Coifa de Parede'],
+    instalacao_coifa_ilha: ['Coifa Ilha'],
+    conversao_vaso_coplado: ['Conversão Vaso CX Acoplada'],
+    instalacao_vaso_monobloco: ['Vaso Monobloco'],
+    reparo_forro_gesso: ['Reparo Forro de Gesso'],
+    desentupimento: ['Desentupimento'],
+    troca_pneu: ['Troca de Pneu'],
+    recarga_bateria: ['Recarga de Bateria'],
+    conserto_pneu: ['Conserto de Pneu'],
+    reboque: ['Reboque'],
+    veiculo_outros: ['Veículo Outros'],
+    caca_vazamento: ['Caça Vazamento'],
+    checkup: ['Check-up', 'Checkup'],
+    portao_eletronico: ['Portão Eletrônico'],
+    interfone: ['Interfone'],
+    rejunte: ['Rejunte'],
+    pressurizador: ['Pressurizador'],
+    alarme_cerca_eletrica: ['Alarme / Cerca Elétrica'],
+    concertina: ['Concertina'],
+    camera_cftv: ['Câmera / CFTV'],
+    instalacao_suporte_tv: ['Instalação Suporte TV'],
+    outros: ['Outros'],
+  };
+
+  const hasSpecialty = (provider, serviceType) => {
+    if (!provider.specialties || !Array.isArray(provider.specialties)) return false;
+    const validLabels = SPECIALTY_MAP[serviceType] || [serviceType];
+    return provider.specialties.some(s => validLabels.includes(s));
+  };
+
   const searchProviders = async () => {
     // retorna Promise para uso no useEffect
     setPhase('searching');
@@ -285,9 +329,17 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     const activeRequests = await base44.entities.ServiceRequest.filter({ status: 'em_andamento' });
     const occupiedProviderIds = new Set(activeRequests.map(r => r.provider_id).filter(Boolean));
     
+    // Filtra por especialidade compatível com o serviço solicitado
+    const serviceType = Array.isArray(form.service_type) ? form.service_type[0] : form.service_type;
+    const matchingProviders = serviceType
+      ? onlineProvidersRaw.filter(p => hasSpecialty(p, serviceType))
+      : onlineProvidersRaw;
+
+    console.log(`[search] ${matchingProviders.length}/${onlineProvidersRaw.length} prestadores têm a especialidade: ${serviceType}`);
+
     // Separa prestadores: livres vs em execução
-    const availableProviders = onlineProvidersRaw.filter(p => !occupiedProviderIds.has(p.id));
-    const busyProviders = onlineProvidersRaw.filter(p => occupiedProviderIds.has(p.id));
+    const availableProviders = matchingProviders.filter(p => !occupiedProviderIds.has(p.id));
+    const busyProviders = matchingProviders.filter(p => occupiedProviderIds.has(p.id));
 
     const clientLat = clientCoords?.lat || null;
     const clientLon = clientCoords?.lon || null;
@@ -337,7 +389,12 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       const occupiedProviderIds = new Set(activeRequests.map(r => r.provider_id).filter(Boolean));
       console.log('[busyalert] Prestadores em execução:', occupiedProviderIds.size);
       
-      const sorted = enrichWithDistance(allProviders);
+      // Filtra apenas prestadores com a especialidade correta
+      const matchingAll = serviceType
+        ? allProviders.filter(p => hasSpecialty(p, serviceType))
+        : allProviders;
+
+      const sorted = enrichWithDistance(matchingAll);
       const nearbyOccupied = sorted
         .filter(p => {
           if (!p.latitude || !p.longitude) {

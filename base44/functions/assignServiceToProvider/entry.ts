@@ -39,15 +39,52 @@ Deno.serve(async (req) => {
       providers = onlineProviders;
     }
 
+    // Mapeamento service_type (snake_case) → labels das especialidades do prestador
+    const SPECIALTY_MAP = {
+      eletrica: ['Elétrica', 'Eletrica'],
+      hidraulica: ['Hidráulica', 'Hidraulica'],
+      pintura: ['Pintura'],
+      montagem: ['Montagem'],
+      reparo_geral: ['Reparo Geral'],
+      alvenaria: ['Alvenaria'],
+      fechadura: ['Fechadura / Serralheria', 'Fechadura', 'Serralheria'],
+      ar_condicionado: ['Ar Condicionado'],
+      limpeza_caixa_dagua: ["Limpeza Caixa d'Água", 'Limpeza Caixa de Agua', 'Limpeza Caixa dagua'],
+      limpeza_calha: ['Limpeza de Calha', 'Limpeza Calha'],
+      substituicao_telha: ['Substituição de Telha', 'Substituicao de Telha'],
+      limpeza_telhado: ['Limpeza de Telhado', 'Limpeza Telhado'],
+      instalacao_coifa_parede: ['Coifa de Parede', 'Instalação Coifa Parede'],
+      instalacao_coifa_ilha: ['Coifa Ilha', 'Instalação Coifa Ilha'],
+      conversao_vaso_coplado: ['Conversão Vaso CX Acoplada', 'Conversao Vaso Acoplado'],
+      instalacao_vaso_monobloco: ['Vaso Monobloco', 'Instalação Vaso Monobloco'],
+      reparo_forro_gesso: ['Reparo Forro de Gesso', 'Forro de Gesso'],
+      desentupimento: ['Desentupimento'],
+      troca_pneu: ['Troca de Pneu', 'Troca Pneu'],
+      recarga_bateria: ['Recarga de Bateria', 'Recarga Bateria'],
+      conserto_pneu: ['Conserto de Pneu', 'Conserto Pneu'],
+      reboque: ['Reboque'],
+      veiculo_outros: ['Veículo Outros', 'Veiculo Outros'],
+      caca_vazamento: ['Caça Vazamento', 'Caca Vazamento'],
+      checkup: ['Check-up', 'Checkup'],
+      portao_eletronico: ['Portão Eletrônico', 'Portao Eletronico'],
+      interfone: ['Interfone'],
+      rejunte: ['Rejunte'],
+      pressurizador: ['Pressurizador'],
+      alarme_cerca_eletrica: ['Alarme / Cerca Elétrica', 'Alarme', 'Cerca Elétrica'],
+      concertina: ['Concertina'],
+      camera_cftv: ['Câmera / CFTV', 'Camera CFTV', 'CFTV'],
+      instalacao_suporte_tv: ['Instalação Suporte TV', 'Suporte TV'],
+      outros: ['Outros'],
+    };
+
     // Filtrar por especialidade - obrigatório
-     if (serviceRequest.service_type) {
-       const specialtyName = serviceRequest.service_type;
-       const filtered = providers.filter(p => {
-         if (!p.specialties || !Array.isArray(p.specialties)) return false;
-         // Correspondência exata (case-sensitive)
-         return p.specialties.includes(specialtyName);
-       });
-       console.log(`Found ${filtered.length} providers with exact specialty: ${serviceRequest.service_type}`);
+    if (serviceRequest.service_type) {
+      const validLabels = SPECIALTY_MAP[serviceRequest.service_type] || [serviceRequest.service_type];
+      const filtered = providers.filter(p => {
+        if (!p.specialties || !Array.isArray(p.specialties)) return false;
+        return p.specialties.some(s => validLabels.includes(s));
+      });
+      console.log(`Found ${filtered.length} providers with specialty: ${serviceRequest.service_type} (looking for: ${validLabels.join(', ')})`);
 
       if (filtered.length === 0) {
         console.log(`No providers with specialty ${serviceRequest.service_type}, cannot assign service`);
