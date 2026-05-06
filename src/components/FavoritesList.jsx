@@ -65,44 +65,42 @@ export default function FavoritesList() {
           transition={{ delay: idx * 0.05 }}
           className="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-all"
         >
-          <Link to={`/prestador/${fav.provider_id}`} className="block p-4">
-            <div className="flex items-start gap-3">
-              {/* Foto */}
-              <div
-                className={cn("w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden relative group", fav.provider_photo_url && "cursor-zoom-in")}
-                onClick={fav.provider_photo_url ? (e) => { e.preventDefault(); e.stopPropagation(); setZoomedPhoto(fav.provider_photo_url); } : undefined}
-              >
-                {fav.provider_photo_url ? (
-                  <>
-                    <img src={fav.provider_photo_url} alt={fav.provider_name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                      <span className="text-white text-lg">🔍</span>
-                    </div>
-                  </>
-                ) : (
-                  <span className="text-xl font-bold text-primary">{fav.provider_name?.charAt(0)}</span>
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="flex-1">
-                <div className="flex items-start justify-between mb-1">
-                  <h3 className="font-semibold text-foreground">{fav.provider_name}</h3>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    <span className="text-sm font-bold text-foreground">
-                      {fav.provider_rating?.toFixed(1) || 'N/A'}
-                    </span>
+          <div className="flex items-start gap-3 p-4">
+            {/* Foto - clicável para zoom */}
+            <div
+              className={cn("w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden relative group", fav.provider_photo_url && "cursor-zoom-in")}
+              onClick={fav.provider_photo_url ? () => setZoomedPhoto(fav.provider_photo_url) : undefined}
+            >
+              {fav.provider_photo_url ? (
+                <>
+                  <img src={fav.provider_photo_url} alt={fav.provider_name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                    <span className="text-white text-lg">🔍</span>
                   </div>
-                </div>
-                {fav.provider_city && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
-                    <MapPin className="w-3 h-3" /> {fav.provider_city}, {fav.provider_state}
-                  </p>
-                )}
-              </div>
+                </>
+              ) : (
+                <span className="text-xl font-bold text-primary">{fav.provider_name?.charAt(0)}</span>
+              )}
             </div>
-          </Link>
+
+            {/* Info - clicável para ir ao perfil */}
+            <Link to={`/prestador/${fav.provider_id}`} className="flex-1">
+              <div className="flex items-start justify-between mb-1">
+                <h3 className="font-semibold text-foreground">{fav.provider_name}</h3>
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                  <span className="text-sm font-bold text-foreground">
+                    {fav.provider_rating?.toFixed(1) || 'N/A'}
+                  </span>
+                </div>
+              </div>
+              {fav.provider_city && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+                  <MapPin className="w-3 h-3" /> {fav.provider_city}, {fav.provider_state}
+                </p>
+              )}
+            </Link>
+          </div>
 
           {/* Action */}
           <div className="border-t border-border px-4 py-3 bg-muted/50 flex justify-end">
