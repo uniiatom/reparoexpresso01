@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, Send, ChevronDown, ChevronUp, User, Settings, Zap, History, CalendarDays, MessageCircle } from 'lucide-react';
+import { MessageSquare, ThumbsUp, AlertCircle, HelpCircle, Lock, LogIn, LogOut, Send, ChevronDown, ChevronUp, User, Settings, Zap, History, CalendarDays, MessageCircle, Search, X } from 'lucide-react';
 import TicketChat from '@/components/TicketChat';
 import { toast } from "sonner";
 import AttendantsManager, { loadAttendants } from './AttendantsManager';
@@ -298,6 +298,7 @@ export default function TicketsAdmin() {
   const [activeTab, setActiveTab] = useState('tickets');
   const [filterStatus, setFilterStatus] = useState('todos');
   const [filterType, setFilterType] = useState('todos');
+  const [search, setSearch] = useState('');
   const [showManage, setShowManage] = useState(false);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
   const queryClient = useQueryClient();
@@ -318,10 +319,32 @@ export default function TicketsAdmin() {
     refetchOnWindowFocus: true,
   });
 
+  // Mapa de service_request_id -> service_number para busca por nº do atendimento
+  const { data: serviceNumberMap = {} } = useQuery({
+    queryKey: ['admin-tickets-service-numbers'],
+    queryFn: async () => {
+      const ids = [...new Set(tickets.map(t => t.service_request_id).filter(Boolean))];
+      if (!ids.length) return {};
+      const reqs = await Promise.all(ids.map(id => base44.entities.ServiceRequest.filter({ id }).then(r => r[0]).catch(() => null)));
+      const map = {};
+      reqs.filter(Boolean).forEach(r => { map[r.id] = r.service_number || ''; });
+      return map;
+    },
+    enabled: !!attendant && tickets.length > 0,
+  });
+
   const filtered = tickets.filter(t => {
     const matchStatus = filterStatus === 'todos' || t.status === filterStatus;
     const matchType = filterType === 'todos' || t.type === filterType;
-    return matchStatus && matchType;
+    const q = search.trim().toLowerCase();
+    const serviceNum = (t.service_request_id && serviceNumberMap[t.service_request_id]) || '';
+    const matchSearch = !q
+      || serviceNum.toLowerCase().includes(q)
+      || (t.service_request_id && t.service_request_id.toLowerCase().includes(q))
+      || (t.client_name && t.client_name.toLowerCase().includes(q))
+      || (t.client_email && t.client_email.toLowerCase().includes(q))
+      || (t.subject && t.subject.toLowerCase().includes(q));
+    return matchStatus && matchType && matchSearch;
   });
 
   const counts = {
@@ -429,8 +452,9 @@ export default function TicketsAdmin() {
       )}
 
       {/* Resumo */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         {[
+          { label: 'Total', value: tickets.length, color: 'text-foreground' },
           { label: 'Abertos', value: counts.aberto, color: 'text-yellow-600' },
           { label: 'Em atend.', value: counts.em_atendimento, color: 'text-blue-600' },
           { label: 'Resolvidos', value: counts.resolvido, color: 'text-green-600' },
@@ -442,6 +466,23 @@ export default function TicketsAdmin() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Busca */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Buscar por nº do atendimento, nome ou e-mail do cliente..."
+          className="w-full pl-9 pr-8 py-2 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        {search && (
+          <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
       {/* Filtros */}
