@@ -58,43 +58,67 @@ const isHolidayOrSunday = (date) => {
   return dayOfWeek === 0 || FIXED_HOLIDAYS.includes(monthDay);
 };
 
-function ProviderCard({ provider, label }) {
+function PhotoZoom({ src, alt, onClose }) {
   return (
-    <div className="flex gap-3">
-      <div className="flex flex-col items-center gap-1">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center border-2 border-primary/20 flex-shrink-0">
-          {provider.photo_url ? (
-            <img src={provider.photo_url} alt="rosto" className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-xl font-bold text-primary">{provider.name?.charAt(0)}</span>
-          )}
-        </div>
-        {label && <span className="text-[10px] text-primary font-bold">{label}</span>}
-      </div>
-      {provider.photo_body_url && (
-        <div className="flex flex-col items-center gap-1">
-          <div className="w-16 h-16 rounded-2xl bg-muted overflow-hidden border-2 border-border flex-shrink-0">
-            <img src={provider.photo_body_url} alt="corpo" className="w-full h-full object-cover" />
-          </div>
-          <span className="text-[10px] text-muted-foreground">Corpo</span>
-        </div>
-      )}
-      <div className="flex flex-col justify-center gap-1 flex-1">
-        <p className="font-bold text-foreground text-sm">{provider.name}</p>
-        <div className="flex items-center gap-1">
-          <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-          <span className="text-sm text-foreground font-medium">{provider.rating?.toFixed(1) || '5.0'}</span>
-          <span className="text-xs text-muted-foreground">({provider.total_reviews || 0} aval.)</span>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1">
-            <Zap className="w-3 h-3 text-primary" />
-            <span className="text-xs font-semibold text-primary">Disponível agora</span>
-          </div>
-          <ProviderLevelBadge totalJobs={provider.total_jobs} rating={provider.rating} size="sm" />
-        </div>
+    <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative max-w-xs w-full" onClick={e => e.stopPropagation()}>
+        <img src={src} alt={alt} className="w-full rounded-2xl object-contain max-h-[80vh]" />
+        <button onClick={onClose} className="absolute top-2 right-2 bg-black/60 rounded-full p-1">
+          <X className="w-5 h-5 text-white" />
+        </button>
       </div>
     </div>
+  );
+}
+
+function ProviderCard({ provider, label }) {
+  const [zoomedPhoto, setZoomedPhoto] = useState(null);
+
+  return (
+    <>
+      {zoomedPhoto && <PhotoZoom src={zoomedPhoto.src} alt={zoomedPhoto.alt} onClose={() => setZoomedPhoto(null)} />}
+      <div className="flex gap-2">
+        <div className="flex flex-col items-center gap-1">
+          <button
+            onClick={() => provider.photo_url && setZoomedPhoto({ src: provider.photo_url, alt: 'rosto' })}
+            className={cn("w-12 h-12 rounded-xl bg-primary/10 overflow-hidden flex items-center justify-center border-2 border-primary/20 flex-shrink-0", provider.photo_url && "cursor-zoom-in hover:opacity-80 transition-opacity")}
+          >
+            {provider.photo_url ? (
+              <img src={provider.photo_url} alt="rosto" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-base font-bold text-primary">{provider.name?.charAt(0)}</span>
+            )}
+          </button>
+          {label && <span className="text-[10px] text-primary font-bold">{label}</span>}
+        </div>
+        {provider.photo_body_url && (
+          <div className="flex flex-col items-center gap-1">
+            <button
+              onClick={() => setZoomedPhoto({ src: provider.photo_body_url, alt: 'corpo' })}
+              className="w-12 h-12 rounded-xl bg-muted overflow-hidden border-2 border-border flex-shrink-0 cursor-zoom-in hover:opacity-80 transition-opacity"
+            >
+              <img src={provider.photo_body_url} alt="corpo" className="w-full h-full object-cover" />
+            </button>
+            <span className="text-[10px] text-muted-foreground">Corpo</span>
+          </div>
+        )}
+        <div className="flex flex-col justify-center gap-1 flex-1">
+          <p className="font-bold text-foreground text-sm">{provider.name}</p>
+          <div className="flex items-center gap-1">
+            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+            <span className="text-sm text-foreground font-medium">{provider.rating?.toFixed(1) || '5.0'}</span>
+            <span className="text-xs text-muted-foreground">({provider.total_reviews || 0} aval.)</span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1">
+              <Zap className="w-3 h-3 text-primary" />
+              <span className="text-xs font-semibold text-primary">Disponível agora</span>
+            </div>
+            <ProviderLevelBadge totalJobs={provider.total_jobs} rating={provider.rating} size="sm" />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -395,7 +419,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4">
-      <div className="bg-card w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden">
+      <div className="bg-card w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden">
 
         {/* Tabs: Busca automática / Favoritos */}
         {favorites.length > 0 && (
