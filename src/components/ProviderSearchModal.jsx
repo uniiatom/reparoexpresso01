@@ -500,11 +500,31 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-foreground text-sm">{fav.provider_name}</p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                      <span className="text-xs text-muted-foreground">{fav.provider_rating?.toFixed(1) || '—'}</span>
-                      {fav.provider_city && <span className="text-xs text-muted-foreground">· {fav.provider_city}</span>}
+                    {/* Estrelas */}
+                    <div className="flex items-center gap-0.5 mt-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const r = fav.provider_rating || 5;
+                        const full = Math.floor(r);
+                        const half = r - full >= 0.5;
+                        return (
+                          <Star
+                            key={i}
+                            className={cn(
+                              "w-3 h-3",
+                              i < full ? "text-yellow-400 fill-yellow-400"
+                              : i === full && half ? "text-yellow-400 fill-yellow-200"
+                              : "text-gray-300 fill-gray-100"
+                            )}
+                          />
+                        );
+                      })}
+                      <span className="text-xs font-semibold text-foreground ml-0.5">{(fav.provider_rating || 5).toFixed(1)}</span>
                     </div>
+                    {/* Nível */}
+                    <div className="mt-1">
+                      <ProviderLevelBadge providerId={fav.provider_id} size="sm" />
+                    </div>
+                    {fav.provider_city && <span className="text-xs text-muted-foreground">{fav.provider_city}</span>}
                   </div>
                   {selectedFavorite?.id === fav.id && (
                     <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
