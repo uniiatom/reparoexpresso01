@@ -165,6 +165,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [busyAlertId, setBusyAlertId] = useState(null);
   const busyAlertCreated = useRef(false);
   const [zoomedFavPhoto, setZoomedFavPhoto] = useState(null);
+  const [favoriteSkillError, setFavoriteSkillError] = useState(null);
 
   useEffect(() => {
     // Busca favoritos com dados atualizados dos prestadores
@@ -495,11 +496,40 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
 
   const handleConfirmFavorite = async () => {
     if (!selectedFavorite || confirming || processingRef.current) return;
-    processingRef.current = true;
-    setConfirming(true);
+    setFavoriteSkillError(null);
+
     // Busca dados completos do prestador favorito
     const providerList = await base44.entities.Provider.filter({ id: selectedFavorite.provider_id });
     const provider = providerList[0] || null;
+
+    // Verifica se o prestador tem a especialidade do serviço solicitado
+    const serviceType = Array.isArray(form.service_type) ? form.service_type[0] : form.service_type;
+    if (provider && serviceType && !hasSpecialty(provider, serviceType)) {
+      const SPECIALTY_MAP_LABELS = {
+        eletrica: 'Elétrica', hidraulica: 'Hidráulica', pintura: 'Pintura',
+        montagem: 'Montagem', reparo_geral: 'Reparo Geral', alvenaria: 'Alvenaria',
+        fechadura: 'Fechadura', ar_condicionado: 'Ar Condicionado',
+        limpeza_caixa_dagua: "Limpeza Caixa d'Água", limpeza_calha: 'Limpeza de Calha',
+        substituicao_telha: 'Substituição de Telha', limpeza_telhado: 'Limpeza de Telhado',
+        instalacao_coifa_parede: 'Coifa de Parede', instalacao_coifa_ilha: 'Coifa Ilha',
+        conversao_vaso_coplado: 'Conversão Vaso CX Acoplada', instalacao_vaso_monobloco: 'Vaso Monobloco',
+        reparo_forro_gesso: 'Reparo Forro de Gesso', desentupimento: 'Desentupimento',
+        troca_pneu: 'Troca de Pneu', recarga_bateria: 'Recarga de Bateria',
+        conserto_pneu: 'Conserto de Pneu', reboque: 'Reboque',
+        veiculo_outros: 'Veículo Outros', caca_vazamento: 'Caça Vazamento',
+        checkup: 'Check-up', portao_eletronico: 'Portão Eletrônico',
+        interfone: 'Interfone', rejunte: 'Rejunte', pressurizador: 'Pressurizador',
+        alarme_cerca_eletrica: 'Alarme / Cerca Elétrica', concertina: 'Concertina',
+        camera_cftv: 'Câmera / CFTV', instalacao_suporte_tv: 'Instalação Suporte TV',
+        outros: 'Outros',
+      };
+      const serviceLabel = SPECIALTY_MAP_LABELS[serviceType] || serviceType;
+      setFavoriteSkillError(`${provider.name || 'Este prestador'} não possui a habilidade "${serviceLabel}" cadastrada na ficha. Escolha outro prestador ou use a busca automática.`);
+      return;
+    }
+
+    processingRef.current = true;
+    setConfirming(true);
     const now = new Date();
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const currentDate = now.toISOString().split('T')[0];
@@ -547,7 +577,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
               {favorites.map(fav => (
                 <button
                   key={fav.id}
-                  onClick={() => setSelectedFavorite(fav)}
+                  onClick={() => { setSelectedFavorite(fav); setFavoriteSkillError(null); }}
                   className={cn(
                     "w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left",
                     selectedFavorite?.id === fav.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
@@ -602,6 +632,12 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
                 </button>
               ))}
             </div>
+            {favoriteSkillError && (
+              <div className="mt-3 bg-red-50 border border-red-300 rounded-xl p-3 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-red-700">{favoriteSkillError}</p>
+              </div>
+            )}
             <Button
               onClick={handleConfirmFavorite}
               disabled={!selectedFavorite || confirming}
