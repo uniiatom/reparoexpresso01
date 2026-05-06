@@ -31,6 +31,7 @@ import WalletPage from './pages/Wallet';
 import DashboardAdmin from './pages/DashboardAdmin';
 import ProviderAwards from './pages/ProviderAwards';
 import ClienteDossie from './pages/ClienteDossie';
+import MeusServicos from './pages/MeusServicos';
 import { Toaster as SonnerToaster } from "sonner";
 
 const AuthenticatedApp = () => {
@@ -77,6 +78,7 @@ const AuthenticatedApp = () => {
         <Route path="/dashboard-admin" element={<DashboardAdmin />} />
         <Route path="/premiacao" element={<ProviderAwards />} />
         <Route path="/minha-ficha" element={<ClienteDossie />} />
+        <Route path="/meus-servicos" element={<MeusServicos />} />
         <Route path="/termos-cliente" element={<TermosCliente />} />
         <Route path="/termos-prestador" element={<TermosPrestador />} />
         <Route path="/cadastro-parceiro" element={<PartnerRegister />} />
