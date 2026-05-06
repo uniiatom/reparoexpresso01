@@ -22,74 +22,32 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Serviço não encontrado' }, { status: 404 });
     }
 
-    if (serviceRequest.provider_id !== provider_id || serviceRequest.provider_id !== user.id) {
+    if (serviceRequest.provider_id !== provider_id) {
       return Response.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
     // Buscar o cliente
     const clientId = serviceRequest.client_id;
-    const client = await base44.asServiceRole.entities.Client.get(clientId);
+    const client = await base44.asServiceRole.entities.Client.get(clientId).catch(() => null);
 
-    // Buscar a wallet do cliente para estorno
-    const clientWallets = await base44.asServiceRole.entities.Wallet.filter({
-      owner_id: clientId,
-      owner_type: 'cliente'
-    });
-
-    let clientWallet = clientWallets[0];
-    if (!clientWallet) {
-      // Criar wallet se não existir
-      clientWallet = await base44.asServiceRole.entities.Wallet.create({
-        owner_id: clientId,
-        owner_type: 'cliente',
-        owner_name: client?.name || 'Cliente',
-        owner_email: serviceRequest.client_phone || '',
-        balance: 0,
-        pending_balance: 0,
-      });
-    }
-
-    // Calcular estorno: preço original - taxa de deslocamento
-    const originalPrice = serviceRequest.original_price || serviceRequest.final_price || serviceRequest.estimated_price || 0;
-    const displacementFeePercent = 15; // 15% de taxa de deslocamento (ajustar conforme política)
-    const displacementFee = (originalPrice * displacementFeePercent) / 100;
-    const refundAmount = Math.max(0, originalPrice - displacementFee);
-
-    // Registrar a recusa como entity
-    const refusalRecord = await base44.asServiceRole.entities.ServiceRequest.update(service_request_id, {
-      status: 'cancelado',
+    // Volta o serviço para aguardando e limpa o prestador, para que outro seja buscado
+    await base44.asServiceRole.entities.ServiceRequest.update(service_request_id, {
+      status: 'aguardando',
+      provider_id: null,
+      provider_name: null,
+      provider_phone: null,
+      estimated_arrival_minutes: null,
       decline_reason: JSON.stringify({
         type: 'technical_refusal',
         reasons,
         description,
         photos,
+        refused_by_provider_id: provider_id,
         timestamp: new Date().toISOString(),
       }),
     });
 
-    // Processar estorno se houver valor
-    if (refundAmount > 0) {
-      // Adicionar ao saldo pendente da wallet
-      const newPendingBalance = (clientWallet.pending_balance || 0) + refundAmount;
-      
-      await base44.asServiceRole.entities.Wallet.update(clientWallet.id, {
-        pending_balance: newPendingBalance,
-      });
-
-      // Registrar transação de estorno
-      await base44.asServiceRole.entities.WalletTransaction.create({
-        wallet_id: clientWallet.id,
-        owner_id: clientId,
-        owner_type: 'cliente',
-        type: 'refund',
-        amount: refundAmount,
-        balance_after: clientWallet.balance + newPendingBalance,
-        description: `Estorno por recusa técnica do serviço ${serviceRequest.service_number}`,
-        reference_id: service_request_id,
-        reference_type: 'refund',
-        status: 'pending',
-      });
-    }
+    // Sem estorno: o serviço continua ativo e será reatribuído a outro prestador
 
     // Registrar no log de atividades
     await base44.asServiceRole.entities.AdminActivityLog.create({
@@ -100,29 +58,27 @@ Deno.serve(async (req) => {
       entity_id: service_request_id,
       entity_label: `${serviceRequest.service_type} - ${serviceRequest.client_name}`,
       old_value: serviceRequest.status,
-      new_value: 'cancelado',
-      details: `Recusa técnica justificada. Motivos: ${reasons.join(', ')}. Descrição: ${description}. Estorno: R$ ${refundAmount.toFixed(2)} (taxa de deslocamento: R$ ${displacementFee.toFixed(2)})`,
+      new_value: 'aguardando',
+      details: `Recusa técnica justificada. Serviço voltou para busca de novo prestador. Motivos: ${reasons.join(', ')}. Descrição: ${description}.`,
     });
 
-    // Notificar cliente sobre o estorno
-    if (clientWallet) {
+    // Notificar cliente que está buscando novo prestador
+    if (clientId) {
       await base44.asServiceRole.entities.ClientNotification.create({
         client_id: clientId,
-        client_email: serviceRequest.client_phone || client?.name || 'cliente',
+        client_email: client?.email || '',
         type: 'warning',
-        title: 'Serviço Cancelado - Recusa Técnica',
-        message: `O prestador cancelou o serviço devido a condições operacionais do local. Um estorno de R$ ${refundAmount.toFixed(2)} será processado (taxa de deslocamento: R$ ${displacementFee.toFixed(2)}).`,
-        action_url: '/minha-ficha',
+        title: 'Buscando novo prestador',
+        message: `O prestador não pôde executar o serviço no local (${reasons.join(', ')}). Estamos buscando outro profissional para você automaticamente.`,
+        action_url: `/acompanhar/${service_request_id}`,
       });
     }
 
-    console.log(`✓ Recusa processada: Serviço ${service_request_id}, Estorno: R$ ${refundAmount.toFixed(2)}`);
+    console.log(`✓ Recusa processada: Serviço ${service_request_id} voltou para aguardando, buscando novo prestador.`);
 
     return Response.json({
       success: true,
-      message: 'Recusa registrada com sucesso',
-      refund_amount: refundAmount,
-      displacement_fee: displacementFee,
+      message: 'Recusa registrada. Serviço voltou para a fila de busca.',
     });
 
   } catch (error) {
