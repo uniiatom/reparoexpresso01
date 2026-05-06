@@ -199,11 +199,16 @@ export default function ScheduledCalendar() {
   };
 
   // Prestadores aprovados, filtrados pela busca
+  // + prestadores dos serviços ativos que possam não estar em allProviders ainda
   const providers = useMemo(() => {
     const approved = allProviders.filter(p => p.is_approved && !p.is_blocked && !p.is_archived);
-    if (!providerSearch.trim()) return approved;
-    return approved.filter(p => p.name?.toLowerCase().includes(providerSearch.toLowerCase()));
-  }, [allProviders, providerSearch]);
+    // Garante que prestadores de serviços ativos apareçam mesmo que allProviders não tenha carregado
+    const serviceProviderIds = new Set(services.map(s => s.provider_id).filter(Boolean));
+    const extra = allProviders.filter(p => serviceProviderIds.has(p.id) && !approved.find(a => a.id === p.id));
+    const all = [...approved, ...extra];
+    if (!providerSearch.trim()) return all;
+    return all.filter(p => p.name?.toLowerCase().includes(providerSearch.toLowerCase()));
+  }, [allProviders, providerSearch, services]);
 
   const dayKeys = useMemo(() => days.map(d => format(d, 'yyyy-MM-dd')), [days]);
 
@@ -211,7 +216,7 @@ export default function ScheduledCalendar() {
   // serviceMap[providerId][dayKey][hour] = [service, ...]
   const serviceMap = useMemo(() => {
     const map = {};
-    // Inclui IDs de todos os prestadores + IDs dos serviços que têm prestador + '__none__'
+    // Inclui TODOS os IDs: prestadores da lista + prestadores dos serviços + __none__
     const serviceProviderIds = services.map(s => s.provider_id).filter(Boolean);
     const allKeys = [...new Set([...allProviders.map(p => p.id), ...serviceProviderIds, '__none__'])];
     allKeys.forEach(key => {
@@ -222,14 +227,12 @@ export default function ScheduledCalendar() {
         map[key][dk]['none'] = [];
       });
     });
-    // Preenche serviços
-    const approvedProviderIds = new Set(allProviders.filter(p => p.is_approved && !p.is_blocked && !p.is_archived).map(p => p.id));
+    // Preenche serviços — usa o provider_id diretamente, sempre tem chave no mapa
     services.forEach(s => {
       const dateKey = getServiceDateKey(s);
       if (!dateKey) return;
       if (!dayKeys.includes(dateKey)) return;
-      // Se o prestador existe mas não está na lista de aprovados visíveis, vai para __none__
-      const provKey = (s.provider_id && approvedProviderIds.has(s.provider_id)) ? s.provider_id : '__none__';
+      const provKey = s.provider_id || '__none__';
       const hour = getServiceHour(s);
       if (hour !== null) {
         map[provKey][dateKey][hour].push(s);
