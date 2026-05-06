@@ -21,6 +21,7 @@ const STATUS_BG = {
   agendado: 'bg-blue-50 border-blue-300 text-blue-800',
   aguardando: 'bg-yellow-50 border-yellow-300 text-yellow-800',
   aceito: 'bg-emerald-50 border-emerald-400 text-emerald-800',
+  a_caminho: 'bg-sky-50 border-sky-300 text-sky-800',
   em_andamento: 'bg-purple-50 border-purple-300 text-purple-800',
   concluido: 'bg-green-50 border-green-300 text-green-800',
   cancelado: 'bg-red-50 border-red-300 text-red-600',
@@ -30,6 +31,7 @@ const STATUS_DOT = {
   agendado: 'bg-blue-500',
   aguardando: 'bg-yellow-500',
   aceito: 'bg-emerald-500',
+  a_caminho: 'bg-sky-500',
   em_andamento: 'bg-purple-500',
   concluido: 'bg-green-500',
   cancelado: 'bg-red-400',
@@ -47,7 +49,10 @@ function getServiceHour(s) {
 
 function getServiceDateKey(s) {
   if (s.scheduled_date) return s.scheduled_date;
-  if (s.created_date) return s.created_date.slice(0, 10);
+  // Serviços imediatos ativos: usa a data de hoje
+  if (['aceito', 'a_caminho', 'em_andamento', 'aguardando'].includes(s.status)) {
+    return new Date().toISOString().slice(0, 10);
+  }
   return null;
 }
 
@@ -167,9 +172,8 @@ export default function ScheduledCalendar() {
     },
     refetchInterval: 30000,
     select: (r) => {
-      const filtered = r.filter(s => 
-        (['aguardando', 'aceito', 'em_andamento', 'agendado'].includes(s.status)) &&
-        (s.scheduled_date || s.status === 'aguardando')
+      const filtered = r.filter(s =>
+        ['aguardando', 'aceito', 'a_caminho', 'em_andamento', 'agendado'].includes(s.status)
       );
       console.log('[ScheduledCalendar] Filtered services:', filtered.length, 'from', r.length);
       return filtered;
