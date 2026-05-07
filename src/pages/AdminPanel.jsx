@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, DollarSign, KeyRound, Eye, EyeOff, FileText, Activity, Trophy } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, DollarSign, KeyRound, Eye, EyeOff, FileText, Activity, Trophy, Search } from "lucide-react";
 import ServicePricingByRegion from '../components/admin/ServicePricingByRegion';
 import ServicePricingByCategory from '../components/admin/ServicePricingByCategory';
 import ProviderRepasse from '../components/admin/ProviderRepasse';
@@ -64,6 +64,7 @@ export default function AdminPanel() {
   const [cancelConfirm, setCancelConfirm] = useState(null);
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [adminUser, setAdminUser] = useState(null);
+  const [requestSearch, setRequestSearch] = useState('');
 
   // Carrega usuário admin uma vez
   React.useEffect(() => {
@@ -103,6 +104,11 @@ export default function AdminPanel() {
   const { data: providers = [] } = useQuery({
     queryKey: ['all-providers'],
     queryFn: () => base44.entities.Provider.list(),
+  });
+
+  const { data: clients = [] } = useQuery({
+    queryKey: ['all-clients-admin'],
+    queryFn: () => base44.entities.Client.list(),
   });
 
   const pendingPhotoProviders = providers.filter(p => p.photos_pending_review);
@@ -312,9 +318,36 @@ export default function AdminPanel() {
 
         <TabsContent value="requests">
           <div className="space-y-3">
-            {requests.length === 0 ? (
-              <p className="text-center text-muted-foreground py-10">Nenhum chamado ainda</p>
-            ) : requests.map(req => (
+            {/* Busca por CPF ou número de OS */}
+            <div className="flex items-center gap-2 bg-muted/40 border border-border rounded-xl px-3 py-2">
+              <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Buscar por nº da OS (ex: ATD-000123) ou CPF do cliente..."
+                value={requestSearch}
+                onChange={e => setRequestSearch(e.target.value)}
+                className="bg-transparent text-sm focus:outline-none flex-1 text-foreground placeholder:text-muted-foreground"
+              />
+              {requestSearch && (
+                <button onClick={() => setRequestSearch('')} className="text-muted-foreground hover:text-foreground text-xs">✕</button>
+              )}
+            </div>
+            {(() => {
+              const term = requestSearch.trim().toLowerCase();
+              const termOnlyDigits = term.replace(/\D/g, '');
+              // Monta set de client_ids que batem no CPF buscado
+              const matchingClientIdsByCpf = termOnlyDigits.length >= 6
+                ? new Set(clients.filter(c => (c.cpf || '').replace(/\D/g, '').includes(termOnlyDigits)).map(c => c.user_id))
+                : new Set();
+              const filtered = requestSearch.trim()
+                ? requests.filter(req => {
+                    const osMatch = req.service_number?.toLowerCase().includes(term);
+                    const cpfMatch = matchingClientIdsByCpf.has(req.client_id);
+                    return osMatch || cpfMatch;
+                  })
+                : requests;
+              if (filtered.length === 0) return <p className="text-center text-muted-foreground py-10">{requestSearch ? 'Nenhum chamado encontrado para essa busca' : 'Nenhum chamado ainda'}</p>;
+              return filtered.map(req => (
               <Card key={req.id}>
                 <CardContent className="p-4 space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
@@ -379,11 +412,12 @@ export default function AdminPanel() {
                   )}
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </TabsContent>
+            ));
+            })()}
+            </div>
+            </TabsContent>
 
-        <TabsContent value="providers">
+            <TabsContent value="providers">
           <div className="space-y-3">
             {providers.length === 0 ? (
               <p className="text-center text-muted-foreground py-10">Nenhum prestador cadastrado</p>
