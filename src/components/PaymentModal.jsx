@@ -10,11 +10,11 @@ export default function PaymentModal({ isOpen, onClose, requestId, finalPrice, s
   const [isPaying, setIsPaying] = useState(false);
   const [error, setError] = useState(null);
 
-  if (!isOpen) return null;
+  if (!isOpen || !finalPrice) return null;
 
-  const baseAmount = appliedCoupon ? appliedCoupon.original_amount ?? finalPrice : finalPrice;
+  const baseAmount = appliedCoupon ? (appliedCoupon.original_amount ?? finalPrice) : finalPrice;
   const discountAmount = appliedCoupon?.discount_amount ?? 0;
-  const totalAmount = appliedCoupon ? appliedCoupon.final_amount : finalPrice;
+  const totalAmount = appliedCoupon ? (appliedCoupon.final_amount ?? finalPrice) : finalPrice;
 
   const handlePay = async () => {
     setIsPaying(true);
