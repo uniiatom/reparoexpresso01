@@ -52,6 +52,7 @@ export default function ProviderApp() {
   const [activeTab, setActiveTab] = useState(location.state?.tab || 'chamados');
   const [declineTarget, setDeclineTarget] = useState(null); // { job, source: 'banner' | 'list' }
   const [fullscreenService, setFullscreenService] = useState(null);
+  const [lightboxUrl, setLightboxUrl] = useState(null);
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
@@ -346,18 +347,15 @@ export default function ProviderApp() {
     const { job, source } = declineTarget;
     window.__stopProviderHorn?.();
 
-    if (source === 'banner') {
-      setJobQueue(prev => prev.filter(j => j.id !== job?.id));
-    }
-
+    // Remove de todas as listas (fila, disponíveis, modal)
+    setJobQueue(prev => prev.filter(j => j.id !== job?.id));
+    setRequests(prev => prev.filter(r => r.id !== job.id));
     setFullscreenService(null);
 
     // Salva o motivo e reseta o status para aguardando (recusa efetiva)
     const updateData = { status: 'aguardando', provider_id: null, provider_name: null, provider_phone: null };
     if (reason) updateData.decline_reason = reason;
-    base44.entities.ServiceRequest.update(job.id, updateData).then(() => {
-      queryClient.invalidateQueries({ queryKey: ['available-requests'] });
-    });
+    base44.entities.ServiceRequest.update(job.id, updateData);
 
     toast.info(reason ? `Chamado recusado: ${reason}` : "Chamado recusado.");
     setDeclineTarget(null);
@@ -425,6 +423,27 @@ export default function ProviderApp() {
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
+      {/* Lightbox para ampliar fotos */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white bg-black/70 hover:bg-black rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold transition-colors z-[10000]"
+            onClick={() => setLightboxUrl(null)}
+          >
+            ×
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Foto ampliada"
+            className="max-w-[95vw] max-h-[95vh] rounded-2xl shadow-2xl object-contain"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
+
       {/* Fullscreen Modal para novo serviço */}
       {fullscreenService && (
         <NewServiceFullscreenModal
@@ -705,7 +724,13 @@ export default function ProviderApp() {
                   {req.problem_photos?.length > 0 && (
                     <div className="flex gap-2 mb-2 overflow-x-auto pb-1">
                       {req.problem_photos.map((url, i) => (
-                        <img key={i} src={url} alt={`Foto ${i+1}`} className="w-16 h-16 object-cover rounded-xl flex-shrink-0 border border-border" />
+                        <img 
+                          key={i} 
+                          src={url} 
+                          alt={`Foto ${i+1}`} 
+                          onClick={() => setLightboxUrl(url)}
+                          className="w-16 h-16 object-cover rounded-xl flex-shrink-0 border border-border cursor-pointer hover:opacity-75 transition-opacity" 
+                        />
                       ))}
                     </div>
                   )}
