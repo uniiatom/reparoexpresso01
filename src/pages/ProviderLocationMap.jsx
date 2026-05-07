@@ -163,6 +163,12 @@ export default function ProviderLocationMap() {
     );
   }
 
+  // Redirect if service is in execution
+  if (request.status === 'em_andamento') {
+    navigate(`/acompanhar/${requestId}`);
+    return null;
+  }
+
   const filteredProviders = providers.filter(p => p.distance <= distanceFilter);
   const clientLocation = { latitude: request.latitude, longitude: request.longitude };
 
