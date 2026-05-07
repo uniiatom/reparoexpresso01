@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, AlertCircle, Ban, RotateCw, X, Loader2 } from "lucide-react";
+import { CheckCircle2, AlertCircle, Ban, RotateCw, X, Loader2, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -99,6 +99,8 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
 
   if (!service) return null;
 
+  const checklistDone = !!service.checklist?.completed_at;
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <motion.div
@@ -124,7 +126,26 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
         </div>
 
         <div className="p-6 max-h-[70vh] overflow-y-auto">
-          {step === 'select' ? (
+          {/* Bloqueio se checklist não preenchido */}
+          {!checklistDone ? (
+            <div className="flex flex-col items-center justify-center py-8 gap-4 text-center">
+              <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
+                <ClipboardList className="w-8 h-8 text-orange-500" />
+              </div>
+              <div>
+                <p className="font-bold text-foreground text-lg">Checklist obrigatório</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Preencha o checklist do serviço antes de finalizar o atendimento.
+                </p>
+              </div>
+              <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 text-xs text-orange-700 font-medium">
+                ⚠️ Não é possível concluir o serviço sem o checklist preenchido.
+              </div>
+              <Button variant="outline" onClick={onCancel} className="rounded-xl mt-2">
+                Fechar e preencher checklist
+              </Button>
+            </div>
+          ) : step === 'select' ? (
             <div className="space-y-3">
               {COMPLETION_OPTIONS.map((option) => {
                 const Icon = option.icon;
