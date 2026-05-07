@@ -20,11 +20,15 @@
     },
     "price_min": {
       "type": "number",
-      "description": "Pre\u00e7o m\u00ednimo sugerido"
+      "description": "Pre\u00e7o m\u00ednimo sugerido (o cliente pagar\u00e1)"
     },
     "price_max": {
       "type": "number",
-      "description": "Pre\u00e7o m\u00e1ximo sugerido"
+      "description": "Pre\u00e7o m\u00e1ximo sugerido (o cliente pagar\u00e1)"
+    },
+    "ticket_medio": {
+      "type": "number",
+      "description": "Ticket m\u00e9dio esperado para este servi\u00e7o (refer\u00eancia para o prestador)"
     },
     "note": {
       "type": "string",

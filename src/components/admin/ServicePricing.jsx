@@ -38,6 +38,7 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
    const [expanded, setExpanded] = useState(false);
    const [min, setMin] = useState('');
    const [max, setMax] = useState('');
+   const [ticketMedio, setTicketMedio] = useState('');
    const [note, setNote] = useState('');
    const [locationType, setLocationType] = useState('zone');
    const [zone, setZone] = useState('');
@@ -48,7 +49,13 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
    const defaultPricing = servicePricings.find(p => !p.zone && !p.city);
 
    const handleAddLocation = () => {
-     const data = { service_type: service.type, price_min: Number(min), price_max: Number(max), note };
+     const data = { 
+       service_type: service.type, 
+       price_min: Number(min), 
+       price_max: Number(max),
+       ticket_medio: ticketMedio !== '' ? Number(ticketMedio) : null,
+       note 
+     };
      if (locationType === 'city') {
        data.city = city;
        data.state = state;
@@ -58,6 +65,7 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
      onSave(data);
      setMin('');
      setMax('');
+     setTicketMedio('');
      setNote('');
      setZone('');
      setCity('');
@@ -68,6 +76,7 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
      setEditing(false);
      setMin('');
      setMax('');
+     setTicketMedio('');
      setNote('');
      setZone('');
      setCity('');
@@ -104,6 +113,7 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
                 <div className="text-xs">
                   <p className="font-semibold text-foreground">
                     R$ {pricing.price_min} – R$ {pricing.price_max}
+                    {pricing.ticket_medio && <span className="text-primary ml-2">📊 Ticket: R$ {pricing.ticket_medio}</span>}
                   </p>
                   <p className="text-muted-foreground">
                     {pricing.zone ? `Zona: ${pricing.zone}` : pricing.city ? `${pricing.city}/${pricing.state}` : 'Padrão (todas regiões)'}
@@ -121,12 +131,15 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
 
             {editing ? (
               <div className="space-y-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
-                <div className="flex gap-1">
-                  <Input value={min} onChange={e => setMin(e.target.value)} placeholder="Mín" className="w-20 h-7 text-xs" type="number" />
+                <div className="flex gap-1 flex-wrap">
+                  <Input value={min} onChange={e => setMin(e.target.value)} placeholder="Preço Mín" className="w-24 h-7 text-xs" type="number" />
                   <span className="text-xs text-muted-foreground py-1">R$</span>
-                  <Input value={max} onChange={e => setMax(e.target.value)} placeholder="Máx" className="w-20 h-7 text-xs" type="number" />
+                  <Input value={max} onChange={e => setMax(e.target.value)} placeholder="Preço Máx" className="w-24 h-7 text-xs" type="number" />
+                  <span className="text-xs text-muted-foreground py-1">a</span>
+                  <Input value={ticketMedio} onChange={e => setTicketMedio(e.target.value)} placeholder="Ticket Médio" className="w-28 h-7 text-xs" type="number" />
+                  <span className="text-xs text-muted-foreground py-1">R$</span>
                 </div>
-                <Input value={note} onChange={e => setNote(e.target.value)} placeholder="Observação" className="h-7 text-xs" />
+                <Input value={note} onChange={e => setNote(e.target.value)} placeholder="Observação (ex: por ponto, por metro)" className="h-7 text-xs" />
 
                 <div className="flex gap-2 text-xs">
                   <label className="flex items-center gap-1 cursor-pointer">
@@ -211,7 +224,7 @@ export default function ServicePricing() {
 
    return (
      <div className="space-y-3">
-       <p className="text-sm text-muted-foreground mb-4">Configure preços por serviço. Você pode ter múltiplos preços para diferentes bairros, cidades ou usar um preço padrão.</p>
+       <p className="text-sm text-muted-foreground mb-4">Configure <strong>preços</strong> (valor que o cliente pagará) e <strong>ticket médio</strong> (referência para o prestador) por serviço. Você pode ter múltiplos preços para diferentes bairros, cidades ou usar um preço padrão.</p>
        {ALL_SERVICES.map(service => (
          <PricingRow
            key={service.type}
