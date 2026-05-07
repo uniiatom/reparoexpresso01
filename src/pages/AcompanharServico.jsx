@@ -575,6 +575,29 @@ export default function AcompanharServico() {
         );
       })()}
 
+      {request.status === 'em_espera' && (() => {
+        // Mostra prazo de 15 dias para retorno por peça
+        const createdAt = request.created_date ? new Date(request.created_date) : null;
+        const daysLeft = createdAt ? Math.ceil((createdAt.getTime() + 15 * 24 * 60 * 60 * 1000 - Date.now()) / (24 * 60 * 60 * 1000)) : null;
+        const isPastDeadline = daysLeft != null && daysLeft <= 0;
+
+        return (
+          <div className={`rounded-3xl p-5 border-2 mb-5 ${isPastDeadline ? 'bg-red-50 border-red-300' : daysLeft <= 3 ? 'bg-amber-50 border-amber-300' : 'bg-blue-50 border-blue-200'}`}>
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">{isPastDeadline ? '❌' : '⏰'}</span>
+              <div className="flex-1">
+                <p className={`font-bold ${isPastDeadline ? 'text-red-800' : daysLeft <= 3 ? 'text-amber-800' : 'text-blue-800'}`}>
+                  {isPastDeadline ? 'Prazo expirado' : `${daysLeft} dia${daysLeft !== 1 ? 's' : ''} restante${daysLeft !== 1 ? 's' : ''}`}
+                </p>
+                <p className={`text-xs mt-1 ${isPastDeadline ? 'text-red-700' : daysLeft <= 3 ? 'text-amber-700' : 'text-blue-700'}`}>
+                  Cliente tem até 15 dias corridos para comprar a peça e solicitar retorno
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {request.status === 'concluido' && (
         <div className="space-y-3">
           <Button 

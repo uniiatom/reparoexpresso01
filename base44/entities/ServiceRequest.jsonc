@@ -353,6 +353,15 @@
           "type": "string"
         }
       }
+    },
+    "parts_return_deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Prazo limite para retorno por compra de pe\u00e7a (15 dias corridos a partir do status 'em_espera')"
+    },
+    "tech_visit_reason": {
+      "type": "string",
+      "description": "Motivo registrado quando servi\u00e7o requer visita t\u00e9cnica adicional"
     }
   },
   "required": [
