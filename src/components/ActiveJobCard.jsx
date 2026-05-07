@@ -8,6 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
 import ServiceChat from './ServiceChat';
+import ServiceCompletionModal from './ServiceCompletionModal';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -197,6 +198,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
   const [validationInput, setValidationInput] = useState('');
   const [liveJob, setLiveJob] = useState(job);
   const [lightboxUrl, setLightboxUrl] = useState(null);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
 
   // Sincroniza liveJob quando o job externo muda
   useEffect(() => { setLiveJob(job); }, [job]);
@@ -237,6 +239,17 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
     if (!nextStep) return;
     onUpdateStatus({ id: liveJob.id, status: nextStep.status });
     setValidationInput('');
+  };
+
+  const handleCompleteService = (completionType) => {
+    if (completionType === 'concluido') {
+      onUpdateStatus({ id: liveJob.id, status: 'concluido' });
+    } else if (completionType === 'em_espera') {
+      onUpdateStatus({ id: liveJob.id, status: 'em_espera' });
+    } else if (completionType === 'visita_tecnica') {
+      // Status específico para visita técnica pendente
+      onUpdateStatus({ id: liveJob.id, status: 'em_andamento' });
+    }
   };
 
   // Botão de ação principal por etapa
@@ -326,7 +339,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
               size="sm"
               className="flex-1 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold"
               disabled={isPending || !checklistDone}
-              onClick={handleNextStep}
+              onClick={() => setShowCompletionModal(true)}
             >
               <CheckCircle2 className="w-4 h-4 mr-1" /> Finalizar
             </Button>
@@ -383,6 +396,11 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
 
   return (
     <>
+    <ServiceCompletionModal
+      open={showCompletionModal}
+      onClose={() => setShowCompletionModal(false)}
+      onComplete={handleCompleteService}
+    />
     {lightboxUrl && (
       <div
         className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
