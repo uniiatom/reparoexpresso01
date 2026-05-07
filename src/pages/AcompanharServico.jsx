@@ -14,7 +14,7 @@ import PaymentModal from '../components/PaymentModal';
 import PixPaymentModal from '../components/PixPaymentModal';
 import NotificationPermissionBanner from '../components/NotificationPermissionBanner';
 import SatisfactionSurveyModal from '../components/SatisfactionSurveyModal';
-import { useServiceNotifications } from '../hooks/useServiceNotifications';
+
 import BatchProvidersPanel from '../components/BatchProvidersPanel';
 import BatchProviderChat from '../components/BatchProviderChat';
 import ClientTicketForm from '../components/ClientTicketForm';
@@ -98,8 +98,7 @@ export default function AcompanharServico() {
     return unsub;
   }, [id]);
 
-  // Setup notifications for status changes
-  useServiceNotifications(request, previousStatus);
+
 
   const playNotificationSound = () => {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
