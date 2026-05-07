@@ -592,12 +592,39 @@ export default function SolicitarServico() {
     createRequestRef.current = true;
     setShowProviderSearch(false);
     const { _secondProvider, ...cleanFormData } = formData;
-    // Adiciona preço estimado se for reboque
+
+    // Calcula o estimated_price com base no que foi informado ao cliente durante a abertura
+    const CAIXA_PRECOS = {
+      '500L': 150, '1.000L': 200, '1.500L': 250, '2.000L': 300, '3.000L': 380,
+      '10.000L': 550, '15.000L': 700, '20.000L': 850, '30.000L': 1100,
+      '50.000L': 1600, '100.000L+': 2500,
+    };
+    const DESENT_PRECOS = {
+      'Pia de cozinha': 120, 'Pia de banheiro': 120, 'Ralo': 100, 'Tanque': 120,
+      'Vaso sanitário': 150, 'Caixa de gordura': 250, 'Caixa de esgoto': 300, 'Coluna de esgoto': 350,
+    };
+    const GESSO_PRECOS = {
+      'Rachadura': 120, 'Buraco pequeno': 150, 'Buraco grande': 300,
+      'Infiltração / mancha': 200, 'Descolamento': 180, 'Troca de placa': 250,
+    };
+    let estimatedPrice = null;
+    if (towPrice?.total) {
+      estimatedPrice = towPrice.total;
+    } else if (form.service_type.includes('limpeza_caixa_dagua') && caixaDaguaLitragem && CAIXA_PRECOS[caixaDaguaLitragem]) {
+      estimatedPrice = CAIXA_PRECOS[caixaDaguaLitragem];
+    } else if (form.service_type.includes('desentupimento') && desentupimentoTipo && DESENT_PRECOS[desentupimentoTipo]) {
+      estimatedPrice = DESENT_PRECOS[desentupimentoTipo];
+    } else if (form.service_type.includes('reparo_forro_gesso') && forroGessoTipo && GESSO_PRECOS[forroGessoTipo]) {
+      estimatedPrice = GESSO_PRECOS[forroGessoTipo];
+    } else if (cleanFormData.client_suggested_price) {
+      estimatedPrice = Number(cleanFormData.client_suggested_price);
+    }
+
     const finalData = { 
       ...cleanFormData, 
       _secondProvider, 
       _caixaCondominio: caixaDaguaTipo === 'condominio',
-      estimated_price: towPrice?.total || cleanFormData.client_suggested_price,
+      estimated_price: estimatedPrice,
     };
     createRequest.mutate(finalData);
   };
