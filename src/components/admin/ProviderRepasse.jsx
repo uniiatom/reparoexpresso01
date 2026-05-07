@@ -178,10 +178,15 @@ export default function ProviderRepasse() {
   });
 
   return (
-    <div className="space-y-3">
-      <p className="text-sm text-muted-foreground mb-4">
-        Configure o valor de repasse ao prestador por tipo de serviço. Pode ser um <strong>valor fixo em R$</strong>, uma <strong>porcentagem do valor</strong> cobrado ao cliente, ou uma <strong>porcentagem do ticket médio</strong> do prestador.
-      </p>
+    <div className="space-y-4">
+      <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+        <p className="text-sm font-semibold text-foreground mb-2">💵 Configuração de Repasse</p>
+        <ul className="text-xs text-muted-foreground space-y-1 pl-4">
+          <li><strong>Valor fixo</strong>: R$ repassado por serviço</li>
+          <li><strong>% do valor</strong>: porcentagem do que cliente paga</li>
+          <li><strong>% do ticket médio</strong>: porcentagem da referência do prestador</li>
+        </ul>
+      </div>
       {ALL_SERVICES.map(service => (
         <RepasseRow
           key={service.type}
