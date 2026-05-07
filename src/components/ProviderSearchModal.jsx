@@ -158,6 +158,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [scheduledTime, setScheduledTime] = useState('');
   const [confirming, setConfirming] = useState(false);
   const processingRef = useRef(false);
+  const phaseRef = useRef('searching');
   const [allUnavailabilities, setAllUnavailabilities] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [selectedFavorite, setSelectedFavorite] = useState(null);
@@ -194,6 +195,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     });
 
     // Inicia busca de prestadores imediatamente
+    phaseRef.current = 'searching';
     setPhase('searching');
     setCurrentRadius(5);
     searchProviders(5);
@@ -214,8 +216,9 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
         if (prev <= 1) {
           clearInterval(countdownInterval);
           clearInterval(radiusExpansionInterval);
-          if (processingRef.current === false && phase === 'searching') {
+          if (processingRef.current === false && phaseRef.current === 'searching') {
             console.log('[search] ⏱️ 5 minutos atingidos, abrindo agendamento...');
+            phaseRef.current = 'none';
             setPhase('none');
           }
           return 0;
@@ -399,6 +402,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
         if (form.requires_two_providers && withinRadius.length > 1) {
           setSecondProvider(withinRadius[1]);
         }
+        phaseRef.current = 'found';
         setPhase('found');
         return; // Sai aqui, não precisa criar BusyAlert
       }
