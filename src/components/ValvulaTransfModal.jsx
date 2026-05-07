@@ -28,7 +28,7 @@ export default function ValvulaTransfModal({ onSelect, onCancel }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onCancel}>
       <div className="bg-card w-full max-w-lg rounded-t-3xl p-4 pb-6 max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="w-10 h-1 bg-border rounded-full mx-auto mb-3" />
         

@@ -10,6 +10,7 @@ import FavoritesList from "@/components/FavoritesList";
 import PaymentModal from "@/components/PaymentModal";
 import AvailableScheduleSelector from "@/components/AvailableScheduleSelector";
 import FleetMap from "@/components/FleetMap";
+import ServiceSearch from "@/components/ServiceSearch";
 
 const homeServices = [
   { icon: Zap, label: "Elétrica", subtitle: "Chuveiro, tomada, QDC", type: "eletrica", color: "bg-yellow-100 text-yellow-700" },
@@ -87,6 +88,8 @@ export default function Home() {
   const [electricalModalExpanded, setElectricalModalExpanded] = useState(true);
   const [hydraulicModalExpanded, setHydraulicModalExpanded] = useState(true);
   const [activeRequests, setActiveRequests] = useState([]);
+  const [filteredHomeServices, setFilteredHomeServices] = useState(homeServices);
+  const [filteredVehicleServices, setFilteredVehicleServices] = useState(vehicleServices);
 
   useEffect(() => {
     base44.auth.me().then(u => { setUser(u); setUserLoaded(true); }).catch(() => setUserLoaded(true));
@@ -241,7 +244,7 @@ export default function Home() {
                        </div>
                      )}
 
-                     <div className="flex gap-2 mb-8">
+                     <div className="flex gap-2 mb-4">
                       <button
                         onClick={() => setServiceTab('casa')}
                         className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${serviceTab === 'casa' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
@@ -254,11 +257,17 @@ export default function Home() {
                       >
                         🚗 Veículo
                       </button>
-                    </div>
+                     </div>
 
-                    {serviceTab === 'casa' && (
-                      <div className="grid grid-cols-4 gap-3">
-                        {homeServices.map((s, i) => (
+                     {serviceTab === 'casa' && (
+                      <div className="space-y-4">
+                        <ServiceSearch
+                          services={homeServices}
+                          onFilterChange={setFilteredHomeServices}
+                          placeholder="Buscar serviços de casa..."
+                        />
+                        <div className="grid grid-cols-4 gap-3">
+                          {filteredHomeServices.map((s, i) => (
                           <motion.div key={`home-${s.type}-${i}`} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
                             {s.type === 'eletrica' ? (
                               <button 
@@ -299,10 +308,16 @@ export default function Home() {
                             )}
                           </motion.div>
                         ))}
-                      </div>
-                    )}
+                        </div>
+                        {filteredHomeServices.length === 0 && (
+                        <div className="text-center py-8">
+                          <p className="text-sm text-muted-foreground">Nenhum serviço encontrado</p>
+                        </div>
+                        )}
+                        </div>
+                        )}
 
-                    {/* Modal de Agendamento */}
+                        {/* Modal de Agendamento */}
                     <AnimatePresence>
                       {showScheduleModal && !scheduleType && (
                         <>
@@ -605,10 +620,15 @@ export default function Home() {
                     </AnimatePresence>
 
                     {serviceTab === 'veiculo' && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-4">Atendimento emergencial para veículos — prestadores homologados pela Escola Prática</p>
-                        <div className="grid grid-cols-3 gap-3">
-                          {vehicleServices.map((s, i) => (
+                       <div className="space-y-4">
+                         <p className="text-xs text-muted-foreground">Atendimento emergencial para veículos — prestadores homologados pela Escola Prática</p>
+                         <ServiceSearch
+                           services={vehicleServices}
+                           onFilterChange={setFilteredVehicleServices}
+                           placeholder="Buscar serviços para veículos..."
+                         />
+                         <div className="grid grid-cols-3 gap-3">
+                           {filteredVehicleServices.map((s, i) => (
                             <motion.div key={`vehicle-${s.type}-${i}`} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
                               <Link to={`/solicitar?tipo=${s.type}`}>
                                 <div className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-accent transition-colors cursor-pointer border border-border">
@@ -621,9 +641,14 @@ export default function Home() {
                               </Link>
                             </motion.div>
                           ))}
-                        </div>
-                      </div>
-                    )}
+                          </div>
+                          {filteredVehicleServices.length === 0 && (
+                          <div className="text-center py-8">
+                            <p className="text-sm text-muted-foreground">Nenhum serviço encontrado</p>
+                          </div>
+                          )}
+                          </div>
+                          )}
                   </motion.div>
                 )}
 
