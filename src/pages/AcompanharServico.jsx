@@ -47,6 +47,7 @@ export default function AcompanharServico() {
   const previousStatusRef = useRef(null);
   const [user, setUser] = useState(null);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -123,6 +124,10 @@ export default function AcompanharServico() {
       setPreviousStatus(request.status);
       if (request.status === 'aceito' && (prev === 'aguardando' || prev === null)) {
         playNotificationSound();
+      }
+      // Fechar mapa quando prestador inicia execução
+      if (request.status === 'em_andamento') {
+        setShowMap(false);
       }
     }
   }, [request?.status]);
@@ -320,14 +325,33 @@ export default function AcompanharServico() {
       )}
 
       {/* Map Link para estados iniciais */}
-      {['aguardando', 'aceito'].includes(request?.status) && (
+      {['aguardando', 'aceito', 'a_caminho'].includes(request?.status) && (
         <Button
-          onClick={() => navigate(`/mapa/${id}`)}
+          onClick={() => setShowMap(true)}
           variant="outline"
           className="w-full rounded-2xl h-11 mb-5 border-primary/30 text-primary hover:bg-primary/10 font-semibold"
         >
           🗺️ Ver Mapa de Localização
         </Button>
+      )}
+
+      {/* Map Modal */}
+      {showMap && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-border flex-shrink-0">
+            <h2 className="font-bold text-foreground">Localização de Prestadores</h2>
+            <button onClick={() => setShowMap(false)} className="p-2 rounded-lg hover:bg-accent">
+              <span className="text-lg">✕</span>
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto">
+            <iframe
+              src={`/mapa/${id}`}
+              className="w-full h-full border-none"
+              title="Mapa de Localização"
+            />
+          </div>
+        </div>
       )}
 
       {/* Prestador(es) info */}
