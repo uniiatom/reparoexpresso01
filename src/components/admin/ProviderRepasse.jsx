@@ -38,6 +38,7 @@ function RepasseRow({ service, pricing, onSave }) {
   const [editing, setEditing] = useState(false);
   const [repasse, setRepasse] = useState(pricing?.repasse_value ?? '');
   const [repassePercent, setRepassePercent] = useState(pricing?.repasse_percent ?? '');
+  const [repassePercentTicket, setRepassePercentTicket] = useState(pricing?.repasse_percent_ticket ?? '');
   const [repasseNote, setRepasseNote] = useState(pricing?.repasse_note ?? '');
 
   const handleSave = () => {
@@ -45,6 +46,7 @@ function RepasseRow({ service, pricing, onSave }) {
       service_type: service.type,
       repasse_value: repasse !== '' ? Number(repasse) : null,
       repasse_percent: repassePercent !== '' ? Number(repassePercent) : null,
+      repasse_percent_ticket: repassePercentTicket !== '' ? Number(repassePercentTicket) : null,
       repasse_note: repasseNote,
     });
     setEditing(false);
@@ -53,11 +55,12 @@ function RepasseRow({ service, pricing, onSave }) {
   const handleCancel = () => {
     setRepasse(pricing?.repasse_value ?? '');
     setRepassePercent(pricing?.repasse_percent ?? '');
+    setRepassePercentTicket(pricing?.repasse_percent_ticket ?? '');
     setRepasseNote(pricing?.repasse_note ?? '');
     setEditing(false);
   };
 
-  const hasConfig = pricing?.repasse_value != null || pricing?.repasse_percent != null;
+  const hasConfig = pricing?.repasse_value != null || pricing?.repasse_percent != null || pricing?.repasse_percent_ticket != null;
 
   return (
     <Card>
@@ -86,7 +89,18 @@ function RepasseRow({ service, pricing, onSave }) {
                   className="w-20 h-8 text-sm"
                   type="number"
                 />
-                <span className="text-xs text-muted-foreground">%</span>
+                <span className="text-xs text-muted-foreground">% do valor</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">ou</span>
+                <Input
+                  value={repassePercentTicket}
+                  onChange={e => setRepassePercentTicket(e.target.value)}
+                  placeholder="% do ticket"
+                  className="w-20 h-8 text-sm"
+                  type="number"
+                />
+                <span className="text-xs text-muted-foreground">% ticket</span>
               </div>
               <Input
                 value={repasseNote}
@@ -106,7 +120,7 @@ function RepasseRow({ service, pricing, onSave }) {
           ) : (
             <div className="flex items-center gap-3 flex-1 justify-end">
               {hasConfig ? (
-                <div className="flex items-center gap-2 text-right">
+                <div className="flex items-center gap-2 text-right flex-wrap justify-end">
                   {pricing.repasse_value != null && (
                     <Badge className="bg-emerald-100 text-emerald-800 border-0 font-bold">
                       R$ {pricing.repasse_value}
@@ -114,7 +128,12 @@ function RepasseRow({ service, pricing, onSave }) {
                   )}
                   {pricing.repasse_percent != null && (
                     <Badge className="bg-blue-100 text-blue-800 border-0 font-bold">
-                      {pricing.repasse_percent}%
+                      {pricing.repasse_percent}% valor
+                    </Badge>
+                  )}
+                  {pricing.repasse_percent_ticket != null && (
+                    <Badge className="bg-purple-100 text-purple-800 border-0 font-bold">
+                      {pricing.repasse_percent_ticket}% ticket
                     </Badge>
                   )}
                   {pricing.repasse_note && (
@@ -161,7 +180,7 @@ export default function ProviderRepasse() {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground mb-4">
-        Configure o valor de repasse ao prestador por tipo de serviço. Pode ser um <strong>valor fixo em R$</strong> ou uma <strong>porcentagem</strong> do valor cobrado ao cliente.
+        Configure o valor de repasse ao prestador por tipo de serviço. Pode ser um <strong>valor fixo em R$</strong>, uma <strong>porcentagem do valor</strong> cobrado ao cliente, ou uma <strong>porcentagem do ticket médio</strong> do prestador.
       </p>
       {ALL_SERVICES.map(service => (
         <RepasseRow
