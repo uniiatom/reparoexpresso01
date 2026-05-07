@@ -40,12 +40,17 @@ export default function SignaturePad({ label, onSave }) {
   }, []);
 
   useEffect(() => {
-    if (fullscreen && fullCanvasRef.current) {
-      const canvas = fullCanvasRef.current;
-      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-      const ctx = setupCtx(canvas);
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    if (fullscreen) {
+      // Aguarda o DOM renderizar antes de dimensionar
+      const timeout = setTimeout(() => {
+        const canvas = fullCanvasRef.current;
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        setupCtx(canvas);
+      }, 50);
+      return () => clearTimeout(timeout);
     }
   }, [fullscreen]);
 
