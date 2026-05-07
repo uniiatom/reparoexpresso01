@@ -195,8 +195,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
 
     // Inicia busca de prestadores imediatamente
     setPhase('searching');
-    setCurrentRadius(15);
-    searchProviders(15);
+    setCurrentRadius(5);
+    searchProviders(5);
     
     // Expande raio a cada 30 segundos se nenhum prestador encontrado
     const radiusExpansionInterval = setInterval(() => {
