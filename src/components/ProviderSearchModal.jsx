@@ -694,32 +694,32 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
 
         {/* Fase: buscando */}
          {phase === 'searching' && (
-            <div className="p-8 text-center">
-              <div className="relative w-20 h-20 mx-auto mb-5">
+            <div className="p-4 text-center">
+              <div className="relative w-16 h-16 mx-auto mb-3">
                 <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
-                <div className="relative w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-                  <MapPin className="w-9 h-9 text-primary" />
+                <div className="relative w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <MapPin className="w-7 h-7 text-primary" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-foreground">Buscando prestadores</h3>
-              <p className="text-muted-foreground mt-2 text-sm">Localizando profissionais disponíveis perto de você...</p>
+              <h3 className="text-lg font-bold text-foreground">Buscando prestadores</h3>
+              <p className="text-muted-foreground mt-1 text-xs">Localizando profissionais disponíveis...</p>
 
               {/* Raio de busca */}
-              <div className="mt-3 mb-4">
-                <p className="text-sm font-semibold text-primary">📍 Raio de busca: {currentRadius}km</p>
-                <p className="text-xs text-muted-foreground mt-1">Expandindo a cada 30 segundos...</p>
+              <div className="mt-2 mb-2">
+                <p className="text-xs font-semibold text-primary">📍 Raio: {currentRadius}km</p>
+                <p className="text-[10px] text-muted-foreground">Expandindo a cada 30s...</p>
               </div>
 
               {/* Contagem regressiva */}
-              <div className="mt-3 mb-3">
-                <div className="text-4xl font-black text-primary">
+              <div className="mt-2 mb-2">
+                <div className="text-3xl font-black text-primary">
                   {Math.floor(secondsRemaining / 60)}:{String(secondsRemaining % 60).padStart(2, '0')}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Tempo restante para abrir agendamento</p>
+                <p className="text-[10px] text-muted-foreground">até agendamento</p>
               </div>
 
-              <p className="text-xs text-muted-foreground bg-primary/5 border border-primary/20 rounded-xl p-3">
-                ⏱️ A busca pode levar até 5 minutos. Notificaremos caso um prestador ocupado possa te atender depois.
+              <p className="text-[10px] text-muted-foreground bg-primary/5 border border-primary/20 rounded-lg p-2">
+                Prestador ocupado pode responder em breve
               </p>
               <div className="flex justify-center gap-1 mt-5">
                 {[0,1,2].map(i => (
