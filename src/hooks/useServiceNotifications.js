@@ -30,6 +30,7 @@ export function useServiceNotifications(request, previousStatus) {
 
   useEffect(() => {
     if (!request || !request.status) return;
+    if (!('Notification' in window)) return; // Check if Notification API is available
 
     // Check if status changed
     if (statusRef.current === request.status) return;
@@ -45,13 +46,13 @@ export function useServiceNotifications(request, previousStatus) {
     }
 
     // Request permission if needed
-    if (Notification.permission === 'default') {
-      Notification.requestPermission().then(permission => {
+    if (window.Notification.permission === 'default') {
+      window.Notification.requestPermission().then(permission => {
         if (permission === 'granted') {
           showNotification(request, request.status, notificationKey);
         }
       });
-    } else if (Notification.permission === 'granted') {
+    } else if (window.Notification.permission === 'granted') {
       showNotification(request, request.status, notificationKey);
     }
 
@@ -60,10 +61,10 @@ export function useServiceNotifications(request, previousStatus) {
 
   function showNotification(request, status, key) {
     const config = NOTIFICATION_CONFIG[status];
-    if (!config) return;
+    if (!config || !('Notification' in window)) return;
 
     // Browser notification
-    new Notification(config.title, {
+    new window.Notification(config.title, {
       body: config.body,
       icon: '/favicon.ico',
       tag: `service-${request.id}`,
