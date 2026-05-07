@@ -7,7 +7,6 @@ import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, 
 import { motion, AnimatePresence } from "framer-motion";
 import ReferralCard from "@/components/ReferralCard";
 import FavoritesList from "@/components/FavoritesList";
-import PaymentModal from "@/components/PaymentModal";
 import AvailableScheduleSelector from "@/components/AvailableScheduleSelector";
 import FleetMap from "@/components/FleetMap";
 
@@ -81,8 +80,6 @@ export default function Home() {
   const [scheduleType, setScheduleType] = useState(null);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [pendingServiceData, setPendingServiceData] = useState(null);
   const [showNearbyMap, setShowNearbyMap] = useState(false);
   const [electricalModalExpanded, setElectricalModalExpanded] = useState(true);
   const [hydraulicModalExpanded, setHydraulicModalExpanded] = useState(true);
@@ -377,28 +374,21 @@ export default function Home() {
                               <p className="text-xs text-green-700 mt-2">Você será conectado a um prestador em até 5 minutos</p>
                             </div>
                             {(selectedElectricalService || selectedHydraulicService) && (
-                              <button 
+                              <Button
                                 onClick={() => {
                                   const isElectrical = selectedElectricalService !== null;
-                                  setPendingServiceData({
-                                    type: isElectrical ? 'eletrica' : 'hidraulica',
-                                    subtipo: isElectrical ? selectedElectricalService.type : selectedHydraulicService.type,
-                                    modality: 'imediato',
-                                    price: isElectrical ? selectedElectricalService.price : selectedHydraulicService.price
-                                  });
-                                  setShowPaymentModal(true);
+                                  const tipo = isElectrical ? 'eletrica' : 'hidraulica';
                                   setShowElectricalModal(false);
                                   setShowHydraulicModal(false);
                                   setShowScheduleModal(false);
                                   setSelectedElectricalService(null);
                                   setSelectedHydraulicService(null);
+                                  navigate(`/solicitar?tipo=${tipo}&modalidade=imediato`);
                                 }}
-                                className="block w-full"
+                                className="w-full h-10 rounded-2xl font-bold text-sm bg-green-600 hover:bg-green-700"
                               >
-                                <Button className="w-full h-10 rounded-2xl font-bold text-sm bg-green-600 hover:bg-green-700">
-                                  Confirmar Serviço Imediato
-                                </Button>
-                              </button>
+                                Confirmar Serviço Imediato
+                              </Button>
                             )}
                           </motion.div>
                         </>
@@ -417,20 +407,13 @@ export default function Home() {
                           <AvailableScheduleSelector
                             onConfirm={(scheduleData) => {
                               const isElectrical = selectedElectricalService !== null;
-                              setPendingServiceData({
-                                type: isElectrical ? 'eletrica' : 'hidraulica',
-                                subtipo: isElectrical ? selectedElectricalService.type : selectedHydraulicService.type,
-                                modality: 'agendado',
-                                date: scheduleData.date,
-                                time: scheduleData.time,
-                                price: isElectrical ? selectedElectricalService.price : selectedHydraulicService.price
-                              });
-                              setShowPaymentModal(true);
+                              const tipo = isElectrical ? 'eletrica' : 'hidraulica';
                               setShowElectricalModal(false);
                               setShowHydraulicModal(false);
                               setShowScheduleModal(false);
                               setSelectedElectricalService(null);
                               setSelectedHydraulicService(null);
+                              navigate(`/solicitar?tipo=${tipo}&modalidade=agendado&data=${scheduleData.date}&hora=${scheduleData.time}`);
                             }}
                             onCancel={() => { setShowScheduleModal(false); setScheduleType(null); }}
                           />
@@ -719,15 +702,6 @@ export default function Home() {
 
           {/* Fleet Map */}
           {showNearbyMap && <FleetMap onClose={() => setShowNearbyMap(false)} />}
-
-          {/* Payment Modal */}
-          {showPaymentModal && pendingServiceData && (
-            <PaymentModal
-              isOpen={showPaymentModal}
-              onClose={() => setShowPaymentModal(false)}
-              serviceData={pendingServiceData}
-            />
-          )}
 
           {/* Nearby Providers Map Button */}
           <div className="max-w-lg mx-auto px-4 mt-4">
