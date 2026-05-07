@@ -1,0 +1,51 @@
+{
+  "name": "ServicePart",
+  "type": "object",
+  "properties": {
+    "service_type": {
+      "type": "string",
+      "description": "Tipo de servi\u00e7o associado"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nome da pe\u00e7a/material"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o detalhada"
+    },
+    "unit_price": {
+      "type": "number",
+      "description": "Pre\u00e7o unit\u00e1rio em R$"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "un",
+        "m",
+        "m2",
+        "m3",
+        "kg",
+        "l",
+        "h"
+      ],
+      "description": "Unidade de medida"
+    },
+    "category": {
+      "type": "string",
+      "description": "Categoria: 'material' ou 'servico'"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se a pe\u00e7a est\u00e1 ativa no cat\u00e1logo"
+    }
+  },
+  "required": [
+    "service_type",
+    "name",
+    "unit_price",
+    "unit",
+    "category"
+  ]
+}
