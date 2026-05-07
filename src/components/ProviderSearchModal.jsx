@@ -168,6 +168,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const [favoriteSkillError, setFavoriteSkillError] = useState(null);
   const [secondsRemaining, setSecondsRemaining] = useState(300); // 5 minutos
 
+  const [currentRadius, setCurrentRadius] = useState(15);
+
   useEffect(() => {
     // Busca favoritos com dados atualizados dos prestadores
     base44.auth.me().catch(() => null).then(async u => {
@@ -193,13 +195,25 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
 
     // Inicia busca de prestadores imediatamente
     setPhase('searching');
-    searchProviders();
+    setCurrentRadius(15);
+    searchProviders(15);
+    
+    // Expande raio a cada 30 segundos se nenhum prestador encontrado
+    const radiusExpansionInterval = setInterval(() => {
+      setCurrentRadius(prev => {
+        const newRadius = prev + 15;
+        console.log(`[search] 📍 Expandindo raio de busca para ${newRadius}km...`);
+        searchProviders(newRadius);
+        return newRadius;
+      });
+    }, 30000);
     
     // Contagem regressiva dos 5 minutos
     const countdownInterval = setInterval(() => {
       setSecondsRemaining(prev => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
+          clearInterval(radiusExpansionInterval);
           if (processingRef.current === false && phase === 'searching') {
             console.log('[search] ⏱️ 5 minutos atingidos, abrindo agendamento...');
             setPhase('none');
@@ -210,7 +224,10 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       });
     }, 1000);
 
-    return () => clearInterval(countdownInterval);
+    return () => {
+      clearInterval(countdownInterval);
+      clearInterval(radiusExpansionInterval);
+    };
   }, []);
 
   // Geocodifica uma query via Nominatim
@@ -324,7 +341,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     return provider.specialties.some(s => validLabels.includes(s));
   };
 
-  const searchProviders = async () => {
+  const searchProviders = async (radiusKm = 15) => {
     // retorna Promise para uso no useEffect
     setPhase('searching');
 
@@ -352,7 +369,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
 
     const clientLat = clientCoords?.lat || null;
     const clientLon = clientCoords?.lon || null;
-    console.log('[search] clientCoords:', clientLat, clientLon);
+    console.log('[search] clientCoords:', clientLat, clientLon, '| raio:', radiusKm, 'km');
 
     const enrichWithDistance = (providers) => {
       return providers.map(p => {
@@ -368,15 +385,23 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       });
     };
 
+    // Filtra por raio de busca
+    const filterByRadius = (providers) => {
+      return providers.filter(p => p.distance !== null && p.distance <= radiusKm);
+    };
+
     // Se tem prestadores disponíveis (livres), mostra imediatamente
     if (availableProviders.length > 0) {
       const sorted = enrichWithDistance(availableProviders);
-      setNearestProvider(sorted[0]);
-      if (form.requires_two_providers && sorted.length > 1) {
-        setSecondProvider(sorted[1]);
+      const withinRadius = filterByRadius(sorted);
+      if (withinRadius.length > 0) {
+        setNearestProvider(withinRadius[0]);
+        if (form.requires_two_providers && withinRadius.length > 1) {
+          setSecondProvider(withinRadius[1]);
+        }
+        setPhase('found');
+        return; // Sai aqui, não precisa criar BusyAlert
       }
-      setPhase('found');
-      return; // Sai aqui, não precisa criar BusyAlert
     }
 
     // Nenhum prestador livre agora — notifica cliente que nenhum está disponível
@@ -669,34 +694,40 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
 
         {/* Fase: buscando */}
          {phase === 'searching' && (
-           <div className="p-8 text-center">
-             <div className="relative w-20 h-20 mx-auto mb-5">
-               <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
-               <div className="relative w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-                 <MapPin className="w-9 h-9 text-primary" />
-               </div>
-             </div>
-             <h3 className="text-xl font-bold text-foreground">Buscando prestadores</h3>
-             <p className="text-muted-foreground mt-2 text-sm">Localizando profissionais disponíveis perto de você...</p>
-             
-             {/* Contagem regressiva */}
-             <div className="mt-4 mb-3">
-               <div className="text-4xl font-black text-primary">
-                 {Math.floor(secondsRemaining / 60)}:{String(secondsRemaining % 60).padStart(2, '0')}
-               </div>
-               <p className="text-xs text-muted-foreground mt-1">Tempo restante para abrir agendamento</p>
-             </div>
+            <div className="p-8 text-center">
+              <div className="relative w-20 h-20 mx-auto mb-5">
+                <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
+                <div className="relative w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+                  <MapPin className="w-9 h-9 text-primary" />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-foreground">Buscando prestadores</h3>
+              <p className="text-muted-foreground mt-2 text-sm">Localizando profissionais disponíveis perto de você...</p>
 
-             <p className="text-xs text-muted-foreground bg-primary/5 border border-primary/20 rounded-xl p-3">
-               ⏱️ A busca pode levar até 5 minutos. Notificaremos caso um prestador ocupado possa te atender depois.
-             </p>
-             <div className="flex justify-center gap-1 mt-5">
-               {[0,1,2].map(i => (
-                 <div key={i} className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: `${i*0.15}s` }} />
-               ))}
-             </div>
-           </div>
-         )}
+              {/* Raio de busca */}
+              <div className="mt-3 mb-4">
+                <p className="text-sm font-semibold text-primary">📍 Raio de busca: {currentRadius}km</p>
+                <p className="text-xs text-muted-foreground mt-1">Expandindo a cada 30 segundos...</p>
+              </div>
+
+              {/* Contagem regressiva */}
+              <div className="mt-3 mb-3">
+                <div className="text-4xl font-black text-primary">
+                  {Math.floor(secondsRemaining / 60)}:{String(secondsRemaining % 60).padStart(2, '0')}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Tempo restante para abrir agendamento</p>
+              </div>
+
+              <p className="text-xs text-muted-foreground bg-primary/5 border border-primary/20 rounded-xl p-3">
+                ⏱️ A busca pode levar até 5 minutos. Notificaremos caso um prestador ocupado possa te atender depois.
+              </p>
+              <div className="flex justify-center gap-1 mt-5">
+                {[0,1,2].map(i => (
+                  <div key={i} className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: `${i*0.15}s` }} />
+                ))}
+              </div>
+            </div>
+          )}
 
         {/* Fase: prestador encontrado */}
         {phase === 'found' && nearestProvider && (
