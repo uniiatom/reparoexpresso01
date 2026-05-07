@@ -47,6 +47,7 @@ export default function AcompanharServico() {
   const previousStatusRef = useRef(null);
   const [user, setUser] = useState(null);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const paymentSuccess = urlParams.get('payment') === 'success';
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
