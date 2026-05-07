@@ -201,7 +201,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     // Expande raio a cada 30 segundos se nenhum prestador encontrado
     const radiusExpansionInterval = setInterval(() => {
       setCurrentRadius(prev => {
-        const newRadius = prev + 15;
+        const newRadius = prev + 5;
         console.log(`[search] 📍 Expandindo raio de busca para ${newRadius}km...`);
         searchProviders(newRadius);
         return newRadius;
