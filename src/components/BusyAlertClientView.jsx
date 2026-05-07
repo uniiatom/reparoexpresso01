@@ -72,6 +72,8 @@ export default function BusyAlertClientView({ alertId, onConfirm, form, onProvid
      await base44.entities.BusyAlert.update(alertId, { status: 'cancelado_pelo_cliente' }).catch(() => {});
      setConfirming(false);
      setAlert(null);
+     // Volta pra página anterior após cancelar
+     window.history.back();
    };
 
   // Se não há respostas ainda
