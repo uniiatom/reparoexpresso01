@@ -258,13 +258,15 @@ export default function ServicePricing() {
    });
 
    return (
-     <div className="space-y-3">
-       <p className="text-sm text-muted-foreground mb-4">Configure por serviço:</p>
-       <ul className="text-xs text-muted-foreground space-y-1 mb-4 pl-4">
-         <li>💰 <strong>Valor cliente</strong>: faixa de preço que será cobrado</li>
-         <li>📊 <strong>Ticket médio</strong>: valor médio esperado para referência do prestador</li>
-         <li>💵 <strong>Repasse ao prestador</strong>: valor fixo, % do serviço, ou % do ticket médio</li>
-       </ul>
+     <div className="space-y-4">
+       <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+         <p className="text-sm font-semibold text-foreground mb-2">📋 Configuração de Preços</p>
+         <ul className="text-xs text-muted-foreground space-y-1 pl-4">
+           <li>💰 <strong>Valor cliente</strong>: faixa de preço que será cobrado</li>
+           <li>📊 <strong>Ticket médio</strong>: valor médio esperado para referência do prestador</li>
+           <li>💵 <strong>Repasse ao prestador</strong>: valor fixo, % do serviço, ou % do ticket médio</li>
+         </ul>
+       </div>
        {ALL_SERVICES.map(service => (
          <PricingRow
            key={service.type}

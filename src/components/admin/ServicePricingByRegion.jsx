@@ -59,26 +59,30 @@ const ALL_SERVICES = [
 
 function CityPricingSection({ service, city, zones, pricings, onAdd, onDelete }) {
   const [expanded, setExpanded] = useState(false);
-  const [zoneValues, setZoneValues] = useState({});
+   const [zoneValues, setZoneValues] = useState({});
 
-  const cityPricings = pricings.filter(p => p.service_type === service.type && p.city === city);
+   const cityPricings = pricings.filter(p => p.service_type === service.type && p.city === city);
 
-  const initializeZoneValues = () => {
-    const values = {};
-    zones.forEach(zone => {
-      const existing = cityPricings.find(p => p.zone === zone);
-      values[zone] = {
-        min: existing?.price_min || '',
-        max: existing?.price_max || '',
-        note: existing?.note || '',
-        id: existing?.id || null
-      };
-    });
-    setZoneValues(values);
-  };
+   const initializeZoneValues = () => {
+     const values = {};
+     zones.forEach(zone => {
+       const existing = cityPricings.find(p => p.zone === zone);
+       values[zone] = {
+         min: existing?.price_min || '',
+         max: existing?.price_max || '',
+         ticketMedio: existing?.ticket_medio || '',
+         repasseValue: existing?.repasse_value || '',
+         repassePercent: existing?.repasse_percent || '',
+         repassePercentTicket: existing?.repasse_percent_ticket || '',
+         note: existing?.note || '',
+         id: existing?.id || null
+       };
+     });
+     setZoneValues(values);
+   };
 
   const handleSaveZone = (zone) => {
-    const { min, max, note, id } = zoneValues[zone];
+    const { min, max, ticketMedio, repasseValue, repassePercent, repassePercentTicket, note, id } = zoneValues[zone];
     if (!min || !max) {
       toast.error('Preencha valores mín e máx');
       return;
@@ -89,6 +93,10 @@ function CityPricingSection({ service, city, zones, pricings, onAdd, onDelete })
       zone,
       price_min: Number(min),
       price_max: Number(max),
+      ticket_medio: ticketMedio !== '' ? Number(ticketMedio) : null,
+      repasse_value: repasseValue !== '' ? Number(repasseValue) : null,
+      repasse_percent: repassePercent !== '' ? Number(repassePercent) : null,
+      repasse_percent_ticket: repassePercentTicket !== '' ? Number(repassePercentTicket) : null,
       note
     };
     onAdd(data);
@@ -129,7 +137,8 @@ function CityPricingSection({ service, city, zones, pricings, onAdd, onDelete })
                   <p className="font-semibold text-foreground text-sm mb-2">{zone}</p>
                   
                   <div className="space-y-2 mb-2">
-                    <div className="flex gap-1">
+                    <div className="text-xs font-semibold text-foreground mb-1">💰 Cliente</div>
+                    <div className="flex gap-1 mb-2">
                       <Input 
                         value={values.min || ''} 
                         onChange={e => setZoneValues(prev => ({
@@ -151,7 +160,67 @@ function CityPricingSection({ service, city, zones, pricings, onAdd, onDelete })
                         className="w-16 h-7 text-xs" 
                         type="number" 
                       />
+                      <span className="text-xs text-muted-foreground py-1">R$</span>
                     </div>
+
+                    <div className="text-xs font-semibold text-foreground mb-1">📊 Ticket</div>
+                    <div className="flex gap-1 mb-2">
+                      <Input 
+                        value={values.ticketMedio || ''} 
+                        onChange={e => setZoneValues(prev => ({
+                          ...prev, 
+                          [zone]: { ...prev[zone], ticketMedio: e.target.value }
+                        }))} 
+                        placeholder="Ticket médio" 
+                        className="flex-1 h-7 text-xs" 
+                        type="number" 
+                      />
+                      <span className="text-xs text-muted-foreground py-1">R$</span>
+                    </div>
+
+                    <div className="text-xs font-semibold text-foreground mb-1">💵 Repasse</div>
+                    <div className="space-y-1 mb-2">
+                      <div className="flex gap-1">
+                        <Input 
+                          value={values.repasseValue || ''} 
+                          onChange={e => setZoneValues(prev => ({
+                            ...prev, 
+                            [zone]: { ...prev[zone], repasseValue: e.target.value }
+                          }))} 
+                          placeholder="Valor fixo" 
+                          className="flex-1 h-7 text-xs" 
+                          type="number" 
+                        />
+                        <span className="text-xs text-muted-foreground py-1">R$</span>
+                      </div>
+                      <div className="flex gap-1">
+                        <Input 
+                          value={values.repassePercent || ''} 
+                          onChange={e => setZoneValues(prev => ({
+                            ...prev, 
+                            [zone]: { ...prev[zone], repassePercent: e.target.value }
+                          }))} 
+                          placeholder="% serviço" 
+                          className="flex-1 h-7 text-xs" 
+                          type="number" 
+                        />
+                        <span className="text-xs text-muted-foreground py-1">%</span>
+                      </div>
+                      <div className="flex gap-1">
+                        <Input 
+                          value={values.repassePercentTicket || ''} 
+                          onChange={e => setZoneValues(prev => ({
+                            ...prev, 
+                            [zone]: { ...prev[zone], repassePercentTicket: e.target.value }
+                          }))} 
+                          placeholder="% ticket" 
+                          className="flex-1 h-7 text-xs" 
+                          type="number" 
+                        />
+                        <span className="text-xs text-muted-foreground py-1">%</span>
+                      </div>
+                    </div>
+
                     <Input 
                       value={values.note || ''} 
                       onChange={e => setZoneValues(prev => ({
