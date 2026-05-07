@@ -20,8 +20,21 @@ Deno.serve(async (req) => {
 
     // Buscar prestadores online ou aprovados
     let providers = await base44.asServiceRole.entities.Provider.list();
-
-    console.log(`Found ${providers.length} total providers`);
+    
+    // Filtrar prestadores que NÃO estão em execução (em_andamento)
+    let allServices = await base44.asServiceRole.entities.ServiceRequest.list();
+    const providersInExecution = new Set();
+    
+    allServices.forEach(sr => {
+      if (sr.status === 'em_andamento' && sr.provider_id) {
+        providersInExecution.add(sr.provider_id);
+      }
+    });
+    
+    // Remove prestadores que já estão executando outro serviço
+    providers = providers.filter(p => !providersInExecution.has(p.id));
+    
+    console.log(`Found ${providers.length} total providers (${providersInExecution.size} em execução excluídos)`);
 
     if (!providers || providers.length === 0) {
       console.log('No providers found in database');
