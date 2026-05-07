@@ -8,7 +8,7 @@ import L from 'leaflet';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Navigation, Star, Phone, Clock, Zap, MapPin, TrendingUp } from "lucide-react";
+import { ArrowLeft, Navigation, Star, Phone, Clock, Zap, MapPin, TrendingUp, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -83,6 +83,17 @@ const estimateArrivalTime = (distanceKm, avgSpeed = 30) => {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return `${hours}h ${mins}m`;
+};
+
+const openNavigation = (destLat, destLng, label = '') => {
+  const encodedLabel = encodeURIComponent(label);
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile) {
+    // Tenta abrir Google Maps app, fallback para browser
+    window.open(`https://maps.google.com/?daddr=${destLat},${destLng}&travelmode=driving`, '_blank');
+  } else {
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${destLat},${destLng}&destination_place_id=${encodedLabel}&travelmode=driving`, '_blank');
+  }
 };
 
 export default function ProviderLocationMap() {
@@ -230,12 +241,18 @@ export default function ProviderLocationMap() {
                         <p className="text-xs text-green-600">⏱️ {provider.eta}</p>
                       </div>
                       {provider.phone && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
                           <Phone className="w-3 h-3" /> {provider.phone}
                         </p>
                       )}
-                    </div>
-                  </Popup>
+                      <button
+                        onClick={() => openNavigation(clientLocation.latitude, clientLocation.longitude, request.address)}
+                        className="w-full flex items-center justify-center gap-1.5 bg-primary text-white text-xs font-semibold py-1.5 px-3 rounded-lg hover:bg-primary/90 transition-colors"
+                      >
+                        <Navigation className="w-3 h-3" /> Navegar até o cliente
+                      </button>
+                      </div>
+                      </Popup>
                 </Marker>
               </React.Fragment>
             ))}
@@ -313,10 +330,18 @@ export default function ProviderLocationMap() {
                     </div>
                   </div>
 
+                  <Button
+                    size="sm"
+                    className="w-full rounded-xl h-10 bg-primary text-primary-foreground font-bold"
+                    onClick={() => openNavigation(clientLocation.latitude, clientLocation.longitude, request.address)}
+                  >
+                    <Navigation className="w-4 h-4 mr-2" /> Navegar até o cliente
+                  </Button>
+
                   {selectedProvider.phone && (
                     <a href={`https://wa.me/55${selectedProvider.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="block">
-                      <Button size="sm" className="w-full rounded-xl h-10">
-                        <Phone className="w-4 h-4 mr-2" /> Contato
+                      <Button size="sm" variant="outline" className="w-full rounded-xl h-10">
+                        <Phone className="w-4 h-4 mr-2" /> Contato WhatsApp
                       </Button>
                     </a>
                   )}
