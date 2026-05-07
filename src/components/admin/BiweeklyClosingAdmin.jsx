@@ -3,10 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Upload, CheckCircle, FileText, RefreshCw, ExternalLink, ClipboardList } from 'lucide-react';
+import { Upload, CheckCircle, FileText, RefreshCw, ExternalLink, ClipboardList, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import ProviderServiceReview from './ProviderServiceReview';
+import AutoClosingPanel from './AutoClosingPanel';
 
 const STATUS_CONFIG = {
   pendente_nota: { label: 'Pendente NF', color: 'bg-orange-100 text-orange-700 border-orange-200' },
@@ -134,10 +135,23 @@ export default function BiweeklyClosingAdmin() {
         >
           <ClipboardList className="w-3.5 h-3.5" /> Conferência de Atendimentos
         </button>
+        <button
+          onClick={() => setActiveTab('fechamento_auto')}
+          className={cn("flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border transition",
+            activeTab === 'fechamento_auto'
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-background border-border text-muted-foreground hover:bg-muted"
+          )}
+        >
+          <Zap className="w-3.5 h-3.5" /> Fechamento Automático
+        </button>
       </div>
 
       {/* Aba de Conferência */}
       {activeTab === 'conferencia' && <ProviderServiceReview />}
+
+      {/* Aba de Fechamento Automático */}
+      {activeTab === 'fechamento_auto' && <AutoClosingPanel />}
 
       {/* Conteúdo de Fechamentos */}
       {activeTab === 'fechamentos' && <>
