@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import ProviderServiceReview from './ProviderServiceReview';
 import AutoClosingPanel from './AutoClosingPanel';
+import ClosingAlertModal from './ClosingAlertModal';
 
 const STATUS_CONFIG = {
   pendente_nota: { label: 'Pendente NF', color: 'bg-orange-100 text-orange-700 border-orange-200' },
@@ -20,6 +21,7 @@ export default function BiweeklyClosingAdmin() {
   const [uploadingId, setUploadingId] = useState(null);
   const [generatingClosings, setGeneratingClosings] = useState(false);
   const [activeTab, setActiveTab] = useState('fechamentos');
+  const [selectedClosingForAlert, setSelectedClosingForAlert] = useState(null);
 
   const fileInputRefs = useRef({});
 
@@ -76,9 +78,14 @@ export default function BiweeklyClosingAdmin() {
   const handleGenerateClosings = async () => {
     setGeneratingClosings(true);
     try {
-      await base44.functions.invoke('generateBiweeklyClosings', {});
+      const result = await base44.functions.invoke('generateBiweeklyClosings', {});
       queryClient.invalidateQueries({ queryKey: ['all-closings'] });
       toast.success('Fechamentos gerados com sucesso!');
+      
+      // Se houver um fechamento gerado, mostra o alerta modal
+      if (result?.data?.closings && result.data.closings.length > 0) {
+        setSelectedClosingForAlert(result.data.closings[0]);
+      }
     } catch (err) {
       toast.error('Erro ao gerar fechamentos: ' + err.message);
     } finally {
@@ -94,6 +101,7 @@ export default function BiweeklyClosingAdmin() {
   };
 
   return (
+    <>
     <div className="space-y-4">
       {/* Header actions */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -287,5 +295,14 @@ export default function BiweeklyClosingAdmin() {
 
       </>}
     </div>
+
+    {/* Modal de alerta de fechamento */}
+    {selectedClosingForAlert && (
+      <ClosingAlertModal
+        closing={selectedClosingForAlert}
+        onClose={() => setSelectedClosingForAlert(null)}
+      />
+    )}
+    </>
   );
 }
