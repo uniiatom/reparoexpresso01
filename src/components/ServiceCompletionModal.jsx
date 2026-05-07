@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, AlertCircle, Ban, RotateCw, X, Loader2, ClipboardList } from "lucide-react";
+import { CheckCircle2, AlertCircle, Ban, RotateCw, X, Loader2, ClipboardList, Package, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -16,27 +16,27 @@ const COMPLETION_OPTIONS = [
     requiresReason: false,
   },
   {
+    id: 'needs_part',
+    label: 'Necessário Peça',
+    icon: Package,
+    color: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
+    description: 'Precisará de uma peça/material para completar',
+    requiresReason: true,
+  },
+  {
+    id: 'technical_visit',
+    label: 'Visita Técnica',
+    icon: Wrench,
+    color: 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100',
+    description: 'Será necessária uma visita técnica adicional',
+    requiresReason: true,
+  },
+  {
     id: 'unsuccessful',
     label: 'Concluído Sem Sucesso',
     icon: AlertCircle,
     color: 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100',
     description: 'Serviço executado, mas não resolveu o problema',
-    requiresReason: true,
-  },
-  {
-    id: 'not_service_type',
-    label: 'Finalizar na Visita',
-    icon: Ban,
-    color: 'bg-orange-50 border-orange-200 hover:bg-orange-100',
-    description: 'Serviço será finalizado em uma próxima visita',
-    requiresReason: true,
-  },
-  {
-    id: 'needs_return',
-    label: 'Necessário Retorno',
-    icon: RotateCw,
-    color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
-    description: 'Precisa de uma nova visita para completar',
     requiresReason: true,
   },
 ];
@@ -187,23 +187,23 @@ export default function ServiceCompletionModal({ service, onSuccess, onCancel })
 
               <div>
                 <p className="font-semibold text-foreground mb-2">
-                  {selectedOption?.id === 'unsuccessful' && 'Por que o serviço não teve sucesso?'}
-                  {selectedOption?.id === 'not_service_type' && 'Por que será necessário uma visita adicional?'}
-                  {selectedOption?.id === 'needs_return' && 'Por que é necessário um retorno?'}
-                </p>
-                <textarea
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder={
-                    selectedOption?.id === 'unsuccessful'
-                      ? 'Descreva o motivo pelo qual o problema não foi resolvido...'
-                      : selectedOption?.id === 'not_service_type'
-                      ? 'Explique por que seu serviço não cobre este tipo de atendimento...'
-                      : 'Descreva o que precisa ser feito no próximo retorno...'
-                  }
-                  className="w-full h-28 p-3 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
-                  maxLength={500}
-                />
+                    {selectedOption?.id === 'needs_part' && 'Qual peça/material é necessário?'}
+                    {selectedOption?.id === 'technical_visit' && 'Por que é necessária uma visita técnica?'}
+                    {selectedOption?.id === 'unsuccessful' && 'Por que o serviço não teve sucesso?'}
+                  </p>
+                  <textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder={
+                      selectedOption?.id === 'needs_part'
+                        ? 'Descreva qual peça/material é necessário e especificações...'
+                        : selectedOption?.id === 'technical_visit'
+                        ? 'Explique o que precisa ser feito na visita técnica...'
+                        : 'Descreva o motivo pelo qual o problema não foi resolvido...'
+                    }
+                    className="w-full h-28 p-3 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                    maxLength={500}
+                  />
                 <p className="text-xs text-muted-foreground mt-1">
                   {reason.length}/500 caracteres
                 </p>
