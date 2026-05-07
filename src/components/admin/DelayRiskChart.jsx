@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import RiskActionModal from '@/components/admin/RiskActionModal';
 
 // Cálculo do score de risco de atraso por serviço (0–100)
 function calcRisk(service, now) {
@@ -88,7 +89,10 @@ function CustomTooltip({ active, payload }) {
 
 export default function DelayRiskChart({ services, providers, onSelectService }) {
   const [expanded, setExpanded] = useState(true);
+  const [riskActionService, setRiskActionService] = useState(null);
   const now = useMemo(() => new Date(), []);
+
+  const handleRiskAction = (service) => setRiskActionService(service);
 
   const providerMap = useMemo(() =>
     Object.fromEntries((providers || []).map(p => [p.id, p])),
@@ -200,7 +204,7 @@ export default function DelayRiskChart({ services, providers, onSelectService })
               </p>
               <div className="space-y-2">
                 {highRisk.map(d => (
-                  <RiskCard key={d.id} data={d} onSelect={onSelectService} />
+                  <RiskCard key={d.id} data={d} onSelect={onSelectService} onRiskAction={handleRiskAction} />
                 ))}
               </div>
             </div>
@@ -214,18 +218,29 @@ export default function DelayRiskChart({ services, providers, onSelectService })
               </p>
               <div className="space-y-2">
                 {medRisk.map(d => (
-                  <RiskCard key={d.id} data={d} onSelect={onSelectService} />
+                  <RiskCard key={d.id} data={d} onSelect={onSelectService} onRiskAction={handleRiskAction} />
                 ))}
               </div>
             </div>
           )}
         </div>
       )}
+
+      {/* Modal de ação de risco */}
+      {riskActionService && (
+        <RiskActionModal
+          service={riskActionService.service}
+          providers={providers || []}
+          riskScore={riskActionService.risk}
+          onClose={() => setRiskActionService(null)}
+          onSaved={() => setRiskActionService(null)}
+        />
+      )}
     </div>
   );
 }
 
-function RiskCard({ data, onSelect }) {
+function RiskCard({ data, onSelect, onRiskAction }) {
   const level = getRiskLevel(data.risk);
   return (
     <div className={cn('flex items-center gap-3 rounded-xl border p-3', level.bg, level.border)}>
@@ -259,7 +274,7 @@ function RiskCard({ data, onSelect }) {
         size="sm"
         variant="outline"
         className={cn('flex-shrink-0 rounded-xl h-7 text-xs gap-1 px-2', level.border)}
-        onClick={() => onSelect && onSelect(data.service)}
+        onClick={() => onRiskAction && onRiskAction(data)}
       >
         <ArrowRight className="w-3 h-3" /> Agir
       </Button>
