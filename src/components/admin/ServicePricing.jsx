@@ -39,6 +39,9 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
    const [min, setMin] = useState('');
    const [max, setMax] = useState('');
    const [ticketMedio, setTicketMedio] = useState('');
+   const [repasseValue, setRepasseValue] = useState('');
+   const [repassePercent, setRepassePercent] = useState('');
+   const [repassePercentTicket, setRepassePercentTicket] = useState('');
    const [note, setNote] = useState('');
    const [locationType, setLocationType] = useState('zone');
    const [zone, setZone] = useState('');
@@ -54,6 +57,9 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
        price_min: Number(min), 
        price_max: Number(max),
        ticket_medio: ticketMedio !== '' ? Number(ticketMedio) : null,
+       repasse_value: repasseValue !== '' ? Number(repasseValue) : null,
+       repasse_percent: repassePercent !== '' ? Number(repassePercent) : null,
+       repasse_percent_ticket: repassePercentTicket !== '' ? Number(repassePercentTicket) : null,
        note 
      };
      if (locationType === 'city') {
@@ -66,6 +72,9 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
      setMin('');
      setMax('');
      setTicketMedio('');
+     setRepasseValue('');
+     setRepassePercent('');
+     setRepassePercentTicket('');
      setNote('');
      setZone('');
      setCity('');
@@ -77,6 +86,9 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
      setMin('');
      setMax('');
      setTicketMedio('');
+     setRepasseValue('');
+     setRepassePercent('');
+     setRepassePercentTicket('');
      setNote('');
      setZone('');
      setCity('');
@@ -110,15 +122,16 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
           <div className="pl-6 border-l-2 border-border space-y-2">
             {servicePricings.map(pricing => (
               <div key={pricing.id} className="flex items-center justify-between gap-2 p-2 bg-muted/40 rounded-lg">
-                <div className="text-xs">
-                  <p className="font-semibold text-foreground">
-                    R$ {pricing.price_min} – R$ {pricing.price_max}
-                    {pricing.ticket_medio && <span className="text-primary ml-2">📊 Ticket: R$ {pricing.ticket_medio}</span>}
-                  </p>
-                  <p className="text-muted-foreground">
-                    {pricing.zone ? `Zona: ${pricing.zone}` : pricing.city ? `${pricing.city}/${pricing.state}` : 'Padrão (todas regiões)'}
-                    {pricing.note && ` · ${pricing.note}`}
-                  </p>
+                <div className="text-xs space-y-0.5">
+                  <p className="font-semibold text-foreground">💰 Cliente: R$ {pricing.price_min} – R$ {pricing.price_max}</p>
+                  {pricing.ticket_medio && <p className="text-primary">📊 Ticket: R$ {pricing.ticket_medio}</p>}
+                  <div className="text-muted-foreground space-y-0.5">
+                    {pricing.repasse_value && <p>✓ Repasse: R$ {pricing.repasse_value}</p>}
+                    {pricing.repasse_percent && <p>✓ Repasse: {pricing.repasse_percent}% do serviço</p>}
+                    {pricing.repasse_percent_ticket && <p>✓ Repasse: {pricing.repasse_percent_ticket}% do ticket médio</p>}
+                    <p>{pricing.zone ? `Zona: ${pricing.zone}` : pricing.city ? `${pricing.city}/${pricing.state}` : 'Padrão (todas regiões)'}</p>
+                    {pricing.note && <p>Obs: {pricing.note}</p>}
+                  </div>
                 </div>
                 <button
                   onClick={() => onDelete(pricing.id)}
@@ -130,16 +143,38 @@ function PricingRow({ service, allPricings, onSave, onDelete }) {
             ))}
 
             {editing ? (
-              <div className="space-y-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
-                <div className="flex gap-1 flex-wrap">
-                  <Input value={min} onChange={e => setMin(e.target.value)} placeholder="Preço Mín" className="w-24 h-7 text-xs" type="number" />
-                  <span className="text-xs text-muted-foreground py-1">R$</span>
-                  <Input value={max} onChange={e => setMax(e.target.value)} placeholder="Preço Máx" className="w-24 h-7 text-xs" type="number" />
-                  <span className="text-xs text-muted-foreground py-1">a</span>
-                  <Input value={ticketMedio} onChange={e => setTicketMedio(e.target.value)} placeholder="Ticket Médio" className="w-28 h-7 text-xs" type="number" />
-                  <span className="text-xs text-muted-foreground py-1">R$</span>
-                </div>
-                <Input value={note} onChange={e => setNote(e.target.value)} placeholder="Observação (ex: por ponto, por metro)" className="h-7 text-xs" />
+               <div className="space-y-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
+                 <div className="text-xs font-semibold text-foreground mb-1">💰 Valor que cliente paga:</div>
+                 <div className="flex gap-1 flex-wrap">
+                   <Input value={min} onChange={e => setMin(e.target.value)} placeholder="Preço Mín" className="w-24 h-7 text-xs" type="number" />
+                   <span className="text-xs text-muted-foreground py-1">R$ a</span>
+                   <Input value={max} onChange={e => setMax(e.target.value)} placeholder="Preço Máx" className="w-24 h-7 text-xs" type="number" />
+                   <span className="text-xs text-muted-foreground py-1">R$</span>
+                 </div>
+
+                 <div className="text-xs font-semibold text-foreground mt-2 mb-1">📊 Ticket médio esperado:</div>
+                 <div className="flex gap-1">
+                   <Input value={ticketMedio} onChange={e => setTicketMedio(e.target.value)} placeholder="Ticket Médio" className="flex-1 h-7 text-xs" type="number" />
+                   <span className="text-xs text-muted-foreground py-1">R$</span>
+                 </div>
+
+                 <div className="text-xs font-semibold text-foreground mt-2 mb-1">💵 Repasse ao prestador (escolha uma opção):</div>
+                 <div className="space-y-1">
+                   <div className="flex gap-1">
+                     <Input value={repasseValue} onChange={e => setRepasseValue(e.target.value)} placeholder="Valor fixo" className="flex-1 h-7 text-xs" type="number" />
+                     <span className="text-xs text-muted-foreground py-1">R$</span>
+                   </div>
+                   <div className="flex gap-1">
+                     <Input value={repassePercent} onChange={e => setRepassePercent(e.target.value)} placeholder="% do valor do serviço" className="flex-1 h-7 text-xs" type="number" />
+                     <span className="text-xs text-muted-foreground py-1">%</span>
+                   </div>
+                   <div className="flex gap-1">
+                     <Input value={repassePercentTicket} onChange={e => setRepassePercentTicket(e.target.value)} placeholder="% do ticket médio" className="flex-1 h-7 text-xs" type="number" />
+                     <span className="text-xs text-muted-foreground py-1">%</span>
+                   </div>
+                 </div>
+
+                 <Input value={note} onChange={e => setNote(e.target.value)} placeholder="Observação (ex: por ponto, por metro)" className="h-7 text-xs" />
 
                 <div className="flex gap-2 text-xs">
                   <label className="flex items-center gap-1 cursor-pointer">
@@ -224,7 +259,12 @@ export default function ServicePricing() {
 
    return (
      <div className="space-y-3">
-       <p className="text-sm text-muted-foreground mb-4">Configure <strong>preços</strong> (valor que o cliente pagará) e <strong>ticket médio</strong> (referência para o prestador) por serviço. Você pode ter múltiplos preços para diferentes bairros, cidades ou usar um preço padrão.</p>
+       <p className="text-sm text-muted-foreground mb-4">Configure por serviço:</p>
+       <ul className="text-xs text-muted-foreground space-y-1 mb-4 pl-4">
+         <li>💰 <strong>Valor cliente</strong>: faixa de preço que será cobrado</li>
+         <li>📊 <strong>Ticket médio</strong>: valor médio esperado para referência do prestador</li>
+         <li>💵 <strong>Repasse ao prestador</strong>: valor fixo, % do serviço, ou % do ticket médio</li>
+       </ul>
        {ALL_SERVICES.map(service => (
          <PricingRow
            key={service.type}
