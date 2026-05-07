@@ -445,8 +445,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
           }
           const d = calcDistance(cLat, cLon, p.latitude, p.longitude);
           const isOccupied = occupiedProviderIds.has(p.id);
-          console.log('[busyalert] prestador:', p.name, '| ocupado:', isOccupied, '| dist:', d?.toFixed(1), 'km | qualifica:', isOccupied && d <= 15);
-          return d !== null && d <= 15 && isOccupied;
+          console.log('[busyalert] prestador:', p.name, '| ocupado:', isOccupied, '| dist:', d?.toFixed(1), 'km | qualifica:', isOccupied && d <= 30);
+          return d !== null && d <= 30 && isOccupied;
         })
         .slice(0, 5);
 
