@@ -318,6 +318,7 @@ export default function ProviderApp() {
     setJobQueue([]);
     setFullscreenService(null);
     setActiveTab('chamados');
+    setRequests(prev => prev.filter(r => r.id !== job.id));
     acceptJob.mutate(job.id);
   };
 
