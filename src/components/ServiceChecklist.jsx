@@ -37,6 +37,8 @@ export default function ServiceChecklist({ job, onClose }) {
   const [gettingLocation, setGettingLocation] = useState(false);
   const [notes, setNotes] = useState('');
   const [serviceDescription, setServiceDescription] = useState('');
+  const [preAuthDescription, setPreAuthDescription] = useState('');
+  const [postAuthDescription, setPostAuthDescription] = useState('');
   const [preAuthSignature, setPreAuthSignature] = useState(null);
   const [preAuthSignerPhoto, setPreAuthSignerPhoto] = useState(null);
   const [preAuthCpf, setPreAuthCpf] = useState('');
@@ -131,7 +133,9 @@ export default function ServiceChecklist({ job, onClose }) {
       photos,
       videos,
       notes,
+      pre_auth_description: preAuthDescription,
       service_description: serviceDescription,
+      post_auth_description: postAuthDescription,
       pre_auth_signature: preAuthSignatureUrl,
       pre_auth_signer_photo: preAuthSignerPhotoUrl,
       pre_auth_cpf: preAuthCpf,
@@ -199,6 +203,17 @@ export default function ServiceChecklist({ job, onClose }) {
                 </span>
               </button>
             ))}
+          </div>
+
+          {/* Descrição antes da autorização prévia */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Descrição antes da autorização (opcional)</p>
+            <Textarea
+              value={preAuthDescription}
+              onChange={e => setPreAuthDescription(e.target.value)}
+              placeholder="Descreva o que encontrou ao chegar, o problema identificado, avaliação inicial..."
+              className="rounded-2xl min-h-[80px]"
+            />
           </div>
 
           {/* Descrição do serviço a ser realizado - pelo prestador */}
@@ -295,6 +310,17 @@ export default function ServiceChecklist({ job, onClose }) {
                 </span>
               </button>
             ))}
+          </div>
+
+          {/* Descrição após execução do serviço */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Descrição do serviço realizado (opcional)</p>
+            <Textarea
+              value={postAuthDescription}
+              onChange={e => setPostAuthDescription(e.target.value)}
+              placeholder="Descreva o que foi realizado, como ficou o resultado, validação com cliente..."
+              className="rounded-2xl min-h-[80px]"
+            />
           </div>
 
           {/* Geolocalização */}
