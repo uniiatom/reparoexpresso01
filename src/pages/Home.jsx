@@ -258,31 +258,31 @@ export default function Home() {
                         {homeServices.map((s, i) => (
                           <motion.div key={`home-${s.type}-${i}`} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
                             {s.type === 'eletrica' ? (
-                              <button 
+                              <div 
                                 onClick={() => setShowElectricalModal(true)}
-                                className="w-full h-full"
+                                className="w-full h-full cursor-pointer"
                               >
-                                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
+                                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors">
                                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
                                     <s.icon className="w-6 h-6" />
                                   </div>
                                   <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
                                   <span className="text-xs text-center text-muted-foreground">{s.subtitle}</span>
                                 </div>
-                              </button>
+                              </div>
                             ) : s.type === 'hidraulica' ? (
-                              <button 
+                              <div 
                                 onClick={() => setShowHydraulicModal(true)}
-                                className="w-full h-full"
+                                className="w-full h-full cursor-pointer"
                               >
-                                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
+                                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors">
                                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
                                     <s.icon className="w-6 h-6" />
                                   </div>
                                   <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
                                   <span className="text-xs text-center text-muted-foreground">{s.subtitle}</span>
                                 </div>
-                              </button>
+                              </div>
                             ) : (
                              <Link to={`/solicitar?tipo=${s.type}`}>
                                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
@@ -362,12 +362,12 @@ export default function Home() {
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             className="fixed inset-x-4 top-12 z-[60] bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
                           >
-                            <button 
+                            <div 
                               onClick={() => setScheduleType(null)}
-                              className="text-sm text-primary font-semibold mb-3 flex items-center gap-1"
+                              className="text-sm text-primary font-semibold mb-3 flex items-center gap-1 cursor-pointer"
                             >
                               ← Voltar
-                            </button>
+                            </div>
                             <h2 className="text-xl font-bold text-foreground mb-4">Serviço Imediato</h2>
                             <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4">
                               <p className="text-sm text-green-800 font-semibold">✓ Prestadores disponíveis agora!</p>
@@ -480,12 +480,12 @@ export default function Home() {
                               exit={{ opacity: 0, scale: 0.95, y: 20 }}
                               className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
                             >
-                              <button 
+                              <div 
                                 onClick={() => setSelectedHydraulicService(null)}
-                                className="text-sm text-primary font-semibold mb-3 flex items-center gap-1"
+                                className="text-sm text-primary font-semibold mb-3 flex items-center gap-1 cursor-pointer"
                               >
                                 ← Voltar
-                              </button>
+                              </div>
                               <h2 className="text-2xl font-bold text-foreground mb-2">💧 {selectedHydraulicService.label}</h2>
                               <div className="bg-primary/10 rounded-2xl p-4 mb-4 border border-primary/20">
                                 <p className="text-sm text-muted-foreground mb-1">Valor estimado:</p>
@@ -563,12 +563,12 @@ export default function Home() {
                               exit={{ opacity: 0, scale: 0.95, y: 20 }}
                               className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
                             >
-                              <button 
+                              <div 
                                 onClick={() => setSelectedElectricalService(null)}
-                                className="text-sm text-primary font-semibold mb-3 flex items-center gap-1"
+                                className="text-sm text-primary font-semibold mb-3 flex items-center gap-1 cursor-pointer"
                               >
                                 ← Voltar
-                              </button>
+                              </div>
                               <h2 className="text-2xl font-bold text-foreground mb-2">⚡ {selectedElectricalService.label}</h2>
                               <div className="bg-primary/10 rounded-2xl p-4 mb-4 border border-primary/20">
                                 <p className="text-sm text-muted-foreground mb-1">Valor estimado:</p>
