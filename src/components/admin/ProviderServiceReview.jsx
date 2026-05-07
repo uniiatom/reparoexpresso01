@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp, CheckCircle2, XCircle, ClipboardList, MapPin, Image, DollarSign, FileCheck, Phone, Hash, Wrench, Car, ThumbsUp, ThumbsDown, RotateCcw, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, CheckCircle2, XCircle, ClipboardList, MapPin, Image, DollarSign, FileCheck, Phone, Hash, Wrench, Car, ThumbsUp, ThumbsDown, RotateCcw, AlertCircle, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -406,6 +406,7 @@ function ProviderGroup({ group, defaultOpen, onStatusChange }) {
 export default function ProviderServiceReview({ period }) {
   const queryClient = useQueryClient();
   const [filterStatus, setFilterStatus] = useState('concluido');
+  const [selectedProviderId, setSelectedProviderId] = useState('todos');
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['requests-for-review', filterStatus],
@@ -422,7 +423,7 @@ export default function ProviderServiceReview({ period }) {
     await changeStatusMutation.mutateAsync({ id, status });
   };
 
-  // Filtra por período se fornecido (period_start / period_end do closing)
+  // Filtra por período se fornecido
   const filtered = period
     ? requests.filter(r => {
         const d = r.created_date ? new Date(r.created_date) : null;
@@ -433,9 +434,16 @@ export default function ProviderServiceReview({ period }) {
       })
     : requests;
 
-  const groups = groupByProvider(filtered);
-  const totalGeral = filtered.reduce((s, r) => s + (r.final_price || 0), 0);
-  const withChecklist = filtered.filter(r => r.checklist?.completed_at).length;
+  const allGroups = groupByProvider(filtered);
+
+  // Filtra por prestador selecionado
+  const groups = selectedProviderId === 'todos'
+    ? allGroups
+    : allGroups.filter(g => g.provider_id === selectedProviderId);
+
+  const displayedRequests = groups.flatMap(g => g.requests);
+  const totalGeral = displayedRequests.reduce((s, r) => s + (r.final_price || 0), 0);
+  const withChecklist = displayedRequests.filter(r => r.checklist?.completed_at).length;
 
   return (
     <div className="space-y-4">
@@ -466,13 +474,34 @@ export default function ProviderServiceReview({ period }) {
             </button>
           ))}
         </div>
+
+        {/* Seletor de prestador */}
+        {!isLoading && allGroups.length > 0 && (
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+              <User className="w-3 h-3" /> Filtrar por prestador
+            </label>
+            <select
+              value={selectedProviderId}
+              onChange={e => setSelectedProviderId(e.target.value)}
+              className="w-full text-sm border border-border rounded-xl px-3 py-2 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="todos">Todos os prestadores ({allGroups.length})</option>
+              {allGroups.map(g => (
+                <option key={g.provider_id} value={g.provider_id}>
+                  {g.provider_name} — {g.requests.length} atendimento(s) · R$ {g.requests.reduce((s, r) => s + (r.final_price || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
-      {/* Resumo geral */}
-      {!isLoading && filtered.length > 0 && (
+      {/* Resumo */}
+      {!isLoading && displayedRequests.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-            <p className="text-xl font-black text-blue-800">{filtered.length}</p>
+            <p className="text-xl font-black text-blue-800">{displayedRequests.length}</p>
             <p className="text-xs text-blue-600">Atendimentos</p>
           </div>
           <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
@@ -502,7 +531,7 @@ export default function ProviderServiceReview({ period }) {
       )}
 
       {!isLoading && groups.map(group => (
-        <ProviderGroup key={group.provider_id} group={group} onStatusChange={handleStatusChange} />
+        <ProviderGroup key={group.provider_id} group={group} defaultOpen={selectedProviderId !== 'todos'} onStatusChange={handleStatusChange} />
       ))}
     </div>
   );
