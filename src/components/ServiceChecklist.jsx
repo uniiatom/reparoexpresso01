@@ -6,14 +6,19 @@ import { MapPin, CheckCircle2, Loader2, X, ClipboardList, Plus, Video, Play, Tra
 import { cn } from "@/lib/utils";
 import SignaturePad from './SignaturePad';
 
-const DEFAULT_ITEMS = [
+const PRE_AUTH_ITEMS = [
   "Apresentei minha identificação ao cliente",
   "Avaliei o problema antes de iniciar",
+];
+
+const POST_AUTH_ITEMS = [
   "Utilizei EPI adequado",
   "Executei o serviço conforme combinado",
   "Testei e validei com o cliente",
   "Área de trabalho limpa e organizada",
 ];
+
+const DEFAULT_ITEMS = [...PRE_AUTH_ITEMS, ...POST_AUTH_ITEMS];
 
 const AUTHORIZATION_ITEMS = [
   "Cliente autorizou os trabalhos realizados",
@@ -145,10 +150,10 @@ export default function ServiceChecklist({ job, onClose }) {
         </div>
 
         <div className="overflow-y-auto flex-1 px-5 py-4 space-y-6">
-          {/* Itens do checklist */}
+          {/* Itens pré-autorização */}
           <div className="space-y-2">
             <p className="text-sm font-semibold text-foreground">Itens obrigatórios</p>
-            {DEFAULT_ITEMS.map(item => (
+            {PRE_AUTH_ITEMS.map(item => (
               <button
                 key={item}
                 onClick={() => toggleItem(item)}
@@ -191,7 +196,7 @@ export default function ServiceChecklist({ job, onClose }) {
             <SignaturePad label="Assinatura do cliente (antes do serviço)" onSave={setPreAuthSignature} />
           </div>
 
-          {/* Autorização prévia do cliente - checkboxes */}
+          {/* Confirmações de autorização */}
           <div className="space-y-2">
             <p className="text-sm font-semibold text-foreground">Confirmações de autorização</p>
             {AUTHORIZATION_ITEMS.map(item => (
@@ -210,6 +215,31 @@ export default function ServiceChecklist({ job, onClose }) {
                   {authorizationItems[item] && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
                 </div>
                 <span className={cn("text-sm", authorizationItems[item] ? "text-blue-700 font-medium" : "text-foreground")}>
+                  {item}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Itens pós-autorização */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Execução do serviço</p>
+            {POST_AUTH_ITEMS.map(item => (
+              <button
+                key={item}
+                onClick={() => toggleItem(item)}
+                className={cn(
+                  "w-full flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition-all",
+                  checkedItems[item] ? "border-green-500 bg-green-50" : "border-border hover:border-primary/40"
+                )}
+              >
+                <div className={cn(
+                  "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                  checkedItems[item] ? "bg-green-500 border-green-500" : "border-muted-foreground"
+                )}>
+                  {checkedItems[item] && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                </div>
+                <span className={cn("text-sm", checkedItems[item] ? "text-green-700 font-medium line-through" : "text-foreground")}>
                   {item}
                 </span>
               </button>
