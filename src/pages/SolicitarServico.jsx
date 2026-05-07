@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { AlertCircle } from "lucide-react";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { useNearbyProviders } from "@/hooks/useNearbyProviders";
+
 import MapView from "@/components/MapView";
 import ProviderSearchModal from "@/components/ProviderSearchModal";
 import ClientScheduleSelector from "@/components/ClientScheduleSelector";
@@ -298,7 +298,7 @@ export default function SolicitarServico() {
    setLoadingCep(false);
   };
 
-  const { data: nearbyProviders = [] } = useNearbyProviders(location?.latitude, location?.longitude, form.service_type);
+
 
   // Para verificar disponibilidade de horários quando agendado (sem provider definido ainda, usa lógica global)
   const [scheduledAvailableSlots, setScheduledAvailableSlots] = useState([]);
