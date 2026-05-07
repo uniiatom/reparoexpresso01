@@ -290,8 +290,15 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
     }
 
     if (liveJob.status === 'em_andamento') {
+      const checklistDone = !!liveJob.checklist?.completed_at;
       return (
         <div className="space-y-2">
+          {!checklistDone && (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 text-xs text-orange-700 font-medium flex items-center gap-2">
+              <ClipboardList className="w-4 h-4 flex-shrink-0" />
+              Preencha o checklist antes de finalizar o serviço.
+            </div>
+          )}
           <div className="flex gap-2">
             <Button
               size="sm"
@@ -304,7 +311,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
             <Button
               size="sm"
               className="flex-1 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold"
-              disabled={isPending}
+              disabled={isPending || !checklistDone}
               onClick={handleNextStep}
             >
               <CheckCircle2 className="w-4 h-4 mr-1" /> Finalizar
