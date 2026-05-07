@@ -54,15 +54,22 @@ function MapBounds({ providers, clientLocation, selectedProvider }) {
     if (!clientLocation) return;
 
     const bounds = new LatLngBounds([clientLocation.latitude, clientLocation.longitude]);
+    let hasMultiplePoints = false;
 
     if (selectedProvider && selectedProvider.latitude && selectedProvider.longitude) {
       bounds.extend([selectedProvider.latitude, selectedProvider.longitude]);
+      hasMultiplePoints = true;
       providers.forEach(p => {
         if (p.latitude && p.longitude) bounds.extend([p.latitude, p.longitude]);
       });
     }
 
-    map.fitBounds(bounds, { padding: [50, 50] });
+    // Only fitBounds if we have multiple points; otherwise just set center
+    if (hasMultiplePoints && bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [50, 50] });
+    } else {
+      map.setView([clientLocation.latitude, clientLocation.longitude], 13);
+    }
   }, [providers, clientLocation, selectedProvider, map]);
 
   return null;
