@@ -400,6 +400,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
       open={showCompletionModal}
       onClose={() => setShowCompletionModal(false)}
       onComplete={handleCompleteService}
+      serviceType={liveJob.service_type}
     />
     {lightboxUrl && (
       <div
