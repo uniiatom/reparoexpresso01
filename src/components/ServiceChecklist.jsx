@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, CheckCircle2, Loader2, X, ClipboardList, Plus, Video, Play, Trash2 } from "lucide-react";
+import { MapPin, CheckCircle2, Loader2, X, ClipboardList, Plus, Video, Play, Trash2, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SignaturePad from './SignaturePad';
 
@@ -38,7 +38,9 @@ export default function ServiceChecklist({ job, onClose }) {
   const [notes, setNotes] = useState('');
   const [serviceDescription, setServiceDescription] = useState('');
   const [preAuthSignature, setPreAuthSignature] = useState(null);
+  const [preAuthCpf, setPreAuthCpf] = useState('');
   const [finalSignature, setFinalSignature] = useState(null);
+  const [finalCpf, setFinalCpf] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -111,7 +113,9 @@ export default function ServiceChecklist({ job, onClose }) {
       notes,
       service_description: serviceDescription,
       pre_auth_signature: preAuthSignature,
+      pre_auth_cpf: preAuthCpf,
       final_signature: finalSignature,
+      final_cpf: finalCpf,
       location,
       completed_at: new Date().toISOString(),
     };
@@ -193,6 +197,27 @@ export default function ServiceChecklist({ job, onClose }) {
           <div className="space-y-3 bg-blue-50 rounded-2xl p-4 border border-blue-200">
             <p className="text-sm font-bold text-blue-900">✍️ Autorização prévia do cliente</p>
             <p className="text-xs text-blue-700">O cliente deve assinar antes do início do serviço, autorizando a execução dos trabalhos.</p>
+            <div>
+              <label className="text-xs font-semibold text-blue-800 flex items-center gap-1 mb-1">
+                <CreditCard className="w-3.5 h-3.5" /> CPF do cliente (opcional)
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={14}
+                placeholder="000.000.000-00"
+                value={preAuthCpf}
+                onChange={e => {
+                  const v = e.target.value.replace(/\D/g, '');
+                  const fmt = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+                               .replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3')
+                               .replace(/(\d{3})(\d{3})/, '$1.$2')
+                               .replace(/(\d{3})/, '$1');
+                  setPreAuthCpf(fmt);
+                }}
+                className="w-full rounded-xl border border-blue-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+            </div>
             <SignaturePad label="Assinatura do cliente (antes do serviço)" onSave={setPreAuthSignature} />
           </div>
 
@@ -340,6 +365,27 @@ export default function ServiceChecklist({ job, onClose }) {
           <div className="space-y-3 bg-green-50 rounded-2xl p-4 border border-green-200">
             <p className="text-sm font-bold text-green-900">✅ Assinatura final do cliente</p>
             <p className="text-xs text-green-700">O cliente deve assinar confirmando que o serviço foi concluído de forma satisfatória.</p>
+            <div>
+              <label className="text-xs font-semibold text-green-800 flex items-center gap-1 mb-1">
+                <CreditCard className="w-3.5 h-3.5" /> CPF do cliente (opcional)
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={14}
+                placeholder="000.000.000-00"
+                value={finalCpf}
+                onChange={e => {
+                  const v = e.target.value.replace(/\D/g, '');
+                  const fmt = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+                               .replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3')
+                               .replace(/(\d{3})(\d{3})/, '$1.$2')
+                               .replace(/(\d{3})/, '$1');
+                  setFinalCpf(fmt);
+                }}
+                className="w-full rounded-xl border border-green-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+              />
+            </div>
             <SignaturePad label="Assinatura do cliente (conclusão do serviço)" onSave={setFinalSignature} />
           </div>
 
