@@ -38,8 +38,10 @@ export default function ServiceChecklist({ job, onClose }) {
   const [notes, setNotes] = useState('');
   const [serviceDescription, setServiceDescription] = useState('');
   const [preAuthSignature, setPreAuthSignature] = useState(null);
+  const [preAuthSignerPhoto, setPreAuthSignerPhoto] = useState(null);
   const [preAuthCpf, setPreAuthCpf] = useState('');
   const [finalSignature, setFinalSignature] = useState(null);
+  const [finalSignerPhoto, setFinalSignerPhoto] = useState(null);
   const [finalCpf, setFinalCpf] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -113,8 +115,10 @@ export default function ServiceChecklist({ job, onClose }) {
       notes,
       service_description: serviceDescription,
       pre_auth_signature: preAuthSignature,
+      pre_auth_signer_photo: preAuthSignerPhoto,
       pre_auth_cpf: preAuthCpf,
       final_signature: finalSignature,
+      final_signer_photo: finalSignerPhoto,
       final_cpf: finalCpf,
       location,
       completed_at: new Date().toISOString(),
@@ -218,7 +222,11 @@ export default function ServiceChecklist({ job, onClose }) {
                 className="w-full rounded-xl border border-blue-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             </div>
-            <SignaturePad label="Assinatura do cliente (antes do serviço)" onSave={setPreAuthSignature} />
+            <SignaturePad label="Assinatura do cliente (antes do serviço)" onSave={(data) => {
+              if (!data) { setPreAuthSignature(null); setPreAuthSignerPhoto(null); return; }
+              setPreAuthSignature(data.signature);
+              setPreAuthSignerPhoto(data.signer_photo || null);
+            }} />
           </div>
 
           {/* Confirmações de autorização */}
@@ -386,7 +394,11 @@ export default function ServiceChecklist({ job, onClose }) {
                 className="w-full rounded-xl border border-green-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
               />
             </div>
-            <SignaturePad label="Assinatura do cliente (conclusão do serviço)" onSave={setFinalSignature} />
+            <SignaturePad label="Assinatura do cliente (conclusão do serviço)" onSave={(data) => {
+              if (!data) { setFinalSignature(null); setFinalSignerPhoto(null); return; }
+              setFinalSignature(data.signature);
+              setFinalSignerPhoto(data.signer_photo || null);
+            }} />
           </div>
 
           {/* Observações */}
