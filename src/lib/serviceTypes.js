@@ -1,0 +1,25 @@
+import { Zap, Droplets, Wrench, Lock, Wind, Hammer, Monitor, Car, Battery, Power, RotateCcw } from "lucide-react";
+
+export const SERVICE_TYPES = [
+  { value: "eletrica", label: "Elétrica", icon: Zap, group: "casa" },
+  { value: "hidraulica", label: "Hidráulica", icon: Droplets, group: "casa" },
+  { value: "reparo_geral", label: "Reparo Geral", icon: Wrench, group: "casa" },
+  { value: "fechadura", label: "Fechadura", icon: Lock, group: "casa" },
+  { value: "ar_condicionado", label: "Ar Condicionado", icon: Wind, group: "casa" },
+  { value: "limpeza_caixa_dagua", label: "Limpeza Caixa d'Água", icon: Droplets, group: "casa" },
+  { value: "limpeza_calha", label: "Limpeza de Calha", icon: Wrench, group: "casa" },
+  { value: "substituicao_telha", label: "Substituição de Telha", icon: Hammer, group: "casa" },
+  { value: "limpeza_telhado", label: "Limpeza de Telhado", icon: Wrench, group: "casa" },
+  { value: "instalacao_coifa_parede", label: "Coifa de Parede", icon: Wind, group: "casa" },
+  { value: "conversao_vaso_coplado", label: "Conversão Vaso CX Acoplada", icon: Droplets, group: "casa" },
+  { value: "reparo_forro_gesso", label: "Reparo Forro de Gesso", icon: Hammer, group: "casa" },
+  { value: "desentupimento", label: "Desentupimento", icon: Droplets, group: "casa" },
+  { value: "instalacao_suporte_tv", label: "Suporte de TV", icon: Monitor, group: "casa", needsTvSize: true },
+  { value: "pressurizador", label: "Pressurizador", icon: Droplets, group: "casa" },
+  { value: "outros", label: "Outros", icon: Wrench, group: "casa" },
+  { value: "troca_pneu", label: "Troca de Pneu", icon: Car, group: "veiculo" },
+  { value: "recarga_bateria", label: "Recarga de Bateria", icon: Battery, group: "veiculo" },
+  { value: "conserto_pneu", label: "Conserto de Pneu", icon: Car, group: "veiculo" },
+  { value: "pane_seca", label: "Pane Seca", icon: Power, group: "veiculo" },
+  { value: "reboque", label: "Reboque", icon: Car, group: "veiculo" },
+];

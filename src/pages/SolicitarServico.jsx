@@ -25,29 +25,8 @@ import { useScheduleAvailability } from "@/hooks/useScheduleAvailability";
 import TowServiceQuestions from "@/components/TowServiceQuestions";
 import RetornoButton from "@/components/RetornoButton";
 import ProviderMiniPhoto from "@/components/ProviderMiniPhoto";
-
-const SERVICE_TYPES = [
-  { value: "eletrica", label: "Elétrica", icon: Zap, group: "casa" },
-  { value: "hidraulica", label: "Hidráulica", icon: Droplets, group: "casa" },
-  { value: "reparo_geral", label: "Reparo Geral", icon: Wrench, group: "casa" },
-  { value: "fechadura", label: "Fechadura", icon: Lock, group: "casa" },
-  { value: "ar_condicionado", label: "Ar Condicionado", icon: Wind, group: "casa" },
-  { value: "limpeza_caixa_dagua", label: "Limpeza Caixa d'Água", icon: Droplets, group: "casa" },
-  { value: "limpeza_calha", label: "Limpeza de Calha", icon: Wrench, group: "casa" },
-  { value: "substituicao_telha", label: "Substituição de Telha", icon: Hammer, group: "casa" },
-  { value: "limpeza_telhado", label: "Limpeza de Telhado", icon: Wrench, group: "casa" },
-  { value: "instalacao_coifa_parede", label: "Coifa de Parede", icon: Wind, group: "casa" },
-  { value: "conversao_vaso_coplado", label: "Conversão Vaso CX Acoplada", icon: Droplets, group: "casa" },
-  { value: "reparo_forro_gesso", label: "Reparo Forro de Gesso", icon: Hammer, group: "casa" },
-  { value: "desentupimento", label: "Desentupimento", icon: Droplets, group: "casa" },
-  { value: "instalacao_suporte_tv", label: "Suporte de TV", icon: Monitor, group: "casa", needsTvSize: true },
-  { value: "outros", label: "Outros", icon: Wrench, group: "casa" },
-  { value: "troca_pneu", label: "Troca de Pneu", icon: Car, group: "veiculo" },
-  { value: "recarga_bateria", label: "Recarga de Bateria", icon: Battery, group: "veiculo" },
-  { value: "conserto_pneu", label: "Conserto de Pneu", icon: Car, group: "veiculo" },
-  { value: "pane_seca", label: "Pane Seca", icon: Power, group: "veiculo" },
-  { value: "reboque", label: "Reboque", icon: Car, group: "veiculo" },
-  ];
+import PressurizadorModal from "@/components/PressurizadorModal";
+import { SERVICE_TYPES } from "@/lib/serviceTypes";
 
 const URGENCY = [
   { value: "agora", label: "Agora", desc: "Preciso urgente" },
@@ -121,6 +100,8 @@ export default function SolicitarServico() {
   const [showPaneSeccaAlert, setShowPaneSeccaAlert] = useState(false);
   const [showForroGessoModal, setShowForroGessoModal] = useState(false);
   const [forroGessoTipo, setForroGessoTipo] = useState(null);
+  const [showPressurizadorModal, setShowPressurizadorModal] = useState(false);
+  const [pressurizadorTipo, setPressurizadorTipo] = useState(null);
   const [towQuestions, setTowQuestions] = useState({});
   const [towVehicleType, setTowVehicleType] = useState(null);
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
@@ -845,6 +826,13 @@ export default function SolicitarServico() {
                   if (s.value === 'reparo_forro_gesso' && selected) {
                     setForroGessoTipo(null);
                   }
+                  if (s.value === 'pressurizador' && !selected) {
+                    setShowPressurizadorModal(true);
+                    return;
+                  }
+                  if (s.value === 'pressurizador' && selected) {
+                    setPressurizadorTipo(null);
+                  }
                   if (s.value === 'desentupimento' && !selected) {
                     setShowDesentupimentoModal(true);
                     return;
@@ -877,10 +865,12 @@ export default function SolicitarServico() {
                     ) : s.value === 'limpeza_caixa_dagua' && caixaDaguaTipo ? (
                       <><span>Caixa d'Água</span><br /><span className="text-[10px] opacity-75">({caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio'}{caixaDaguaLitragem && caixaDaguaLitragem !== 'Não sei' ? ` · ${caixaDaguaLitragem}` : ''})</span></>
                     ) : s.value === 'reparo_forro_gesso' && forroGessoTipo ? (
-                      <><span>Forro de Gesso</span><br /><span className="text-[10px] opacity-75">({forroGessoTipo})</span></>
-                    ) : s.value === 'desentupimento' && desentupimentoTipo ? (
-                      <><span>Desentupimento</span><br /><span className="text-[10px] opacity-75">({desentupimentoTipo})</span></>
-                    ) : s.label}
+                       <><span>Forro de Gesso</span><br /><span className="text-[10px] opacity-75">({forroGessoTipo})</span></>
+                     ) : s.value === 'pressurizador' && pressurizadorTipo ? (
+                       <><span>Pressurizador</span><br /><span className="text-[10px] opacity-75">({pressurizadorTipo === 'visita_tecnica' ? 'Visita' : pressurizadorTipo === 'instalacao' ? 'Instalação' : 'Reparo'})</span></>
+                     ) : s.value === 'desentupimento' && desentupimentoTipo ? (
+                       <><span>Desentupimento</span><br /><span className="text-[10px] opacity-75">({desentupimentoTipo})</span></>
+                     ) : s.label}
                   </span>
                   {selected && <span className="w-4 h-4 bg-primary rounded-full flex items-center justify-center"><span className="text-white text-[9px] font-black">✓</span></span>}
                 </button>
