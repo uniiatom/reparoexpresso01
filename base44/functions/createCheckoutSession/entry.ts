@@ -57,8 +57,8 @@ Deno.serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `https://inquisitive-pro-match-flow.base44.app/acompanhar/${serviceRequestId}?payment=success`,
-      cancel_url: `https://inquisitive-pro-match-flow.base44.app/acompanhar/${serviceRequestId}`,
+      success_url: `${Deno.env.get('BASE44_APP_URL') || 'http://localhost:5173'}/acompanhar/${serviceRequestId}?payment=success`,
+      cancel_url: `${Deno.env.get('BASE44_APP_URL') || 'http://localhost:5173'}/acompanhar/${serviceRequestId}`,
       customer_email: user.email,
       metadata: {
         serviceRequestId,

@@ -47,7 +47,6 @@ export default function AcompanharServico() {
   const previousStatusRef = useRef(null);
   const [user, setUser] = useState(null);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const paymentSuccess = urlParams.get('payment') === 'success';
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -610,26 +609,14 @@ export default function AcompanharServico() {
           onClose={() => setShowSatisfactionSurvey(false)}
         />
       )}
-      {/* Banner de pagamento confirmado */}
-      {paymentSuccess && request.payment_status === 'paid' && (
-        <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4 flex items-center gap-3">
-          <span className="text-2xl">✅</span>
-          <div>
-            <p className="font-bold text-green-800 text-sm">Pagamento confirmado!</p>
-            <p className="text-xs text-green-600">Obrigado. Seu pagamento foi processado com sucesso.</p>
-          </div>
-        </div>
-      )}
-
-      {(request.final_price || request.estimated_price) && (
+      {request.final_price && (
         <>
           <PaymentModal
             isOpen={showPayment}
             onClose={() => setShowPayment(false)}
             requestId={id}
-            finalPrice={request.final_price || request.estimated_price}
+            finalPrice={request.final_price}
             serviceName={SERVICE_LABELS[request.service_type] || request.service_type}
-            appliedCoupon={appliedCoupon}
           />
           <PixPaymentModal
             isOpen={showPixPayment}

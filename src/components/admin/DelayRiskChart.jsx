@@ -197,8 +197,10 @@ export default function DelayRiskChart({ services, providers, onSelectService })
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
       {/* Header colapsável */}
-      <div className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer"
-        onClick={() => setExpanded(v => !v)}>
+      <button
+        onClick={() => setExpanded(v => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
+      >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center">
             <TrendingUp className="w-4 h-4 text-amber-600" />
@@ -225,19 +227,19 @@ export default function DelayRiskChart({ services, providers, onSelectService })
               <AlertTriangle className="w-3 h-3" /> {highRisk.length}
             </span>
           )}
-          <div
+          <button
             onClick={e => { e.stopPropagation(); setSoundEnabled(v => !v); }}
             className={cn(
-              'p-1.5 rounded-lg transition-colors cursor-pointer',
+              'p-1.5 rounded-lg transition-colors',
               soundEnabled ? 'text-primary bg-primary/10 hover:bg-primary/20' : 'text-muted-foreground bg-muted hover:bg-muted/80'
             )}
             title={soundEnabled ? 'Som ativado — clique para silenciar' : 'Som silenciado — clique para ativar'}
           >
             {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-          </div>
+          </button>
           {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
         </div>
-      </div>
+      </button>
 
       {expanded && (
         <div className="px-4 pb-4 space-y-4 border-t border-border">
