@@ -50,7 +50,7 @@ export default function NewServiceFullscreenModal({ service, onAccept, onDecline
           {/* Photos Section */}
           {hasPhotos ? (
             <div className="lg:col-span-2 flex flex-col">
-              <div className="flex-1 bg-black rounded-2xl overflow-hidden relative group mb-4">
+              <div className="flex-1 bg-black rounded-2xl overflow-hidden relative group mb-4 cursor-pointer" onClick={nextPhoto}>
                 <img
                   src={photos[currentPhotoIndex]}
                   alt="Foto do problema"
@@ -86,10 +86,10 @@ export default function NewServiceFullscreenModal({ service, onAccept, onDecline
                     <button
                       key={idx}
                       onClick={() => setCurrentPhotoIndex(idx)}
-                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
                         idx === currentPhotoIndex
-                          ? 'border-green-500 ring-2 ring-green-500'
-                          : 'border-white/20 hover:border-white/40'
+                          ? 'border-green-500 ring-2 ring-green-500 scale-105'
+                          : 'border-white/20 hover:border-white/40 hover:scale-105'
                       }`}
                     >
                       <img src={photo} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
