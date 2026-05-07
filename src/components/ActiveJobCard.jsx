@@ -403,19 +403,21 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
     />
     {lightboxUrl && (
       <div
-        className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+        className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4"
         onClick={() => setLightboxUrl(null)}
       >
+        <button
+          className="absolute top-4 right-4 text-white bg-black/70 hover:bg-black rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold transition-colors z-[10000]"
+          onClick={() => setLightboxUrl(null)}
+        >
+          ×
+        </button>
         <img
           src={lightboxUrl}
           alt="Foto ampliada"
-          className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"
+          className="max-w-[95vw] max-h-[95vh] rounded-2xl shadow-2xl object-contain"
           onClick={e => e.stopPropagation()}
         />
-        <button
-          className="absolute top-4 right-4 text-white bg-black/50 rounded-full w-9 h-9 flex items-center justify-center text-xl font-bold"
-          onClick={() => setLightboxUrl(null)}
-        >×</button>
       </div>
     )}
     <div className="bg-primary/5 rounded-3xl p-5 border border-primary/20 mb-5 space-y-4">
@@ -480,11 +482,10 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
             </p>
             <div className="flex gap-2 flex-wrap">
               {liveJob.problem_photos.map((url, i) => (
-                <button
+                <div
                   key={i}
-                  type="button"
                   onClick={() => setLightboxUrl(url)}
-                  className="relative cursor-pointer group focus:outline-none"
+                  className="relative cursor-pointer group"
                 >
                   <img 
                     src={url} 
@@ -494,7 +495,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-xl transition-colors flex items-center justify-center pointer-events-none">
                     <ZoomIn className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
