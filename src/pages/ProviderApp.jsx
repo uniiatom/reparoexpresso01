@@ -105,9 +105,13 @@ export default function ProviderApp() {
   // Job atual no banner = primeiro da fila
   const incomingJob = jobQueue[0] || null;
 
+  // Hook para novos chamados — dispara modal fullscreen
   useNewJobAlert({
     enabled: !!(provider?.is_online && provider?.is_approved && !activeJob),
-    onNewJob: handleNewJob,
+    onNewJob: (newJob) => {
+      handleNewJob(newJob);
+      setFullscreenService(newJob);
+    },
     providerId: provider?.id,
   }); // eslint-disable-line react-hooks/exhaustive-deps
 
