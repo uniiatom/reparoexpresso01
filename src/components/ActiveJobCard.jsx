@@ -241,14 +241,14 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
     setValidationInput('');
   };
 
-  const handleCompleteService = (completionType) => {
+  const handleCompleteService = (completionType, data = {}) => {
     if (completionType === 'concluido') {
       onUpdateStatus({ id: liveJob.id, status: 'concluido' });
     } else if (completionType === 'em_espera') {
       onUpdateStatus({ id: liveJob.id, status: 'em_espera' });
     } else if (completionType === 'visita_tecnica') {
-      // Status específico para visita técnica pendente
-      onUpdateStatus({ id: liveJob.id, status: 'em_andamento' });
+      // Status específico para visita técnica pendente com motivo
+      onUpdateStatus({ id: liveJob.id, status: 'em_andamento', tech_visit_reason: data.reason });
     }
   };
 
