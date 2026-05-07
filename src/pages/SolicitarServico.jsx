@@ -890,7 +890,7 @@ export default function SolicitarServico() {
             })}
           </div>
 
-          {/* Modal tamanho TV */}
+          {showPressurizadorModal && <PressurizadorModal isOpen={showPressurizadorModal} onClose={() => setShowPressurizadorModal(false)} onSelect={(tipo) => { setPressurizadorTipo(tipo); set('service_type', [...form.service_type, 'pressurizador']); setShowPressurizadorModal(false); }} />}
           {showTvSizeModal && (
             <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowTvSizeModal(false)}>
               <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
