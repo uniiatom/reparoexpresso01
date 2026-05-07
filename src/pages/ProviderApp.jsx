@@ -32,6 +32,7 @@ import ProviderTermsNotificationBanner from '../components/ProviderTermsNotifica
 import ProviderNotificationCenter from '../components/ProviderNotificationCenter';
 import ProviderTermsTab from '../components/ProviderTermsTab';
 import { useProviderPush } from '../hooks/useProviderPush';
+import NewServiceFullscreenModal from '@/components/NewServiceFullscreenModal';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -50,6 +51,7 @@ export default function ProviderApp() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(location.state?.tab || 'chamados');
   const [declineTarget, setDeclineTarget] = useState(null); // { job, source: 'banner' | 'list' }
+  const [fullscreenService, setFullscreenService] = useState(null);
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
@@ -309,6 +311,8 @@ export default function ProviderApp() {
     window.__stopProviderHorn?.();
     window.__clearSeenJobIds?.();
     setJobQueue([]);
+    setFullscreenService(null);
+    setActiveTab('chamados');
     acceptJob.mutate(job.id);
   };
 
@@ -341,6 +345,8 @@ export default function ProviderApp() {
     if (source === 'banner') {
       setJobQueue(prev => prev.filter(j => j.id !== job?.id));
     }
+
+    setFullscreenService(null);
 
     // Salva o motivo e reseta o status para aguardando (recusa efetiva)
     const updateData = { status: 'aguardando', provider_id: null, provider_name: null, provider_phone: null };
@@ -415,6 +421,18 @@ export default function ProviderApp() {
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
+      {/* Fullscreen Modal para novo serviço */}
+      {fullscreenService && (
+        <NewServiceFullscreenModal
+          service={fullscreenService}
+          onAccept={handleAcceptBanner}
+          onDecline={() => {
+            setFullscreenService(null);
+            handleDeclineBanner(fullscreenService);
+          }}
+        />
+      )}
+
       {/* Banner de notificação dos termos atualizados */}
       <ProviderTermsNotificationBanner />
 
