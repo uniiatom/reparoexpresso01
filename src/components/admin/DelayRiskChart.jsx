@@ -1,11 +1,47 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
-import { AlertTriangle, ChevronDown, ChevronUp, TrendingUp, Clock, User, ArrowRight, Calendar } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp, TrendingUp, Clock, User, ArrowRight, Calendar, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import RiskActionModal from '@/components/admin/RiskActionModal';
+
+// Toca 1 bip suave (risco médio - laranja)
+function playMediumBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.4);
+  } catch (e) {}
+}
+
+// Toca alarme repetido (risco alto - vermelho): 3 bips urgentes
+function playHighAlarm() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.25, 0.5].forEach(offset => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 1320;
+      osc.type = 'square';
+      gain.gain.setValueAtTime(0.35, ctx.currentTime + offset);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 0.18);
+      osc.start(ctx.currentTime + offset);
+      osc.stop(ctx.currentTime + offset + 0.18);
+    });
+  } catch (e) {}
+}
 
 // Cálculo do score de risco de atraso por serviço (0–100)
 function calcRisk(service, now) {
@@ -90,6 +126,9 @@ function CustomTooltip({ active, payload }) {
 export default function DelayRiskChart({ services, providers, onSelectService }) {
   const [expanded, setExpanded] = useState(true);
   const [riskActionService, setRiskActionService] = useState(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const prevHighCount = useRef(0);
+  const prevMedCount = useRef(0);
   const now = useMemo(() => new Date(), []);
 
   const handleRiskAction = (service) => setRiskActionService(service);
@@ -128,6 +167,18 @@ export default function DelayRiskChart({ services, providers, onSelectService })
   const highRisk = riskData.filter(d => d.risk >= 70);
   const medRisk = riskData.filter(d => d.risk >= 40 && d.risk < 70);
 
+  // Dispara sons quando os contadores aumentam
+  useEffect(() => {
+    if (!soundEnabled) return;
+    if (highRisk.length > prevHighCount.current) {
+      playHighAlarm();
+    } else if (medRisk.length > prevMedCount.current) {
+      playMediumBeep();
+    }
+    prevHighCount.current = highRisk.length;
+    prevMedCount.current = medRisk.length;
+  }, [highRisk.length, medRisk.length, soundEnabled]);
+
   if (riskData.length === 0) return null;
 
   return (
@@ -163,6 +214,16 @@ export default function DelayRiskChart({ services, providers, onSelectService })
               <AlertTriangle className="w-3 h-3" /> {highRisk.length}
             </span>
           )}
+          <button
+            onClick={e => { e.stopPropagation(); setSoundEnabled(v => !v); }}
+            className={cn(
+              'p-1.5 rounded-lg transition-colors',
+              soundEnabled ? 'text-primary bg-primary/10 hover:bg-primary/20' : 'text-muted-foreground bg-muted hover:bg-muted/80'
+            )}
+            title={soundEnabled ? 'Som ativado — clique para silenciar' : 'Som silenciado — clique para ativar'}
+          >
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+          </button>
           {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
         </div>
       </button>
