@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   MapPin, Phone, BellRing, KeyRound,
-  Navigation, Wrench, CheckCircle2, ClipboardList, PlusCircle, ExternalLink, PauseCircle, PlayCircle
+  Navigation, Wrench, CheckCircle2, ClipboardList, PlusCircle, ExternalLink, PauseCircle, PlayCircle, ZoomIn
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
@@ -456,12 +456,24 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
         </div>
         <p className="text-sm text-muted-foreground">{liveJob.description}</p>
         {liveJob.problem_photos?.length > 0 && (
-          <div className="mt-2 flex gap-2 flex-wrap">
-            {liveJob.problem_photos.map((url, i) => (
-              <button key={i} onClick={() => setLightboxUrl(url)} className="focus:outline-none">
-                <img src={url} alt={`Foto ${i + 1}`} className="w-20 h-20 object-cover rounded-xl border border-border active:scale-95 transition-transform" />
-              </button>
-            ))}
+          <div className="mt-3 space-y-2">
+            <p className="text-xs font-semibold text-primary flex items-center gap-1">
+              <ZoomIn className="w-3.5 h-3.5" /> Fotos do problema (clique para ampliar)
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              {liveJob.problem_photos.map((url, i) => (
+                <button 
+                  key={i} 
+                  onClick={() => setLightboxUrl(url)} 
+                  className="relative group focus:outline-none"
+                >
+                  <img src={url} alt={`Foto ${i + 1}`} className="w-24 h-24 object-cover rounded-xl border-2 border-primary/20 group-hover:border-primary/60 transition-all active:scale-95" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-xl transition-colors flex items-center justify-center">
+                    <ZoomIn className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         )}
         <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
