@@ -178,7 +178,7 @@ export default function ScheduledCalendar() {
       console.log('[ScheduledCalendar] Active services fetched:', unique.length);
       return unique;
     },
-    refetchInterval: 30000,
+    refetchInterval: 15000,
   });
 
   const { data: allProviders = [] } = useQuery({

@@ -127,13 +127,13 @@ export default function DelayRiskChart({ services, providers, onSelectService })
   const [expanded, setExpanded] = useState(true);
   const [riskActionService, setRiskActionService] = useState(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const prevHighCount = useRef(0);
-  const prevMedCount = useRef(0);
+  const prevHighCount = useRef(null);
+  const prevMedCount = useRef(null);
   const [now, setNow] = useState(() => new Date());
 
-  // Atualiza 'now' a cada minuto para recalcular riscos com o tempo
+  // Atualiza 'now' a cada 30s para recalcular riscos com o tempo
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 60000);
+    const timer = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(timer);
   }, []);
 
@@ -174,8 +174,14 @@ export default function DelayRiskChart({ services, providers, onSelectService })
   const highRisk = riskData.filter(d => d.risk >= 70);
   const medRisk = riskData.filter(d => d.risk >= 40 && d.risk < 70);
 
-  // Dispara sons quando os contadores aumentam
+  // Dispara sons quando os contadores aumentam (ignora a primeira renderização)
   useEffect(() => {
+    if (prevHighCount.current === null) {
+      // Inicializa com os valores atuais sem tocar som
+      prevHighCount.current = highRisk.length;
+      prevMedCount.current = medRisk.length;
+      return;
+    }
     if (!soundEnabled) return;
     if (highRisk.length > prevHighCount.current) {
       playHighAlarm();
