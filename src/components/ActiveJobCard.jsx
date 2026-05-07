@@ -196,6 +196,7 @@ function useLocalArrivalMinutes(job, active) {
 export default function ActiveJobCard({ job, providerName, onUpdateStatus, onShowChecklist, onShowAdditionalPoint, isPending }) {
   const [validationInput, setValidationInput] = useState('');
   const [liveJob, setLiveJob] = useState(job);
+  const [lightboxUrl, setLightboxUrl] = useState(null);
 
   // Sincroniza liveJob quando o job externo muda
   useEffect(() => { setLiveJob(job); }, [job]);
@@ -360,6 +361,24 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
   };
 
   return (
+    <>
+    {lightboxUrl && (
+      <div
+        className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+        onClick={() => setLightboxUrl(null)}
+      >
+        <img
+          src={lightboxUrl}
+          alt="Foto ampliada"
+          className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"
+          onClick={e => e.stopPropagation()}
+        />
+        <button
+          className="absolute top-4 right-4 text-white bg-black/50 rounded-full w-9 h-9 flex items-center justify-center text-xl font-bold"
+          onClick={() => setLightboxUrl(null)}
+        >×</button>
+      </div>
+    )}
     <div className="bg-primary/5 rounded-3xl p-5 border border-primary/20 mb-5 space-y-4">
       {/* Header status */}
       <div className="flex items-center justify-between">
@@ -418,9 +437,9 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
         {liveJob.problem_photos?.length > 0 && (
           <div className="mt-2 flex gap-2 flex-wrap">
             {liveJob.problem_photos.map((url, i) => (
-              <a key={i} href={url} target="_blank" rel="noreferrer">
-                <img src={url} alt={`Foto ${i + 1}`} className="w-20 h-20 object-cover rounded-xl border border-border" />
-              </a>
+              <button key={i} onClick={() => setLightboxUrl(url)} className="focus:outline-none">
+                <img src={url} alt={`Foto ${i + 1}`} className="w-20 h-20 object-cover rounded-xl border border-border active:scale-95 transition-transform" />
+              </button>
             ))}
           </div>
         )}
@@ -523,6 +542,7 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
       {/* Ações */}
       {renderActions()}
     </div>
+    </>
   );
 
 }
