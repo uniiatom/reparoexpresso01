@@ -108,7 +108,7 @@ export default function ProviderApp() {
 
   // Hook para novos chamados — dispara modal fullscreen
   useNewJobAlert({
-    enabled: !!(provider?.is_online && provider?.is_approved && !activeJob),
+    enabled: !!(provider?.is_online && provider?.is_approved),
     onNewJob: (newJob) => {
       handleNewJob(newJob);
       setFullscreenService(newJob);
