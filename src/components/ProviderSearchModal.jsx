@@ -371,15 +371,18 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
       return; // Sai aqui, não precisa criar BusyAlert
     }
 
-    // Nenhum prestador livre agora - busca aprovados para BusyAlert
+    // Nenhum prestador livre agora — notifica cliente que nenhum está disponível
+    console.log('[search] ❌ Nenhum prestador LIVRE para especialidade:', serviceType);
+
+    // Busca aprovados para tentar criar BusyAlert
     const allProviders = await base44.entities.Provider.filter({ is_approved: true });
     const unavails = await base44.entities.ProviderUnavailability.list();
     setAllUnavailabilities(unavails || []);
     console.log('[search] Total de prestadores aprovados:', allProviders.length);
     console.log('[search] Serviços em andamento:', activeRequests.length);
 
-    // Cria BusyAlert para prestadores em execução próximos ao cliente
-    if (form.modality !== 'agendado' && !busyAlertCreated.current && allProviders.length > 0) {
+    // Cria BusyAlert para prestadores EM EXECUÇÃO próximos ao cliente
+    if (form.modality !== 'agendado' && !busyAlertCreated.current && busyProviders.length > 0) {
       busyAlertCreated.current = true;
       const clientCoords2 = await getClientCoords();
       const cLat = clientCoords2?.lat || null;
@@ -395,7 +398,12 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
         ? allProviders.filter(p => hasSpecialty(p, serviceType))
         : allProviders;
 
-      const sorted = enrichWithDistance(matchingAll);
+      // Usa busyProviders se disponível, senão filtra manualmente
+      const occupiedToCheck = busyProviders.length > 0 
+        ? busyProviders 
+        : matchingAll.filter(p => occupiedProviderIds.has(p.id));
+      
+      const sorted = enrichWithDistance(occupiedToCheck);
       const nearbyOccupied = sorted
         .filter(p => {
           if (!p.latitude || !p.longitude) {
