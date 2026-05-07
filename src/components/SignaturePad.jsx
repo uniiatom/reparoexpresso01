@@ -134,19 +134,14 @@ export default function SignaturePad({ label, onSave }) {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-foreground">{label}</p>
-        {previewUrl && (
-          <button onClick={clearAll} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors">
-            <RotateCcw className="w-3 h-3" /> Limpar
-          </button>
-        )}
       </div>
 
       {/* Mini preview / click to open */}
-      <button
-        type="button"
-        onClick={openFullscreen}
-        className={`w-full rounded-2xl border-2 overflow-hidden transition-colors relative group ${previewUrl ? 'border-green-500' : 'border-dashed border-border hover:border-primary/50'}`}
+      <div
+        className={`w-full rounded-2xl border-2 overflow-hidden transition-colors relative ${previewUrl ? 'border-green-500' : 'border-dashed border-border'}`}
         style={{ height: 80 }}
+        onClick={!previewUrl ? openFullscreen : undefined}
+        role={!previewUrl ? 'button' : undefined}
       >
         {previewUrl ? (
           <img src={previewUrl} alt="Assinatura" className="w-full h-full object-contain bg-white" />
@@ -156,12 +151,7 @@ export default function SignaturePad({ label, onSave }) {
             <span className="text-xs">Toque para assinar</span>
           </div>
         )}
-        {previewUrl && (
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-            <span className="text-xs bg-black/60 text-white px-2 py-1 rounded-lg">Toque para editar</span>
-          </div>
-        )}
-      </button>
+      </div>
 
       <p className="text-xs text-muted-foreground">
         {previewUrl ? '✓ Assinatura capturada' : 'Toque na área acima para assinar'}
