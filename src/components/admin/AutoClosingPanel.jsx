@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -121,6 +121,12 @@ export default function AutoClosingPanel() {
   const [periodEnd, setPeriodEnd]     = useState('');
   const [showIssues, setShowIssues]   = useState(true);
   const [showCreated, setShowCreated] = useState(true);
+  const [selectedProviderId, setSelectedProviderId] = useState('');
+
+  const { data: providers = [] } = useQuery({
+    queryKey: ['providers-approved'],
+    queryFn: () => base44.entities.Provider.filter({ is_approved: true }, 'name', 200),
+  });
 
   const run = async () => {
     setLoading(true);
@@ -130,6 +136,9 @@ export default function AutoClosingPanel() {
       if (periodStart && periodEnd) {
         payload.period_start = periodStart;
         payload.period_end   = periodEnd;
+      }
+      if (selectedProviderId) {
+        payload.provider_id = selectedProviderId;
       }
       const res = await base44.functions.invoke('autoClosingReview', payload);
       setResult(res.data);
@@ -158,6 +167,21 @@ export default function AutoClosingPanel() {
             <h3 className="font-bold text-foreground">Fechamento Automático com Conferência</h3>
             <p className="text-xs text-muted-foreground">O sistema confere os valores, identifica inconsistências e gera os fechamentos aprovados</p>
           </div>
+        </div>
+
+        {/* Seletor de prestador */}
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Prestador (opcional — deixe em branco para todos)</label>
+          <select
+            value={selectedProviderId}
+            onChange={e => setSelectedProviderId(e.target.value)}
+            className="w-full text-xs border border-border rounded-lg px-2 py-1.5 bg-background"
+          >
+            <option value="">— Todos os prestadores —</option>
+            {providers.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
         </div>
 
         {/* Período personalizado (opcional) */}
@@ -190,7 +214,7 @@ export default function AutoClosingPanel() {
         >
           {loading
             ? <><RefreshCw className="w-4 h-4 animate-spin" /> Conferindo serviços...</>
-            : <><Play className="w-4 h-4" /> Executar Fechamento Automático</>
+            : <><Play className="w-4 h-4" /> {selectedProviderId ? `Fechar: ${providers.find(p => p.id === selectedProviderId)?.name || '...'}` : 'Executar Fechamento Automático'}</>
           }
         </Button>
       </div>

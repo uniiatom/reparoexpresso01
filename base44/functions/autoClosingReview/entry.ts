@@ -49,8 +49,11 @@ Deno.serve(async (req) => {
 
   console.log(`[autoClosing] período: ${periodLabel}`);
 
-  // --- Busca serviços concluídos ---
-  const allServices = await base44.asServiceRole.entities.ServiceRequest.filter({ status: 'concluido' });
+  // --- Busca serviços concluídos (opcionalmente filtrados por prestador) ---
+  const filterQuery = { status: 'concluido' };
+  if (body.provider_id) filterQuery.provider_id = body.provider_id;
+
+  const allServices = await base44.asServiceRole.entities.ServiceRequest.filter(filterQuery);
 
   const services = allServices.filter(s => {
     const date = new Date(s.updated_date || s.created_date);
