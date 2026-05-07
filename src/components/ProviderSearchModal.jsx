@@ -166,6 +166,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   const busyAlertCreated = useRef(false);
   const [zoomedFavPhoto, setZoomedFavPhoto] = useState(null);
   const [favoriteSkillError, setFavoriteSkillError] = useState(null);
+  const [secondsRemaining, setSecondsRemaining] = useState(300); // 5 minutos
 
   useEffect(() => {
     // Busca favoritos com dados atualizados dos prestadores
@@ -194,15 +195,22 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     setPhase('searching');
     searchProviders();
     
-    // Timer para abrir agenda após 5 minutos (se ainda estiver em 'searching')
-    const searchTimeout = setTimeout(() => {
-      if (processingRef.current === false) {
-        console.log('[search] ⏱️ 5 minutos atingidos, abrindo agendamento...');
-        setPhase('none');
-      }
-    }, 5 * 60 * 1000);
+    // Contagem regressiva dos 5 minutos
+    const countdownInterval = setInterval(() => {
+      setSecondsRemaining(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          if (processingRef.current === false && phase === 'searching') {
+            console.log('[search] ⏱️ 5 minutos atingidos, abrindo agendamento...');
+            setPhase('none');
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => clearTimeout(searchTimeout);
+    return () => clearInterval(countdownInterval);
   }, []);
 
   // Geocodifica uma query via Nominatim
@@ -670,7 +678,16 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
              </div>
              <h3 className="text-xl font-bold text-foreground">Buscando prestadores</h3>
              <p className="text-muted-foreground mt-2 text-sm">Localizando profissionais disponíveis perto de você...</p>
-             <p className="text-xs text-muted-foreground mt-3 bg-primary/5 border border-primary/20 rounded-xl p-3">
+             
+             {/* Contagem regressiva */}
+             <div className="mt-4 mb-3">
+               <div className="text-4xl font-black text-primary">
+                 {Math.floor(secondsRemaining / 60)}:{String(secondsRemaining % 60).padStart(2, '0')}
+               </div>
+               <p className="text-xs text-muted-foreground mt-1">Tempo restante para abrir agendamento</p>
+             </div>
+
+             <p className="text-xs text-muted-foreground bg-primary/5 border border-primary/20 rounded-xl p-3">
                ⏱️ A busca pode levar até 5 minutos. Notificaremos caso um prestador ocupado possa te atender depois.
              </p>
              <div className="flex justify-center gap-1 mt-5">
