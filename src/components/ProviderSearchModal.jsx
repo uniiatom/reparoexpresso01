@@ -415,7 +415,8 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     console.log('[search] Serviços em andamento:', activeRequests.length);
 
     // Cria BusyAlert para prestadores EM EXECUÇÃO próximos ao cliente
-    if (form.modality !== 'agendado' && !busyAlertCreated.current && busyProviders.length > 0) {
+    // Só notifica se raio chegou a 20km ou mais (não no inicio com 5km)
+    if (form.modality !== 'agendado' && !busyAlertCreated.current && busyProviders.length > 0 && radiusKm >= 20) {
       busyAlertCreated.current = true;
       const clientCoords2 = await getClientCoords();
       const cLat = clientCoords2?.lat || null;
