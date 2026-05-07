@@ -480,16 +480,20 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
             </p>
             <div className="flex gap-2 flex-wrap">
               {liveJob.problem_photos.map((url, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => setLightboxUrl(url)} 
-                  className="relative group focus:outline-none"
+                <div
+                  key={i}
+                  onClick={() => setLightboxUrl(url)}
+                  className="relative cursor-pointer group"
                 >
-                  <img src={url} alt={`Foto ${i + 1}`} className="w-24 h-24 object-cover rounded-xl border-2 border-primary/20 group-hover:border-primary/60 transition-all active:scale-95" />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-xl transition-colors flex items-center justify-center">
+                  <img 
+                    src={url} 
+                    alt={`Foto ${i + 1}`} 
+                    className="w-24 h-24 object-cover rounded-xl border-2 border-primary/20 group-hover:border-primary/60 group-hover:scale-110 transition-all" 
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-xl transition-colors flex items-center justify-center pointer-events-none">
                     <ZoomIn className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
