@@ -105,8 +105,26 @@ export default function ServiceChecklist({ job, onClose }) {
   const allAuthorizationsChecked = AUTHORIZATION_ITEMS.every(item => authorizationItems[item]);
   const canSave = allChecked && allAuthorizationsChecked && preAuthSignature && finalSignature && serviceDescription.trim().length > 5;
 
+  const uploadBase64AsFile = async (base64DataUrl, filename) => {
+    if (!base64DataUrl) return null;
+    const res = await fetch(base64DataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], filename, { type: blob.type });
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    return file_url;
+  };
+
   const handleSave = async () => {
     setSaving(true);
+
+    // Upload base64 photos to storage before saving
+    const [preAuthSignerPhotoUrl, preAuthSignatureUrl, finalSignerPhotoUrl, finalSignatureUrl] = await Promise.all([
+      uploadBase64AsFile(preAuthSignerPhoto, 'pre_auth_signer_photo.jpg'),
+      uploadBase64AsFile(preAuthSignature, 'pre_auth_signature.png'),
+      uploadBase64AsFile(finalSignerPhoto, 'final_signer_photo.jpg'),
+      uploadBase64AsFile(finalSignature, 'final_signature.png'),
+    ]);
+
     const checklistData = {
       items: DEFAULT_ITEMS.map(item => ({ label: item, checked: !!checkedItems[item] })),
       authorizations: AUTHORIZATION_ITEMS.map(item => ({ label: item, checked: !!authorizationItems[item] })),
@@ -114,11 +132,11 @@ export default function ServiceChecklist({ job, onClose }) {
       videos,
       notes,
       service_description: serviceDescription,
-      pre_auth_signature: preAuthSignature,
-      pre_auth_signer_photo: preAuthSignerPhoto,
+      pre_auth_signature: preAuthSignatureUrl,
+      pre_auth_signer_photo: preAuthSignerPhotoUrl,
       pre_auth_cpf: preAuthCpf,
-      final_signature: finalSignature,
-      final_signer_photo: finalSignerPhoto,
+      final_signature: finalSignatureUrl,
+      final_signer_photo: finalSignerPhotoUrl,
       final_cpf: finalCpf,
       location,
       completed_at: new Date().toISOString(),
