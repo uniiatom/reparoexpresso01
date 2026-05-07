@@ -129,7 +129,13 @@ export default function DelayRiskChart({ services, providers, onSelectService })
   const [soundEnabled, setSoundEnabled] = useState(true);
   const prevHighCount = useRef(0);
   const prevMedCount = useRef(0);
-  const now = useMemo(() => new Date(), []);
+  const [now, setNow] = useState(() => new Date());
+
+  // Atualiza 'now' a cada minuto para recalcular riscos com o tempo
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleRiskAction = (service) => setRiskActionService(service);
 
@@ -140,10 +146,11 @@ export default function DelayRiskChart({ services, providers, onSelectService })
 
   // Calcula risco para os serviços ativos (exclui concluídos e cancelados)
   const riskData = useMemo(() => {
+    const currentNow = now;
     return services
       .filter(s => !['concluido', 'cancelado'].includes(s.status))
       .map(s => {
-        const risk = calcRisk(s, now);
+        const risk = calcRisk(s, currentNow);
         const provider = providerMap[s.provider_id];
         let scheduledAt = null;
         if (s.scheduled_date) {
