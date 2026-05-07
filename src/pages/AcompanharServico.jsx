@@ -319,8 +319,8 @@ export default function AcompanharServico() {
         </div>
       )}
 
-      {/* Map Link para estados iniciais */}
-      {['aguardando', 'aceito', 'a_caminho'].includes(request?.status) && (
+      {/* Map Link para estados iniciais e em andamento */}
+      {['aguardando', 'aceito', 'a_caminho', 'em_andamento'].includes(request?.status) && (
         <Button
           onClick={() => navigate(`/mapa/${id}`)}
           variant="outline"
