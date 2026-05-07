@@ -26,6 +26,7 @@ import TowServiceQuestions from "@/components/TowServiceQuestions";
 import RetornoButton from "@/components/RetornoButton";
 import ProviderMiniPhoto from "@/components/ProviderMiniPhoto";
 import PressurizadorModal from "@/components/PressurizadorModal";
+import ValvulaTransfModal from "@/components/ValvulaTransfModal";
 import { SERVICE_TYPES } from "@/lib/serviceTypes";
 
 const URGENCY = [
@@ -102,6 +103,8 @@ export default function SolicitarServico() {
   const [forroGessoTipo, setForroGessoTipo] = useState(null);
   const [showPressurizadorModal, setShowPressurizadorModal] = useState(false);
   const [pressurizadorTipo, setPressurizadorTipo] = useState(null);
+  const [showValvulaTransfModal, setShowValvulaTransfModal] = useState(false);
+  const [valvulaTransfTipo, setValvulaTransfTipo] = useState(null);
   const [towQuestions, setTowQuestions] = useState({});
   const [towVehicleType, setTowVehicleType] = useState(null);
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
@@ -833,6 +836,13 @@ export default function SolicitarServico() {
                   if (s.value === 'pressurizador' && selected) {
                     setPressurizadorTipo(null);
                   }
+                  if (s.value === 'valvula_transferidora_pressao' && !selected) {
+                    setShowValvulaTransfModal(true);
+                    return;
+                  }
+                  if (s.value === 'valvula_transferidora_pressao' && selected) {
+                    setValvulaTransfTipo(null);
+                  }
                   if (s.value === 'desentupimento' && !selected) {
                     setShowDesentupimentoModal(true);
                     return;
@@ -868,7 +878,9 @@ export default function SolicitarServico() {
                        <><span>Forro de Gesso</span><br /><span className="text-[10px] opacity-75">({forroGessoTipo})</span></>
                      ) : s.value === 'pressurizador' && pressurizadorTipo ? (
                        <><span>Pressurizador</span><br /><span className="text-[10px] opacity-75">({pressurizadorTipo === 'visita_tecnica' ? 'Visita' : pressurizadorTipo === 'instalacao' ? 'Instalação' : 'Reparo'})</span></>
-                     ) : s.value === 'desentupimento' && desentupimentoTipo ? (
+                     ) : s.value === 'valvula_transferidora_pressao' && valvulaTransfTipo ? (
+                       <><span>Válvula Transfer.</span><br /><span className="text-[10px] opacity-75">({valvulaTransfTipo === 'visita_tecnica' ? 'Visita' : valvulaTransfTipo === 'instalacao' ? 'Instalação' : 'Reparo'})</span></>
+                    ) : s.value === 'desentupimento' && desentupimentoTipo ? (
                        <><span>Desentupimento</span><br /><span className="text-[10px] opacity-75">({desentupimentoTipo})</span></>
                      ) : s.label}
                   </span>
@@ -1103,6 +1115,8 @@ export default function SolicitarServico() {
               </div>
             </div>
           )}
+
+          {showValvulaTransfModal && <ValvulaTransfModal onSelect={(tipo) => { setValvulaTransfTipo(tipo); set('service_type', [...form.service_type, 'valvula_transferidora_pressao']); setShowValvulaTransfModal(false); }} onCancel={() => setShowValvulaTransfModal(false)} />}
 
           {/* Modal aviso Pane Seca */}
           {showPaneSeccaAlert && (
@@ -1689,8 +1703,6 @@ export default function SolicitarServico() {
           )}
           </div>
           )}
-
-    
 
       {/* Step 4: Quando */}
       {step === 4 && (
