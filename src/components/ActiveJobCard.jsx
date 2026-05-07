@@ -256,6 +256,8 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
     if (liveJob.status === 'a_caminho') {
       const needsValidation = !!liveJob.validation_password;
       const validationOk = !needsValidation || validationInput === liveJob.validation_password;
+      const cLat = liveJob.client_latitude || liveJob.latitude;
+      const cLng = liveJob.client_longitude || liveJob.longitude;
 
       return (
         <div className="space-y-3">
@@ -277,6 +279,18 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
                 <p className="text-xs text-red-600 mt-1 text-center">Senha incorreta. Peça novamente ao cliente.</p>
               )}
             </div>
+          )}
+          {cLat && cLng && (
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${cLat},${cLng}`}
+              target="_blank"
+              rel="noreferrer"
+              className="block"
+            >
+              <Button className="w-full rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold h-12">
+                <Navigation className="w-4 h-4 mr-2" /> Ir para o Mapa
+              </Button>
+            </a>
           )}
           <Button
             className="w-full rounded-2xl bg-primary text-primary-foreground font-bold h-12"
@@ -488,8 +502,8 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
           </div>
         )}
 
-        {/* Localização do cliente — disponível apenas a partir do deslocamento */}
-        {['a_caminho', 'em_andamento', 'concluido'].includes(liveJob.status) && (() => {
+        {/* Localização do cliente — disponível apenas durante deslocamento (não em execução) */}
+        {liveJob.status === 'a_caminho' && (() => {
           const lat = liveJob.client_latitude || liveJob.latitude;
           const lng = liveJob.client_longitude || liveJob.longitude;
           if (!lat || !lng) return (
