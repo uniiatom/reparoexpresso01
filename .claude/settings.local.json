@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx vite *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5174/)",
+      "Bash(pnpm add *)",
+      "Bash(curl -s -o /dev/null -w \"HTTP:%{http_code}\" http://localhost:5175/)",
+      "Bash(node -e ' *)"
+    ]
+  }
+}

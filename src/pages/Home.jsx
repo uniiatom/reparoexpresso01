@@ -13,33 +13,30 @@ import FleetMap from "@/components/FleetMap";
 import ServiceSearch from "@/components/ServiceSearch";
 
 const homeServices = [
-  { icon: Zap, label: "Elétrica", subtitle: "Chuveiro, tomada, QDC", type: "eletrica", color: "bg-yellow-100 text-yellow-700" },
-  { icon: Pipette, label: "Hidráulica", subtitle: "Vazamento, registro", type: "hidraulica", color: "bg-blue-100 text-blue-700" },
-
-  { icon: Lock, label: "Fechadura", subtitle: "Serviços de fechadura", type: "fechadura", color: "bg-green-100 text-green-700" },
-  { icon: Thermometer, label: "Ar Condicionado", subtitle: "Instalação e reparo", type: "ar_condicionado", color: "bg-cyan-100 text-cyan-700" },
-  { icon: Waves, label: "Limpeza Caixa d'Água", subtitle: "Limpeza especializada", type: "limpeza_caixa_dagua", color: "bg-blue-100 text-blue-700" },
-  { icon: Droplets, label: "Limpeza de Calha", subtitle: "Desobstrução", type: "limpeza_calha", color: "bg-slate-100 text-slate-700" },
-  { icon: Layers, label: "Substituição de Telha", subtitle: "Reparos de cobertura", type: "substituicao_telha", color: "bg-orange-100 text-orange-700" },
-  { icon: Sparkles, label: "Limpeza de Telhado", subtitle: "Limpeza de cobertura", type: "limpeza_telhado", color: "bg-amber-100 text-amber-700" },
-  { icon: ChefHat, label: "Coifa de Parede", subtitle: "Instalação de coifa", type: "instalacao_coifa_parede", color: "bg-teal-100 text-teal-700" },
-  { icon: ShowerHead, label: "Conversão Vaso CX Acoplada", subtitle: "Adaptação sanitária", type: "conversao_vaso_coplado", color: "bg-indigo-100 text-indigo-700" },
-  { icon: Layers, label: "Reparo Forro de Gesso", subtitle: "Manutenção de forro", type: "reparo_forro_gesso", color: "bg-stone-100 text-stone-700" },
-  { icon: Droplets, label: "Desentupimento", subtitle: "Desobstrução rápida", type: "desentupimento", color: "bg-amber-100 text-amber-700" },
-  { icon: Droplets, label: "Caça Vazamento", subtitle: "Detecção de vazamentos", type: "caca_vazamento", color: "bg-blue-100 text-blue-700" },
-  { icon: ClipboardList, label: "Check-up", subtitle: "Vistoria completa", type: "checkup", color: "bg-green-100 text-green-700" },
-  { icon: Layers, label: "Rejunte", subtitle: "Rejunte de azulejos", type: "rejunte", color: "bg-rose-100 text-rose-700" },
-  { icon: DoorOpen, label: "Portão Eletrônico", subtitle: "Instalação e reparo", type: "portao_eletronico", color: "bg-sky-100 text-sky-700" },
-
-  { icon: Gauge, label: "Pressurizador", subtitle: "Instalação e reparo", type: "pressurizador", color: "bg-cyan-100 text-cyan-700" },
-
+  { icon: Zap, label: "Elétrica", subtitle: "Chuveiro, tomada, QDC", type: "eletrica", color: "bg-amber-500/15 text-amber-400" },
+  { icon: Pipette, label: "Hidráulica", subtitle: "Vazamento, registro", type: "hidraulica", color: "bg-sky-500/15 text-sky-400" },
+  { icon: Lock, label: "Fechadura", subtitle: "Serviços de fechadura", type: "fechadura", color: "bg-emerald-500/15 text-emerald-400" },
+  { icon: Thermometer, label: "Ar Condicionado", subtitle: "Instalação e reparo", type: "ar_condicionado", color: "bg-cyan-500/15 text-cyan-400" },
+  { icon: Waves, label: "Limpeza Caixa d'Água", subtitle: "Limpeza especializada", type: "limpeza_caixa_dagua", color: "bg-sky-500/15 text-sky-400" },
+  { icon: Droplets, label: "Limpeza de Calha", subtitle: "Desobstrução", type: "limpeza_calha", color: "bg-slate-500/15 text-slate-400" },
+  { icon: Layers, label: "Substituição de Telha", subtitle: "Reparos de cobertura", type: "substituicao_telha", color: "bg-orange-500/15 text-orange-400" },
+  { icon: Sparkles, label: "Limpeza de Telhado", subtitle: "Limpeza de cobertura", type: "limpeza_telhado", color: "bg-yellow-500/15 text-yellow-400" },
+  { icon: ChefHat, label: "Coifa de Parede", subtitle: "Instalação de coifa", type: "instalacao_coifa_parede", color: "bg-teal-500/15 text-teal-400" },
+  { icon: ShowerHead, label: "Conversão Vaso CX Acoplada", subtitle: "Adaptação sanitária", type: "conversao_vaso_coplado", color: "bg-indigo-500/15 text-indigo-400" },
+  { icon: Layers, label: "Reparo Forro de Gesso", subtitle: "Manutenção de forro", type: "reparo_forro_gesso", color: "bg-stone-500/15 text-stone-400" },
+  { icon: Droplets, label: "Desentupimento", subtitle: "Desobstrução rápida", type: "desentupimento", color: "bg-orange-500/15 text-orange-400" },
+  { icon: Droplets, label: "Caça Vazamento", subtitle: "Detecção de vazamentos", type: "caca_vazamento", color: "bg-sky-500/15 text-sky-400" },
+  { icon: ClipboardList, label: "Check-up", subtitle: "Vistoria completa", type: "checkup", color: "bg-emerald-500/15 text-emerald-400" },
+  { icon: Layers, label: "Rejunte", subtitle: "Rejunte de azulejos", type: "rejunte", color: "bg-rose-500/15 text-rose-400" },
+  { icon: DoorOpen, label: "Portão Eletrônico", subtitle: "Instalação e reparo", type: "portao_eletronico", color: "bg-sky-500/15 text-sky-400" },
+  { icon: Gauge, label: "Pressurizador", subtitle: "Instalação e reparo", type: "pressurizador", color: "bg-cyan-500/15 text-cyan-400" },
 ];
 
 const vehicleServices = [
-  { icon: Settings, label: "Troca de Pneu", subtitle: "Pneus novos", type: "troca_pneu", color: "bg-slate-100 text-slate-700" },
-  { icon: Zap, label: "Recarga Bateria", subtitle: "Carregamento rápido", type: "recarga_bateria", color: "bg-yellow-100 text-yellow-700" },
-  { icon: Wrench, label: "Conserto Pneu", subtitle: "Reparo de furos", type: "conserto_pneu", color: "bg-red-100 text-red-700" },
-  { icon: Truck, label: "Reboque", subtitle: "Transporte seguro", type: "reboque", color: "bg-orange-100 text-orange-700" },
+  { icon: Settings, label: "Troca de Pneu", subtitle: "Pneus novos", type: "troca_pneu", color: "bg-slate-500/15 text-slate-400" },
+  { icon: Zap, label: "Recarga Bateria", subtitle: "Carregamento rápido", type: "recarga_bateria", color: "bg-amber-500/15 text-amber-400" },
+  { icon: Wrench, label: "Conserto Pneu", subtitle: "Reparo de furos", type: "conserto_pneu", color: "bg-red-500/15 text-red-400" },
+  { icon: Truck, label: "Reboque", subtitle: "Transporte seguro", type: "reboque", color: "bg-orange-500/15 text-orange-400" },
 ];
 
 const electricalServices = [
@@ -60,11 +57,11 @@ const hydraulicServices = [
 ];
 
 const STATUS_LABEL = {
-  aguardando: { label: 'Procurando prestador...', color: 'bg-yellow-50 border-yellow-200 text-yellow-800', dot: 'bg-yellow-400' },
-  aceito:     { label: 'Prestador confirmado', color: 'bg-blue-50 border-blue-200 text-blue-800', dot: 'bg-blue-500' },
-  a_caminho:  { label: 'Prestador a caminho!', color: 'bg-orange-50 border-orange-200 text-orange-800', dot: 'bg-orange-500' },
-  em_andamento: { label: 'Em execução', color: 'bg-primary/5 border-primary/20 text-primary', dot: 'bg-primary' },
-  em_espera:  { label: 'Em espera (peças)', color: 'bg-yellow-50 border-yellow-300 text-yellow-800', dot: 'bg-yellow-500' },
+  aguardando: { label: 'Procurando prestador...', color: 'bg-amber-500/10 border-amber-500/30 text-amber-300', dot: 'bg-amber-400' },
+  aceito:     { label: 'Prestador confirmado', color: 'bg-sky-500/10 border-sky-500/30 text-sky-300', dot: 'bg-sky-400' },
+  a_caminho:  { label: 'Prestador a caminho!', color: 'bg-orange-500/10 border-orange-500/30 text-orange-300', dot: 'bg-orange-400' },
+  em_andamento: { label: 'Em execução', color: 'bg-primary/10 border-primary/30 text-primary', dot: 'bg-primary' },
+  em_espera:  { label: 'Em espera (peças)', color: 'bg-amber-500/10 border-amber-500/30 text-amber-300', dot: 'bg-amber-400' },
 };
 
 export default function Home() {
@@ -131,7 +128,7 @@ export default function Home() {
         {!splashDone && (
           <motion.div
             key="splash"
-            className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center cursor-pointer"
+            className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center cursor-pointer"
             onClick={() => setSplashDone(true)}
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.4 }}
@@ -147,7 +144,7 @@ export default function Home() {
             <motion.div
               animate={{ opacity: [0.4, 1, 0.4] }}
               transition={{ repeat: Infinity, duration: 1.6 }}
-              className="absolute bottom-10 text-gray-400 text-sm font-medium"
+              className="absolute bottom-10 text-muted-foreground text-sm font-medium tracking-wide"
             >
               Toque para continuar
             </motion.div>
@@ -160,23 +157,23 @@ export default function Home() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
           {/* Main tabs card */}
           <div className="max-w-lg mx-auto px-4 pt-4">
-            <div className="bg-card rounded-3xl shadow-xl overflow-hidden">
+            <div className="bg-card rounded-xl shadow-2xl overflow-hidden ring-1 ring-border circuit-bg">
               <div className="flex border-b border-border overflow-x-auto">
                  <button
                    onClick={() => setMainTab('cliente')}
-                   className={`flex-1 py-4 text-sm font-bold transition-all whitespace-nowrap ${mainTab === 'cliente' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                   className={`flex-1 py-3.5 text-xs font-display tracking-widest transition-all whitespace-nowrap uppercase ${mainTab === 'cliente' ? 'text-primary border-b-2 border-primary bg-primary/8' : 'text-muted-foreground hover:text-foreground'}`}
                  >
                    👤 Cliente
                  </button>
                  <button
                    onClick={() => setMainTab('prestador')}
-                   className={`flex-1 py-4 text-sm font-bold transition-all whitespace-nowrap ${mainTab === 'prestador' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                   className={`flex-1 py-3.5 text-xs font-display tracking-widest transition-all whitespace-nowrap uppercase ${mainTab === 'prestador' ? 'text-primary border-b-2 border-primary bg-primary/8' : 'text-muted-foreground hover:text-foreground'}`}
                  >
                    🔧 Prestador
                  </button>
                  <button
                    onClick={() => setMainTab('parceiro')}
-                   className={`flex-1 py-4 text-sm font-bold transition-all whitespace-nowrap ${mainTab === 'parceiro' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                   className={`flex-1 py-3.5 text-xs font-display tracking-widest transition-all whitespace-nowrap uppercase ${mainTab === 'parceiro' ? 'text-primary border-b-2 border-primary bg-primary/8' : 'text-muted-foreground hover:text-foreground'}`}
                  >
                    🏪 Parceiro
                  </button>
@@ -184,13 +181,13 @@ export default function Home() {
                    <>
                      <button
                        onClick={() => setMainTab('favoritos')}
-                       className={`flex-1 py-4 text-sm font-bold transition-all whitespace-nowrap ${mainTab === 'favoritos' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                       className={`flex-1 py-3.5 text-xs font-display tracking-widest transition-all whitespace-nowrap uppercase ${mainTab === 'favoritos' ? 'text-primary border-b-2 border-primary bg-primary/8' : 'text-muted-foreground hover:text-foreground'}`}
                      >
                        ❤️ Favoritos
                      </button>
                      <button
                        onClick={() => setMainTab('promocao')}
-                       className={`flex-1 py-4 text-sm font-bold transition-all whitespace-nowrap ${mainTab === 'promocao' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                       className={`flex-1 py-3.5 text-xs font-display tracking-widest transition-all whitespace-nowrap uppercase ${mainTab === 'promocao' ? 'text-primary border-b-2 border-primary bg-primary/8' : 'text-muted-foreground hover:text-foreground'}`}
                      >
                        🎁 Ganhe
                      </button>
@@ -204,7 +201,7 @@ export default function Home() {
                    <motion.div key="cliente" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                      {/* Banner de login para usuários não autenticados */}
                      {userLoaded && !user && (
-                       <div className="mb-6 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex flex-col gap-3">
+                       <div className="mb-6 bg-primary/8 border border-primary/25 rounded-xl p-4 flex flex-col gap-3">
                          <p className="text-sm font-semibold text-foreground">👋 Faça login ou crie sua conta para solicitar serviços</p>
                          <div className="flex gap-2">
                            <Button size="sm" className="flex-1 rounded-xl font-semibold" onClick={() => base44.auth.redirectToLogin('/')}>
@@ -274,8 +271,8 @@ export default function Home() {
                                 onClick={() => setShowElectricalModal(true)}
                                 className="w-full h-full"
                               >
-                                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
-                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
+                                <div className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-accent transition-colors cursor-pointer">
+                                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${s.color}`}>
                                     <s.icon className="w-6 h-6" />
                                   </div>
                                   <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
@@ -287,8 +284,8 @@ export default function Home() {
                                 onClick={() => setShowHydraulicModal(true)}
                                 className="w-full h-full"
                               >
-                                <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
-                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
+                                <div className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-accent transition-colors cursor-pointer">
+                                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${s.color}`}>
                                     <s.icon className="w-6 h-6" />
                                   </div>
                                   <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
@@ -334,20 +331,20 @@ export default function Home() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed inset-x-4 top-12 z-[60] bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
+                            className="fixed inset-x-4 top-12 z-[60] bg-card rounded-xl p-4 shadow-2xl max-w-sm mx-auto ring-1 ring-border"
                           >
                             <h2 className="text-xl font-bold text-foreground mb-4">Quando você precisa?</h2>
                             <div className="space-y-3">
                               <button
                                 onClick={() => setScheduleType('imediato')}
-                                className="w-full p-4 rounded-2xl border-2 border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left"
+                                className="w-full p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/8 transition-all text-left"
                               >
                                 <p className="font-bold text-foreground">⚡ Agora</p>
                                 <p className="text-xs text-muted-foreground mt-1">Prestador disponível em minutos</p>
                               </button>
                               <button
                                 onClick={() => setScheduleType('agendado')}
-                                className="w-full p-4 rounded-2xl border-2 border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left"
+                                className="w-full p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/8 transition-all text-left"
                               >
                                 <p className="font-bold text-foreground">📅 Agendar</p>
                                 <p className="text-xs text-muted-foreground mt-1">Escolher data e hora</p>
@@ -378,7 +375,7 @@ export default function Home() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed inset-x-4 top-12 z-[60] bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
+                            className="fixed inset-x-4 top-12 z-[60] bg-card rounded-xl p-4 shadow-2xl max-w-sm mx-auto ring-1 ring-border"
                           >
                             <button 
                               onClick={() => setScheduleType(null)}
@@ -387,9 +384,9 @@ export default function Home() {
                               ← Voltar
                             </button>
                             <h2 className="text-xl font-bold text-foreground mb-4">Serviço Imediato</h2>
-                            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4">
-                              <p className="text-sm text-green-800 font-semibold">✓ Prestadores disponíveis agora!</p>
-                              <p className="text-xs text-green-700 mt-2">Você será conectado a um prestador em até 5 minutos</p>
+                            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-4">
+                              <p className="text-sm text-emerald-400 font-semibold">✓ Prestadores disponíveis agora!</p>
+                              <p className="text-xs text-emerald-500/80 mt-2">Você será conectado a um prestador em até 5 minutos</p>
                             </div>
                             {(selectedElectricalService || selectedHydraulicService) && (
                               <button 
@@ -410,7 +407,7 @@ export default function Home() {
                                 }}
                                 className="block w-full"
                               >
-                                <Button className="w-full h-10 rounded-2xl font-bold text-sm bg-green-600 hover:bg-green-700">
+                                <Button className="w-full h-10 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700">
                                   Confirmar Serviço Imediato
                                 </Button>
                               </button>
@@ -471,7 +468,7 @@ export default function Home() {
                               initial={{ opacity: 0, scale: 0.95, y: 20 }}
                               animate={{ opacity: 1, scale: 1, y: 0 }}
                               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                              className={`fixed inset-x-4 z-50 bg-card rounded-3xl p-4 shadow-2xl mx-auto transition-all ${hydraulicModalExpanded ? 'top-12 max-w-sm' : 'bottom-4 max-w-xs'}`}
+                              className={`fixed inset-x-4 z-50 bg-card rounded-xl p-4 shadow-2xl mx-auto transition-all ring-1 ring-border ${hydraulicModalExpanded ? 'top-12 max-w-sm' : 'bottom-4 max-w-xs'}`}
                             >
                               <div className="flex items-center justify-between mb-4">
                                 <h2 className={`font-bold text-foreground ${hydraulicModalExpanded ? 'text-2xl' : 'text-lg'}`}>Serviços Hidráulicos</h2>
@@ -488,7 +485,7 @@ export default function Home() {
                                     <button 
                                       key={service.type}
                                       onClick={() => setSelectedHydraulicService(service)}
-                                      className="w-full px-4 py-3 text-left rounded-2xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all font-semibold text-foreground"
+                                      className="w-full px-4 py-3 text-left rounded-lg border border-border hover:border-primary/40 hover:bg-primary/8 transition-all font-semibold text-foreground"
                                     >
                                       💧 {service.label}
                                     </button>
@@ -510,7 +507,7 @@ export default function Home() {
                               initial={{ opacity: 0, scale: 0.95, y: 20 }}
                               animate={{ opacity: 1, scale: 1, y: 0 }}
                               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                              className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
+                              className="fixed inset-x-4 top-12 z-50 bg-card rounded-xl p-4 shadow-2xl max-w-sm mx-auto ring-1 ring-border"
                             >
                               <button 
                                 onClick={() => setSelectedHydraulicService(null)}
@@ -519,7 +516,7 @@ export default function Home() {
                                 ← Voltar
                               </button>
                               <h2 className="text-2xl font-bold text-foreground mb-2">💧 {selectedHydraulicService.label}</h2>
-                              <div className="bg-primary/10 rounded-2xl p-4 mb-4 border border-primary/20">
+                              <div className="bg-primary/10 rounded-xl p-4 mb-4 border border-primary/30">
                                 <p className="text-sm text-muted-foreground mb-1">Valor estimado:</p>
                                 <p className="text-2xl font-bold text-primary">{getPriceLabel('hidraulica') || selectedHydraulicService.price}</p>
                               </div>
@@ -554,7 +551,7 @@ export default function Home() {
                               initial={{ opacity: 0, scale: 0.95, y: 20 }}
                               animate={{ opacity: 1, scale: 1, y: 0 }}
                               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                              className={`fixed inset-x-4 z-50 bg-card rounded-3xl p-4 shadow-2xl mx-auto transition-all ${electricalModalExpanded ? 'top-12 max-w-sm' : 'bottom-4 max-w-xs'}`}
+                              className={`fixed inset-x-4 z-50 bg-card rounded-xl p-4 shadow-2xl mx-auto transition-all ring-1 ring-border ${electricalModalExpanded ? 'top-12 max-w-sm' : 'bottom-4 max-w-xs'}`}
                             >
                               <div className="flex items-center justify-between mb-4">
                                 <h2 className={`font-bold text-foreground ${electricalModalExpanded ? 'text-2xl' : 'text-lg'}`}>Serviços Elétricos</h2>
@@ -571,7 +568,7 @@ export default function Home() {
                                     <button 
                                       key={service.type}
                                       onClick={() => setSelectedElectricalService(service)}
-                                      className="w-full px-4 py-3 text-left rounded-2xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all font-semibold text-foreground"
+                                      className="w-full px-4 py-3 text-left rounded-lg border border-border hover:border-primary/40 hover:bg-primary/8 transition-all font-semibold text-foreground"
                                     >
                                       ⚡ {service.label}
                                     </button>
@@ -593,7 +590,7 @@ export default function Home() {
                               initial={{ opacity: 0, scale: 0.95, y: 20 }}
                               animate={{ opacity: 1, scale: 1, y: 0 }}
                               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                              className="fixed inset-x-4 top-12 z-50 bg-card rounded-3xl p-4 shadow-2xl max-w-sm mx-auto"
+                              className="fixed inset-x-4 top-12 z-50 bg-card rounded-xl p-4 shadow-2xl max-w-sm mx-auto ring-1 ring-border"
                             >
                               <button 
                                 onClick={() => setSelectedElectricalService(null)}
@@ -602,7 +599,7 @@ export default function Home() {
                                 ← Voltar
                               </button>
                               <h2 className="text-2xl font-bold text-foreground mb-2">⚡ {selectedElectricalService.label}</h2>
-                              <div className="bg-primary/10 rounded-2xl p-4 mb-4 border border-primary/20">
+                              <div className="bg-primary/10 rounded-xl p-4 mb-4 border border-primary/30">
                                 <p className="text-sm text-muted-foreground mb-1">Valor estimado:</p>
                                 <p className="text-2xl font-bold text-primary">{getPriceLabel('eletrica') || selectedElectricalService.price}</p>
                               </div>
@@ -631,8 +628,8 @@ export default function Home() {
                            {filteredVehicleServices.map((s, i) => (
                             <motion.div key={`vehicle-${s.type}-${i}`} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
                               <Link to={`/solicitar?tipo=${s.type}`}>
-                                <div className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-accent transition-colors cursor-pointer border border-border">
-                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
+                                <div className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-accent hover:border-primary/20 transition-colors cursor-pointer border border-border">
+                                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${s.color}`}>
                                     <s.icon className="w-6 h-6" />
                                   </div>
                                   <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
@@ -679,9 +676,9 @@ export default function Home() {
                         { icon: BadgeCheck, title: "Credibilidade", desc: "Construa sua reputação na rede" },
                         { icon: Star, title: "Comissões", desc: "Ganhe comissões competitivas" },
                       ].map(item => (
-                        <div key={item.title} className="flex items-start gap-3 p-3 bg-muted/50 rounded-2xl">
-                          <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <item.icon className="w-5 h-5 text-primary" />
+                        <div key={item.title} className="flex items-start gap-3 p-3 bg-secondary/50 border border-border rounded-xl hover:border-primary/20 transition-colors">
+                          <div className="w-9 h-9 bg-primary/15 border border-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <item.icon className="w-4 h-4 text-primary" />
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-foreground">{item.title}</p>
@@ -713,9 +710,9 @@ export default function Home() {
                         { icon: BadgeCheck, title: "Homologação gratuita", desc: "Certificação pela Escola Prática inclusa" },
                         { icon: Star, title: "Construa reputação", desc: "Avaliações que aumentam seus ganhos" },
                       ].map(item => (
-                        <div key={item.title} className="flex items-start gap-3 p-3 bg-muted/50 rounded-2xl">
-                          <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <item.icon className="w-5 h-5 text-primary" />
+                        <div key={item.title} className="flex items-start gap-3 p-3 bg-secondary/50 border border-border rounded-xl hover:border-primary/20 transition-colors">
+                          <div className="w-9 h-9 bg-primary/15 border border-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <item.icon className="w-4 h-4 text-primary" />
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-foreground">{item.title}</p>
@@ -758,31 +755,33 @@ export default function Home() {
           <div className="max-w-lg mx-auto px-4 mt-4">
             <button
               onClick={() => setShowNearbyMap(true)}
-              className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl px-4 py-3 hover:bg-accent transition-colors shadow-sm"
+              className="w-full flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/30 hover:bg-accent transition-all shadow-sm"
             >
               <span className="text-2xl">🗺️</span>
               <div className="text-left flex-1">
-                <p className="font-semibold text-foreground text-sm">🚐 Frota ao Vivo — Fiorino • Reboque • Moto</p>
+                <p className="font-bold text-foreground text-sm">🚐 Frota ao Vivo — Fiorino • Reboque • Moto</p>
                 <p className="text-xs text-muted-foreground">Acompanhe a frota em tempo real no mapa</p>
               </div>
-              <span className="flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span>
+              <span className="flex items-center gap-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-full">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
                 Ao vivo
               </span>
             </button>
           </div>
 
           {/* Trust */}
-          <div className="max-w-lg mx-auto px-4 mt-6 grid grid-cols-3 gap-3 pb-10">
+          <div className="max-w-lg mx-auto px-4 mt-4 grid grid-cols-3 gap-3 pb-10">
             {[
               { icon: Shield, title: "Homologados", desc: "Certificados pela Escola Prática" },
               { icon: Clock, title: "Rápido", desc: "Previsão de chegada em tempo real" },
               { icon: Star, title: "Avaliados", desc: "Veja notas reais de clientes" },
             ].map(item => (
-              <div key={item.title} className="bg-card rounded-2xl p-4 text-center border border-border">
-                <item.icon className="w-6 h-6 text-primary mx-auto mb-2" />
-                <p className="text-xs font-semibold text-foreground">{item.title}</p>
-                <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
+              <div key={item.title} className="bg-card rounded-xl p-4 text-center border border-border hover:border-primary/30 transition-colors">
+                <div className="w-9 h-9 rounded-lg bg-primary/15 border border-primary/20 flex items-center justify-center mx-auto mb-2">
+                  <item.icon className="w-4 h-4 text-primary" />
+                </div>
+                <p className="text-xs font-bold text-foreground font-display tracking-wider uppercase">{item.title}</p>
+                <p className="text-xs text-muted-foreground mt-1 leading-tight">{item.desc}</p>
               </div>
             ))}
           </div>

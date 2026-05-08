@@ -1,53 +1,96 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-foreground text-background/80 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="bg-card border-t border-border mt-auto">
+      {/* Amber top accent */}
+      <div className="h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <Briefcase className="w-4 h-4 text-primary-foreground" />
+              <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-primary" />
               </div>
-              <span className="text-lg font-bold text-background">ServiçoPro</span>
+              <span className="font-display text-xl text-foreground tracking-widest">REPARO EXPRESSO</span>
             </div>
-            <p className="text-sm text-background/60 leading-relaxed">
-              Conectando você aos melhores profissionais da sua região.
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Profissionais homologados, atendimento rápido, segurança garantida.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold text-background mb-4 text-sm uppercase tracking-wider">Para Clientes</h4>
+            <h4 className="font-display text-sm tracking-widest text-primary mb-4">CLIENTES</h4>
             <ul className="space-y-2">
-              <li><Link to="/categories" className="text-sm hover:text-primary transition-colors">Buscar Serviços</Link></li>
-              <li><Link to="/request-quote" className="text-sm hover:text-primary transition-colors">Pedir Orçamento</Link></li>
-              <li><Link to="/how-it-works" className="text-sm hover:text-primary transition-colors">Como Funciona</Link></li>
+              <li>
+                <Link to="/solicitar" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Solicitar Serviço
+                </Link>
+              </li>
+              <li>
+                <Link to="/meus-pedidos" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Meus Pedidos
+                </Link>
+              </li>
+              <li>
+                <Link to="/perfil" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Meu Perfil
+                </Link>
+              </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold text-background mb-4 text-sm uppercase tracking-wider">Para Profissionais</h4>
+            <h4 className="font-display text-sm tracking-widest text-primary mb-4">PRESTADORES</h4>
             <ul className="space-y-2">
-              <li><Link to="/dashboard" className="text-sm hover:text-primary transition-colors">Painel</Link></li>
-              <li><Link to="/professionals" className="text-sm hover:text-primary transition-colors">Profissionais</Link></li>
+              <li>
+                <Link to="/prestador" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Área do Prestador
+                </Link>
+              </li>
+              <li>
+                <Link to="/cadastro-prestador" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Quero me Cadastrar
+                </Link>
+              </li>
+              <li>
+                <Link to="/cadastro-parceiro" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Seja Parceiro
+                </Link>
+              </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold text-background mb-4 text-sm uppercase tracking-wider">Suporte</h4>
+            <h4 className="font-display text-sm tracking-widest text-primary mb-4">SUPORTE</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-sm hover:text-primary transition-colors">Central de Ajuda</a></li>
-              <li><a href="#" className="text-sm hover:text-primary transition-colors">Termos de Uso</a></li>
-              <li><a href="#" className="text-sm hover:text-primary transition-colors">Política de Privacidade</a></li>
+              <li>
+                <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Central de Ajuda
+                </a>
+              </li>
+              <li>
+                <Link to="/termos-cliente" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Termos de Uso
+                </Link>
+              </li>
+              <li>
+                <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Política de Privacidade
+                </a>
+              </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-background/10 mt-10 pt-6 text-center">
-          <p className="text-sm text-background/40">© 2026 ServiçoPro. Todos os direitos reservados.</p>
+        <div className="border-t border-border mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">© 2026 Reparo Expresso. Todos os direitos reservados.</p>
+          <p className="text-xs text-muted-foreground">
+            Certificado pela <span className="text-primary font-semibold">Escola Prática</span>
+          </p>
         </div>
       </div>
     </footer>
