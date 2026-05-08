@@ -527,7 +527,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   const handleConfirmImmediate = (providerOverride) => {
-    if (confirming || processingRef.current) return;
+    if (processingRef.current) return;
     processingRef.current = true;
     setConfirming(true);
     const useSecond = providerOverride ? null : secondProvider;
@@ -544,7 +544,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   const handleConfirmFavorite = async () => {
-    if (!selectedFavorite || confirming || processingRef.current) return;
+    if (!selectedFavorite || processingRef.current) return;
     setFavoriteSkillError(null);
 
     // Busca dados completos do prestador favorito
@@ -587,7 +587,7 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
   };
 
   const handleConfirmSchedule = () => {
-    if (confirming || processingRef.current) return;
+    if (processingRef.current) return;
     processingRef.current = true;
     setConfirming(true);
     const surcharges = getSurcharges(scheduledDate, scheduledTime);
