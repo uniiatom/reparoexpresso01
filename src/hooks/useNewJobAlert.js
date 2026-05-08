@@ -120,9 +120,14 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
       seenIds.current.clear();
       saveSeenIds(seenIds.current);
     };
+    window.__markJobSeen = (id) => {
+      seenIds.current.add(id);
+      saveSeenIds(seenIds.current);
+    };
     return () => {
       delete window.__stopProviderHorn;
       delete window.__clearSeenJobIds;
+      delete window.__markJobSeen;
     };
   }, []);
 

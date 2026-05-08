@@ -314,7 +314,7 @@ export default function ProviderApp() {
   const handleAcceptBanner = (job) => {
     if (!job) return;
     window.__stopProviderHorn?.();
-    window.__clearSeenJobIds?.();
+    window.__markJobSeen?.(job.id); // marca como visto antes do update chegar
     setJobQueue([]);
     setFullscreenService(null);
     setActiveTab('chamados');
@@ -674,6 +674,7 @@ export default function ProviderApp() {
                         className="flex-1 rounded-xl bg-primary text-primary-foreground font-semibold text-xs"
                         onClick={() => {
                           window.__stopProviderHorn?.();
+                          window.__markJobSeen?.(job.id);
                           setJobQueue(prev => prev.filter(j => j.id !== job.id));
                           acceptJob.mutate(job.id);
                         }}
@@ -750,6 +751,7 @@ export default function ProviderApp() {
                       className="flex-1 rounded-xl bg-primary text-primary-foreground font-semibold"
                       onClick={() => {
                         window.__stopProviderHorn?.();
+                        window.__markJobSeen?.(req.id);
                         setJobQueue(prev => prev.filter(j => j.id !== req.id));
                         acceptJob.mutate(req.id);
                       }}
@@ -823,6 +825,7 @@ export default function ProviderApp() {
                       className="w-full mt-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs"
                       onClick={() => {
                         window.__stopProviderHorn?.();
+                        window.__markJobSeen?.(job.id);
                         setJobQueue(prev => prev.filter(j => j.id !== job.id));
                         acceptJob.mutate(job.id);
                       }}
