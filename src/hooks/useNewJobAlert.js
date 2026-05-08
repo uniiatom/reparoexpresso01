@@ -86,10 +86,23 @@ export function startHornLoop() {
  * - status='aguardando' (chamado livre) OU
  * - status='aceito' com provider_id === providerId (chamado atribuído automaticamente ao prestador)
  */
+// Persistência dos IDs vistos no sessionStorage para sobreviver à remontagem
+function loadSeenIds() {
+  try {
+    const raw = sessionStorage.getItem('__seenJobIds');
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch { return new Set(); }
+}
+function saveSeenIds(set) {
+  try {
+    sessionStorage.setItem('__seenJobIds', JSON.stringify([...set]));
+  } catch {}
+}
+
 export function useNewJobAlert({ enabled, onNewJob, providerId }) {
   const enabledRef = useRef(enabled);
   const providerIdRef = useRef(providerId);
-  const seenIds = useRef(new Set());
+  const seenIds = useRef(loadSeenIds()); // carrega do sessionStorage ao montar
   const onNewJobRef = useRef(onNewJob);
   const stopHornRef = useRef(null);
 
@@ -105,6 +118,7 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
     };
     window.__clearSeenJobIds = () => {
       seenIds.current.clear();
+      saveSeenIds(seenIds.current);
     };
     return () => {
       delete window.__stopProviderHorn;
@@ -144,6 +158,7 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
       const isFinalizado = event.type === 'update' && ['cancelado', 'concluido'].includes(data.status);
       if (isFinalizado) {
         seenIds.current.delete(event.id);
+        saveSeenIds(seenIds.current);
       }
 
       // Garante que job recusado (voltou a aguardando) não re-notifica quem já viu
@@ -152,6 +167,7 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
 
       if (isNewJob && !seenIds.current.has(event.id)) {
         seenIds.current.add(event.id);
+        saveSeenIds(seenIds.current);
         stopHornRef.current?.();
         stopHornRef.current = startHornLoop();
         onNewJobRef.current?.(data);
