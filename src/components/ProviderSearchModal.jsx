@@ -360,11 +360,14 @@ export default function ProviderSearchModal({ form, onConfirm, onSchedule, onClo
     
     // Filtra por especialidade compatível com o serviço solicitado
     const serviceType = Array.isArray(form.service_type) ? form.service_type[0] : form.service_type;
-    const matchingProviders = serviceType
+    const withSpecialty = serviceType
       ? onlineProvidersRaw.filter(p => hasSpecialty(p, serviceType))
       : onlineProvidersRaw;
 
-    console.log(`[search] ${matchingProviders.length}/${onlineProvidersRaw.length} prestadores têm a especialidade: ${serviceType}`);
+    // Se nenhum prestador tem a especialidade cadastrada, usa todos os online aprovados como fallback
+    const matchingProviders = withSpecialty.length > 0 ? withSpecialty : onlineProvidersRaw;
+
+    console.log(`[search] ${withSpecialty.length}/${onlineProvidersRaw.length} prestadores têm a especialidade: ${serviceType}${withSpecialty.length === 0 ? ' → usando todos como fallback' : ''}`);
 
     // Separa prestadores: livres vs em execução
     const availableProviders = matchingProviders.filter(p => !occupiedProviderIds.has(p.id));
