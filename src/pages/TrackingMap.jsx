@@ -1,30 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import { Icon } from 'leaflet';
-import L from 'leaflet';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Navigation, Phone, MapPin, Clock } from "lucide-react";
-
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/marker-shadow.png',
-});
-
-const clientIcon = new Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-  iconSize: [30, 45], iconAnchor: [15, 45], popupAnchor: [0, -40], shadowSize: [41, 41],
-});
-
-const providerIcon = new Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-  iconSize: [35, 50], iconAnchor: [17.5, 50], popupAnchor: [0, -45], shadowSize: [41, 41],
-});
+import { ArrowLeft, Navigation, Phone, MapPin, Clock, ExternalLink } from "lucide-react";
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -41,58 +19,174 @@ const estimateETA = (distanceKm) => {
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 };
 
-function FitBounds({ clientPos, providerPos }) {
-  const map = useMap();
+function GoogleMapView({ apiKey, providerLat, providerLng, clientLat, clientLng }) {
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const directionsRendererRef = useRef(null);
+  const providerMarkerRef = useRef(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+
+  // Load Google Maps JS SDK
   useEffect(() => {
-    if (clientPos && providerPos) {
-      map.fitBounds([clientPos, providerPos], { padding: [60, 60] });
-    } else if (clientPos) {
-      map.setView(clientPos, 15);
+    if (window.google?.maps) { setScriptLoaded(true); return; }
+    const existing = document.getElementById('gmap-sdk');
+    if (existing) {
+      existing.addEventListener('load', () => setScriptLoaded(true));
+      return;
     }
-  }, [clientPos?.[0], clientPos?.[1], providerPos?.[0], providerPos?.[1]]);
-  return null;
+    const script = document.createElement('script');
+    script.id = 'gmap-sdk';
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setScriptLoaded(true);
+    document.head.appendChild(script);
+  }, [apiKey]);
+
+  // Init map once script + client coords available
+  useEffect(() => {
+    if (!scriptLoaded || !mapRef.current || !clientLat || !clientLng) return;
+    if (mapInstanceRef.current) return; // already initialized
+
+    const map = new window.google.maps.Map(mapRef.current, {
+      center: { lat: clientLat, lng: clientLng },
+      zoom: 14,
+      mapTypeControl: false,
+      fullscreenControl: false,
+      streetViewControl: false,
+      zoomControl: true,
+      styles: [
+        { elementType: 'geometry', stylers: [{ color: '#1a1f2e' }] },
+        { elementType: 'labels.text.stroke', stylers: [{ color: '#1a1f2e' }] },
+        { elementType: 'labels.text.fill', stylers: [{ color: '#8a9bb5' }] },
+        { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2a3245' }] },
+        { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#334055' }] },
+        { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d1520' }] },
+        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+        { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+      ],
+    });
+    mapInstanceRef.current = map;
+
+    // Client marker (blue pulsing dot)
+    new window.google.maps.Marker({
+      position: { lat: clientLat, lng: clientLng },
+      map,
+      title: 'Sua localização',
+      icon: {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        scale: 10,
+        fillColor: '#3b82f6',
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 3,
+      },
+      zIndex: 10,
+    });
+
+    directionsRendererRef.current = new window.google.maps.DirectionsRenderer({
+      suppressMarkers: true,
+      polylineOptions: {
+        strokeColor: '#f59e0b',
+        strokeWeight: 5,
+        strokeOpacity: 0.85,
+      },
+    });
+    directionsRendererRef.current.setMap(map);
+  }, [scriptLoaded, clientLat, clientLng]);
+
+  // Update provider marker + route when provider coords change
+  useEffect(() => {
+    if (!mapInstanceRef.current || !providerLat || !providerLng || !scriptLoaded) return;
+
+    const provPos = { lat: providerLat, lng: providerLng };
+
+    if (providerMarkerRef.current) {
+      providerMarkerRef.current.setPosition(provPos);
+    } else {
+      providerMarkerRef.current = new window.google.maps.Marker({
+        position: provPos,
+        map: mapInstanceRef.current,
+        title: 'Prestador',
+        icon: {
+          path: window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+          scale: 7,
+          fillColor: '#f59e0b',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 2,
+          rotation: 0,
+        },
+        zIndex: 20,
+      });
+    }
+
+    // Draw/update route
+    const directionsService = new window.google.maps.DirectionsService();
+    directionsService.route({
+      origin: provPos,
+      destination: { lat: clientLat, lng: clientLng },
+      travelMode: window.google.maps.TravelMode.DRIVING,
+    }, (result, status) => {
+      if (status === 'OK' && directionsRendererRef.current) {
+        directionsRendererRef.current.setDirections(result);
+      }
+    });
+
+    // Fit both points in view
+    const bounds = new window.google.maps.LatLngBounds();
+    bounds.extend({ lat: clientLat, lng: clientLng });
+    bounds.extend(provPos);
+    mapInstanceRef.current.fitBounds(bounds, { top: 60, right: 40, bottom: 160, left: 40 });
+  }, [providerLat, providerLng, scriptLoaded]);
+
+  return <div ref={mapRef} className="w-full h-full" style={{ minHeight: 400 }} />;
 }
 
 export default function TrackingMap() {
   const { requestId } = useParams();
   const navigate = useNavigate();
+  const [request, setRequest] = useState(null);
+  const [mapsApiKey, setMapsApiKey] = useState(null);
+  const [keyError, setKeyError] = useState(false);
 
-  const [request, setRequest] = React.useState(null);
+  // Fetch API key from backend
+  useEffect(() => {
+    base44.functions.invoke('getGoogleMapsKey', {})
+      .then(res => setMapsApiKey(res.data?.key))
+      .catch(() => setKeyError(true));
+  }, []);
 
-  React.useEffect(() => {
+  // Load & subscribe to service request
+  useEffect(() => {
     if (!requestId) return;
-    // Carrega inicial
     base44.entities.ServiceRequest.filter({ id: requestId }).then(list => {
       if (list[0]) setRequest(list[0]);
     });
-    // Atualização em tempo real via subscribe
     const unsubscribe = base44.entities.ServiceRequest.subscribe((event) => {
-      if (event.id === requestId && event.data) {
-        setRequest(event.data);
-      }
+      if (event.id === requestId && event.data) setRequest(event.data);
     });
     return unsubscribe;
   }, [requestId]);
 
   const hasProvider = request?.provider_latitude && request?.provider_longitude;
-  // Prioriza coordenadas em tempo real do cliente, depois usa as coordenadas fixas do endereço
-  const hasClient = (request?.client_latitude && request?.client_longitude) || (request?.latitude && request?.longitude);
-
-  const clientPos = hasClient
-    ? [
-        request.client_latitude || request.latitude,
-        request.client_longitude || request.longitude,
-      ]
-    : null;
-  const providerPos = hasProvider ? [request.provider_latitude, request.provider_longitude] : null;
-
-  // Posição central do mapa: prefere o prestador, senão usa cliente, senão São Paulo
-  const mapCenter = providerPos || clientPos || [-23.5505, -46.6333];
+  const clientLat = request?.client_latitude || request?.latitude;
+  const clientLng = request?.client_longitude || request?.longitude;
+  const hasClient = !!clientLat && !!clientLng;
 
   const distance = (hasClient && hasProvider)
-    ? calculateDistance(clientPos[0], clientPos[1], request.provider_latitude, request.provider_longitude)
+    ? calculateDistance(clientLat, clientLng, request.provider_latitude, request.provider_longitude)
     : null;
   const eta = distance != null ? estimateETA(distance) : null;
+
+  const openGoogleMaps = () => {
+    if (hasProvider && hasClient) {
+      window.open(
+        `https://www.google.com/maps/dir/${request.provider_latitude},${request.provider_longitude}/${clientLat},${clientLng}`,
+        '_blank'
+      );
+    }
+  };
 
   if (!request) {
     return (
@@ -146,68 +240,54 @@ export default function TrackingMap() {
 
       {/* Mapa */}
       <div className="flex-1" style={{ minHeight: 400 }}>
-        {(clientPos || providerPos) ? (
-          <MapContainer
-            center={mapCenter}
-            zoom={14}
-            style={{ height: '100%', width: '100%', minHeight: 400 }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; OpenStreetMap contributors'
-            />
-
-            {/* Cliente */}
-            {clientPos && <Marker position={clientPos} icon={clientIcon}>
-              <Popup>
-                <p className="font-bold text-sm">Sua localização</p>
-                <p className="text-xs text-muted-foreground">{request.address}</p>
-              </Popup>
-            </Marker>}
-
-            {/* Prestador */}
-            {providerPos && (
-              <>
-                <Marker position={providerPos} icon={providerIcon}>
-                  <Popup>
-                    <p className="font-bold text-sm">{request.provider_name}</p>
-                    <p className="text-xs text-green-600">🚗 A caminho</p>
-                    {distance != null && (
-                      <p className="text-xs mt-1">~{distance.toFixed(1)} km · {eta}</p>
-                    )}
-                  </Popup>
-                </Marker>
-                {/* Linha entre prestador e cliente */}
-                {clientPos && <Polyline
-                  positions={[providerPos, clientPos]}
-                  color="#10b981"
-                  weight={3}
-                  opacity={0.6}
-                  dashArray="8, 6"
-                />}
-              </>
-            )}
-
-            {(clientPos || providerPos) && <FitBounds clientPos={clientPos} providerPos={providerPos} />}
-          </MapContainer>
-        ) : (
-          <div className="flex-1 flex items-center justify-center p-10 text-center">
-            <div>
-              <MapPin className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">Localização do cliente não disponível</p>
-            </div>
+        {keyError && (
+          <div className="flex-1 flex flex-col items-center justify-center p-10 text-center gap-3">
+            <MapPin className="w-10 h-10 text-muted-foreground" />
+            <p className="text-muted-foreground text-sm">
+              Configure a chave <strong>GOOGLE_MAPS_API_KEY</strong> nas secrets do app para ativar o mapa.
+            </p>
+          </div>
+        )}
+        {!keyError && mapsApiKey && hasClient && (
+          <GoogleMapView
+            apiKey={mapsApiKey}
+            clientLat={clientLat}
+            clientLng={clientLng}
+            providerLat={hasProvider ? request.provider_latitude : null}
+            providerLng={hasProvider ? request.provider_longitude : null}
+          />
+        )}
+        {!keyError && mapsApiKey && !hasClient && (
+          <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
+            <MapPin className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">Localização do cliente não disponível</p>
+          </div>
+        )}
+        {!keyError && !mapsApiKey && (
+          <div className="flex-1 flex items-center justify-center p-10">
+            <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
           </div>
         )}
       </div>
 
-      {/* Footer info */}
-      {!hasProvider && (
-        <div className="px-4 py-3 bg-card border-t border-border text-center">
-          <p className="text-sm text-muted-foreground">
+      {/* Footer */}
+      <div className="px-4 py-3 bg-card border-t border-border space-y-2">
+        {!hasProvider && (
+          <p className="text-sm text-muted-foreground text-center">
             A localização do prestador aparecerá assim que ele iniciar o deslocamento
           </p>
-        </div>
-      )}
+        )}
+        {hasProvider && hasClient && (
+          <Button
+            onClick={openGoogleMaps}
+            variant="outline"
+            className="w-full rounded-xl h-11 gap-2 border-primary/30 text-primary font-semibold"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Abrir rota no Google Maps
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
