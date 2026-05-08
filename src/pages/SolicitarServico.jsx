@@ -107,8 +107,8 @@ export default function SolicitarServico() {
   const [valvulaTransfTipo, setValvulaTransfTipo] = useState(null);
   const [towQuestions, setTowQuestions] = useState({});
   const [towVehicleType, setTowVehicleType] = useState(null);
+  const [calculatingRoute, setCalculatingRoute] = useState(false);
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
-  
   const [sharingLocation, setSharingLocation] = useState(false);
   const [liveWatchId, setLiveWatchId] = useState(null);
 
@@ -337,11 +337,7 @@ export default function SolicitarServico() {
     setValidatingCoupon(false);
   };
 
-  const removeCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponCode('');
-    setCouponError('');
-  };
+  const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); setCouponError(''); };
 
   const calcDistance = (lat1, lon1, lat2, lon2) => {
     if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -445,14 +441,18 @@ export default function SolicitarServico() {
     if (location) applyGeolocation();
   }, [location]);
 
-  // Atualiza distância do reboque quando coordenadas mudam
+  // Calcula distância do reboque via rota real (OSRM) quando coordenadas mudam
   React.useEffect(() => {
-    if (isTow && form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude) {
-      const distance = calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2;
-      if (distance > 0 && distance !== form.tow_distance_km) {
-        setForm(prev => ({ ...prev, tow_distance_km: distance }));
-      }
-    }
+    if (!isTow || !form.latitude || !form.longitude || !form.delivery_latitude || !form.delivery_longitude) return;
+    setCalculatingRoute(true);
+    fetch(`https://router.project-osrm.org/route/v1/driving/${form.longitude},${form.latitude};${form.delivery_longitude},${form.delivery_latitude}?overview=false`, { signal: AbortSignal.timeout(6000) })
+      .then(r => r.json())
+      .then(data => {
+        const km = data?.routes?.[0]?.distance != null ? (data.routes[0].distance / 1000) * 2 : calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2;
+        setForm(prev => ({ ...prev, tow_distance_km: km }));
+      })
+      .catch(() => setForm(prev => ({ ...prev, tow_distance_km: calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2 })))
+      .finally(() => setCalculatingRoute(false));
   }, [form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude, isTow]);
 
   const [registerForm, setRegisterForm] = useState({
@@ -568,7 +568,7 @@ export default function SolicitarServico() {
 
       return results[0];
     },
-    onSuccess: (result) => navigate(`/acompanhar/${result.id}`),
+    onSuccess: (r) => navigate(`/acompanhar/${r.id}`),
   });
 
   const handleFinalConfirm = (formData) => {
@@ -1686,19 +1686,17 @@ export default function SolicitarServico() {
             </div>
           </div>
 
-          {form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude && (
+          {form.latitude && form.longitude && form.delivery_latitude && form.delivery_longitude ? (
             <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
-              <p className="text-sm font-semibold text-blue-900 mb-1">Distância calculada (ida e volta)</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {(calcDistance(form.latitude, form.longitude, form.delivery_latitude, form.delivery_longitude) * 2).toFixed(1)} km
-              </p>
-              <p className="text-xs text-blue-700 mt-1">do local de saída até entrega e retorno</p>
+              <p className="text-sm font-semibold text-blue-900 mb-1">🗺️ Distância pela rota (ida e volta)</p>
+              {calculatingRoute ? <div className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin text-blue-500" /><span className="text-sm text-blue-600">Calculando rota...</span></div>
+                : <p className="text-2xl font-bold text-blue-600">{form.tow_distance_km?.toFixed(1)} km</p>}
+              <p className="text-xs text-blue-700 mt-1">distância real pela via (OSRM)</p>
             </div>
-          )}
-          {isTow && (!form.delivery_latitude || !form.latitude || !form.delivery_longitude || !form.longitude) && (
+          ) : (
             <div className="bg-orange-50 rounded-2xl p-4 border border-orange-200">
               <p className="text-sm font-semibold text-orange-900 mb-1">⚠️ Distância não calculada</p>
-              <p className="text-xs text-orange-700">Informe o endereço de saída e entrega para calcular a cobrança do reboque</p>
+              <p className="text-xs text-orange-700">Informe os dois endereços para calcular a cobrança</p>
             </div>
           )}
           </div>
