@@ -116,11 +116,18 @@ export default function AcompanharServico() {
 
   // Track status changes and play sound when provider accepts
   useEffect(() => {
-    if (request?.status && request.status !== previousStatusRef.current) {
+    if (!request?.status) return;
+    if (previousStatusRef.current === null) {
+      // Primeira carga: inicializa sem tocar som
+      previousStatusRef.current = request.status;
+      setPreviousStatus(request.status);
+      return;
+    }
+    if (request.status !== previousStatusRef.current) {
       const prev = previousStatusRef.current;
       previousStatusRef.current = request.status;
       setPreviousStatus(request.status);
-      if (request.status === 'aceito' && (prev === 'aguardando' || prev === null)) {
+      if (request.status === 'aceito' && prev === 'aguardando') {
         playNotificationSound();
       }
     }
