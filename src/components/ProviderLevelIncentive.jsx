@@ -11,8 +11,16 @@ export default function ProviderLevelIncentive({ providerId }) {
   useEffect(() => {
     if (!providerId) return;
 
+    // Só executa uma vez por sessão por prestador
+    const cacheKey = `__incentive_fetched_${providerId}`;
+    if (sessionStorage.getItem(cacheKey)) {
+      setLoading(false);
+      return;
+    }
+
     const fetchIncentive = async () => {
       try {
+        sessionStorage.setItem(cacheKey, '1');
         const res = await base44.functions.invoke('sendProviderLevelIncentive', { providerId });
         if (res.data?.success && !res.data?.alreadyMaxLevel) {
           setIncentive(res.data);

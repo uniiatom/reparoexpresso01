@@ -125,12 +125,12 @@ export default function ProviderApp() {
   useEffect(() => {
     if (!provider?.id) return;
     // Carga inicial — busca jobs atribuídos OU serviços agendados (status 'agendado')
-    base44.entities.ServiceRequest.filter({ provider_id: provider.id }, '-created_date', 500).then(jobs => {
-      // Adiciona também serviços agendados sem atribuição (status 'agendado' sem provider_id)
-      base44.entities.ServiceRequest.filter({ status: 'agendado' }, '-created_date', 500).then(scheduled => {
-        const combined = [...jobs, ...scheduled.filter(s => s.provider_id !== provider.id)];
-        setMyJobs(combined);
-      });
+    Promise.all([
+      base44.entities.ServiceRequest.filter({ provider_id: provider.id }, '-created_date', 100),
+      base44.entities.ServiceRequest.filter({ status: 'agendado' }, '-created_date', 50),
+    ]).then(([jobs, scheduled]) => {
+      const combined = [...jobs, ...scheduled.filter(s => s.provider_id !== provider.id)];
+      setMyJobs(combined);
     });
     
     // Real-time via subscribe
