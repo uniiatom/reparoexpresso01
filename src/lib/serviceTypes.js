@@ -1,4 +1,4 @@
-import { Zap, Droplets, Wrench, Lock, Wind, Hammer, Monitor, Car, Battery, Power, RotateCcw } from "lucide-react";
+import { Zap, Droplets, Wrench, Lock, Wind, Hammer, Monitor, Car, Battery, Power, RotateCcw, Pin } from "lucide-react";
 
 export const SERVICE_TYPES = [
   { value: "eletrica", label: "Elétrica", icon: Zap, group: "casa" },
@@ -17,6 +17,7 @@ export const SERVICE_TYPES = [
   { value: "instalacao_suporte_tv", label: "Suporte de TV", icon: Monitor, group: "casa", needsTvSize: true },
   { value: "pressurizador", label: "Pressurizador", icon: Droplets, group: "casa" },
   { value: "valvula_transferidora_pressao", label: "Válvula Transf. Pressão", icon: Droplets, group: "casa" },
+  { value: "fixacoes_diversas", label: "Fixações Diversas", icon: Pin, group: "casa" },
   { value: "outros", label: "Outros", icon: Wrench, group: "casa" },
   { value: "troca_pneu", label: "Troca de Pneu", icon: Car, group: "veiculo" },
   { value: "recarga_bateria", label: "Recarga de Bateria", icon: Battery, group: "veiculo" },
