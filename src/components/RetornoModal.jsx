@@ -40,6 +40,8 @@ export default function RetornoModal({ request, onClose }) {
   const [agendarComOriginal, setAgendarComOriginal] = useState(null); // true=mesmo prestador, false=outro
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
+  const [sucesso, setSucesso] = useState(false);
+  const [navigateParams, setNavigateParams] = useState(null);
 
   // Calcula quantos dias se passaram desde a conclusão
   const conclusaoDate = request?.updated_date ? new Date(request.updated_date) : null;
@@ -71,12 +73,35 @@ export default function RetornoModal({ request, onClose }) {
       params.set('scheduled_time', scheduledTime);
     }
 
-    navigate(`/solicitar?${params.toString()}`);
-    onClose();
+    setNavigateParams(params.toString());
+    setLoading(false);
+    setSucesso(true);
   };
 
   // Mostra passo de agendamento depois de preencher tipo + descrição
   const showAgendamento = tipo && !prazoExpirado && descricao.trim().length >= 5;
+
+  if (sucesso) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
+        <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-8 text-center space-y-4">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+            <span className="text-3xl">✅</span>
+          </div>
+          <h3 className="text-xl font-bold text-foreground">Retorno aberto com sucesso!</h3>
+          <p className="text-sm text-muted-foreground">
+            Sua solicitação de retorno foi registrada. Em instantes você será redirecionado para buscar um prestador.
+          </p>
+          <Button
+            className="w-full rounded-2xl h-11 font-bold"
+            onClick={() => { navigate(`/solicitar?${navigateParams}`); onClose(); }}
+          >
+            Continuar →
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
