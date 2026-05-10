@@ -58,7 +58,7 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🎁</span>
-            <h2 className="text-lg font-bold text-foreground">Gratificar o Prestador</h2>
+            <h2 className="text-lg font-bold text-foreground">Gratificação para o Prestador</h2>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center">
             <X className="w-4 h-4" />
@@ -69,7 +69,7 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
           <div className="text-center">
             <p className="text-sm font-bold text-amber-900 mb-1">Ficou satisfeito com o serviço?</p>
             <p className="text-xs text-amber-800">
-              Deixe uma gorjeta para <strong>{provider?.name}</strong> e reconheça o bom trabalho! 💪
+              Deixe uma gratificação para <strong>{provider?.name}</strong> e reconheça o bom trabalho! 💪
             </p>
           </div>
         </div>
@@ -111,7 +111,7 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
 
         <div className="bg-green-50 border border-green-200 rounded-2xl p-3">
           <p className="text-xs text-green-800">
-            ✓ A gorjeta é opcional e completamente segura. Você pode pagar por PIX, cartão ou outro método.
+            ✓ A gratificação é opcional e completamente segura. Você pode pagar por PIX, cartão ou outro método.
           </p>
         </div>
 
@@ -129,7 +129,7 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
             ) : (
               <Gift className="w-4 h-4 mr-2" />
             )}
-            Confirmar Gorjeta
+            Confirmar Gratificação
           </Button>
         </div>
       </div>
