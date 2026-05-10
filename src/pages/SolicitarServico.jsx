@@ -920,7 +920,7 @@ export default function SolicitarServico() {
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { value: 'ate55', label: 'Até 55"', emoji: '📺', desc: '1 prestador enviado' },
-                    { value: 'acima55', label: 'Acima de 55"', emoji: '🖥️', desc: '2 prestadores enviados' },
+                    { value: 'acima55', label: 'Acima de 55"', emoji: '🖥️', desc: 'Requer 2 prestadores' },
                   ].map(opt => (
                     <button
                       key={opt.value}
@@ -934,6 +934,9 @@ export default function SolicitarServico() {
                       <span className="text-3xl">{opt.emoji}</span>
                       <p className="font-bold text-foreground text-sm">{opt.label}</p>
                       <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                      {opt.value === 'acima55' && (
+                        <span className="inline-block mt-1 bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">👥 2 prestadores</span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -941,7 +944,6 @@ export default function SolicitarServico() {
             </div>
           )}
 
-          {/* Modal subtipo Caixa d'Água */}
           {showCaixaDaguaModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => { setShowCaixaDaguaModal(false); setCaixaDaguaStep('tipo'); setCaixaDaguaTipo(null); }}>
               <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
@@ -1043,7 +1045,6 @@ export default function SolicitarServico() {
               </div>
             </div>
           )}
-          {/* Modal subtipo Desentupimento */}
           {showDesentupimentoModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowDesentupimentoModal(false)}>
               <div className="bg-card w-full max-w-lg rounded-t-3xl p-4 pb-6" onClick={e => e.stopPropagation()}>
@@ -1094,7 +1095,6 @@ export default function SolicitarServico() {
             </div>
           )}
 
-          {/* Modal subtipo Forro de Gesso */}
           {showForroGessoModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowForroGessoModal(false)}>
               <div className="bg-card w-full max-w-lg rounded-t-3xl p-4 pb-6" onClick={e => e.stopPropagation()}>
