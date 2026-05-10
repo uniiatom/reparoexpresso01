@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { X, RotateCcw, ShieldCheck, ChevronRight, AlertTriangle, Clock } from "lucide-react";
+import { X, RotateCcw, ShieldCheck, ChevronRight, AlertTriangle, Clock, User, Users } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { differenceInDays } from 'date-fns';
+import InteractiveScheduleCalendar from '@/components/InteractiveScheduleCalendar';
 
 const TIPOS = [
   {
@@ -36,6 +37,9 @@ export default function RetornoModal({ request, onClose }) {
   const [tipo, setTipo] = useState(null);
   const [descricao, setDescricao] = useState('');
   const [loading, setLoading] = useState(false);
+  const [agendarComOriginal, setAgendarComOriginal] = useState(null); // true=mesmo prestador, false=outro
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
 
   // Calcula quantos dias se passaram desde a conclusão
   const conclusaoDate = request?.updated_date ? new Date(request.updated_date) : null;
@@ -54,11 +58,25 @@ export default function RetornoModal({ request, onClose }) {
       tipo: request.service_type,
       retorno_de: request.id,
       descricao: `${label} - ${descricao}`,
-      provider_id: request.provider_id || '',
     });
+
+    // Se escolheu mesmo prestador, passa o provider_id para pré-selecionar
+    if (agendarComOriginal && request.provider_id) {
+      params.set('provider_id', request.provider_id);
+    }
+    // Se escolheu agendamento com data/hora, passa como agendado
+    if (scheduledDate && scheduledTime) {
+      params.set('modality', 'agendado');
+      params.set('scheduled_date', scheduledDate);
+      params.set('scheduled_time', scheduledTime);
+    }
+
     navigate(`/solicitar?${params.toString()}`);
     onClose();
   };
+
+  // Mostra passo de agendamento depois de preencher tipo + descrição
+  const showAgendamento = tipo && !prazoExpirado && descricao.trim().length >= 5;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
@@ -185,10 +203,72 @@ export default function RetornoModal({ request, onClose }) {
           </div>
         )}
 
+        {/* Passo: escolher prestador */}
+        {showAgendamento && (
+          <div className="space-y-3 border-t border-border pt-3">
+            <p className="text-sm font-semibold text-foreground">Atendimento com quem?</p>
+            <div className="grid grid-cols-2 gap-3">
+              {request?.provider_id && (
+              <button
+                onClick={() => setAgendarComOriginal(true)}
+                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                  agendarComOriginal === true
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/40'
+                }`}
+              >
+                <User className={`w-6 h-6 ${agendarComOriginal === true ? 'text-primary' : 'text-muted-foreground'}`} />
+                <p className={`text-xs font-bold text-center leading-tight ${agendarComOriginal === true ? 'text-primary' : 'text-foreground'}`}>
+                  {request?.provider_name || 'Mesmo prestador'}
+                </p>
+                <p className="text-[10px] text-muted-foreground text-center">Prestador original</p>
+              </button>
+              )}
+              <button
+                onClick={() => setAgendarComOriginal(false)}
+                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                  agendarComOriginal === false
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/40'
+                }`}
+              >
+                <Users className={`w-6 h-6 ${agendarComOriginal === false ? 'text-primary' : 'text-muted-foreground'}`} />
+                <p className={`text-xs font-bold text-center leading-tight ${agendarComOriginal === false ? 'text-primary' : 'text-foreground'}`}>
+                  Outro prestador
+                </p>
+                <p className="text-[10px] text-muted-foreground text-center">Disponível na área</p>
+              </button>
+            </div>
+
+            {/* Agenda do prestador original */}
+            {agendarComOriginal === true && (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground font-medium">Escolha uma data e horário para o retorno:</p>
+                <InteractiveScheduleCalendar
+                  selectedDate={scheduledDate}
+                  selectedTime={scheduledTime}
+                  onDateChange={setScheduledDate}
+                  onTimeChange={setScheduledTime}
+                />
+              </div>
+            )}
+
+            {agendarComOriginal === false && (
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-800">
+                ℹ️ Você será redirecionado para buscar um prestador disponível na região.
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Ação */}
         <Button
           className="w-full rounded-2xl h-11 font-bold"
-          disabled={!tipo || !descricao.trim() || loading || prazoExpirado}
+          disabled={
+            !tipo || !descricao.trim() || loading || prazoExpirado ||
+            (request?.provider_id ? agendarComOriginal === null : false) ||
+            (agendarComOriginal === true && (!scheduledDate || !scheduledTime))
+          }
           onClick={handleSubmit}
         >
           📋 Abrir OS de Retorno
