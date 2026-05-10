@@ -29,6 +29,7 @@ import PressurizadorModal from "@/components/PressurizadorModal";
 import ValvulaTransfModal from "@/components/ValvulaTransfModal";
 import { PaneSeccaAlertModal, LimpezaTelhadoAlertModal, ArCondicionadoModal, LimpezaCalhaTelhadoAlertModal, NaoSeiLitragemModal, SubstituicaoTelhaModal } from "@/components/ServiceAlertModals";
 import { SERVICE_TYPES } from "@/lib/serviceTypes";
+import PhotoLightbox from "@/components/PhotoLightbox";
 
 const URGENCY = [
   { value: "agora", label: "Agora", desc: "Preciso urgente" },
@@ -109,6 +110,7 @@ export default function SolicitarServico() {
   const [valvulaTransfTipo, setValvulaTransfTipo] = useState(null);
   const [showArCondicionadoModal, setShowArCondicionadoModal] = useState(false);
   const [showLimpezaCalhaTelhadoAlert, setShowLimpezaCalhaTelhadoAlert] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState(null);
   const [showSubstituicaoTelhaModal, setShowSubstituicaoTelhaModal] = useState(false);
   const [substituicaoTelhaTipo, setSubstituicaoTelhaTipo] = useState(null);
   const [towQuestions, setTowQuestions] = useState({});
@@ -554,7 +556,6 @@ export default function SolicitarServico() {
         }
       }
 
-      // Fallback: garante senhas para todas as OSs principais após 3s
       results.forEach(r => {
         setTimeout(async () => {
           try {
@@ -652,9 +653,10 @@ export default function SolicitarServico() {
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
-  }
+      }
 
   return (
+    <>
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
       {/* Abas */}
       <div className="flex gap-2 mb-6 border-b border-border">
@@ -1379,7 +1381,7 @@ export default function SolicitarServico() {
                 <div className="flex flex-wrap gap-2">
                   {form.problem_photos.map((url, idx) => (
                     <div key={idx} className="relative group">
-                      <div className="w-20 h-20 rounded-xl overflow-hidden border border-border">
+                      <div className="w-20 h-20 rounded-xl overflow-hidden border border-border cursor-pointer" onClick={() => setLightboxSrc(url)}>
                         <img src={url} alt="" className="w-full h-full object-cover" />
                       </div>
                       <span className="text-xs font-semibold text-muted-foreground mt-1 block text-center">
@@ -1439,7 +1441,7 @@ export default function SolicitarServico() {
                        <div className="flex flex-wrap gap-2">
                          {photos.map((url, pidx) => (
                            <div key={pidx} className="flex flex-col items-center">
-                             <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-border">
+                             <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-border cursor-pointer" onClick={() => setLightboxSrc(url)}>
                                <img src={url} alt="" className="w-full h-full object-cover" />
                                <button onClick={() => removePhotoFor(serviceType, pidx)} className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center">
                                  <X className="w-2.5 h-2.5 text-white" />
@@ -1945,7 +1947,6 @@ export default function SolicitarServico() {
         )}
       </div>
 
-      {/* Banner persistente de resposta do prestador ocupado — aparece mesmo após fechar o modal */}
       {activeBusyAlertId && !showProviderSearch && (
         <div className="fixed bottom-0 left-0 right-0 z-40 p-4 max-w-lg mx-auto">
           <BusyAlertClientView
@@ -1959,7 +1960,6 @@ export default function SolicitarServico() {
         </div>
       )}
 
-      {/* Banner dentro do modal enquanto modal está aberto — fecha o modal ao receber resposta */}
       {activeBusyAlertId && showProviderSearch && (
         <div className="hidden">
           <BusyAlertClientView
@@ -1994,5 +1994,7 @@ export default function SolicitarServico() {
       </div>
       )}
     </div>
+    <PhotoLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+    </>
   );
 }
