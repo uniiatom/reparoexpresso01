@@ -662,7 +662,7 @@ export default function AcompanharServico() {
         );
       })()}
 
-      {request.status === 'concluido' && (
+      {request.status === 'concluido' && request.provider_id && (
         <div className="space-y-3">
           <Button 
             className="w-full rounded-2xl bg-amber-500 text-white font-semibold h-11 hover:bg-amber-600"
