@@ -27,7 +27,7 @@ import RetornoButton from "@/components/RetornoButton";
 import ProviderMiniPhoto from "@/components/ProviderMiniPhoto";
 import PressurizadorModal from "@/components/PressurizadorModal";
 import ValvulaTransfModal from "@/components/ValvulaTransfModal";
-import { PaneSeccaAlertModal, LimpezaTelhadoAlertModal, ArCondicionadoModal, LimpezaCalhaTelhadoAlertModal, NaoSeiLitragemModal } from "@/components/ServiceAlertModals";
+import { PaneSeccaAlertModal, LimpezaTelhadoAlertModal, ArCondicionadoModal, LimpezaCalhaTelhadoAlertModal, NaoSeiLitragemModal, SubstituicaoTelhaModal } from "@/components/ServiceAlertModals";
 import { SERVICE_TYPES } from "@/lib/serviceTypes";
 
 const URGENCY = [
@@ -109,7 +109,7 @@ export default function SolicitarServico() {
   const [valvulaTransfTipo, setValvulaTransfTipo] = useState(null);
   const [showArCondicionadoModal, setShowArCondicionadoModal] = useState(false);
   const [showLimpezaCalhaTelhadoAlert, setShowLimpezaCalhaTelhadoAlert] = useState(false);
-  // estados dos modais acima foram consolidados
+  const [showSubstituicaoTelhaModal, setShowSubstituicaoTelhaModal] = useState(false);
   const [towQuestions, setTowQuestions] = useState({});
   const [towVehicleType, setTowVehicleType] = useState(null);
   const [calculatingRoute, setCalculatingRoute] = useState(false);
@@ -862,6 +862,10 @@ export default function SolicitarServico() {
                   if (s.value === 'limpeza_caixa_dagua' && selected) {
                     setCaixaDaguaTipo(null);
                   }
+                  if (s.value === 'substituicao_telha' && !selected) {
+                    setShowSubstituicaoTelhaModal(true);
+                    return;
+                  }
                   if (s.value === 'ar_condicionado' && !selected) {
                     setShowArCondicionadoModal(true);
                     return;
@@ -1134,6 +1138,7 @@ export default function SolicitarServico() {
           )}
 
           {showValvulaTransfModal && <ValvulaTransfModal onSelect={(tipo) => { setValvulaTransfTipo(tipo); set('service_type', [...form.service_type, 'valvula_transferidora_pressao']); setShowValvulaTransfModal(false); }} onCancel={() => setShowValvulaTransfModal(false)} />}
+          {showSubstituicaoTelhaModal && <SubstituicaoTelhaModal onSelect={(tipo) => { const desc = tipo === 'ceramica' ? 'Substituição de telha cerâmica.' : 'Substituição de telha de fibrocimento.'; set('service_type', [...form.service_type, 'substituicao_telha']); setDescriptionsPerService(prev => ({ ...prev, substituicao_telha: { ...prev.substituicao_telha, description: desc } })); setShowSubstituicaoTelhaModal(false); }} onClose={() => setShowSubstituicaoTelhaModal(false)} />}
 
           {/* Modal Ar Condicionado */}
           {showArCondicionadoModal && (

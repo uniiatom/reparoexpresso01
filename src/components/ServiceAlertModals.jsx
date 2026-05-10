@@ -151,6 +151,36 @@ export function LimpezaCalhaTelhadoAlertModal({ onConfirm, onClose }) {
   );
 }
 
+export function SubstituicaoTelhaModal({ onSelect, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+        <h3 className="text-lg font-bold text-foreground mb-1 text-center">Substituição de Telha</h3>
+        <p className="text-sm text-muted-foreground text-center mb-5">Qual o tipo de telha?</p>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => onSelect('ceramica')}
+            className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+          >
+            <span className="text-3xl">🏺</span>
+            <p className="font-bold text-foreground text-sm">Telha Cerâmica</p>
+            <p className="text-xs text-muted-foreground text-center">Barro, colonial, portuguesa</p>
+          </button>
+          <button
+            onClick={() => onSelect('fibrocimento')}
+            className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+          >
+            <span className="text-3xl">🏗️</span>
+            <p className="font-bold text-foreground text-sm">Fibrocimento</p>
+            <p className="text-xs text-muted-foreground text-center">Eternit, Brasilit, ondulada</p>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function LimpezaTelhadoAlertModal({ onConfirm, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
