@@ -144,44 +144,62 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
-      <div className="bg-card w-full max-w-sm rounded-3xl shadow-2xl p-5 space-y-4 animate-in fade-in slide-in-from-bottom-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🎁</span>
-            <h2 className="text-lg font-bold text-foreground">Gratificação para o Prestador</h2>
-          </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center">
+      <div className="bg-card w-full max-w-xs rounded-3xl shadow-2xl p-4 space-y-3 animate-in fade-in slide-in-from-bottom-5">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-bold text-foreground">🎁 Gratificação</h2>
+          <button onClick={onClose} className="w-7 h-7 rounded-full hover:bg-muted flex items-center justify-center">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 space-y-3">
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-3 space-y-3">
           <div className="text-center">
-            <p className="text-sm font-bold text-amber-900 mb-1">Ficou satisfeito com o serviço?</p>
-            <p className="text-xs text-amber-800">
-              Deixe uma gratificação para <strong>{selectedProvider?.name}</strong> e reconheça o bom trabalho! 💪
+            <p className="text-sm font-bold text-amber-900">Gratifique o prestador</p>
+            <p className="text-xs text-amber-800 mt-1">
+              Clique na foto para selecionar
             </p>
           </div>
+
+          {/* Grid de fotos dos últimos prestadores */}
           {recentProviders.length > 0 && (
-            <button
-              onClick={() => setShowProviderList(true)}
-              className="w-full py-2 text-xs font-semibold text-amber-700 hover:bg-amber-100 rounded-lg transition-colors"
-            >
-              👥 Outro prestador
-            </button>
+            <div className="grid grid-cols-5 gap-2">
+              {recentProviders.map((prov) => (
+                <button
+                  key={prov.id}
+                  onClick={() => setSelectedProvider({ name: prov.name, id: prov.id })}
+                  className={`relative w-full aspect-square rounded-xl overflow-hidden transition-all ${
+                    selectedProvider?.id === prov.id
+                      ? 'ring-2 ring-amber-500 scale-105'
+                      : 'opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  {prov.photo_url ? (
+                    <img
+                      src={prov.photo_url}
+                      alt={prov.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-amber-200 flex items-center justify-center text-xs font-bold text-amber-900">
+                      {prov.name.charAt(0)}
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
-        <div className="space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground">Selecione um valor:</p>
-          <div className="grid grid-cols-4 gap-2">
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground">Valor:</p>
+          <div className="grid grid-cols-4 gap-1.5">
             {presetAmounts.map((amt) => (
               <button
                 key={amt}
                 onClick={() => setAmount(amt.toString())}
-                className={`py-2 px-3 rounded-xl font-bold text-sm transition-all ${
+                className={`py-1.5 px-2 rounded-lg font-bold text-xs transition-all ${
                   amount === amt.toString()
-                    ? 'bg-primary text-primary-foreground ring-2 ring-primary/50'
+                    ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-foreground hover:bg-accent'
                 }`}
               >
@@ -190,44 +208,35 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
             ))}
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-muted-foreground">Ou informe um valor:</label>
-            <div className="flex items-center gap-2">
-              <span className="text-foreground font-bold">R$</span>
-              <input
-                type="number"
-                min="1"
-                step="0.01"
-                placeholder="0.00"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-foreground font-bold text-sm">R$</span>
+            <input
+              type="number"
+              min="1"
+              step="0.01"
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="flex-1 rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
           </div>
         </div>
 
-        <div className="bg-green-50 border border-green-200 rounded-2xl p-3">
-          <p className="text-xs text-green-800">
-            ✓ A gratificação é opcional e completamente segura. Você pode pagar por PIX, cartão ou outro método.
-          </p>
-        </div>
-
-        <div className="flex gap-2">
-          <Button onClick={onClose} variant="outline" className="flex-1 rounded-2xl">
+        <div className="flex gap-2 pt-2">
+          <Button onClick={onClose} variant="outline" className="flex-1 rounded-xl text-xs h-9">
             Cancelar
           </Button>
           <Button
             onClick={handleRequestTip}
             disabled={loading || !amount}
-            className="flex-1 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold hover:from-amber-600 hover:to-orange-600"
+            className="flex-1 rounded-xl text-xs h-9 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold hover:from-amber-600 hover:to-orange-600"
           >
             {loading ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
             ) : (
-              <Gift className="w-4 h-4 mr-2" />
+              <Gift className="w-3 h-3 mr-1" />
             )}
-            Confirmar Gratificação
+            Confirmar
           </Button>
         </div>
       </div>
