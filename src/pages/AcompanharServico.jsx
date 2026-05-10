@@ -78,13 +78,10 @@ export default function AcompanharServico() {
 
   const handleRatingClose = () => {
     setShowRating(false);
-    // Busca próximo serviço ativo (diferente do atual)
-    const next = allRequests.find(r => r.id !== id && !['concluido', 'cancelado'].includes(r.status));
-    if (next) {
-      navigate(`/acompanhar/${next.id}`);
-    } else {
-      navigate('/');
-    }
+    // Após avaliar, mostra modal de gratificação
+    setTimeout(() => {
+      setShowTipRequest(true);
+    }, 300);
   };
 
   const [request, setRequest] = useState(null);
@@ -162,6 +159,15 @@ export default function AcompanharServico() {
       }
     }
   }, [request?.status]);
+
+  // Scroll para o final quando mostrar modal de gratificação
+  useEffect(() => {
+    if (showTipRequest) {
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }, 100);
+    }
+  }, [showTipRequest]);
 
   const cancelRequest = useMutation({
     mutationFn: () => base44.entities.ServiceRequest.update(id, { status: 'cancelado' }),
