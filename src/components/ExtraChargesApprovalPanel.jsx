@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import PhotoUploadGallery from './PhotoUploadGallery';
 
 export default function ExtraChargesApprovalPanel({ service, onApprovalChange }) {
   const [loading, setLoading] = useState(false);
@@ -15,6 +16,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   const [selectedAction, setSelectedAction] = useState(null);
   const [user, setUser] = useState(null);
   const [items, setItems] = useState([]);
+  const [photos, setPhotos] = useState([]);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -138,6 +140,17 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         </span>
       </button>
 
+      {/* Fotos do serviço - visível para ambos */}
+      {expanded && photos.length > 0 && (
+        <div className="border-t border-amber-200 pt-3">
+          <PhotoUploadGallery 
+            photos={photos} 
+            onPhotosChange={setPhotos}
+            readOnly={user?.role !== 'admin'}
+          />
+        </div>
+      )}
+
       {/* Detalhes expandidos - Cliente */}
       {expanded && user?.role === 'user' && (
         <div className="space-y-3 border-t border-amber-200 pt-3">
@@ -168,6 +181,13 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       {/* Detalhes expandidos - Prestador */}
       {expanded && user?.role === 'admin' && (
         <div className="space-y-3 border-t border-amber-200 pt-3">
+          {/* Upload de fotos */}
+          <PhotoUploadGallery 
+            photos={photos} 
+            onPhotosChange={setPhotos}
+            readOnly={false}
+          />
+
           {/* Tabela de materiais */}
           <div className="bg-white rounded-2xl p-4 space-y-3">
             <p className="text-sm font-semibold text-foreground mb-3">🔧 Materiais e Serviços:</p>
