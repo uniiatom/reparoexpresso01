@@ -33,6 +33,7 @@ import DashboardAdmin from './pages/DashboardAdmin';
 import ProviderAwards from './pages/ProviderAwards';
 import ClienteDossie from './pages/ClienteDossie';
 import MeusServicos from './pages/MeusServicos';
+import ProviderMetricsPanel from './pages/ProviderMetricsPanel';
 import { Toaster as SonnerToaster } from "sonner";
 
 const AuthenticatedApp = () => {
@@ -84,6 +85,7 @@ const AuthenticatedApp = () => {
         <Route path="/termos-cliente" element={<TermosCliente />} />
         <Route path="/termos-prestador" element={<TermosPrestador />} />
         <Route path="/cadastro-parceiro" element={<PartnerRegister />} />
+        <Route path="/painel-metricas" element={<ProviderMetricsPanel />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
