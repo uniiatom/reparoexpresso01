@@ -493,28 +493,6 @@ export default function AcompanharServico() {
         />
       )}
 
-      {/* Painel de aprovação de orçamento extra (novo fluxo) */}
-      {['em_andamento', 'concluido'].includes(request.status) && (
-        <ExtraChargesApprovalPanel 
-          service={request}
-          onApprovalChange={() => {
-            // Atualiza request local
-            base44.entities.ServiceRequest.get(id).then(setRequest);
-          }}
-        />
-      )}
-
-      {/* Banner de aprovação de orçamento extra (legado) */}
-      {['em_andamento', 'concluido'].includes(request.status) && (
-        <ExtraChargesApprovalBanner 
-          serviceId={id} 
-          onApproval={() => {
-            // Atualiza request local
-            base44.entities.ServiceRequest.get(id).then(setRequest);
-          }}
-        />
-      )}
-
       {/* Chat */}
       {['aceito','a_caminho','em_andamento','concluido'].includes(request.status) && (
         <ServiceChat
