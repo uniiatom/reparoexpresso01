@@ -11,7 +11,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   const [showRejectionForm, setShowRejectionForm] = useState(false);
   const [localService, setLocalService] = useState(service);
   const [notification, setNotification] = useState(null);
-  const [expanded, setExpanded] = useState(user?.role !== 'admin');
+  const [expanded, setExpanded] = useState(false);
   const [showConfirmApprove, setShowConfirmApprove] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [user, setUser] = useState(null);
@@ -20,7 +20,11 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
-  }, []);
+    // Abre automaticamente para clientes
+    if (user && user.role !== 'admin') {
+      setExpanded(true);
+    }
+  }, [user]);
 
   // Atualiza em tempo real quando o service muda
   useEffect(() => {
