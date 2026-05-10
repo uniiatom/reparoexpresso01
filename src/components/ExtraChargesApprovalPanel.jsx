@@ -11,7 +11,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   const [showRejectionForm, setShowRejectionForm] = useState(false);
   const [localService, setLocalService] = useState(service);
   const [notification, setNotification] = useState(null);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(null); // null = auto, true = aberto, false = fechado
   const [showConfirmApprove, setShowConfirmApprove] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [user, setUser] = useState(null);
@@ -23,11 +23,10 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   }, []);
 
   // Abre automaticamente expandido para clientes
-  useEffect(() => {
-    if (notification && user && user.role !== 'admin') {
-      setExpanded(true);
-    }
-  }, [notification, user]);
+  const shouldExpand = useMemo(() => {
+    if (expanded !== null) return expanded; // respeita escolha do usuário
+    return notification && user && user.role !== 'admin'; // auto-abre para clientes
+  }, [expanded, notification, user]);
 
   // Atualiza em tempo real quando o service muda
   useEffect(() => {
@@ -158,7 +157,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
     <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-5 space-y-3 mb-5">
       {/* Header colapsável */}
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => setExpanded(!shouldExpand)}
         className="w-full flex items-start gap-3 hover:opacity-80 transition-opacity"
       >
         <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
@@ -166,7 +165,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
           <p className="font-bold text-amber-900">💰 Orçamento extra aguardando aprovação</p>
           <p className="text-sm text-amber-800 mt-0.5">{notification.provider_name} solicitou +R$ {total.toFixed(2)}</p>
         </div>
-        <span className={`text-amber-600 flex-shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}>
+        <span className={`text-amber-600 flex-shrink-0 transition-transform ${shouldExpand ? 'rotate-180' : ''}`}>
           ▼
         </span>
       </button>
@@ -174,7 +173,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
 
 
       {/* Detalhes expandidos - Cliente (apenas aprovação/rejeição) */}
-      {expanded && user?.role !== 'admin' && (
+      {shouldExpand && user?.role !== 'admin' && (
         <div className="space-y-3 border-t border-amber-200 pt-3">
           <div className="bg-white rounded-2xl p-4 space-y-2">
             <p className="text-sm font-semibold text-foreground mb-3">📊 Resumo financeiro:</p>
@@ -213,7 +212,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       )}
 
       {/* Detalhes expandidos - Prestador */}
-      {expanded && user?.role === 'admin' && (
+      {shouldExpand && user?.role === 'admin' && (
         <div className="space-y-3 border-t border-amber-200 pt-3">
           {/* Upload de fotos - apenas prestador pode fazer upload */}
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
@@ -315,7 +314,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       )}
 
       {/* Menu de ações - Cliente (apenas aprovar/rejeitar) */}
-      {expanded && !showRejectionForm && !showConfirmApprove && user?.role !== 'admin' && (
+      {shouldExpand && !showRejectionForm && !showConfirmApprove && user?.role !== 'admin' && (
         <div className="space-y-2 pt-2 border-t border-amber-200">
           <p className="text-xs font-semibold text-amber-900 px-1">O que você quer fazer?</p>
           <div className="grid grid-cols-2 gap-2">
@@ -339,7 +338,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       )}
 
       {/* Menu de ações - Prestador (todas as opções) */}
-      {expanded && !showRejectionForm && !showConfirmApprove && user?.role === 'admin' && (
+      {shouldExpand && !showRejectionForm && !showConfirmApprove && user?.role === 'admin' && (
         <div className="space-y-2 pt-2 border-t border-amber-200">
           <p className="text-xs font-semibold text-amber-900 px-1">Opções disponíveis:</p>
           <div className="grid grid-cols-2 gap-2">
