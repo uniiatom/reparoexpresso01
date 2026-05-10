@@ -3,8 +3,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Camera, X, Loader2, Send } from "lucide-react";
 import { base44 } from '@/api/base44Client';
+import { useNavigate } from 'react-router-dom';
 
 export default function OutrosServicoModal({ onClose, onConfirm }) {
+  const navigate = useNavigate();
   const [descricao, setDescricao] = useState('');
   const [fotos, setFotos] = useState([]);
   const [uploadando, setUploadando] = useState(false);
@@ -52,10 +54,10 @@ export default function OutrosServicoModal({ onClose, onConfirm }) {
             Suas informações foram encaminhadas para a nossa equipe. Daremos retorno o mais breve possível.
           </p>
           <Button
-            onClick={() => onConfirm(descricao, fotos)}
+            onClick={() => navigate('/')}
             className="w-full rounded-2xl"
           >
-            Fechar
+            Voltar ao início
           </Button>
         </div>
       </div>
