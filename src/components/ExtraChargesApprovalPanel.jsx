@@ -337,112 +337,25 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         </div>
       )}
 
-      {/* Menu de ações - Prestador (todas as opções) */}
+      {/* Menu de ações - Prestador (Aprovar ou Rejeitar) */}
       {shouldExpand && !showRejectionForm && !showConfirmApprove && user?.role === 'admin' && (
         <div className="space-y-2 pt-2 border-t border-amber-200">
-          <p className="text-xs font-semibold text-amber-900 px-1">Opções disponíveis:</p>
+          <p className="text-xs font-semibold text-amber-900 px-1">Enviar orçamento para o cliente?</p>
           <div className="grid grid-cols-2 gap-2">
             <Button
               onClick={() => setShowConfirmApprove(true)}
-              className="rounded-2xl bg-green-600 hover:bg-green-700 text-white h-10 font-semibold text-xs flex flex-col items-center gap-1"
+              className="rounded-2xl bg-green-600 hover:bg-green-700 text-white h-10 font-semibold"
               disabled={loading}
             >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Aprovar</span>
-            </Button>
-            <Button
-              onClick={() => setSelectedAction('negotiate')}
-              variant="outline"
-              className="rounded-2xl border-blue-300 text-blue-600 hover:bg-blue-50 h-10 font-semibold text-xs flex flex-col items-center gap-1"
-              disabled={loading}
-            >
-              <span>💬</span>
-              <span>Negociar</span>
-            </Button>
-            <Button
-              onClick={() => setSelectedAction('clarify')}
-              variant="outline"
-              className="rounded-2xl border-purple-300 text-purple-600 hover:bg-purple-50 h-10 font-semibold text-xs flex flex-col items-center gap-1"
-              disabled={loading}
-            >
-              <span>❓</span>
-              <span>Esclarecer</span>
+              <CheckCircle2 className="w-4 h-4 mr-2" /> Enviar
             </Button>
             <Button
               onClick={() => setShowRejectionForm(true)}
               variant="outline"
-              className="rounded-2xl border-red-300 text-red-600 hover:bg-red-50 h-10 font-semibold text-xs flex flex-col items-center gap-1"
+              className="rounded-2xl border-red-300 text-red-600 hover:bg-red-50 h-10 font-semibold"
               disabled={loading}
             >
-              <XCircle className="w-4 h-4" />
-              <span>Rejeitar</span>
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Ação: Negociar */}
-      {selectedAction === 'negotiate' && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-3">
-          <p className="text-sm font-semibold text-blue-900">💬 Propor um novo valor</p>
-          <div className="space-y-2">
-            <input
-              type="number"
-              placeholder="Novo valor total (ex: 250)"
-              className="w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
-              defaultValue={new_total}
-            />
-            <textarea
-              placeholder="Deixe uma mensagem para o prestador..."
-              className="w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 resize-none"
-              rows={2}
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1 rounded-xl"
-              onClick={() => setSelectedAction(null)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              size="sm"
-              className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold"
-              disabled={loading}
-            >
-              Enviar Proposta
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Ação: Esclarecer */}
-      {selectedAction === 'clarify' && (
-        <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 space-y-3">
-          <p className="text-sm font-semibold text-purple-900">❓ Sua dúvida ou questionamento</p>
-          <textarea
-            placeholder="Qual é sua dúvida sobre este orçamento extra?"
-            className="w-full rounded-xl border border-purple-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400 resize-none"
-            rows={3}
-            autoFocus
-          />
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1 rounded-xl"
-              onClick={() => setSelectedAction(null)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              size="sm"
-              className="flex-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold"
-              disabled={loading}
-            >
-              Enviar Dúvida
+              <XCircle className="w-4 h-4 mr-2" /> Cancelar
             </Button>
           </div>
         </div>
@@ -450,17 +363,19 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
 
 
 
-      {/* Formulário de rejeição */}
+
+
+      {/* Formulário de cancelamento (prestador) ou rejeição (cliente) */}
       {showRejectionForm && (
         <div className="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-3">
-          <p className="text-sm font-semibold text-red-900">❌ Por que está rejeitando?</p>
+          <p className="text-sm font-semibold text-red-900">❌ {user?.role === 'admin' ? 'Cancelar orçamento?' : 'Por que está rejeitando?'}</p>
           <textarea
-            placeholder="Explique o motivo da rejeição..."
-            value={rejectionNotes}
-            onChange={(e) => setRejectionNotes(e.target.value)}
-            className="w-full rounded-xl border border-red-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-red-400 resize-none"
-            rows={3}
-            autoFocus
+           placeholder={user?.role === 'admin' ? 'Motivo do cancelamento...' : 'Explique o motivo da rejeição...'}
+           value={rejectionNotes}
+           onChange={(e) => setRejectionNotes(e.target.value)}
+           className="w-full rounded-xl border border-red-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-red-400 resize-none"
+           rows={3}
+           autoFocus
           />
           <div className="flex gap-2">
             <Button
@@ -482,18 +397,18 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
               disabled={loading || !rejectionNotes.trim()}
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <XCircle className="w-4 h-4 mr-2" />}
-              Confirmar Rejeição
+              {user?.role === 'admin' ? 'Cancelar' : 'Rejeitar'}
             </Button>
           </div>
         </div>
       )}
 
-      {/* Modal de confirmação de aprovação */}
+      {/* Modal de confirmação de envio para cliente */}
       {showConfirmApprove && (
         <div className="bg-green-50 border border-green-200 rounded-2xl p-4 space-y-3">
-          <p className="text-sm font-semibold text-green-900">✓ Confirmar aprovação?</p>
+          <p className="text-sm font-semibold text-green-900">✓ Confirmar envio do orçamento?</p>
           <p className="text-sm text-green-800">
-            Você está aprovando um adicional de <strong>R$ {total.toFixed(2)}</strong>, levando o total para <strong>R$ {new_total.toFixed(2)}</strong>.
+            Você está enviando um adicional de <strong>R$ {total.toFixed(2)}</strong>, totalizando <strong>R$ {new_total.toFixed(2)}</strong> para aprovação do cliente.
           </p>
           <div className="flex gap-2">
             <Button
@@ -512,7 +427,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
               disabled={loading}
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
-              Sim, Aprovar
+              Sim, Enviar
             </Button>
           </div>
         </div>
