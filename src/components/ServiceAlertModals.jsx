@@ -42,6 +42,115 @@ export function PaneSeccaAlertModal({ onConfirm, onClose }) {
   );
 }
 
+export function NaoSeiLitragemModal({ caixaDaguaTipo, onConfirm, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+        <div className="text-center mb-5">
+          <span className="text-4xl mb-3 block">📏</span>
+          <h3 className="text-lg font-bold text-foreground mb-2">Litragem não informada</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Sem problema! O prestador irá medir e avaliar a capacidade da caixa d'água no local antes de iniciar a limpeza.
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-left">
+            <p className="text-sm font-semibold text-blue-900 mb-1">ℹ️ Como funciona:</p>
+            <ul className="text-xs text-blue-800 space-y-1 list-disc list-inside">
+              <li>O técnico mede a litragem da caixa no local</li>
+              <li>Informa o valor correspondente ao cliente</li>
+              <li>A cobrança é confirmada <strong>antes</strong> de iniciar a limpeza</li>
+            </ul>
+          </div>
+        </div>
+        <button
+          onClick={onConfirm}
+          className="w-full py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-bold transition-all"
+        >
+          Entendi, continuar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function ArCondicionadoModal({ onSelect, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+        <h3 className="text-lg font-bold text-foreground mb-1 text-center">Ar Condicionado</h3>
+        <p className="text-sm text-muted-foreground text-center mb-5">Qual tipo de serviço você precisa?</p>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => onSelect('conserto')}
+            className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+          >
+            <span className="text-3xl">🔧</span>
+            <p className="font-bold text-foreground text-sm">Conserto</p>
+            <p className="text-xs text-muted-foreground text-center">Não liga, não resfria, barulho, vazamento</p>
+          </button>
+          <button
+            onClick={() => onSelect('limpeza_quimica')}
+            className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+          >
+            <span className="text-3xl">🧴</span>
+            <p className="font-bold text-foreground text-sm">Limpeza Química</p>
+            <p className="text-xs text-muted-foreground text-center">Higienização completa com produto químico</p>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function LimpezaCalhaTelhadoAlertModal({ onConfirm, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+        <div className="text-center mb-5">
+          <span className="text-4xl mb-3 block">🏚️</span>
+          <h3 className="text-lg font-bold text-foreground mb-2">Limpeza de Calha — Precificação por Metro</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            O valor é cobrado por <strong>metro linear</strong> de calha.
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-left space-y-3">
+            <div>
+              <p className="text-sm font-semibold text-blue-900 mb-1">📏 Cobrança por metro linear</p>
+              <p className="text-2xl font-black text-blue-600">R$ 12,00 <span className="text-sm font-semibold">por metro</span></p>
+              <p className="text-xs text-blue-700 mt-1">Mínimo de 10 metros (R$ 120,00)</p>
+            </div>
+            <div className="border-t border-blue-200 pt-3 space-y-2">
+              <div className="flex items-start gap-2">
+                <span className="text-sm mt-0.5">📐</span>
+                <p className="text-xs text-blue-800"><strong>Altura máxima:</strong> até 6 metros</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-sm mt-0.5">⚠️</span>
+                <p className="text-xs text-blue-800"><strong>Andaime:</strong> se necessário, o custo do andaime é por conta do cliente</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 rounded-2xl border-2 border-border text-sm font-semibold text-muted-foreground hover:bg-muted transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-bold transition-all"
+          >
+            Entendi, continuar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function LimpezaTelhadoAlertModal({ onConfirm, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>

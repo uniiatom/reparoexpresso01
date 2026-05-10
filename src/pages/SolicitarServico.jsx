@@ -27,7 +27,7 @@ import RetornoButton from "@/components/RetornoButton";
 import ProviderMiniPhoto from "@/components/ProviderMiniPhoto";
 import PressurizadorModal from "@/components/PressurizadorModal";
 import ValvulaTransfModal from "@/components/ValvulaTransfModal";
-import { PaneSeccaAlertModal, LimpezaTelhadoAlertModal } from "@/components/ServiceAlertModals";
+import { PaneSeccaAlertModal, LimpezaTelhadoAlertModal, ArCondicionadoModal } from "@/components/ServiceAlertModals";
 import { SERVICE_TYPES } from "@/lib/serviceTypes";
 
 const URGENCY = [
@@ -101,6 +101,8 @@ export default function SolicitarServico() {
   const [showNaoSeiAlert, setShowNaoSeiAlert] = useState(false);
   const [showPaneSeccaAlert, setShowPaneSeccaAlert] = useState(false);
   const [showLimpezaTelhadoAlert, setShowLimpezaTelhadoAlert] = useState(false);
+  const [showArCondicionadoModal, setShowArCondicionadoModal] = useState(false);
+  const [arCondicionadoTipo, setArCondicionadoTipo] = useState(null);
   const [showForroGessoModal, setShowForroGessoModal] = useState(false);
   const [forroGessoTipo, setForroGessoTipo] = useState(null);
   const [showPressurizadorModal, setShowPressurizadorModal] = useState(false);
@@ -859,6 +861,13 @@ export default function SolicitarServico() {
                   if (s.value === 'limpeza_caixa_dagua' && selected) {
                     setCaixaDaguaTipo(null);
                   }
+                  if (s.value === 'ar_condicionado' && !selected) {
+                    setShowArCondicionadoModal(true);
+                    return;
+                  }
+                  if (s.value === 'ar_condicionado' && selected) {
+                    setArCondicionadoTipo(null);
+                  }
                   if (s.value === 'limpeza_telhado' && !selected) {
                     setShowLimpezaTelhadoAlert(true);
                     return;
@@ -888,6 +897,8 @@ export default function SolicitarServico() {
                        <><span>Válvula Transfer.</span><br /><span className="text-[10px] opacity-75">({valvulaTransfTipo === 'visita_tecnica' ? 'Visita' : valvulaTransfTipo === 'instalacao' ? 'Instalação' : 'Reparo'})</span></>
                     ) : s.value === 'desentupimento' && desentupimentoTipo ? (
                        <><span>Desentupimento</span><br /><span className="text-[10px] opacity-75">({desentupimentoTipo})</span></>
+                    ) : s.value === 'ar_condicionado' && arCondicionadoTipo ? (
+                       <><span>Ar Condicionado</span><br /><span className="text-[10px] opacity-75">({arCondicionadoTipo === 'conserto' ? 'Conserto' : 'Limpeza Química'})</span></>
                      ) : s.label}
                   </span>
                   {selected && <span className="w-4 h-4 bg-primary rounded-full flex items-center justify-center"><span className="text-white text-[9px] font-black">✓</span></span>}
@@ -1123,6 +1134,8 @@ export default function SolicitarServico() {
           )}
 
           {showValvulaTransfModal && <ValvulaTransfModal onSelect={(tipo) => { setValvulaTransfTipo(tipo); set('service_type', [...form.service_type, 'valvula_transferidora_pressao']); setShowValvulaTransfModal(false); }} onCancel={() => setShowValvulaTransfModal(false)} />}
+
+          {showArCondicionadoModal && <ArCondicionadoModal onSelect={(tipo) => { setArCondicionadoTipo(tipo); const d = tipo === 'conserto' ? 'Conserto de ar condicionado.' : 'Limpeza química do ar condicionado.'; set('service_type', [...form.service_type, 'ar_condicionado']); setDescriptionsPerService(prev => ({ ...prev, ar_condicionado: { ...prev.ar_condicionado, description: d } })); setShowArCondicionadoModal(false); }} onClose={() => setShowArCondicionadoModal(false)} />}
 
           {/* Modal aviso Pane Seca */}
           {showPaneSeccaAlert && (
