@@ -17,6 +17,7 @@ import ProviderMetricsPanel from '@/components/ProviderMetricsPanel';
 import AvailableRequestsMap from '@/components/AvailableRequestsMap';
 import ProviderExtraChargesPanel from '@/components/ProviderExtraChargesPanel';
 import TipAnnouncementModal from '@/components/TipAnnouncementModal';
+import DailyRouteOptimizer from '@/components/DailyRouteOptimizer';
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
@@ -269,9 +270,15 @@ export default function ProviderDashboard() {
             />
           </TabsContent>
 
-          {/* Tab: Agenda do Dia */}
+          {/* Tab: Agenda do Dia com Mapa de Rota Otimizada */}
           <TabsContent value="today" className="space-y-4">
-            <ProviderDailySchedule />
+            <DailyRouteOptimizer
+              providerId={provider.id}
+              providerLocation={{
+                latitude: provider.latitude || -23.5505,
+                longitude: provider.longitude || -46.6333
+              }}
+            />
           </TabsContent>
 
           {/* Tab: Métricas */}

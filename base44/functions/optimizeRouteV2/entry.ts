@@ -9,23 +9,59 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// Calcula duração via OSRM (estradas reais)
-async function getRoadDuration(lat1, lon1, lat2, lon2) {
+// Calcula distância e duração via Google Maps Distance Matrix API
+async function getGoogleMapsDistance(lat1, lon1, lat2, lon2) {
+  try {
+    const apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
+    if (!apiKey) {
+      throw new Error('GOOGLE_MAPS_API_KEY não configurada');
+    }
+
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${lat1},${lon1}&destinations=${lat2},${lon2}&key=${apiKey}&mode=driving`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    const data = await res.json();
+    
+    if (data?.rows?.[0]?.elements?.[0]?.status === 'OK') {
+      const element = data.rows[0].elements[0];
+      return {
+        distance: element.distance?.value || 0, // em metros
+        duration: Math.max(1, Math.round(element.duration?.value / 60)), // em minutos
+      };
+    }
+  } catch (e) {
+    console.warn('[GoogleMaps] fallback:', e.message);
+  }
+
+  // Fallback: OSRM se Google Maps falhar
   try {
     const res = await fetch(
       `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`,
       { signal: AbortSignal.timeout(5000) }
     );
     const data = await res.json();
-    if (data?.routes?.[0]?.duration) {
-      return Math.max(1, Math.round(data.routes[0].duration / 60));
+    if (data?.routes?.[0]) {
+      return {
+        distance: Math.round(data.routes[0].distance * 1000),
+        duration: Math.max(1, Math.round(data.routes[0].duration / 60)),
+      };
     }
   } catch (e) {
     console.warn('[OSRM] fallback:', e.message);
   }
-  // Fallback: 50 km/h + 30% tortuosidade
+
+  // Fallback final: Haversine + estimativa de velocidade
   const dist = haversineDistance(lat1, lon1, lat2, lon2);
-  return Math.max(2, Math.round((dist * 1.3 / 50) * 60));
+  return {
+    distance: Math.round(dist * 1000),
+    duration: Math.max(2, Math.round((dist * 1.3 / 50) * 60)),
+  };
+}
+
+async function getRoadDuration(lat1, lon1, lat2, lon2) {
+  const result = await getGoogleMapsDistance(lat1, lon1, lat2, lon2);
+  return result.duration;
 }
 
 // Nearest Neighbor + 2-opt optimization
@@ -96,22 +132,40 @@ async function optimizeRoute(services, providerLat, providerLon) {
     }
   }
 
-  // Monta resultado com durações reais
+  // Monta resultado com distâncias e durações reais via Google Maps
   const optimizedServices = [];
+  let totalDistance = 0;
+  let totalDuration = 0;
+
   for (let i = 1; i < route.length; i++) {
     const p = points.find(p => p.id === route[i]);
     if (p?.service) {
       const prevP = points.find(p => p.id === route[i - 1]);
-      const duration = await getRoadDuration(prevP.lat, prevP.lon, p.lat, p.lon);
+      const routeData = await getGoogleMapsDistance(prevP.lat, prevP.lon, p.lat, p.lon);
+      
+      totalDistance += routeData.distance;
+      totalDuration += routeData.duration;
+
       optimizedServices.push({
         ...p.service,
         order: i,
-        estimatedDurationFromPrevious: duration
+        estimatedDurationFromPrevious: routeData.duration,
+        estimatedDistanceFromPrevious: Math.round(routeData.distance / 1000 * 10) / 10, // em km
+        cumulativeDistance: Math.round(totalDistance / 1000 * 10) / 10,
+        cumulativeDuration: totalDuration
       });
     }
   }
 
-  return optimizedServices;
+  return {
+    services: optimizedServices,
+    summary: {
+      totalServices: optimizedServices.length,
+      totalDistance: Math.round(totalDistance / 1000 * 10) / 10, // em km
+      totalDuration: totalDuration, // em minutos
+      estimatedTimeText: `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}m`
+    }
+  };
 }
 
 Deno.serve(async (req) => {
@@ -133,9 +187,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Provider location required' }, { status: 400 });
     }
 
-    const optimized = await optimizeRoute(services, providerLat, providerLon);
+    const result = await optimizeRoute(services, providerLat, providerLon);
 
-    return Response.json({ optimized });
+    return Response.json({
+      optimized: result.services,
+      summary: result.summary
+    });
   } catch (error) {
     console.error('[optimizeRouteV2]', error);
     return Response.json({ error: error.message }, { status: 500 });
