@@ -53,22 +53,6 @@ export default function AcompanharServico() {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
-  // Busca fotos dos prestadores envolvidos
-  useEffect(() => {
-    const ids = [...new Set(
-      allRequests
-        .filter(r => r.provider_id)
-        .map(r => r.provider_id)
-        .concat(request?.provider_id ? [request.provider_id] : [])
-    )];
-    ids.forEach(pid => {
-      if (providerPhotos[pid] !== undefined) return;
-      base44.entities.Provider.filter({ id: pid }).then(list => {
-        if (list[0]) setProviderPhotos(prev => ({ ...prev, [pid]: list[0].photo_url || null }));
-      }).catch(() => {});
-    });
-  }, [request?.provider_id, allRequests.length]);
-
   const [allRequests, setAllRequests] = useState([]);
 
   useEffect(() => {
@@ -114,6 +98,23 @@ export default function AcompanharServico() {
     });
     return unsub;
   }, [id]);
+
+  // Busca fotos dos prestadores envolvidos
+  useEffect(() => {
+    if (!request?.provider_id && allRequests.length === 0) return;
+    const ids = [...new Set(
+      allRequests
+        .filter(r => r.provider_id)
+        .map(r => r.provider_id)
+        .concat(request?.provider_id ? [request.provider_id] : [])
+    )];
+    ids.forEach(pid => {
+      if (providerPhotos[pid] !== undefined) return;
+      base44.entities.Provider.filter({ id: pid }).then(list => {
+        if (list[0]) setProviderPhotos(prev => ({ ...prev, [pid]: list[0].photo_url || null }));
+      }).catch(() => {});
+    });
+  }, [request?.provider_id, allRequests.length]);
 
 
 
