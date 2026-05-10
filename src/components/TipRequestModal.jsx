@@ -1,199 +1,117 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { X, Loader2, QrCode, Copy, Share2, AlertCircle } from "lucide-react";
+import { X, Gift, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const TIP_PRESETS = [
-  { value: 10, label: 'R$ 10' },
-  { value: 20, label: 'R$ 20' },
-  { value: 50, label: 'R$ 50' },
-  { value: 100, label: 'R$ 100' },
-];
-
-export default function TipRequestModal({ service, provider, onClose }) {
-  const [selectedTip, setSelectedTip] = useState(null);
-  const [customAmount, setCustomAmount] = useState('');
+export default function TipRequestModal({ request, provider, onClose, onSuccess }) {
+  const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
-  const [qrDataUrl, setQrDataUrl] = useState(null);
-  const [checkoutUrl, setCheckoutUrl] = useState(null);
-  const [showQr, setShowQr] = useState(false);
-  const canvasRef = useRef(null);
 
-  const finalAmount = customAmount ? Number(customAmount) : selectedTip;
+  const presetAmounts = [10, 20, 30, 50];
 
-  // Gera QR code via API pública
-  const generateQrCanvas = async (url) => {
-    try {
-      const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(url)}`;
-      setQrDataUrl(qrImageUrl);
-    } catch (err) {
-      console.error('Erro ao gerar QR:', err);
-      // Fallback: exibe o URL direto
-      setQrDataUrl(url);
-    }
-  };
-
-  const handleGenerateQr = async () => {
-    if (!finalAmount || finalAmount < 5) {
-      toast.error('Valor mínimo é R$ 5,00');
+  const handleRequestTip = async () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      toast.error('Informe um valor válido');
       return;
     }
 
     setLoading(true);
     try {
-      const response = await base44.functions.invoke('createTipCheckoutSession', {
-        service_id: service.id,
-        provider_id: provider.id,
-        amount: Math.round(finalAmount * 100), // em centavos
-        client_email: service.created_by, // email do cliente que criou o serviço
-        service_number: service.service_number,
+      // Notifica o prestador
+      await base44.functions.invoke('sendPushNotification', {
+        provider_id: request.provider_id,
+        title: '🎁 Cliente quer gratificar!',
+        body: `Você recebeu uma solicitação de gorjeta de R$ ${parseFloat(amount).toFixed(2)}`,
+        data: {
+          service_id: request.id,
+          type: 'tip_request',
+        },
       });
 
-      if (response.data?.checkout_url) {
-        const url = response.data.checkout_url;
-        setCheckoutUrl(url);
-        
-        // Gera QR code baseado no URL
-        await generateQrCanvas(url);
-        setShowQr(true);
-        toast.success('QR Code gerado!');
-      }
-    } catch (err) {
-      console.error('Erro ao gerar QR:', err);
-      toast.error('Erro ao gerar QR Code');
+      // Registra no histórico
+      await base44.entities.ProviderNotification.create({
+        provider_id: request.provider_id,
+        type: 'tip_request',
+        title: '🎁 Solicitação de Gorjeta',
+        message: `${request.client_name} ofereceu R$ ${parseFloat(amount).toFixed(2)} de gorjeta`,
+        service_id: request.id,
+        amount: parseFloat(amount),
+        status: 'pending',
+      });
+
+      toast.success('Obrigado! Prestador foi notificado da sua gorjeta 🎉');
+      onSuccess?.();
+      onClose();
+    } catch (error) {
+      console.error('Erro ao solicitar gorjeta:', error);
+      toast.error('Erro ao enviar gorjeta');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCopyLink = () => {
-    if (checkoutUrl) {
-      navigator.clipboard.writeText(checkoutUrl);
-      toast.success('Link copiado!');
-    }
-  };
-
-  const handleShareLink = () => {
-    if (checkoutUrl && navigator.share) {
-      navigator.share({
-        title: 'Gorjeta para ' + provider.name,
-        text: `Clique para enviar uma gorjeta para ${provider.name}`,
-        url: checkoutUrl,
-      }).catch(err => console.log('Erro ao compartilhar:', err));
-    } else {
-      handleCopyLink();
-    }
-  };
-
-  if (showQr && qrDataUrl) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
-        <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-foreground">QR Code da Gorjeta</h3>
-            <button onClick={() => setShowQr(false)} className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="bg-muted rounded-2xl p-4 flex items-center justify-center">
-            {qrDataUrl.startsWith('blob:') || qrDataUrl.startsWith('data:') ? (
-              <img src={qrDataUrl} alt="QR Code" className="w-64 h-64" />
-            ) : (
-              <a href={qrDataUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm">
-                Clique aqui para abrir o link de pagamento
-              </a>
-            )}
-          </div>
-
-          <div className="bg-primary/5 rounded-2xl p-3 border border-primary/20">
-            <p className="text-sm font-semibold text-primary mb-1">R$ {finalAmount.toFixed(2)}</p>
-            <p className="text-xs text-muted-foreground">Escaneie o código ou clique no link abaixo</p>
-          </div>
-
-          <div className="space-y-2">
-            <Button onClick={handleCopyLink} className="w-full rounded-2xl" variant="outline">
-              <Copy className="w-4 h-4 mr-2" /> Copiar link
-            </Button>
-            <Button onClick={handleShareLink} className="w-full rounded-2xl" variant="outline">
-              <Share2 className="w-4 h-4 mr-2" /> Compartilhar
-            </Button>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-blue-700">A gorjeta será creditada automaticamente em sua carteira assim que o cliente confirmar o pagamento</p>
-          </div>
-
-          <Button onClick={() => setShowQr(false)} className="w-full rounded-2xl h-11 font-bold">
-            Fechar
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
-      <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4">
+      <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4 animate-in fade-in slide-in-from-bottom-5">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-foreground">Solicitar Gorjeta</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Cliente: {service.client_name}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🎁</span>
+            <h2 className="text-lg font-bold text-foreground">Gratificar o Prestador</h2>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center">
             <X className="w-4 h-4" />
           </button>
         </div>
 
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 space-y-3">
+          <div className="text-center">
+            <p className="text-sm font-bold text-amber-900 mb-1">Ficou satisfeito com o serviço?</p>
+            <p className="text-xs text-amber-800">
+              Deixe uma gorjeta para <strong>{provider?.name}</strong> e reconheça o bom trabalho! 💪
+            </p>
+          </div>
+        </div>
+
         <div className="space-y-3">
-          <p className="text-sm font-semibold text-foreground">Selecione um valor:</p>
-          <div className="grid grid-cols-2 gap-2">
-            {TIP_PRESETS.map(tip => (
+          <p className="text-xs font-semibold text-muted-foreground">Selecione um valor:</p>
+          <div className="grid grid-cols-4 gap-2">
+            {presetAmounts.map((amt) => (
               <button
-                key={tip.value}
-                onClick={() => {
-                  setSelectedTip(tip.value);
-                  setCustomAmount('');
-                }}
-                className={cn(
-                  "py-3 rounded-2xl border-2 font-semibold transition-all",
-                  selectedTip === tip.value && !customAmount
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border hover:border-primary/40 text-foreground"
-                )}
+                key={amt}
+                onClick={() => setAmount(amt.toString())}
+                className={`py-2 px-3 rounded-xl font-bold text-sm transition-all ${
+                  amount === amt.toString()
+                    ? 'bg-primary text-primary-foreground ring-2 ring-primary/50'
+                    : 'bg-muted text-foreground hover:bg-accent'
+                }`}
               >
-                {tip.label}
+                R$ {amt}
               </button>
             ))}
           </div>
 
-          <div className="relative">
-            <p className="text-sm font-semibold text-foreground mb-1">Ou defina um valor customizado:</p>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-muted-foreground">Ou informe um valor:</label>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-muted-foreground">R$</span>
+              <span className="text-foreground font-bold">R$</span>
               <input
                 type="number"
-                placeholder="0,00"
-                value={customAmount}
-                onChange={(e) => {
-                  setCustomAmount(e.target.value);
-                  setSelectedTip(null);
-                }}
-                min="5"
+                min="1"
                 step="0.01"
-                className="flex-1 px-3 py-2.5 rounded-2xl border-2 border-border bg-transparent text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
-            {customAmount && <p className="text-xs text-muted-foreground mt-1">Total: R$ {Number(customAmount).toFixed(2)}</p>}
           </div>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-          <p className="text-xs text-blue-700">O cliente pagará via Stripe. A gorjeta será adicionada à sua carteira em tempo real.</p>
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-3">
+          <p className="text-xs text-green-800">
+            ✓ A gorjeta é opcional e completamente segura. Você pode pagar por PIX, cartão ou outro método.
+          </p>
         </div>
 
         <div className="flex gap-2">
@@ -201,30 +119,19 @@ export default function TipRequestModal({ service, provider, onClose }) {
             Cancelar
           </Button>
           <Button
-            onClick={handleGenerateQr}
-            disabled={!finalAmount || finalAmount < 5 || loading}
-            className="flex-1 rounded-2xl bg-primary text-primary-foreground font-bold"
+            onClick={handleRequestTip}
+            disabled={loading || !amount}
+            className="flex-1 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold hover:from-amber-600 hover:to-orange-600"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <QrCode className="w-4 h-4 mr-2" />}
-            Gerar QR
+            {loading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Gift className="w-4 h-4 mr-2" />
+            )}
+            Confirmar Gorjeta
           </Button>
         </div>
       </div>
     </div>
   );
 }
-
-function cn(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
-
-// Script para gerar QR code via canvas
-const generateQRCodeImage = async (text) => {
-  try {
-    // Usa a API de QR code via URL (fallback)
-    return `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(text)}`;
-  } catch (err) {
-    console.error('Erro ao gerar QR:', err);
-    return null;
-  }
-};

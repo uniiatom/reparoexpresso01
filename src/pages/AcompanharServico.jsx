@@ -14,6 +14,7 @@ import PaymentModal from '../components/PaymentModal';
 import PixPaymentModal from '../components/PixPaymentModal';
 import NotificationPermissionBanner from '../components/NotificationPermissionBanner';
 import SatisfactionSurveyModal from '../components/SatisfactionSurveyModal';
+import TipRequestModal from '../components/TipRequestModal';
 import WarrantyBadge from '../components/WarrantyBadge';
 
 import BatchProvidersPanel from '../components/BatchProvidersPanel';
@@ -45,6 +46,7 @@ export default function AcompanharServico() {
   const [showPixPayment, setShowPixPayment] = useState(false);
   const [showRetorno, setShowRetorno] = useState(urlParams.get('retorno') === '1');
   const [showSatisfactionSurvey, setShowSatisfactionSurvey] = useState(false);
+  const [showTipRequest, setShowTipRequest] = useState(false);
   const [previousStatus, setPreviousStatus] = useState(null);
   const previousStatusRef = useRef(null);
   const [user, setUser] = useState(null);
@@ -663,6 +665,12 @@ export default function AcompanharServico() {
       {request.status === 'concluido' && (
         <div className="space-y-3">
           <Button 
+            className="w-full rounded-2xl bg-amber-500 text-white font-semibold h-11 hover:bg-amber-600"
+            onClick={() => setShowTipRequest(true)}
+          >
+            🎁 Gratificar Prestador
+          </Button>
+          <Button 
             className="w-full rounded-2xl bg-primary text-primary-foreground font-semibold h-11"
             onClick={() => setShowRetorno(true)}
           >
@@ -692,6 +700,14 @@ export default function AcompanharServico() {
           respondentId={user.id}
           respondentName={user.full_name}
           onClose={() => setShowSatisfactionSurvey(false)}
+        />
+      )}
+      {showTipRequest && request.provider_id && (
+        <TipRequestModal
+          request={request}
+          provider={{ name: request.provider_name, id: request.provider_id }}
+          onClose={() => setShowTipRequest(false)}
+          onSuccess={() => {}}
         />
       )}
       {request.final_price && (
