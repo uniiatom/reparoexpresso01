@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Star, X, ThumbsUp } from 'lucide-react';
+import { Star, X, ThumbsUp, Gift } from 'lucide-react';
 import { toast } from 'sonner';
+import TipRequestModal from './TipRequestModal';
 
 export default function SatisfactionSurveyModal({ job, respondentType, respondentId, respondentName, onClose }) {
   const [qualityRating, setQualityRating] = useState(0);
@@ -12,6 +13,8 @@ export default function SatisfactionSurveyModal({ job, respondentType, responden
   const [comment, setComment] = useState('');
   const [recommended, setRecommended] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(false);
 
   const isComplete = qualityRating > 0 && serviceRating > 0 && recommended !== null;
 
@@ -31,7 +34,7 @@ export default function SatisfactionSurveyModal({ job, respondentType, responden
         recommended: recommended,
       });
       toast.success('Obrigado pela avaliação!');
-      onClose();
+      setSubmitted(true);
     } catch (err) {
       toast.error('Erro ao enviar pesquisa: ' + (err?.message || 'tente novamente'));
     }
@@ -60,6 +63,59 @@ export default function SatisfactionSurveyModal({ job, respondentType, responden
       </div>
     </div>
   );
+
+  if (submitted) {
+    return (
+      <>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40">
+          <div className="bg-card rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md p-6 border border-border shadow-xl space-y-4">
+            <div className="text-center">
+              <div className="flex justify-center mb-3">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <ThumbsUp className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+              <h2 className="text-lg font-bold text-foreground mb-1">Pesquisa enviada!</h2>
+              <p className="text-sm text-muted-foreground">Obrigado por sua avaliação</p>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center">
+              <p className="text-sm font-semibold text-amber-900 mb-3">Quer deixar uma gratificação?</p>
+              <p className="text-xs text-amber-800 mb-4">Reconheça o bom trabalho do prestador com uma gratificação extra</p>
+              <Button
+                className="w-full bg-amber-500 text-white font-semibold hover:bg-amber-600 rounded-xl"
+                onClick={() => setShowTipModal(true)}
+              >
+                <Gift className="w-4 h-4 mr-2" /> Deixar Gratificação
+              </Button>
+            </div>
+
+            <Button
+              variant="outline"
+              className="w-full rounded-xl"
+              onClick={onClose}
+            >
+              Fechar
+            </Button>
+          </div>
+        </div>
+        {showTipModal && (
+          <TipRequestModal
+            request={job}
+            provider={{ name: job.provider_name, id: job.provider_id }}
+            onClose={() => {
+              setShowTipModal(false);
+              onClose();
+            }}
+            onSuccess={() => {
+              setShowTipModal(false);
+              onClose();
+            }}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40">
