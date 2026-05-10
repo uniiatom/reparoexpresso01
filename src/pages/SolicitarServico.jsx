@@ -27,7 +27,7 @@ import RetornoButton from "@/components/RetornoButton";
 import ProviderMiniPhoto from "@/components/ProviderMiniPhoto";
 import PressurizadorModal from "@/components/PressurizadorModal";
 import ValvulaTransfModal from "@/components/ValvulaTransfModal";
-import { PaneSeccaAlertModal, LimpezaTelhadoAlertModal, ArCondicionadoModal } from "@/components/ServiceAlertModals";
+import { PaneSeccaAlertModal, LimpezaTelhadoAlertModal, ArCondicionadoModal, LimpezaCalhaTelhadoAlertModal, NaoSeiLitragemModal } from "@/components/ServiceAlertModals";
 import { SERVICE_TYPES } from "@/lib/serviceTypes";
 
 const URGENCY = [
@@ -101,14 +101,15 @@ export default function SolicitarServico() {
   const [showNaoSeiAlert, setShowNaoSeiAlert] = useState(false);
   const [showPaneSeccaAlert, setShowPaneSeccaAlert] = useState(false);
   const [showLimpezaTelhadoAlert, setShowLimpezaTelhadoAlert] = useState(false);
-  const [showArCondicionadoModal, setShowArCondicionadoModal] = useState(false);
-  const [arCondicionadoTipo, setArCondicionadoTipo] = useState(null);
   const [showForroGessoModal, setShowForroGessoModal] = useState(false);
   const [forroGessoTipo, setForroGessoTipo] = useState(null);
   const [showPressurizadorModal, setShowPressurizadorModal] = useState(false);
   const [pressurizadorTipo, setPressurizadorTipo] = useState(null);
   const [showValvulaTransfModal, setShowValvulaTransfModal] = useState(false);
   const [valvulaTransfTipo, setValvulaTransfTipo] = useState(null);
+  const [showArCondicionadoModal, setShowArCondicionadoModal] = useState(false);
+  const [showLimpezaCalhaTelhadoAlert, setShowLimpezaCalhaTelhadoAlert] = useState(false);
+  // estados dos modais acima foram consolidados
   const [towQuestions, setTowQuestions] = useState({});
   const [towVehicleType, setTowVehicleType] = useState(null);
   const [calculatingRoute, setCalculatingRoute] = useState(false);
@@ -865,8 +866,9 @@ export default function SolicitarServico() {
                     setShowArCondicionadoModal(true);
                     return;
                   }
-                  if (s.value === 'ar_condicionado' && selected) {
-                    setArCondicionadoTipo(null);
+                  if (s.value === 'limpeza_calha' && !selected) {
+                    setShowLimpezaCalhaTelhadoAlert(true);
+                    return;
                   }
                   if (s.value === 'limpeza_telhado' && !selected) {
                     setShowLimpezaTelhadoAlert(true);
@@ -897,8 +899,6 @@ export default function SolicitarServico() {
                        <><span>Válvula Transfer.</span><br /><span className="text-[10px] opacity-75">({valvulaTransfTipo === 'visita_tecnica' ? 'Visita' : valvulaTransfTipo === 'instalacao' ? 'Instalação' : 'Reparo'})</span></>
                     ) : s.value === 'desentupimento' && desentupimentoTipo ? (
                        <><span>Desentupimento</span><br /><span className="text-[10px] opacity-75">({desentupimentoTipo})</span></>
-                    ) : s.value === 'ar_condicionado' && arCondicionadoTipo ? (
-                       <><span>Ar Condicionado</span><br /><span className="text-[10px] opacity-75">({arCondicionadoTipo === 'conserto' ? 'Conserto' : 'Limpeza Química'})</span></>
                      ) : s.label}
                   </span>
                   {selected && <span className="w-4 h-4 bg-primary rounded-full flex items-center justify-center"><span className="text-white text-[9px] font-black">✓</span></span>}
@@ -1135,7 +1135,29 @@ export default function SolicitarServico() {
 
           {showValvulaTransfModal && <ValvulaTransfModal onSelect={(tipo) => { setValvulaTransfTipo(tipo); set('service_type', [...form.service_type, 'valvula_transferidora_pressao']); setShowValvulaTransfModal(false); }} onCancel={() => setShowValvulaTransfModal(false)} />}
 
-          {showArCondicionadoModal && <ArCondicionadoModal onSelect={(tipo) => { setArCondicionadoTipo(tipo); const d = tipo === 'conserto' ? 'Conserto de ar condicionado.' : 'Limpeza química do ar condicionado.'; set('service_type', [...form.service_type, 'ar_condicionado']); setDescriptionsPerService(prev => ({ ...prev, ar_condicionado: { ...prev.ar_condicionado, description: d } })); setShowArCondicionadoModal(false); }} onClose={() => setShowArCondicionadoModal(false)} />}
+          {/* Modal Ar Condicionado */}
+          {showArCondicionadoModal && (
+            <ArCondicionadoModal
+              onSelect={(tipo) => {
+                const desc = tipo === 'conserto' ? 'Conserto de ar condicionado.' : 'Limpeza química de ar condicionado.';
+                set('service_type', [...form.service_type, 'ar_condicionado']);
+                setDescriptionsPerService(prev => ({
+                  ...prev,
+                  ar_condicionado: { ...prev.ar_condicionado, description: desc }
+                }));
+                setShowArCondicionadoModal(false);
+              }}
+              onClose={() => setShowArCondicionadoModal(false)}
+            />
+          )}
+
+          {/* Modal aviso Limpeza de Calha */}
+          {showLimpezaCalhaTelhadoAlert && (
+            <LimpezaCalhaTelhadoAlertModal
+              onConfirm={() => { set('service_type', [...form.service_type, 'limpeza_calha']); setShowLimpezaCalhaTelhadoAlert(false); }}
+              onClose={() => setShowLimpezaCalhaTelhadoAlert(false)}
+            />
+          )}
 
           {/* Modal aviso Pane Seca */}
           {showPaneSeccaAlert && (
@@ -1205,46 +1227,25 @@ export default function SolicitarServico() {
 
           {/* Modal aviso "Não sei" litragem */}
           {showNaoSeiAlert && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowNaoSeiAlert(false)}>
-              <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
-                <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-                <div className="text-center mb-5">
-                  <span className="text-4xl mb-3 block">📏</span>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Litragem não informada</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Sem problema! O prestador irá medir e avaliar a capacidade da caixa d'água no local antes de iniciar a limpeza.
-                  </p>
-                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-left">
-                    <p className="text-sm font-semibold text-blue-900 mb-1">ℹ️ Como funciona:</p>
-                    <ul className="text-xs text-blue-800 space-y-1 list-disc list-inside">
-                      <li>O técnico mede a litragem da caixa no local</li>
-                      <li>Informa o valor correspondente ao cliente</li>
-                      <li>A cobrança é confirmada <strong>antes</strong> de iniciar a limpeza</li>
-                    </ul>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowNaoSeiAlert(false);
-                    setCaixaDaguaLitragem('Não sei');
-                    const tipoLabel = caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio';
-                    const autoDesc = `Limpeza de caixa d'água ${tipoLabel} — litragem a ser medida no local pelo prestador.`;
-                    const newTypes = [...form.service_type, 'limpeza_caixa_dagua'];
-                    set('service_type', newTypes);
-                    if (newTypes.length === 1) set('description', autoDesc);
-                    setDescriptionsPerService(prev => ({
-                      ...prev,
-                      limpeza_caixa_dagua: { ...prev.limpeza_caixa_dagua, description: autoDesc }
-                    }));
-                    setShowCaixaDaguaModal(false);
-                    setCaixaDaguaStep('tipo');
-                  }}
-                  className="w-full py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-bold transition-all"
-                >
-                  Entendi, continuar
-                </button>
-              </div>
-            </div>
+            <NaoSeiLitragemModal
+              caixaDaguaTipo={caixaDaguaTipo}
+              onConfirm={() => {
+                setShowNaoSeiAlert(false);
+                setCaixaDaguaLitragem('Não sei');
+                const tipoLabel = caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio';
+                const autoDesc = `Limpeza de caixa d'água ${tipoLabel} — litragem a ser medida no local pelo prestador.`;
+                const newTypes = [...form.service_type, 'limpeza_caixa_dagua'];
+                set('service_type', newTypes);
+                if (newTypes.length === 1) set('description', autoDesc);
+                setDescriptionsPerService(prev => ({
+                  ...prev,
+                  limpeza_caixa_dagua: { ...prev.limpeza_caixa_dagua, description: autoDesc }
+                }));
+                setShowCaixaDaguaModal(false);
+                setCaixaDaguaStep('tipo');
+              }}
+              onClose={() => setShowNaoSeiAlert(false)}
+            />
           )}
 
           {form.service_type.length > 0 && (
