@@ -13,7 +13,7 @@ export default function ProviderExtraChargesPanel({ service, onApprovalChange })
   const [cancellationNotes, setCancellationNotes] = useState('');
   const [photos, setPhotos] = useState([]);
   const [items, setItems] = useState([
-    { id: 1, description: '', quantity: 1, value: 0 }
+    { id: 1, description: '', quantity: 1, value: 0, photos: [] }
   ]);
   const [laborDescription, setLaborDescription] = useState('');
   const [laborHours, setLaborHours] = useState('');
@@ -36,7 +36,8 @@ export default function ProviderExtraChargesPanel({ service, onApprovalChange })
       id: Math.max(...items.map(i => i.id), 0) + 1, 
       description: '', 
       quantity: 1, 
-      value: 0 
+      value: 0,
+      photos: []
     }]);
   };
 
@@ -91,7 +92,7 @@ export default function ProviderExtraChargesPanel({ service, onApprovalChange })
       toast.success('Orçamento extra enviado para o cliente!');
       setExpanded(false);
       setShowConfirmApprove(false);
-      setItems([{ id: 1, description: '', quantity: 1, value: 0 }]);
+      setItems([{ id: 1, description: '', quantity: 1, value: 0, photos: [] }]);
       setLaborDescription('');
       setLaborHours('');
       setLaborRate('');
@@ -235,61 +236,109 @@ export default function ProviderExtraChargesPanel({ service, onApprovalChange })
           {/* Tabela de materiais */}
           <div className="bg-white rounded-2xl p-4 space-y-3 border border-blue-100">
             <p className="text-sm font-semibold text-foreground">🛠️ Materiais e Serviços:</p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left p-2 text-xs font-semibold text-muted-foreground">Descrição</th>
-                    <th className="text-center p-2 text-xs font-semibold text-muted-foreground">Qtd</th>
-                    <th className="text-right p-2 text-xs font-semibold text-muted-foreground">Valor</th>
-                    <th className="text-center p-2 text-xs font-semibold text-muted-foreground">Ação</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => (
-                    <tr key={item.id} className="border-b border-border hover:bg-blue-50">
-                      <td className="p-2">
-                        <input
-                          type="text"
-                          placeholder="Ex: Tubo PVC 50mm"
-                          value={item.description}
-                          onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                          className="w-full rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400"
-                        />
-                      </td>
-                      <td className="p-2 text-center">
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                          className="w-12 rounded-lg border border-border bg-background px-2 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-400"
-                        />
-                      </td>
-                      <td className="p-2 text-right">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          placeholder="0.00"
-                          value={item.value || ''}
-                          onChange={(e) => updateItem(item.id, 'value', parseFloat(e.target.value) || 0)}
-                          className="w-20 rounded-lg border border-border bg-background px-2 py-1 text-xs text-right focus:outline-none focus:ring-1 focus:ring-blue-400"
-                        />
-                      </td>
-                      <td className="p-2 text-center">
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-xs text-red-600 hover:text-red-700 font-semibold"
-                        >
-                          ✕
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="space-y-4">
+              {items.map((item) => (
+                <div key={item.id} className="border border-blue-100 rounded-lg p-3 space-y-2">
+                  {/* Campo de descrição */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ex: Tubo PVC 50mm"
+                      value={item.description}
+                      onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                      className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                      placeholder="Qtd"
+                      className="w-14 rounded-lg border border-border bg-background px-2 py-2 text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="R$"
+                      value={item.value || ''}
+                      onChange={(e) => updateItem(item.id, 'value', parseFloat(e.target.value) || 0)}
+                      className="w-20 rounded-lg border border-border bg-background px-2 py-2 text-xs text-right focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="text-xs text-red-600 hover:text-red-700 font-bold px-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Fotos do item */}
+                  <div className="bg-blue-50 rounded-lg p-2 space-y-2">
+                    {/* Grid de fotos */}
+                    {item.photos.length > 0 && (
+                      <div className="grid grid-cols-4 gap-1">
+                        {item.photos.map((photo, idx) => (
+                          <div key={idx} className="relative group">
+                            <img
+                              src={photo}
+                              alt={`Foto ${idx + 1}`}
+                              className="w-full h-16 object-cover rounded-md border border-border"
+                            />
+                            <button
+                              onClick={() => {
+                                const newPhotos = item.photos.filter((_, i) => i !== idx);
+                                updateItem(item.id, 'photos', newPhotos);
+                              }}
+                              className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <XCircle className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Upload */}
+                    <label className="block">
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const files = Array.from(e.target.files || []);
+                          if (!files.length) return;
+                          try {
+                            const uploadedPhotos = [];
+                            for (const file of files) {
+                              const result = await base44.integrations.Core.UploadFile({ file });
+                              if (result?.file_url) {
+                                uploadedPhotos.push(result.file_url);
+                              }
+                            }
+                            if (uploadedPhotos.length > 0) {
+                              updateItem(item.id, 'photos', [...item.photos, ...uploadedPhotos]);
+                            }
+                          } catch (error) {
+                            console.error('Erro ao enviar fotos:', error);
+                            toast.error('Erro ao enviar fotos do item');
+                          }
+                          e.target.value = '';
+                        }}
+                        className="hidden"
+                      />
+                      <div className="border border-dashed border-blue-300 rounded-lg p-2 text-center cursor-pointer hover:bg-blue-100 transition-colors">
+                        <span className="text-xs text-blue-600 font-semibold flex items-center justify-center gap-1">
+                          <Upload className="w-3 h-3" />
+                          Fotos ({item.photos.length})
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              ))}
             </div>
+
             <button
               onClick={addItem}
               className="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 mt-2"
