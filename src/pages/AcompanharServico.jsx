@@ -93,8 +93,13 @@ export default function AcompanharServico() {
     if (!id) return;
     // Carga inicial
     base44.entities.ServiceRequest.filter({ id }).then(list => {
-      if (list[0]) setRequest(list[0]);
-    });
+      if (list[0]) {
+        setRequest(list[0]);
+      } else {
+        navigate('/');
+      }
+    }).catch(() => navigate('/'));
+    
     // Atualização em tempo real
     const unsub = base44.entities.ServiceRequest.subscribe((event) => {
       if (event.id === id) {
@@ -104,7 +109,7 @@ export default function AcompanharServico() {
       }
     });
     return unsub;
-  }, [id]);
+  }, [id, navigate]);
 
   // Busca fotos dos prestadores envolvidos
   useEffect(() => {
@@ -187,6 +192,11 @@ export default function AcompanharServico() {
       });
     }
   }, [request?.status, user?.id, request?.id]);
+
+  if (!id) {
+    navigate('/');
+    return null;
+  }
 
   if (!request) {
     return (
