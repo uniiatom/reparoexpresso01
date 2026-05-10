@@ -33,6 +33,7 @@ import ProviderNotificationCenter from '../components/ProviderNotificationCenter
 import ProviderTermsTab from '../components/ProviderTermsTab';
 import { useProviderPush } from '../hooks/useProviderPush';
 import NewServiceFullscreenModal from '@/components/NewServiceFullscreenModal';
+import ProviderDailyRouteMap from '@/components/ProviderDailyRouteMap';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -838,8 +839,17 @@ export default function ProviderApp() {
 
       {/* ── ABA AGENDA ── */}
       {activeTab === 'agenda' && (
-        <div>
-          <p className="text-sm text-muted-foreground mb-4">
+        <div className="space-y-5">
+          {scheduledJobs.length > 0 && (
+            <ProviderDailyRouteMap 
+              providerId={provider?.id}
+              currentLocation={provider?.latitude && provider?.longitude ? {
+                latitude: provider.latitude,
+                longitude: provider.longitude,
+              } : null}
+            />
+          )}
+          <p className="text-sm text-muted-foreground">
             Serviços agendados confirmados para você. Apareça no local na data e horário combinados.
           </p>
           {scheduledJobs.length === 0 ? (
