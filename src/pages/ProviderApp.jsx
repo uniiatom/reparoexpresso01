@@ -383,36 +383,44 @@ export default function ProviderApp() {
     }
   }, [realActiveJob?.id]);
 
-  // Emite som quando há serviço agendado aguardando aceite (somente uma vez por login)
+  // Emite som quando há serviço agendado aguardando aceite
   const hasPlayedAlertRef = useRef(false);
   useEffect(() => {
-    const pendingScheduled = scheduledJobs.filter(j => j.status === 'agendado');
-    if (pendingScheduled.length > 0 && provider?.is_online && provider?.is_approved && !hasPlayedAlertRef.current) {
+    if (scheduledJobs.length > 0 && provider?.is_online && provider?.is_approved && !hasPlayedAlertRef.current) {
       hasPlayedAlertRef.current = true;
-      // Emite som de alerta mais audível
-      try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const now = audioContext.currentTime;
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = 1000;
-        oscillator.type = 'sine';
-        
-        // Som mais alto e audível
-        gainNode.gain.setValueAtTime(0.5, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
-        
-        oscillator.start(now);
-        oscillator.stop(now + 0.8);
-      } catch (e) {
-        console.log('Som de alerta não disponível');
-      }
+      // Toca som múltiplas vezes para garantir audição
+      const playAlert = () => {
+        try {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const now = audioContext.currentTime;
+          
+          // 3 beeps curtos
+          for (let i = 0; i < 3; i++) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.frequency.value = 1200;
+            osc.type = 'sine';
+            
+            gain.gain.setValueAtTime(0.8, now + i * 0.3);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.3 + 0.2);
+            
+            osc.start(now + i * 0.3);
+            osc.stop(now + i * 0.3 + 0.2);
+          }
+        } catch (e) {
+          console.log('Alerta sonoro não disponível:', e.message);
+        }
+      };
+      
+      // Tenta tocar imediatamente e depois em 1 segundo
+      setTimeout(playAlert, 100);
+      setTimeout(playAlert, 1100);
     }
-  }, [provider?.is_online, provider?.is_approved]);
+  }, [scheduledJobs.length, provider?.is_online, provider?.is_approved]);
 
   if (!provider) {
     return <ProviderSetupModal user={user} onCreated={() => queryClient.invalidateQueries({ queryKey: ['my-provider'] })} />;
