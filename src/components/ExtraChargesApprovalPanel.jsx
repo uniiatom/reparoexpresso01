@@ -140,18 +140,18 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         </span>
       </button>
 
-      {/* Fotos do serviço - visível para ambos */}
-      {expanded && photos.length > 0 && (
+      {/* Fotos do serviço - visível apenas para prestador */}
+      {expanded && photos.length > 0 && user?.role === 'admin' && (
         <div className="border-t border-amber-200 pt-3">
           <PhotoUploadGallery 
             photos={photos} 
             onPhotosChange={setPhotos}
-            readOnly={user?.role !== 'admin'}
+            readOnly={false}
           />
         </div>
       )}
 
-      {/* Detalhes expandidos - Cliente */}
+      {/* Detalhes expandidos - Cliente (apenas aprovação/rejeição) */}
       {expanded && user?.role === 'user' && (
         <div className="space-y-3 border-t border-amber-200 pt-3">
           <div className="bg-white rounded-2xl p-4 space-y-2">
@@ -172,9 +172,21 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
 
           {/* Mensagem do prestador */}
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3">
-            <p className="text-xs font-semibold text-blue-900 mb-1">📝 Informações do prestador:</p>
-            <p className="text-sm text-blue-800">{notification.message || 'Solicitação de orçamento extra para completar o serviço.'}</p>
+            <p className="text-xs font-semibold text-blue-900 mb-1">📝 Solicitação do prestador:</p>
+            <p className="text-sm text-blue-800">{notification.message || 'Orçamento extra solicitado pelo prestador.'}</p>
           </div>
+
+          {/* Fotos (apenas leitura para cliente) */}
+          {photos.length > 0 && (
+            <div className="border-t border-amber-200 pt-3">
+              <p className="text-xs font-semibold text-amber-900 mb-2">📸 Fotos enviadas:</p>
+              <div className="grid grid-cols-3 gap-2">
+                {photos.map((photo, idx) => (
+                  <img key={idx} src={photo} alt={`Foto ${idx + 1}`} className="w-full h-24 object-cover rounded-xl border border-amber-200" />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
