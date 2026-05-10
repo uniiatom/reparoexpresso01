@@ -10,6 +10,8 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   const [showRejectionForm, setShowRejectionForm] = useState(false);
   const [localService, setLocalService] = useState(service);
   const [notification, setNotification] = useState(null);
+  const [expanded, setExpanded] = useState(false);
+  const [showConfirmApprove, setShowConfirmApprove] = useState(false);
 
   // Atualiza em tempo real quando o service muda
   useEffect(() => {
@@ -60,6 +62,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
 
       toast.success('Orçamento aprovado! O prestador foi notificado.');
       setNotification(null);
+      setShowConfirmApprove(false);
       onApprovalChange?.();
     } catch (error) {
       console.error('Erro ao aprovar:', error);
@@ -104,60 +107,100 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   };
 
   return (
-    <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-5 space-y-4 mb-5">
-      <div className="flex items-start gap-3">
+    <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-5 space-y-3 mb-5">
+      {/* Header colapsável */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-start gap-3 hover:opacity-80 transition-opacity"
+      >
         <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="font-bold text-amber-900">Orçamento extra aguardando aprovação</p>
-          <p className="text-sm text-amber-800 mt-1">{notification.provider_name} solicitou um adicional de R$ {total.toFixed(2)} para completar o serviço.</p>
+        <div className="flex-1 text-left min-w-0">
+          <p className="font-bold text-amber-900">💰 Orçamento extra aguardando aprovação</p>
+          <p className="text-sm text-amber-800 mt-0.5">{notification.provider_name} solicitou +R$ {total.toFixed(2)}</p>
         </div>
-      </div>
+        <span className={`text-amber-600 flex-shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}>
+          ▼
+        </span>
+      </button>
 
-      {/* Resumo simples (sem itens detalhados por enquanto) */}
-      <div className="bg-white rounded-2xl p-4 space-y-2">
-        <p className="text-sm font-semibold text-foreground mb-3">Resumo do orçamento extra:</p>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Valor original:</span>
-          <span className="font-semibold text-foreground">R$ {originalPrice.toFixed(2)}</span>
+      {/* Detalhes expandidos */}
+      {expanded && (
+        <div className="space-y-3 border-t border-amber-200 pt-3">
+          <div className="bg-white rounded-2xl p-4 space-y-2">
+            <p className="text-sm font-semibold text-foreground mb-3">📊 Resumo financeiro:</p>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Valor original:</span>
+              <span className="font-semibold text-foreground">R$ {originalPrice.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm border-t border-border pt-2">
+              <span className="text-muted-foreground">+ Itens extras:</span>
+              <span className="font-bold text-amber-700">+ R$ {total.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-base font-bold border-t-2 border-amber-300 pt-3">
+              <span className="text-amber-900">Novo total:</span>
+              <span className="text-amber-700">R$ {new_total.toFixed(2)}</span>
+            </div>
+          </div>
+
+          {/* Mensagem do prestador */}
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3">
+            <p className="text-xs font-semibold text-blue-900 mb-1">📝 Informações do prestador:</p>
+            <p className="text-sm text-blue-800">{notification.message || 'Solicitação de orçamento extra para completar o serviço.'}</p>
+          </div>
         </div>
-        <div className="flex justify-between text-sm border-t border-border pt-2">
-          <span className="text-muted-foreground">+ Itens extras:</span>
-          <span className="font-semibold text-amber-700">R$ {total.toFixed(2)}</span>
+      )}
+
+      {/* Botões de ação */}
+      {expanded && !showRejectionForm && (
+        <div className="flex gap-2 pt-2 border-t border-amber-200">
+          <Button
+            onClick={() => setShowRejectionForm(true)}
+            variant="outline"
+            className="flex-1 rounded-2xl border-red-300 text-red-600 hover:bg-red-50 h-10 font-semibold text-sm"
+            disabled={loading}
+          >
+            <XCircle className="w-4 h-4 mr-1.5" /> Rejeitar
+          </Button>
+          <Button
+            onClick={() => setShowConfirmApprove(true)}
+            className="flex-1 rounded-2xl bg-green-600 hover:bg-green-700 text-white h-10 font-semibold text-sm"
+            disabled={loading}
+          >
+            <CheckCircle2 className="w-4 h-4 mr-1.5" /> Aprovar
+          </Button>
         </div>
-        <div className="flex justify-between text-lg font-bold border-t border-amber-300 pt-2">
-          <span className="text-foreground">Novo total:</span>
-          <span className="text-amber-700">R$ {new_total.toFixed(2)}</span>
-        </div>
-      </div>
+      )}
 
 
 
       {/* Formulário de rejeição */}
       {showRejectionForm && (
         <div className="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-3">
-          <p className="text-sm font-semibold text-red-900">Por que está rejeitando?</p>
+          <p className="text-sm font-semibold text-red-900">❌ Por que está rejeitando?</p>
           <textarea
             placeholder="Explique o motivo da rejeição..."
             value={rejectionNotes}
             onChange={(e) => setRejectionNotes(e.target.value)}
             className="w-full rounded-xl border border-red-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-red-400 resize-none"
             rows={3}
+            autoFocus
           />
           <div className="flex gap-2">
             <Button
               size="sm"
               variant="outline"
-              className="flex-1"
+              className="flex-1 rounded-xl"
               onClick={() => {
                 setShowRejectionForm(false);
                 setRejectionNotes('');
               }}
+              disabled={loading}
             >
               Cancelar
             </Button>
             <Button
               size="sm"
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+              className="flex-1 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold"
               onClick={handleReject}
               disabled={loading || !rejectionNotes.trim()}
             >
@@ -168,25 +211,33 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         </div>
       )}
 
-      {/* Botões de ação */}
-      {!showRejectionForm && (
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setShowRejectionForm(true)}
-            variant="outline"
-            className="flex-1 rounded-2xl border-red-300 text-red-600 hover:bg-red-50 h-11 font-semibold"
-            disabled={loading}
-          >
-            <XCircle className="w-4 h-4 mr-2" /> Rejeitar
-          </Button>
-          <Button
-            onClick={handleApprove}
-            className="flex-1 rounded-2xl bg-green-600 hover:bg-green-700 text-white h-11 font-semibold"
-            disabled={loading}
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
-            Aprovar Orçamento
-          </Button>
+      {/* Modal de confirmação de aprovação */}
+      {showConfirmApprove && (
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-4 space-y-3">
+          <p className="text-sm font-semibold text-green-900">✓ Confirmar aprovação?</p>
+          <p className="text-sm text-green-800">
+            Você está aprovando um adicional de <strong>R$ {total.toFixed(2)}</strong>, levando o total para <strong>R$ {new_total.toFixed(2)}</strong>.
+          </p>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 rounded-xl"
+              onClick={() => setShowConfirmApprove(false)}
+              disabled={loading}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              className="flex-1 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold"
+              onClick={handleApprove}
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
+              Sim, Aprovar
+            </Button>
+          </div>
         </div>
       )}
     </div>
