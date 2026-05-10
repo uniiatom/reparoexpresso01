@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -66,56 +66,65 @@ export default function SatisfactionSurveyModal({ job, respondentType, responden
     </div>
   );
 
+  // Auto-close after 2 seconds and trigger tip modal
+  useEffect(() => {
+    if (submitted) {
+      const timer = setTimeout(() => {
+        setShowTipModal(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [submitted]);
+
   if (submitted) {
     return (
       <>
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40">
-          <div className="bg-card rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md p-6 border border-border shadow-xl space-y-4">
-            <div className="text-center">
-              <div className="flex justify-center mb-3">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <ThumbsUp className="w-6 h-6 text-green-600" />
-                </div>
-              </div>
-              <h2 className="text-lg font-bold text-foreground mb-1">Pesquisa enviada!</h2>
-              <p className="text-sm text-muted-foreground">Obrigado por sua avaliação</p>
-            </div>
-
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center">
-              <p className="text-sm font-semibold text-amber-900 mb-3">Quer deixar uma gratificação?</p>
-              <p className="text-xs text-amber-800 mb-4">Reconheça o bom trabalho do prestador com uma gratificação extra</p>
-              <Button
-                className="w-full bg-amber-500 text-white font-semibold hover:bg-amber-600 rounded-xl"
-                onClick={() => setShowTipModal(true)}
-              >
-                <Gift className="w-4 h-4 mr-2" /> Deixar Gratificação
-              </Button>
-            </div>
-
-            <Button
-              variant="outline"
-              className="w-full rounded-xl"
-              onClick={onClose}
-            >
-              Fechar
-            </Button>
-          </div>
-        </div>
-        {showTipModal && job?.provider_id && (
+        {showTipModal && job?.provider_id ? (
           <TipRequestModal
             request={job}
             provider={{ name: job.provider_name, id: job.provider_id }}
             onClose={() => {
               console.log('[SatisfactionSurveyModal] Fechando modal de gratificação');
-              setShowTipModal(false);
               onClose();
             }}
             onSuccess={() => {
               console.log('[SatisfactionSurveyModal] Gratificação confirmada');
-              setShowTipModal(false);
               onClose();
             }}
           />
+        ) : (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40">
+            <div className="bg-card rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md p-6 border border-border shadow-xl space-y-4">
+              <div className="text-center">
+                <div className="flex justify-center mb-3">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <ThumbsUp className="w-6 h-6 text-green-600" />
+                  </div>
+                </div>
+                <h2 className="text-lg font-bold text-foreground mb-1">Pesquisa enviada!</h2>
+                <p className="text-sm text-muted-foreground">Obrigado por sua avaliação</p>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center">
+                <p className="text-sm font-semibold text-amber-900 mb-3">Quer deixar uma gratificação?</p>
+                <p className="text-xs text-amber-800 mb-4">Reconheça o bom trabalho do prestador com uma gratificação extra</p>
+                <Button
+                  className="w-full bg-amber-500 text-white font-semibold hover:bg-amber-600 rounded-xl"
+                  onClick={() => setShowTipModal(true)}
+                >
+                  <Gift className="w-4 h-4 mr-2" /> Deixar Gratificação
+                </Button>
+              </div>
+
+              <Button
+                variant="outline"
+                className="w-full rounded-xl"
+                onClick={onClose}
+              >
+                Fechar
+              </Button>
+            </div>
+          </div>
         )}
       </>
     );
