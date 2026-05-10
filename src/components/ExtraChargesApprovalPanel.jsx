@@ -129,8 +129,8 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         </span>
       </button>
 
-      {/* Detalhes expandidos */}
-      {expanded && (
+      {/* Detalhes expandidos - Cliente */}
+      {expanded && user?.role === 'user' && (
         <div className="space-y-3 border-t border-amber-200 pt-3">
           <div className="bg-white rounded-2xl p-4 space-y-2">
             <p className="text-sm font-semibold text-foreground mb-3">📊 Resumo financeiro:</p>
@@ -152,6 +152,81 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3">
             <p className="text-xs font-semibold text-blue-900 mb-1">📝 Informações do prestador:</p>
             <p className="text-sm text-blue-800">{notification.message || 'Solicitação de orçamento extra para completar o serviço.'}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Detalhes expandidos - Prestador */}
+      {expanded && user?.role === 'admin' && (
+        <div className="space-y-3 border-t border-amber-200 pt-3">
+          {/* Tabela de materiais */}
+          <div className="bg-white rounded-2xl p-4 space-y-3">
+            <p className="text-sm font-semibold text-foreground mb-3">🔧 Materiais e Serviços:</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left p-2 text-xs font-semibold text-muted-foreground">Descrição</th>
+                    <th className="text-center p-2 text-xs font-semibold text-muted-foreground">Qtd</th>
+                    <th className="text-right p-2 text-xs font-semibold text-muted-foreground">Valor Unit.</th>
+                    <th className="text-right p-2 text-xs font-semibold text-muted-foreground">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {notification.message && (
+                    <tr className="border-b border-border hover:bg-amber-50">
+                      <td className="p-2 text-foreground">{notification.message}</td>
+                      <td className="p-2 text-center text-muted-foreground">—</td>
+                      <td className="p-2 text-right text-muted-foreground">—</td>
+                      <td className="p-2 text-right font-semibold text-foreground">R$ {total.toFixed(2)}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <button className="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 mt-2">
+              + Adicionar material
+            </button>
+          </div>
+
+          {/* Mão de obra */}
+          <div className="bg-white rounded-2xl p-4">
+            <p className="text-sm font-semibold text-foreground mb-3">👷 Mão de Obra:</p>
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="Descrição (ex: Instalação de kit ar condicionado)"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="number"
+                  placeholder="Horas"
+                  className="rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400"
+                />
+                <input
+                  type="number"
+                  placeholder="Valor/hora"
+                  className="rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Resumo total */}
+          <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Valor original:</span>
+              <span className="font-semibold">R$ {originalPrice.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm border-t border-amber-200 pt-2">
+              <span className="text-muted-foreground">+ Materiais:</span>
+              <span className="font-bold text-amber-700">+ R$ {total.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-base font-bold border-t-2 border-amber-300 pt-3">
+              <span className="text-amber-900">Novo total:</span>
+              <span className="text-amber-700">R$ {new_total.toFixed(2)}</span>
+            </div>
           </div>
         </div>
       )}
