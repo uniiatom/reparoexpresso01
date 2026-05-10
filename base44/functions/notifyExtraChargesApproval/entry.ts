@@ -25,6 +25,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Busca o cliente para pegar o client_id
+    const clients = await base44.entities.Client.filter({ user_id: client_email }, '', 1);
+    const clientId = clients[0]?.id || null;
+
     // Formata itens para exibição
     const itemsList = items
       .map(item => `  • ${item.description}: ${item.quantity} ${item.unit} × R$ ${item.price.toFixed(2)} = R$ ${(item.quantity * item.price).toFixed(2)}`)
@@ -63,18 +67,21 @@ Equipe Prática
     });
 
     // Cria notificação in-app
-    await base44.entities.ClientNotification.create({
-      client_email,
-      type: 'extra_charges_pending',
-      service_id,
-      service_number,
-      provider_name,
-      extra_total,
-      new_total,
-      title: `Orçamento Extra de R$ ${extra_total.toFixed(2)}`,
-      message: `${provider_name} solicitou aprovação para itens adicionais`,
-      is_read: false,
-    });
+    if (clientId) {
+      await base44.entities.ClientNotification.create({
+        client_id: clientId,
+        client_email,
+        type: 'extra_charges_pending',
+        service_id,
+        service_number,
+        provider_name,
+        extra_total,
+        new_total,
+        title: `Orçamento Extra de R$ ${extra_total.toFixed(2)}`,
+        message: `${provider_name} solicitou aprovação para itens adicionais`,
+        is_read: false,
+      });
+    }
 
     return Response.json({ success: true });
   } catch (error) {
