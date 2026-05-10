@@ -20,7 +20,6 @@ import BatchProvidersPanel from '../components/BatchProvidersPanel';
 import BatchProviderChat from '../components/BatchProviderChat';
 import ClientTicketForm from '../components/ClientTicketForm';
 import CouponInput from '../components/CouponInput';
-import ProviderExtraChargesPanel from '../components/ProviderExtraChargesPanel';
 import useClientNotifications from '../hooks/useClientNotifications';
 
 const STATUS_STEPS = [
@@ -479,15 +478,7 @@ export default function AcompanharServico() {
 
 
 
-      {/* Painel do prestador para criar orçamento extra (durante execução) */}
-      {user?.role === 'admin' && request.status === 'em_andamento' && (
-        <ProviderExtraChargesPanel 
-          service={request}
-          onApprovalChange={() => {
-            base44.entities.ServiceRequest.get(id).then(setRequest);
-          }}
-        />
-      )}
+
 
       {/* Chat */}
       {['aceito','a_caminho','em_andamento','concluido'].includes(request.status) && (

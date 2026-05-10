@@ -15,6 +15,7 @@ import ServiceCompletionModal from '@/components/ServiceCompletionModal';
 import ProviderDailySchedule from '@/components/ProviderDailySchedule';
 import ProviderMetricsPanel from '@/components/ProviderMetricsPanel';
 import AvailableRequestsMap from '@/components/AvailableRequestsMap';
+import ProviderExtraChargesPanel from '@/components/ProviderExtraChargesPanel';
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ export default function ProviderDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [refusalService, setRefusalService] = useState(null);
   const [completionService, setCompletionService] = useState(null);
+  const [selectedServiceForExtra, setSelectedServiceForExtra] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -319,6 +321,37 @@ export default function ProviderDashboard() {
             )}
           </TabsContent>
 
+          {/* Painel de Orçamento Extra */}
+          {selectedServiceForExtra && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-background rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+              >
+                <div className="sticky top-0 bg-background border-b border-border p-6 flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-foreground">Adicionar Orçamento Extra</h2>
+                  <button
+                    onClick={() => setSelectedServiceForExtra(null)}
+                    className="p-1 hover:bg-accent rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-muted-foreground" />
+                  </button>
+                </div>
+
+                <div className="p-6">
+                  <ProviderExtraChargesPanel
+                    service={selectedServiceForExtra}
+                    onApprovalChange={() => {
+                      setSelectedServiceForExtra(null);
+                      acceptedServicesQuery.refetch();
+                    }}
+                  />
+                </div>
+              </motion.div>
+            </div>
+          )}
+
           {/* Tab: Serviços Aceitos */}
           <TabsContent value="overview" className="space-y-4">
             {acceptedServices.length === 0 ? (
@@ -373,6 +406,16 @@ export default function ProviderDashboard() {
                                  >
                                    Concluir Serviço
                                  </Button>
+                                 {service.status === 'em_andamento' && (
+                                   <Button 
+                                     size="sm"
+                                     variant="outline"
+                                     onClick={() => setSelectedServiceForExtra(service)}
+                                     className="w-full h-8 text-xs rounded-lg border-blue-200 text-blue-600 hover:bg-blue-50"
+                                   >
+                                     💰 Orçamento Extra
+                                   </Button>
+                                 )}
                                  {(service.status === 'aceito' || service.status === 'a_caminho') && (
                                    <Button 
                                      size="sm"
