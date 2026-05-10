@@ -54,6 +54,7 @@ export default function ProviderApp() {
   const [declineTarget, setDeclineTarget] = useState(null); // { job, source: 'banner' | 'list' }
   const [fullscreenService, setFullscreenService] = useState(null);
   const [lightboxUrl, setLightboxUrl] = useState(null);
+  const processedJobsRef = useRef(new Set()); // rastreia jobs já processados
 
   const { data: provider } = useQuery({
     queryKey: ['my-provider'],
@@ -66,6 +67,9 @@ export default function ProviderApp() {
   });
 
   const handleNewJob = useCallback((job) => {
+    // Evita reprocessar jobs já aceitos/processados
+    if (processedJobsRef.current.has(job.id)) return;
+    
     setJobQueue(prev => {
       // Evita duplicatas na fila
       if (prev.some(j => j.id === job.id)) return prev;
@@ -172,6 +176,9 @@ export default function ProviderApp() {
 
   const acceptJob = useMutation({
     mutationFn: async (reqId) => {
+      // Marca job como processado para evitar re-alert
+      processedJobsRef.current.add(reqId);
+      
       const updateData = {
         status: 'aceito',
         provider_id: provider?.id,
@@ -315,7 +322,9 @@ export default function ProviderApp() {
   const handleAcceptBanner = (job) => {
     if (!job) return;
     window.__stopProviderHorn?.();
-    window.__markJobSeen?.(job.id); // marca como visto antes do update chegar
+    window.__markJobSeen?.(job.id);
+    // Marca como processado ANTES de mutar para evitar re-trigger do subscribe
+    processedJobsRef.current.add(job.id);
     setJobQueue([]);
     setFullscreenService(null);
     setActiveTab('chamados');
