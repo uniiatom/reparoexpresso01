@@ -478,7 +478,7 @@ export default function AcompanharServico() {
         </div>
       )}
 
-      {/* Histórico de valores e aprovações */}
+      {/* Histórico de valores */}
       <ServicePriceHistoryPanel serviceId={id} />
 
       {/* Painel do prestador para criar orçamento extra (durante execução) */}
