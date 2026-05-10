@@ -41,26 +41,6 @@ Deno.serve(async (req) => {
     const providers = await base44.entities.Provider.filter({ id: provider_id }, '', 1);
     const provider = providers[0];
 
-    // Envia notificação de aprovação por email
-    await base44.integrations.Core.SendEmail({
-      to: provider?.email || service.provider_phone,
-      subject: `✅ Orçamento extra aprovado - ${service.service_number}`,
-      body: `
-Olá ${provider_name},
-
-O cliente ${client_name} aprovou o orçamento extra de R$ ${extra_charges_total.toFixed(2)}.
-
-Detalhes da atualização:
-- Valor original: R$ ${original_price.toFixed(2)}
-- Orçamento extra: R$ ${extra_charges_total.toFixed(2)}
-- Novo total: R$ ${new_total.toFixed(2)}
-
-O serviço ${service.service_number} foi atualizado com o novo valor. Continue com a execução!
-
-Plataforma de Serviços
-      `,
-    });
-
     // Se provider tem subscription push, envia notificação push
     if (provider?.push_subscription) {
       try {
