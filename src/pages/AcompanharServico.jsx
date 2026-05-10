@@ -14,14 +14,12 @@ import PaymentModal from '../components/PaymentModal';
 import PixPaymentModal from '../components/PixPaymentModal';
 import NotificationPermissionBanner from '../components/NotificationPermissionBanner';
 import SatisfactionSurveyModal from '../components/SatisfactionSurveyModal';
-import ExtraChargesApprovalBanner from '../components/ExtraChargesApprovalBanner';
 import WarrantyBadge from '../components/WarrantyBadge';
 
 import BatchProvidersPanel from '../components/BatchProvidersPanel';
 import BatchProviderChat from '../components/BatchProviderChat';
 import ClientTicketForm from '../components/ClientTicketForm';
 import CouponInput from '../components/CouponInput';
-import ExtraChargesApprovalPanel from '../components/ExtraChargesApprovalPanel';
 import ProviderExtraChargesPanel from '../components/ProviderExtraChargesPanel';
 import ServicePriceHistoryPanel from '../components/ServicePriceHistoryPanel';
 import useClientNotifications from '../hooks/useClientNotifications';
