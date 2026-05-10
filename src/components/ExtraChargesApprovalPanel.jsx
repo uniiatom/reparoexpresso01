@@ -14,10 +14,17 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   const [showConfirmApprove, setShowConfirmApprove] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [user, setUser] = useState(null);
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (notification?.message) {
+      setItems([{ id: 1, description: notification.message, quantity: 0, value: total }]);
+    }
+  }, [notification?.message, total]);
 
   // Atualiza em tempo real quando o service muda
   useEffect(() => {
@@ -172,13 +179,25 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
                   </tr>
                 </thead>
                 <tbody>
-                  {notification.message && (
-                    <tr className="border-b border-border hover:bg-amber-50">
-                      <td className="p-2 text-foreground">{notification.message}</td>
-                      <td className="p-2 text-center text-muted-foreground">—</td>
-                      <td className="p-2 text-right font-semibold text-foreground">R$ {total.toFixed(2)}</td>
+                  {items.map((item) => (
+                    <tr key={item.id} className="border-b border-border hover:bg-amber-50">
+                      <td className="p-2 text-foreground">{item.description}</td>
+                      <td className="p-2 text-center text-muted-foreground">{item.quantity || '—'}</td>
+                      <td className="p-2 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <span className="font-semibold text-foreground">R$ {item.value.toFixed(2)}</span>
+                          {item.value === 0 && (
+                            <button
+                              onClick={() => setItems(items.filter(i => i.id !== item.id))}
+                              className="text-xs text-red-600 hover:text-red-700 font-semibold"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      </td>
                     </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
