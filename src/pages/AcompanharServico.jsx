@@ -478,8 +478,7 @@ export default function AcompanharServico() {
         </div>
       )}
 
-      {/* Histórico de valores */}
-      <ServicePriceHistoryPanel serviceId={id} />
+
 
       {/* Painel do prestador para criar orçamento extra (durante execução) */}
       {user?.role === 'admin' && request.status === 'em_andamento' && (
