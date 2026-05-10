@@ -140,16 +140,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         </span>
       </button>
 
-      {/* Fotos do serviço - visível apenas para prestador */}
-      {expanded && photos.length > 0 && user?.role === 'admin' && (
-        <div className="border-t border-amber-200 pt-3">
-          <PhotoUploadGallery 
-            photos={photos} 
-            onPhotosChange={setPhotos}
-            readOnly={false}
-          />
-        </div>
-      )}
+
 
       {/* Detalhes expandidos - Cliente (apenas aprovação/rejeição) */}
       {expanded && user?.role === 'user' && (
@@ -193,12 +184,14 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       {/* Detalhes expandidos - Prestador */}
       {expanded && user?.role === 'admin' && (
         <div className="space-y-3 border-t border-amber-200 pt-3">
-          {/* Upload de fotos */}
-          <PhotoUploadGallery 
-            photos={photos} 
-            onPhotosChange={setPhotos}
-            readOnly={false}
-          />
+          {/* Upload de fotos - apenas prestador pode fazer upload */}
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+            <PhotoUploadGallery 
+              photos={photos} 
+              onPhotosChange={setPhotos}
+              readOnly={false}
+            />
+          </div>
 
           {/* Tabela de materiais */}
           <div className="bg-white rounded-2xl p-4 space-y-3">
