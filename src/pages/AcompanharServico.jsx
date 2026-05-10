@@ -22,6 +22,7 @@ import BatchProviderChat from '../components/BatchProviderChat';
 import ClientTicketForm from '../components/ClientTicketForm';
 import CouponInput from '../components/CouponInput';
 import ExtraChargesApprovalPanel from '../components/ExtraChargesApprovalPanel';
+import ProviderExtraChargesPanel from '../components/ProviderExtraChargesPanel';
 import ServicePriceHistoryPanel from '../components/ServicePriceHistoryPanel';
 import useClientNotifications from '../hooks/useClientNotifications';
 
@@ -481,6 +482,16 @@ export default function AcompanharServico() {
 
       {/* Histórico de valores e aprovações */}
       <ServicePriceHistoryPanel serviceId={id} />
+
+      {/* Painel do prestador para criar orçamento extra (durante execução) */}
+      {user?.role === 'admin' && request.status === 'em_andamento' && (
+        <ProviderExtraChargesPanel 
+          service={request}
+          onApprovalChange={() => {
+            base44.entities.ServiceRequest.get(id).then(setRequest);
+          }}
+        />
+      )}
 
       {/* Painel de aprovação de orçamento extra (novo fluxo) */}
       {['em_andamento', 'concluido'].includes(request.status) && (
