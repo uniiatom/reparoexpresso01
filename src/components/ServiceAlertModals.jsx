@@ -186,6 +186,7 @@ export function SubstituicaoTelhaModal({ onSelect, onClose }) {
             <div className="p-3 text-center">
               <p className="font-bold text-foreground text-sm">Fibrocimento</p>
               <p className="text-xs text-muted-foreground">Eternit, Brasilit, ondulada</p>
+              <p className="text-xs font-semibold text-primary mt-1">R$ 260,00 por telha</p>
             </div>
           </button>
         </div>
