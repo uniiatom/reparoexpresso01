@@ -21,6 +21,7 @@ import BatchProvidersPanel from '../components/BatchProvidersPanel';
 import BatchProviderChat from '../components/BatchProviderChat';
 import ClientTicketForm from '../components/ClientTicketForm';
 import CouponInput from '../components/CouponInput';
+import ExtraChargesApprovalPanel from '../components/ExtraChargesApprovalPanel';
 
 const STATUS_STEPS = [
   { key: "aguardando", label: "Aguardando prestador", icon: Clock },
@@ -463,7 +464,18 @@ export default function AcompanharServico() {
         </div>
       )}
 
-      {/* Banner de aprovação de orçamento extra */}
+      {/* Painel de aprovação de orçamento extra (novo fluxo) */}
+      {['em_andamento', 'concluido'].includes(request.status) && (
+        <ExtraChargesApprovalPanel 
+          service={request}
+          onApprovalChange={() => {
+            // Atualiza request local
+            base44.entities.ServiceRequest.get(id).then(setRequest);
+          }}
+        />
+      )}
+
+      {/* Banner de aprovação de orçamento extra (legado) */}
       {['em_andamento', 'concluido'].includes(request.status) && (
         <ExtraChargesApprovalBanner 
           serviceId={id} 
