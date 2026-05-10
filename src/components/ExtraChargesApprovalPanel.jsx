@@ -143,7 +143,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
 
 
       {/* Detalhes expandidos - Cliente (apenas aprovação/rejeição) */}
-      {expanded && user?.role === 'user' && (
+      {expanded && user?.role !== 'admin' && (
         <div className="space-y-3 border-t border-amber-200 pt-3">
           <div className="bg-white rounded-2xl p-4 space-y-2">
             <p className="text-sm font-semibold text-foreground mb-3">📊 Resumo financeiro:</p>
@@ -284,7 +284,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       )}
 
       {/* Menu de ações - Cliente (apenas aprovar/rejeitar) */}
-      {expanded && !showRejectionForm && !showConfirmApprove && user?.role === 'user' && (
+      {expanded && !showRejectionForm && !showConfirmApprove && user?.role !== 'admin' && (
         <div className="space-y-2 pt-2 border-t border-amber-200">
           <p className="text-xs font-semibold text-amber-900 px-1">O que você quer fazer?</p>
           <div className="grid grid-cols-2 gap-2">
