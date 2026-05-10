@@ -171,6 +171,7 @@ export function SubstituicaoTelhaModal({ onSelect, onClose }) {
             <div className="p-3 text-center">
               <p className="font-bold text-foreground text-sm">Telha Cerâmica</p>
               <p className="text-xs text-muted-foreground">Barro, colonial, portuguesa</p>
+              <p className="text-xs font-semibold text-primary mt-1">R$ 130,00 · até 18 telhas</p>
             </div>
           </button>
           <button
