@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
 import ServiceChat from './ServiceChat';
 import ServiceCompletionModal from './ServiceCompletionModal';
+import TipRequestModal from './TipRequestModal';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -194,11 +195,12 @@ function useLocalArrivalMinutes(job, active) {
   return localMinutes;
 }
 
-export default function ActiveJobCard({ job, providerName, onUpdateStatus, onShowChecklist, onShowAdditionalPoint, isPending }) {
+export default function ActiveJobCard({ job, providerName, onUpdateStatus, onShowChecklist, onShowAdditionalPoint, isPending, provider }) {
   const [validationInput, setValidationInput] = useState('');
   const [liveJob, setLiveJob] = useState(job);
   const [lightboxUrl, setLightboxUrl] = useState(null);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(false);
 
   // Sincroniza liveJob quando o job externo muda
   useEffect(() => { setLiveJob(job); }, [job]);
@@ -399,9 +401,21 @@ export default function ActiveJobCard({ job, providerName, onUpdateStatus, onSho
     <ServiceCompletionModal
       open={showCompletionModal}
       onClose={() => setShowCompletionModal(false)}
-      onComplete={handleCompleteService}
+      onComplete={(type, data) => {
+        handleCompleteService(type, data);
+        if (type === 'concluido') {
+          setTimeout(() => setShowTipModal(true), 1000);
+        }
+      }}
       serviceType={liveJob.service_type}
     />
+    {showTipModal && provider && (
+      <TipRequestModal
+        service={liveJob}
+        provider={provider}
+        onClose={() => setShowTipModal(false)}
+      />
+    )}
     {lightboxUrl && (
       <div
         className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4"

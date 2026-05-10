@@ -609,14 +609,15 @@ export default function ProviderApp() {
 
       {/* Job em espera (pausado) — sempre visível, mesmo com outro job ativo */}
       {waitingJob && !realActiveJob && (
-        <ActiveJobCard
-          job={waitingJob}
-          providerName={provider.name}
-          onUpdateStatus={updateJobStatus.mutate}
-          onShowChecklist={() => setShowChecklist(true)}
-          onShowAdditionalPoint={() => setShowAdditionalPoint(true)}
-          isPending={updateJobStatus.isPending}
-        />
+       <ActiveJobCard
+         job={waitingJob}
+         provider={provider}
+         providerName={provider.name}
+         onUpdateStatus={updateJobStatus.mutate}
+         onShowChecklist={() => setShowChecklist(true)}
+         onShowAdditionalPoint={() => setShowAdditionalPoint(true)}
+         isPending={updateJobStatus.isPending}
+       />
       )}
 
       {/* Job em espera — banner de aviso quando há outro job ativo */}
@@ -632,14 +633,15 @@ export default function ProviderApp() {
 
       {/* Job ativo */}
       {realActiveJob && (
-        <ActiveJobCard
-          job={realActiveJob}
-          providerName={provider.name}
-          onUpdateStatus={updateJobStatus.mutate}
-          onShowChecklist={() => setShowChecklist(true)}
-          onShowAdditionalPoint={() => setShowAdditionalPoint(true)}
-          isPending={updateJobStatus.isPending}
-        />
+       <ActiveJobCard
+         job={realActiveJob}
+         provider={provider}
+         providerName={provider.name}
+         onUpdateStatus={updateJobStatus.mutate}
+         onShowChecklist={() => setShowChecklist(true)}
+         onShowAdditionalPoint={() => setShowAdditionalPoint(true)}
+         isPending={updateJobStatus.isPending}
+       />
       )}
 
       {/* Chat entre prestadores do mesmo lote */}
