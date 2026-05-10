@@ -110,6 +110,7 @@ export default function SolicitarServico() {
   const [showArCondicionadoModal, setShowArCondicionadoModal] = useState(false);
   const [showLimpezaCalhaTelhadoAlert, setShowLimpezaCalhaTelhadoAlert] = useState(false);
   const [showSubstituicaoTelhaModal, setShowSubstituicaoTelhaModal] = useState(false);
+  const [substituicaoTelhaTipo, setSubstituicaoTelhaTipo] = useState(null);
   const [towQuestions, setTowQuestions] = useState({});
   const [towVehicleType, setTowVehicleType] = useState(null);
   const [calculatingRoute, setCalculatingRoute] = useState(false);
@@ -142,7 +143,6 @@ export default function SolicitarServico() {
 
   React.useEffect(() => () => { if (liveWatchId !== null) navigator.geolocation.clearWatch(liveWatchId); }, [liveWatchId]);
 
-  // descriptions_per_service: { [service_type]: { description, photos } }
   const [descriptionsPerService, setDescriptionsPerService] = useState({});
 
   const setServiceDesc = (serviceType, field, value) => {
@@ -482,7 +482,7 @@ export default function SolicitarServico() {
 
   const createRequest = useMutation({
     mutationFn: async (formData) => {
-      const { _secondProvider, requires_two_providers, tv_size, _caixaCondominio, ...cleanData } = formData;
+      const { _secondProvider, requires_two_providers, tv_size, _caixaCondominio, _substituicaoTelhaTipo, ...cleanData } = formData;
       const serviceTypes = Array.isArray(cleanData.service_type) && cleanData.service_type.length > 0
         ? cleanData.service_type
         : [cleanData.service_type];
@@ -518,8 +518,7 @@ export default function SolicitarServico() {
         })
       );
 
-      // Função auxiliar: gera senhas para uma OS via backend (fallback caso a automação falhe)
-      const ensurePasswords = async (requestId) => {
+          const ensurePasswords = async (requestId) => {
         try {
           await base44.functions.invoke('generateServicePasswords', { request_id: requestId });
         } catch (e) {
@@ -527,18 +526,14 @@ export default function SolicitarServico() {
         }
       };
 
-      // Se caixa d'água de condomínio e tem segundo prestador, cria OS adicional para ele
-      if (_caixaCondominio && _secondProvider && serviceTypes.includes('limpeza_caixa_dagua')) {
-        const descCondominio = descriptionsPerService['limpeza_caixa_dagua']?.description || baseData.description;
-        const photosCondominio = descriptionsPerService['limpeza_caixa_dagua']?.photos || baseData.problem_photos;
-        const secondOS = await base44.entities.ServiceRequest.create({
-          ...baseData,
-          service_type: 'limpeza_caixa_dagua',
-          description: `[Prestador 2] ${descCondominio}`,
-          problem_photos: photosCondominio,
-        });
-        // Aguarda 3s para a automação processar; se senha ainda não foi gerada, força geração
-        setTimeout(() => ensurePasswords(secondOS.id), 3000);
+      // 2º prestador: caixa d'água condomínio ou telha fibrocimento
+      for (const [cond, svcType] of [[_caixaCondominio && serviceTypes.includes('limpeza_caixa_dagua'), 'limpeza_caixa_dagua'], [_substituicaoTelhaTipo === 'fibrocimento' && serviceTypes.includes('substituicao_telha'), 'substituicao_telha']]) {
+        if (cond && _secondProvider) {
+          const d2 = descriptionsPerService[svcType]?.description || baseData.description;
+          const p2 = descriptionsPerService[svcType]?.photos || baseData.problem_photos;
+          const os2 = await base44.entities.ServiceRequest.create({ ...baseData, service_type: svcType, description: `[Prestador 2] ${d2}`, problem_photos: p2 });
+          setTimeout(() => ensurePasswords(os2.id), 3000);
+        }
       }
 
       // Se TV acima de 55" e tem segundo prestador, cria OS adicional para ele
@@ -613,6 +608,7 @@ export default function SolicitarServico() {
       ...cleanFormData, 
       _secondProvider, 
       _caixaCondominio: caixaDaguaTipo === 'condominio',
+      _substituicaoTelhaTipo: substituicaoTelhaTipo,
       estimated_price: estimatedPrice,
     };
     createRequest.mutate(finalData);
@@ -866,6 +862,7 @@ export default function SolicitarServico() {
                     setShowSubstituicaoTelhaModal(true);
                     return;
                   }
+                  if (s.value === 'substituicao_telha' && selected) { setSubstituicaoTelhaTipo(null); }
                   if (s.value === 'ar_condicionado' && !selected) {
                     setShowArCondicionadoModal(true);
                     return;
@@ -1138,7 +1135,7 @@ export default function SolicitarServico() {
           )}
 
           {showValvulaTransfModal && <ValvulaTransfModal onSelect={(tipo) => { setValvulaTransfTipo(tipo); set('service_type', [...form.service_type, 'valvula_transferidora_pressao']); setShowValvulaTransfModal(false); }} onCancel={() => setShowValvulaTransfModal(false)} />}
-          {showSubstituicaoTelhaModal && <SubstituicaoTelhaModal onSelect={(tipo) => { const desc = tipo === 'ceramica' ? 'Substituição de telha cerâmica.' : 'Substituição de telha de fibrocimento.'; set('service_type', [...form.service_type, 'substituicao_telha']); setDescriptionsPerService(prev => ({ ...prev, substituicao_telha: { ...prev.substituicao_telha, description: desc } })); setShowSubstituicaoTelhaModal(false); }} onClose={() => setShowSubstituicaoTelhaModal(false)} />}
+          {showSubstituicaoTelhaModal && <SubstituicaoTelhaModal onSelect={(tipo) => { setSubstituicaoTelhaTipo(tipo); const desc = tipo === 'ceramica' ? 'Substituição de telha cerâmica.' : 'Substituição de telha de fibrocimento. [2 prestadores necessários]'; set('service_type', [...form.service_type, 'substituicao_telha']); setDescriptionsPerService(prev => ({ ...prev, substituicao_telha: { ...prev.substituicao_telha, description: desc } })); setShowSubstituicaoTelhaModal(false); }} onClose={() => setShowSubstituicaoTelhaModal(false)} />}
 
           {/* Modal Ar Condicionado */}
           {showArCondicionadoModal && (
@@ -1984,7 +1981,8 @@ export default function SolicitarServico() {
             tv_size: tvSize,
             coupon_code: appliedCoupon?.code || '',
             requires_two_providers: (form.service_type.includes('instalacao_suporte_tv') && tvSize === 'acima55') ||
-              (form.service_type.includes('limpeza_caixa_dagua') && caixaDaguaTipo === 'condominio'),
+              (form.service_type.includes('limpeza_caixa_dagua') && caixaDaguaTipo === 'condominio') ||
+              (form.service_type.includes('substituicao_telha') && substituicaoTelhaTipo === 'fibrocimento'),
           }}
           onConfirm={handleFinalConfirm}
           onSchedule={handleFinalConfirm}
