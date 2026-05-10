@@ -18,6 +18,13 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
 
     setLoading(true);
     try {
+      // Verifica se está rodando em iframe
+      if (window.self !== window.top) {
+        toast.error('Pagamento só funciona em app publicado');
+        setLoading(false);
+        return;
+      }
+
       const amountInCents = Math.round(parseFloat(amount) * 100);
 
       // Cria sessão de checkout para pagamento da gorjeta
@@ -29,15 +36,17 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
         service_number: request.service_number,
       });
 
+      console.log('[TipRequestModal] Resultado:', result.data);
+
       if (!result.data?.checkout_url) {
-        throw new Error('Falha ao gerar link de pagamento');
+        throw new Error('Falha ao gerar link de pagamento: ' + JSON.stringify(result.data));
       }
 
       // Abre o checkout do Stripe
       window.location.href = result.data.checkout_url;
     } catch (error) {
       console.error('Erro ao solicitar gorjeta:', error);
-      toast.error('Erro ao enviar gorjeta');
+      toast.error(`Erro: ${error.message}`);
     } finally {
       setLoading(false);
     }
