@@ -13,7 +13,7 @@ const OPCOES = [
 
 export default function FixacoesDiversasModal({ onSelect, onClose }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50" onClick={onClose}>
       <div className="bg-card w-full max-w-lg rounded-t-3xl p-4 pb-6" onClick={e => e.stopPropagation()}>
         <div className="w-10 h-1 bg-border rounded-full mx-auto mb-3" />
         <h3 className="text-base font-bold text-foreground mb-0.5 text-center">Fixações Diversas</h3>

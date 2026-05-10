@@ -886,6 +886,7 @@ export default function SolicitarServico() {
           </div>
 
           {showPressurizadorModal && <PressurizadorModal isOpen={showPressurizadorModal} onClose={() => setShowPressurizadorModal(false)} onSelect={(tipo) => { setPressurizadorTipo(tipo); set('service_type', [...form.service_type, 'pressurizador']); setShowPressurizadorModal(false); }} />}
+
           {showTvSizeModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowTvSizeModal(false)}>
               <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 pb-8" onClick={e => e.stopPropagation()}>
@@ -1111,7 +1112,6 @@ export default function SolicitarServico() {
             </div>
           )}
 
-          {showOutrosModal && <OutrosServicoModal onClose={() => setShowOutrosModal(false)} onConfirm={(desc) => { set('service_type', [...form.service_type, 'outros']); setDescriptionsPerService(prev => ({ ...prev, outros: { description: desc, photos: [] } })); setShowOutrosModal(false); }} />}
           {showValvulaTransfModal && <ValvulaTransfModal onSelect={(tipo) => { setValvulaTransfTipo(tipo); set('service_type', [...form.service_type, 'valvula_transferidora_pressao']); setShowValvulaTransfModal(false); }} onCancel={() => setShowValvulaTransfModal(false)} />}
           {showSubstituicaoTelhaModal && <SubstituicaoTelhaModal onSelect={(tipo) => { setSubstituicaoTelhaTipo(tipo); const desc = tipo === 'ceramica' ? 'Substituição de telha cerâmica.' : 'Substituição de telha de fibrocimento. [2 prestadores necessários]'; set('service_type', [...form.service_type, 'substituicao_telha']); setDescriptionsPerService(prev => ({ ...prev, substituicao_telha: { ...prev.substituicao_telha, description: desc } })); setShowSubstituicaoTelhaModal(false); }} onClose={() => setShowSubstituicaoTelhaModal(false)} />}
 
@@ -1904,6 +1904,29 @@ export default function SolicitarServico() {
       )}
     </div>
     <PhotoLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+
+    {showFixacoesModal && (
+      <FixacoesDiversasModal
+        isOpen={showFixacoesModal}
+        onClose={() => setShowFixacoesModal(false)}
+        onSelect={(tipo) => {
+          setFixacoesTipo(tipo);
+          set('service_type', [...form.service_type, 'fixacoes_diversas']);
+          setShowFixacoesModal(false);
+        }}
+      />
+    )}
+
+    {showOutrosModal && (
+      <OutrosServicoModal
+        onClose={() => setShowOutrosModal(false)}
+        onConfirm={(desc, fotos) => {
+          set('service_type', [...form.service_type, 'outros']);
+          setDescriptionsPerService(prev => ({ ...prev, outros: { description: desc, photos: fotos || [] } }));
+          setShowOutrosModal(false);
+        }}
+      />
+    )}
     </>
   );
 }
