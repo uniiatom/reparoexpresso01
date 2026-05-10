@@ -168,8 +168,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
                   <tr className="border-b border-border">
                     <th className="text-left p-2 text-xs font-semibold text-muted-foreground">Descrição</th>
                     <th className="text-center p-2 text-xs font-semibold text-muted-foreground">Qtd</th>
-                    <th className="text-right p-2 text-xs font-semibold text-muted-foreground">Valor Unit.</th>
-                    <th className="text-right p-2 text-xs font-semibold text-muted-foreground">Subtotal</th>
+                    <th className="text-right p-2 text-xs font-semibold text-muted-foreground">Valor</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -177,7 +176,6 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
                     <tr className="border-b border-border hover:bg-amber-50">
                       <td className="p-2 text-foreground">{notification.message}</td>
                       <td className="p-2 text-center text-muted-foreground">—</td>
-                      <td className="p-2 text-right text-muted-foreground">—</td>
                       <td className="p-2 text-right font-semibold text-foreground">R$ {total.toFixed(2)}</td>
                     </tr>
                   )}
