@@ -9,22 +9,45 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   const [rejectionNotes, setRejectionNotes] = useState('');
   const [showRejectionForm, setShowRejectionForm] = useState(false);
   const [localService, setLocalService] = useState(service);
+  const [notification, setNotification] = useState(null);
 
   // Atualiza em tempo real quando o service muda
   useEffect(() => {
     setLocalService(service);
   }, [service]);
 
-  if (!localService?.extra_charges || localService.extra_charges.status !== 'pending_approval') {
+  // Busca notificação de orçamento extra para este serviço
+  useEffect(() => {
+    if (!service?.id) return;
+    base44.entities.ClientNotification.filter(
+      { service_id: service.id, type: 'extra_charges_pending', is_read: false },
+      '-created_date',
+      1
+    ).then(notifs => {
+      if (notifs[0]) {
+        console.log('[ExtraChargesApprovalPanel] Found notification:', notifs[0]);
+        setNotification(notifs[0]);
+      }
+    }).catch(e => console.warn('[ExtraChargesApprovalPanel] Error fetching notification:', e.message));
+  }, [service?.id]);
+
+  // Se não houver notificação pendente, não mostra nada
+  if (!notification) {
     return null;
   }
 
-  const { items = [], total = 0, notes = '', new_total = 0 } = localService.extra_charges;
+  const total = notification.extra_total || 0;
+  const new_total = notification.new_total || 0;
   const originalPrice = localService.final_price || localService.estimated_price || 0;
 
   const handleApprove = async () => {
     setLoading(true);
     try {
+      // Marca a notificação como lida
+      if (notification?.id) {
+        await base44.entities.ClientNotification.update(notification.id, { is_read: true });
+      }
+
       await base44.functions.invoke('approveExtraCharges', {
         service_id: localService.id,
         provider_id: localService.provider_id,
@@ -36,6 +59,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       });
 
       toast.success('Orçamento aprovado! O prestador foi notificado.');
+      setNotification(null);
       onApprovalChange?.();
     } catch (error) {
       console.error('Erro ao aprovar:', error);
@@ -53,6 +77,11 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
 
     setLoading(true);
     try {
+      // Marca a notificação como lida
+      if (notification?.id) {
+        await base44.entities.ClientNotification.update(notification.id, { is_read: true });
+      }
+
       await base44.functions.invoke('rejectExtraCharges', {
         service_id: localService.id,
         provider_id: localService.provider_id,
@@ -62,6 +91,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       });
 
       toast.success('Orçamento rejeitado. O prestador foi notificado.');
+      setNotification(null);
       onApprovalChange?.();
     } catch (error) {
       console.error('Erro ao rejeitar:', error);
@@ -79,35 +109,13 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="font-bold text-amber-900">Orçamento extra aguardando aprovação</p>
-          <p className="text-sm text-amber-800 mt-1">O prestador solicitou um adicional de R$ {total.toFixed(2)} para completar o serviço.</p>
+          <p className="text-sm text-amber-800 mt-1">{notification.provider_name} solicitou um adicional de R$ {total.toFixed(2)} para completar o serviço.</p>
         </div>
       </div>
 
-      {/* Itens do orçamento extra */}
-      <div className="space-y-2 bg-white rounded-2xl p-4">
-        <p className="text-sm font-semibold text-foreground mb-3">Itens solicitados:</p>
-        {items.map((item, idx) => (
-          <div key={idx} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">{item.description}</p>
-              <p className="text-xs text-muted-foreground">
-                {item.quantity} {item.quantity === 1 ? 'un' : 'uns'} × R$ {item.price.toFixed(2)}
-              </p>
-            </div>
-            <p className="text-sm font-bold text-foreground">R$ {(item.quantity * item.price).toFixed(2)}</p>
-          </div>
-        ))}
-      </div>
-
-      {notes && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-sm text-blue-800">
-          <p className="font-semibold mb-1">Observações do prestador:</p>
-          <p>{notes}</p>
-        </div>
-      )}
-
-      {/* Resumo de valores */}
+      {/* Resumo simples (sem itens detalhados por enquanto) */}
       <div className="bg-white rounded-2xl p-4 space-y-2">
+        <p className="text-sm font-semibold text-foreground mb-3">Resumo do orçamento extra:</p>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Valor original:</span>
           <span className="font-semibold text-foreground">R$ {originalPrice.toFixed(2)}</span>
@@ -121,6 +129,8 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
           <span className="text-amber-700">R$ {new_total.toFixed(2)}</span>
         </div>
       </div>
+
+
 
       {/* Formulário de rejeição */}
       {showRejectionForm && (
