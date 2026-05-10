@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { X, Loader2, QrCode, Copy, Share2, AlertCircle } from "lucide-react";
-import QRCode from 'qrcode.react';
 import { toast } from "sonner";
 
 const TIP_PRESETS = [
@@ -17,11 +16,24 @@ export default function TipRequestModal({ service, provider, onClose }) {
   const [selectedTip, setSelectedTip] = useState(null);
   const [customAmount, setCustomAmount] = useState('');
   const [loading, setLoading] = useState(false);
-  const [qrUrl, setQrUrl] = useState(null);
+  const [qrDataUrl, setQrDataUrl] = useState(null);
   const [checkoutUrl, setCheckoutUrl] = useState(null);
   const [showQr, setShowQr] = useState(false);
+  const canvasRef = useRef(null);
 
   const finalAmount = customAmount ? Number(customAmount) : selectedTip;
+
+  // Gera QR code via API pública
+  const generateQrCanvas = async (url) => {
+    try {
+      const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(url)}`;
+      setQrDataUrl(qrImageUrl);
+    } catch (err) {
+      console.error('Erro ao gerar QR:', err);
+      // Fallback: exibe o URL direto
+      setQrDataUrl(url);
+    }
+  };
 
   const handleGenerateQr = async () => {
     if (!finalAmount || finalAmount < 5) {
@@ -40,8 +52,11 @@ export default function TipRequestModal({ service, provider, onClose }) {
       });
 
       if (response.data?.checkout_url) {
-        setCheckoutUrl(response.data.checkout_url);
-        setQrUrl(response.data.checkout_url);
+        const url = response.data.checkout_url;
+        setCheckoutUrl(url);
+        
+        // Gera QR code baseado no URL
+        await generateQrCanvas(url);
         setShowQr(true);
         toast.success('QR Code gerado!');
       }
@@ -54,25 +69,25 @@ export default function TipRequestModal({ service, provider, onClose }) {
   };
 
   const handleCopyLink = () => {
-    if (qrUrl) {
-      navigator.clipboard.writeText(qrUrl);
+    if (checkoutUrl) {
+      navigator.clipboard.writeText(checkoutUrl);
       toast.success('Link copiado!');
     }
   };
 
   const handleShareLink = () => {
-    if (qrUrl && navigator.share) {
+    if (checkoutUrl && navigator.share) {
       navigator.share({
         title: 'Gorjeta para ' + provider.name,
         text: `Clique para enviar uma gorjeta para ${provider.name}`,
-        url: qrUrl,
+        url: checkoutUrl,
       }).catch(err => console.log('Erro ao compartilhar:', err));
     } else {
       handleCopyLink();
     }
   };
 
-  if (showQr && qrUrl) {
+  if (showQr && qrDataUrl) {
     return (
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
         <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4">
@@ -84,7 +99,13 @@ export default function TipRequestModal({ service, provider, onClose }) {
           </div>
 
           <div className="bg-muted rounded-2xl p-4 flex items-center justify-center">
-            <QRCode value={qrUrl} size={256} level="H" includeMargin={true} />
+            {qrDataUrl.startsWith('blob:') || qrDataUrl.startsWith('data:') ? (
+              <img src={qrDataUrl} alt="QR Code" className="w-64 h-64" />
+            ) : (
+              <a href={qrDataUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm">
+                Clique aqui para abrir o link de pagamento
+              </a>
+            )}
           </div>
 
           <div className="bg-primary/5 rounded-2xl p-3 border border-primary/20">
@@ -196,3 +217,14 @@ export default function TipRequestModal({ service, provider, onClose }) {
 function cn(...classes) {
   return classes.filter(Boolean).join(' ');
 }
+
+// Script para gerar QR code via canvas
+const generateQRCodeImage = async (text) => {
+  try {
+    // Usa a API de QR code via URL (fallback)
+    return `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(text)}`;
+  } catch (err) {
+    console.error('Erro ao gerar QR:', err);
+    return null;
+  }
+};
