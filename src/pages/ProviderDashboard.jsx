@@ -12,6 +12,7 @@ import ProviderTicketForm from '@/components/ProviderTicketForm';
 import ProviderEarningsWithdrawal from '@/components/ProviderEarningsWithdrawal';
 import ServiceRefusalForm from '@/components/ServiceRefusalForm';
 import ServiceCompletionModal from '@/components/ServiceCompletionModal';
+import ProviderDailySchedule from '@/components/ProviderDailySchedule';
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
@@ -236,16 +237,19 @@ export default function ProviderDashboard() {
 
         {/* Main Tabs */}
          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-6 mb-6">
-              <TabsTrigger value="scheduled">Agendados</TabsTrigger>
-              <TabsTrigger value="overview">Aceitos</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4 mb-6">
+              <TabsTrigger value="today">Agenda do Dia</TabsTrigger>
+              <TabsTrigger value="overview">Serviços Aceitos</TabsTrigger>
               <TabsTrigger value="earnings">Ganhos</TabsTrigger>
-              <TabsTrigger value="payments">Pagamentos</TabsTrigger>
-              <TabsTrigger value="availability">Disponibilidade</TabsTrigger>
               <TabsTrigger value="support">Suporte</TabsTrigger>
             </TabsList>
 
-          {/* Tab: Serviços Agendados */}
+          {/* Tab: Agenda do Dia */}
+          <TabsContent value="today" className="space-y-4">
+            <ProviderDailySchedule />
+          </TabsContent>
+
+          {/* Tab: Serviços Agendados - REMOVIDO */}
           <TabsContent value="scheduled" className="space-y-4">
             {scheduledServices.length === 0 ? (
               <Card className="bg-muted/50 border-border">
@@ -382,102 +386,7 @@ export default function ProviderDashboard() {
             />
           </TabsContent>
 
-          {/* Tab: Histórico de Pagamentos */}
-          <TabsContent value="payments" className="space-y-4">
-            {payments.length === 0 ? (
-              <Card className="bg-muted/50 border-border">
-                <CardContent className="pt-6 text-center">
-                  <DollarSign className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
-                  <p className="text-muted-foreground text-sm">Nenhum pagamento recebido ainda</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                {payments.map((payment, idx) => (
-                  <motion.div
-                    key={payment.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                  >
-                    <Card className="bg-card border-border">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold text-foreground mb-1">{payment.service_type}</h3>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(payment.updated_date).toLocaleDateString('pt-BR')}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground mb-1">Valor recebido</p>
-                            <p className="text-2xl font-bold text-green-600">R$ {payment.final_price.toFixed(2)}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
 
-          {/* Tab: Disponibilidade */}
-          <TabsContent value="availability" className="space-y-4">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Horários de Funcionamento</CardTitle>
-                <CardDescription>Configure quando você está disponível para serviços</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {availability.length === 0 ? (
-                  <div className="text-center py-8">
-                    <AlertCircle className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
-                    <p className="text-muted-foreground text-sm mb-4">Nenhuma disponibilidade configurada</p>
-                    <Button onClick={() => navigate('/prestador/horarios')} className="rounded-2xl">
-                      Configurar Horários
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {[0, 1, 2, 3, 4, 5, 6].map(day => {
-                      const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-                      const dayAvail = availability.filter(a => a.day_of_week === day);
-                      
-                      return (
-                        <div key={day} className="flex items-center justify-between p-4 rounded-2xl border border-border bg-muted/50">
-                          <span className="font-medium text-foreground">{dayNames[day]}</span>
-                          <div className="text-right">
-                            {dayAvail.length > 0 ? (
-                              <div>
-                                {dayAvail.map(av => (
-                                  <p key={av.id} className="text-xs text-primary font-semibold">
-                                    {av.start_time} - {av.end_time} ({av.max_slots_per_day} slots)
-                                  </p>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-muted-foreground">Indisponível</p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {availability.length > 0 && (
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/prestador/horarios')}
-                className="w-full rounded-2xl"
-              >
-                Editar Horários
-              </Button>
-              )}
-              </TabsContent>
 
               {/* Tab: Suporte Técnico */}
               <TabsContent value="support" className="space-y-4">
