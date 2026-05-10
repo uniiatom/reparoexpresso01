@@ -1,14 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
-import { X, Gift, Loader2 } from "lucide-react";
+import { X, Gift, Loader2, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export default function TipRequestModal({ request, provider, onClose, onSuccess }) {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
+  const [recentProviders, setRecentProviders] = useState([]);
+  const [selectedProvider, setSelectedProvider] = useState(provider);
+  const [showProviderList, setShowProviderList] = useState(false);
 
   const presetAmounts = [10, 20, 30, 50];
+
+  useEffect(() => {
+    const loadRecentProviders = async () => {
+      try {
+        const user = await base44.auth.me();
+        if (user?.email) {
+          const requests = await base44.entities.ServiceRequest.filter(
+            { created_by: user.email },
+            '-created_date',
+            30
+          );
+          // Pega últimos 10 prestadores únicos com foto
+          const uniqueProviders = [];
+          const seen = new Set();
+          for (const req of requests) {
+            if (req.provider_id && !seen.has(req.provider_id)) {
+              const provs = await base44.entities.Provider.filter({ id: req.provider_id });
+              if (provs[0]) {
+                uniqueProviders.push(provs[0]);
+                seen.add(req.provider_id);
+                if (uniqueProviders.length >= 10) break;
+              }
+            }
+          }
+          setRecentProviders(uniqueProviders);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar prestadores:', err);
+      }
+    };
+    loadRecentProviders();
+  }, []);
 
   const handleRequestTip = async () => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -30,7 +65,7 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
       // Cria sessão de checkout para pagamento da gorjeta
       const result = await base44.functions.invoke('createTipCheckoutSession', {
         service_id: request.id,
-        provider_id: request.provider_id,
+        provider_id: selectedProvider.id,
         amount: amountInCents,
         client_email: request.created_by,
         service_number: request.service_number,
@@ -52,6 +87,61 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
     }
   };
 
+  if (showProviderList) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
+        <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-6 animate-in fade-in slide-in-from-bottom-5">
+          <div className="flex items-center gap-3 mb-4">
+            <button
+              onClick={() => setShowProviderList(false)}
+              className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center flex-shrink-0"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <h2 className="text-lg font-bold text-foreground">Selecione o prestador</h2>
+            <button onClick={onClose} className="ml-auto w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {recentProviders.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Nenhum prestador anterior encontrado</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-5 gap-3 max-h-[60vh] overflow-y-auto">
+              {recentProviders.map((prov) => (
+                <button
+                  key={prov.id}
+                  onClick={() => {
+                    setSelectedProvider({ name: prov.name, id: prov.id });
+                    setShowProviderList(false);
+                  }}
+                  className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted transition-colors"
+                >
+                  {prov.photo_url ? (
+                    <img
+                      src={prov.photo_url}
+                      alt={prov.name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-border"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-xs font-bold">
+                      {prov.name.charAt(0)}
+                    </div>
+                  )}
+                  <span className="text-xs text-foreground font-semibold text-center line-clamp-2">
+                    {prov.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
       <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4 animate-in fade-in slide-in-from-bottom-5">
@@ -69,9 +159,17 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
           <div className="text-center">
             <p className="text-sm font-bold text-amber-900 mb-1">Ficou satisfeito com o serviço?</p>
             <p className="text-xs text-amber-800">
-              Deixe uma gratificação para <strong>{provider?.name}</strong> e reconheça o bom trabalho! 💪
+              Deixe uma gratificação para <strong>{selectedProvider?.name}</strong> e reconheça o bom trabalho! 💪
             </p>
           </div>
+          {recentProviders.length > 0 && (
+            <button
+              onClick={() => setShowProviderList(true)}
+              className="w-full py-2 text-xs font-semibold text-amber-700 hover:bg-amber-100 rounded-lg transition-colors"
+            >
+              👥 Outro prestador
+            </button>
+          )}
         </div>
 
         <div className="space-y-3">
