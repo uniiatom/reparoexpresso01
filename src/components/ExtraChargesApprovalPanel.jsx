@@ -239,14 +239,22 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
               />
               <div className="grid grid-cols-2 gap-2">
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   placeholder="Horas"
                   className="rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  onKeyPress={(e) => {
+                    if (!/[\d.,]/.test(e.key)) e.preventDefault();
+                  }}
                 />
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   placeholder="Valor/hora"
                   className="rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  onKeyPress={(e) => {
+                    if (!/[\d.,]/.test(e.key)) e.preventDefault();
+                  }}
                 />
               </div>
             </div>
