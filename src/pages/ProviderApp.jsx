@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, X, Check, ClipboardList, Calendar, CalendarOff, PauseCircle } from "lucide-react";
+import { MapPin, Phone, Clock, CheckCircle2, Wrench, Star, BellRing, X, Check, ClipboardList, Calendar, CalendarOff, PauseCircle, BarChart3 } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 import ProviderUnavailabilitySection from '../components/ProviderUnavailabilitySection';
 import GoogleReviewQRCode from '../components/GoogleReviewQRCode';
 import { cn } from "@/lib/utils";
@@ -46,6 +47,7 @@ const URGENCY_LABELS = { agora: "🔥 Urgente", hoje: "⏰ Hoje", esta_semana: "
 export default function ProviderApp() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [jobQueue, setJobQueue] = useState([]); // fila de jobs para o banner
   const [showChecklist, setShowChecklist] = useState(false);
   const [showAdditionalPoint, setShowAdditionalPoint] = useState(false);
@@ -572,6 +574,13 @@ export default function ProviderApp() {
       </div>
       {/* Abas de navegação - linha 2 */}
       <div className="flex gap-1 mb-5 bg-muted rounded-2xl p-1">
+        <button
+          onClick={() => navigate('/painel-metricas')}
+          className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all text-muted-foreground hover:bg-card hover:text-foreground"
+          title="Ver painel de desempenho"
+        >
+          📊 Métricas
+        </button>
         <button
           onClick={() => setActiveTab('historico')}
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'historico' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
