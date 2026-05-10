@@ -178,7 +178,7 @@ export function SubstituicaoTelhaModal({ onSelect, onClose }) {
             className="flex flex-col items-center gap-0 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95 overflow-hidden"
           >
             <img
-              src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80"
+              src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/fbe1ff836_OIP.jpg"
               alt="Telha fibrocimento"
               className="w-full h-28 object-cover"
             />
