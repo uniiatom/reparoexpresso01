@@ -213,7 +213,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
             <PhotoUploadGallery 
               photos={photos} 
               onPhotosChange={setPhotos}
-              readOnly={false}
+              readOnly={user?.role === 'admin' ? false : true}
             />
           </div>
 
