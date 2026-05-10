@@ -33,9 +33,11 @@ export default function SatisfactionSurveyModal({ job, respondentType, responden
         comment: comment || null,
         recommended: recommended,
       });
+      console.log('[SatisfactionSurveyModal] Pesquisa enviada, mostrando opção de gratificação');
       toast.success('Obrigado pela avaliação!');
       setSubmitted(true);
     } catch (err) {
+      console.error('[SatisfactionSurveyModal] Erro ao enviar:', err);
       toast.error('Erro ao enviar pesquisa: ' + (err?.message || 'tente novamente'));
     }
     setLoading(false);
@@ -99,15 +101,17 @@ export default function SatisfactionSurveyModal({ job, respondentType, responden
             </Button>
           </div>
         </div>
-        {showTipModal && (
+        {showTipModal && job?.provider_id && (
           <TipRequestModal
             request={job}
             provider={{ name: job.provider_name, id: job.provider_id }}
             onClose={() => {
+              console.log('[SatisfactionSurveyModal] Fechando modal de gratificação');
               setShowTipModal(false);
               onClose();
             }}
             onSuccess={() => {
+              console.log('[SatisfactionSurveyModal] Gratificação confirmada');
               setShowTipModal(false);
               onClose();
             }}

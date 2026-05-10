@@ -179,17 +179,20 @@ export default function AcompanharServico() {
   // Mostrar pesquisa de satisfação após conclusão
   useEffect(() => {
     if (request?.status === 'concluido' && user?.id) {
+      console.log('[AcompanharServico] Serviço concluído, verificando pesquisa de satisfação...');
       // Verifica se já respondeu pesquisa
       base44.entities.SatisfactionSurvey.filter({
         service_request_id: request.id,
         respondent_id: user.id,
         respondent_type: 'cliente'
       }).then(surveys => {
+        console.log('[AcompanharServico] Pesquisas existentes:', surveys.length);
         if (surveys.length === 0) {
-          const timer = setTimeout(() => setShowSatisfactionSurvey(true), 2000);
+          console.log('[AcompanharServico] Mostrando modal de pesquisa de satisfação');
+          const timer = setTimeout(() => setShowSatisfactionSurvey(true), 1000);
           return () => clearTimeout(timer);
         }
-      });
+      }).catch(err => console.error('[AcompanharServico] Erro ao carregar pesquisas:', err));
     }
   }, [request?.status, user?.id, request?.id]);
 
