@@ -234,6 +234,10 @@ export default function ServiceChecklist({ job, onClose }) {
           <div className="space-y-3 bg-blue-50 rounded-2xl p-4 border border-blue-200">
             <p className="text-sm font-bold text-blue-900">✍️ Autorização prévia do cliente</p>
             <p className="text-xs text-blue-700">O cliente deve assinar antes do início do serviço, autorizando a execução dos trabalhos.</p>
+            <div className="bg-white rounded-xl p-3 border border-blue-300">
+              <p className="text-xs text-blue-900 font-semibold mb-1">📋 Consentimento:</p>
+              <p className="text-xs text-blue-800 leading-relaxed">Ao assinar, concordo com a coleta da minha foto para fins de registro e validação de presença neste atendimento.</p>
+            </div>
             <div>
               <label className="text-xs font-semibold text-blue-800 flex items-center gap-1 mb-1">
                 <CreditCard className="w-3.5 h-3.5" /> CPF do cliente (opcional)
@@ -417,6 +421,10 @@ export default function ServiceChecklist({ job, onClose }) {
           <div className="space-y-3 bg-green-50 rounded-2xl p-4 border border-green-200">
             <p className="text-sm font-bold text-green-900">✅ Assinatura final do cliente</p>
             <p className="text-xs text-green-700">O cliente deve assinar confirmando que o serviço foi concluído de forma satisfatória.</p>
+            <div className="bg-white rounded-xl p-3 border border-green-300">
+              <p className="text-xs text-green-900 font-semibold mb-1">📋 Consentimento:</p>
+              <p className="text-xs text-green-800 leading-relaxed">Ao assinar, concordo com a coleta da minha foto para fins de registro e validação de presença neste atendimento.</p>
+            </div>
             <div>
               <label className="text-xs font-semibold text-green-800 flex items-center gap-1 mb-1">
                 <CreditCard className="w-3.5 h-3.5" /> CPF do cliente (opcional)
