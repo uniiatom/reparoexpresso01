@@ -383,26 +383,36 @@ export default function ProviderApp() {
     }
   }, [realActiveJob?.id]);
 
-  // Emite som quando há serviço agendado aguardando aceite
+  // Emite som quando há serviço agendado aguardando aceite (somente uma vez por login)
+  const hasPlayedAlertRef = useRef(false);
   useEffect(() => {
-    const pendingScheduled = scheduledJobs.filter(j => j.status === 'agendado' && !j.provider_id);
-    if (pendingScheduled.length > 0 && provider?.is_online && provider?.is_approved) {
-      // Emite som de alerta
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
+    const pendingScheduled = scheduledJobs.filter(j => j.status === 'agendado');
+    if (pendingScheduled.length > 0 && provider?.is_online && provider?.is_approved && !hasPlayedAlertRef.current) {
+      hasPlayedAlertRef.current = true;
+      // Emite som de alerta mais audível
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioContext.currentTime;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 1000;
+        oscillator.type = 'sine';
+        
+        // Som mais alto e audível
+        gainNode.gain.setValueAtTime(0.5, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+        
+        oscillator.start(now);
+        oscillator.stop(now + 0.8);
+      } catch (e) {
+        console.log('Som de alerta não disponível');
+      }
     }
-  }, [scheduledJobs, provider?.is_online, provider?.is_approved]);
+  }, [provider?.is_online, provider?.is_approved]);
 
   if (!provider) {
     return <ProviderSetupModal user={user} onCreated={() => queryClient.invalidateQueries({ queryKey: ['my-provider'] })} />;
@@ -854,19 +864,31 @@ export default function ProviderApp() {
                     {job.service_number && (
                       <p className="text-xs font-mono text-primary/70 mt-1">{job.service_number}</p>
                     )}
-                    <Button
-                      size="sm"
-                      className="w-full mt-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs"
-                      onClick={() => {
-                        window.__stopProviderHorn?.();
-                        window.__markJobSeen?.(job.id);
-                        setJobQueue(prev => prev.filter(j => j.id !== job.id));
-                        acceptJob.mutate(job.id);
-                      }}
-                      disabled={acceptJob.isPending}
-                    >
-                      <Check className="w-3 h-3 mr-1" /> Confirmar presença e iniciar
-                    </Button>
+                    <div className="flex gap-2 mt-3">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 rounded-xl text-muted-foreground hover:bg-muted text-xs"
+                        onClick={() => {
+                          window.open(`https://wa.me/?text=Olá, tenho dúvida sobre o serviço ${job.service_number || job.id}`, '_blank');
+                        }}
+                      >
+                        💬 Suporte
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="flex-1 rounded-xl bg-primary text-primary-foreground font-semibold text-xs"
+                        onClick={() => {
+                          window.__stopProviderHorn?.();
+                          window.__markJobSeen?.(job.id);
+                          setJobQueue(prev => prev.filter(j => j.id !== job.id));
+                          acceptJob.mutate(job.id);
+                        }}
+                        disabled={acceptJob.isPending}
+                      >
+                        <Check className="w-3 h-3 mr-1" /> Aceitar
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
