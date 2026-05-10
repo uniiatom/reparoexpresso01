@@ -21,7 +21,7 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import MapView from "@/components/MapView";
 import ProviderSearchModal from "@/components/ProviderSearchModal";
 import ClientScheduleSelector from "@/components/ClientScheduleSelector";
-import { useScheduleAvailability } from "@/hooks/useScheduleAvailability";
+
 import TowServiceQuestions from "@/components/TowServiceQuestions";
 import RetornoButton from "@/components/RetornoButton";
 import ProviderMiniPhoto from "@/components/ProviderMiniPhoto";
@@ -32,6 +32,7 @@ import { SERVICE_TYPES } from "@/lib/serviceTypes";
 import PhotoLightbox from "@/components/PhotoLightbox";
 import FixacoesDiversasModal from "@/components/FixacoesDiversasModal";
 import OutrosServicoModal from "@/components/OutrosServicoModal";
+import InteractiveScheduleCalendar from "@/components/InteractiveScheduleCalendar";
 
 const URGENCY = [
   { value: "agora", label: "Agora", desc: "Preciso urgente" },
@@ -39,11 +40,7 @@ const URGENCY = [
   { value: "esta_semana", label: "Esta semana", desc: "Sem pressa" },
 ];
 
-// Horários de 1 em 1h — das 07:00 às 17:00
-const HOUR_SLOTS = Array.from({ length: 11 }, (_, i) => {
-  const hour = 7 + i;
-  return `${String(hour).padStart(2, '0')}:00`;
-});
+
 
 export default function SolicitarServico() {
    const navigate = useNavigate();
@@ -293,28 +290,7 @@ export default function SolicitarServico() {
 
 
 
-  const [scheduledAvailableSlots, setScheduledAvailableSlots] = useState([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
 
-  const fetchAvailableSlotsForDate = async (date) => {
-    if (!date) return;
-    setLoadingSlots(true);
-    setScheduledAvailableSlots([]);
-    try {
-      // Busca todas as OS agendadas para essa data
-      const allServices = await base44.entities.ServiceRequest.filter({ modality: 'agendado' });
-      const ACTIVE_STATUSES = ['agendado', 'aceito', 'a_caminho', 'em_andamento'];
-      const servicesOnDate = allServices.filter(s =>
-        s.scheduled_date === date && ACTIVE_STATUSES.includes(s.status)
-      );
-      const occupiedSlots = new Set(servicesOnDate.map(s => s.scheduled_time));
-      const available = HOUR_SLOTS.filter(slot => !occupiedSlots.has(slot));
-      setScheduledAvailableSlots(available);
-    } catch {
-      setScheduledAvailableSlots(HOUR_SLOTS);
-    }
-    setLoadingSlots(false);
-  };
 
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
@@ -1744,79 +1720,12 @@ export default function SolicitarServico() {
           )}
 
           {form.modality === 'agendado' && (
-            <div className="space-y-4">
-              <div className="space-y-3">
-                <div>
-                  <Label className="flex items-center gap-2"><MapPin className="w-4 h-4" /> CEP do local do agendamento</Label>
-                  <p className="text-xs text-muted-foreground mb-2">Preencher para confirmar endereço</p>
-                  <div className="relative">
-                    <Input
-                      placeholder="00000-000"
-                      value={form.cep}
-                      onChange={e => set('cep', e.target.value)}
-                      onBlur={() => searchByCep(form.cep)}
-                      disabled={loadingCep}
-                      className="rounded-2xl"
-                    />
-                    {loadingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />}
-                  </div>
-                  {cepError && <p className="text-xs text-destructive mt-1">{cepError}</p>}
-                  {form.address && (
-                    <div className="mt-2 bg-primary/5 rounded-xl p-3 text-sm border border-primary/20">
-                      <p className="text-foreground font-medium">{form.address}{form.number ? `, ${form.number}` : ''}</p>
-                      <p className="text-muted-foreground text-xs">{form.neighborhood}{form.city ? ` - ${form.city}` : ''}, {form.state}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Data preferida</Label>
-                <Input
-                  type="date"
-                  value={form.scheduled_date}
-                  onChange={e => {
-                    set('scheduled_date', e.target.value);
-                    set('scheduled_time', '');
-                    fetchAvailableSlotsForDate(e.target.value);
-                  }}
-                  min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
-                  className="rounded-2xl"
-                />
-              </div>
-
-              {form.scheduled_date && (
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" /> Horário disponível
-                    {loadingSlots && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
-                  </Label>
-                  {!loadingSlots && scheduledAvailableSlots.length === 0 && (
-                    <div className="p-4 bg-red-50 rounded-2xl border border-red-200 text-sm text-red-700">
-                      ⚠️ Nenhum horário disponível nesta data. Escolha outro dia.
-                    </div>
-                  )}
-                  {!loadingSlots && scheduledAvailableSlots.length > 0 && (
-                    <div className="grid grid-cols-4 gap-2">
-                      {scheduledAvailableSlots.map(slot => (
-                        <button
-                          key={slot}
-                          onClick={() => set('scheduled_time', slot)}
-                          className={cn(
-                            "py-3 rounded-2xl border-2 text-sm font-semibold transition-all",
-                            form.scheduled_time === slot
-                              ? "border-primary bg-primary/5 text-primary"
-                              : "border-border hover:border-primary/40 text-foreground"
-                          )}
-                        >
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            <InteractiveScheduleCalendar
+              selectedDate={form.scheduled_date}
+              selectedTime={form.scheduled_time}
+              onDateChange={v => { set('scheduled_date', v); set('scheduled_time', ''); }}
+              onTimeChange={v => set('scheduled_time', v)}
+            />
           )}
         </div>
       )}
