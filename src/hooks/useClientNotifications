@@ -8,20 +8,29 @@ export default function useClientNotifications(clientEmail) {
   useEffect(() => {
     if (!clientEmail) return;
 
-    // Busca notificações iniciais
+    // Busca notificações iniciais (não lidas)
     base44.entities.ClientNotification.filter(
       { client_email: clientEmail, is_read: false },
       '-created_date',
       20
-    ).then(setNotifications).catch(() => {});
+    ).then(notifs => {
+      console.log('[useClientNotifications] Loaded initial notifications:', notifs.length, notifs);
+      setNotifications(notifs);
+    }).catch((e) => {
+      console.warn('[useClientNotifications] Error loading notifications:', e.message);
+    });
 
     // Inscreve em tempo real para novas notificações
     const unsubscribe = base44.entities.ClientNotification.subscribe((event) => {
+      console.log('[useClientNotifications] Event received:', event.type, event.data?.client_email, event.data?.type);
+      
       if (event.type === 'create' && event.data?.client_email === clientEmail) {
+        console.log('[useClientNotifications] New notification for client:', event.data);
         setNotifications(prev => [event.data, ...prev]);
 
         // Mostra toast para notificações de orçamento extra
         if (event.data?.type === 'extra_charges_pending' && event.data?.service_id) {
+          console.log('[useClientNotifications] Showing extra charges toast for service:', event.data.service_id);
           toast.info('💰 Novo orçamento extra aguardando aprovação', {
             duration: 8000,
             action: {

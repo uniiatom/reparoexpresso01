@@ -17,7 +17,8 @@
         "service_completed",
         "service_accepted",
         "warning",
-        "promotion"
+        "promotion",
+        "extra_charges_pending"
       ],
       "description": "Tipo de notifica\u00e7\u00e3o"
     },
@@ -28,6 +29,26 @@
     "message": {
       "type": "string",
       "description": "Mensagem da notifica\u00e7\u00e3o"
+    },
+    "service_id": {
+      "type": "string",
+      "description": "ID do servi\u00e7o relacionado (para extra_charges_pending)"
+    },
+    "service_number": {
+      "type": "string",
+      "description": "N\u00famero do servi\u00e7o (desnormalizado)"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Nome do prestador (desnormalizado)"
+    },
+    "extra_total": {
+      "type": "number",
+      "description": "Valor total de extras"
+    },
+    "new_total": {
+      "type": "number",
+      "description": "Novo valor total do servi\u00e7o"
     },
     "action_url": {
       "type": "string",
