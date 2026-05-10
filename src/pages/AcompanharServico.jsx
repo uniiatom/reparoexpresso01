@@ -21,7 +21,6 @@ import BatchProviderChat from '../components/BatchProviderChat';
 import ClientTicketForm from '../components/ClientTicketForm';
 import CouponInput from '../components/CouponInput';
 import ProviderExtraChargesPanel from '../components/ProviderExtraChargesPanel';
-import ServicePriceHistoryPanel from '../components/ServicePriceHistoryPanel';
 import useClientNotifications from '../hooks/useClientNotifications';
 
 const STATUS_STEPS = [
