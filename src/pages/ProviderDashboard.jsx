@@ -14,6 +14,7 @@ import ServiceRefusalForm from '@/components/ServiceRefusalForm';
 import ServiceCompletionModal from '@/components/ServiceCompletionModal';
 import ProviderDailySchedule from '@/components/ProviderDailySchedule';
 import ProviderMetricsPanel from '@/components/ProviderMetricsPanel';
+import AvailableRequestsMap from '@/components/AvailableRequestsMap';
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
@@ -238,13 +239,22 @@ export default function ProviderDashboard() {
 
         {/* Main Tabs */}
          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-6">
+            <TabsList className="grid w-full grid-cols-6 mb-6">
+              <TabsTrigger value="map">🗺️ Solicitações</TabsTrigger>
               <TabsTrigger value="today">Agenda do Dia</TabsTrigger>
               <TabsTrigger value="metrics">Métricas</TabsTrigger>
               <TabsTrigger value="overview">Serviços Aceitos</TabsTrigger>
               <TabsTrigger value="earnings">Ganhos</TabsTrigger>
               <TabsTrigger value="support">Suporte</TabsTrigger>
             </TabsList>
+
+          {/* Tab: Mapa de Solicitações */}
+          <TabsContent value="map" className="space-y-4">
+            <AvailableRequestsMap 
+              providerId={provider.id}
+              providerLocation={provider.latitude && provider.longitude ? [provider.latitude, provider.longitude] : null}
+            />
+          </TabsContent>
 
           {/* Tab: Agenda do Dia */}
           <TabsContent value="today" className="space-y-4">
