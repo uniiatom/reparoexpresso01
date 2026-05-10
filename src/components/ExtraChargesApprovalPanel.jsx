@@ -56,8 +56,11 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
     }
   }, [notification?.message, notification?.extra_total]);
 
-  // Se não houver notificação pendente, não mostra nada
-  if (!notification) {
+  // Apenas cliente vê a notificação de aprovação pendente
+  // Prestador sempre vê a interface de criação
+  const isProvider = user?.role === 'admin';
+  
+  if (!isProvider && !notification) {
     return null;
   }
 
@@ -154,18 +157,28 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   };
 
   return (
-    <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-5 space-y-3 mb-5">
+    <div className={`rounded-3xl p-5 space-y-3 mb-5 border-2 ${
+      isProvider 
+        ? 'bg-blue-50 border-blue-300' 
+        : 'bg-amber-50 border-amber-300'
+    }`}>
       {/* Header colapsável */}
       <button
         onClick={() => setExpanded(!shouldExpand)}
         className="w-full flex items-start gap-3 hover:opacity-80 transition-opacity"
       >
-        <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+        <span className={`text-xl flex-shrink-0 ${isProvider ? '🔧' : '💰'}`} />
         <div className="flex-1 text-left min-w-0">
-          <p className="font-bold text-amber-900">💰 Orçamento extra aguardando aprovação</p>
-          <p className="text-sm text-amber-800 mt-0.5">{notification.provider_name} solicitou +R$ {total.toFixed(2)}</p>
+          <p className={`font-bold ${isProvider ? 'text-blue-900' : 'text-amber-900'}`}>
+            {isProvider 
+              ? '🔧 Adicionar orçamento extra' 
+              : '💰 Orçamento extra aguardando aprovação'}
+          </p>
+          {notification && !isProvider && (
+            <p className="text-sm text-amber-800 mt-0.5">{notification.provider_name} solicitou +R$ {total.toFixed(2)}</p>
+          )}
         </div>
-        <span className={`text-amber-600 flex-shrink-0 transition-transform ${shouldExpand ? 'rotate-180' : ''}`}>
+        <span className={`flex-shrink-0 transition-transform ${shouldExpand ? 'rotate-180' : ''} ${isProvider ? 'text-blue-600' : 'text-amber-600'}`}>
           ▼
         </span>
       </button>
@@ -173,7 +186,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
 
 
       {/* Detalhes expandidos - Cliente (apenas aprovação/rejeição) */}
-      {shouldExpand && user?.role !== 'admin' && (
+      {shouldExpand && !isProvider && notification && (
         <div className="space-y-3 border-t border-amber-200 pt-3">
           <div className="bg-white rounded-2xl p-4 space-y-2">
             <p className="text-sm font-semibold text-foreground mb-3">📊 Resumo financeiro:</p>
@@ -212,7 +225,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       )}
 
       {/* Detalhes expandidos - Prestador */}
-      {shouldExpand && user?.role === 'admin' && (
+      {shouldExpand && isProvider && (
         <div className="space-y-3 border-t border-amber-200 pt-3">
           {/* Upload de fotos - apenas prestador pode fazer upload */}
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
@@ -314,7 +327,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       )}
 
       {/* Menu de ações - Cliente (apenas aprovar/rejeitar) */}
-      {shouldExpand && !showRejectionForm && !showConfirmApprove && user?.role !== 'admin' && (
+      {shouldExpand && !showRejectionForm && !showConfirmApprove && !isProvider && notification && (
         <div className="space-y-2 pt-2 border-t border-amber-200">
           <p className="text-xs font-semibold text-amber-900 px-1">O que você quer fazer?</p>
           <div className="grid grid-cols-2 gap-2">
@@ -338,7 +351,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       )}
 
       {/* Menu de ações - Prestador (Aprovar ou Rejeitar) */}
-      {shouldExpand && !showRejectionForm && !showConfirmApprove && user?.role === 'admin' && (
+      {shouldExpand && !showRejectionForm && !showConfirmApprove && isProvider && (
         <div className="space-y-2 pt-2 border-t border-amber-200">
           <p className="text-xs font-semibold text-amber-900 px-1">Enviar orçamento para o cliente?</p>
           <div className="grid grid-cols-2 gap-2">
@@ -368,9 +381,9 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       {/* Formulário de cancelamento (prestador) ou rejeição (cliente) */}
       {showRejectionForm && (
         <div className="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-3">
-          <p className="text-sm font-semibold text-red-900">❌ {user?.role === 'admin' ? 'Cancelar orçamento?' : 'Por que está rejeitando?'}</p>
+          <p className="text-sm font-semibold text-red-900">❌ {isProvider ? 'Cancelar orçamento?' : 'Por que está rejeitando?'}</p>
           <textarea
-           placeholder={user?.role === 'admin' ? 'Motivo do cancelamento...' : 'Explique o motivo da rejeição...'}
+           placeholder={isProvider ? 'Motivo do cancelamento...' : 'Explique o motivo da rejeição...'}
            value={rejectionNotes}
            onChange={(e) => setRejectionNotes(e.target.value)}
            className="w-full rounded-xl border border-red-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-red-400 resize-none"
@@ -397,14 +410,14 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
               disabled={loading || !rejectionNotes.trim()}
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <XCircle className="w-4 h-4 mr-2" />}
-              {user?.role === 'admin' ? 'Cancelar' : 'Rejeitar'}
+              {isProvider ? 'Cancelar' : 'Rejeitar'}
             </Button>
           </div>
         </div>
       )}
 
-      {/* Modal de confirmação de envio para cliente */}
-      {showConfirmApprove && (
+      {/* Modal de confirmação */}
+      {showConfirmApprove && isProvider && (
         <div className="bg-green-50 border border-green-200 rounded-2xl p-4 space-y-3">
           <p className="text-sm font-semibold text-green-900">✓ Confirmar envio do orçamento?</p>
           <p className="text-sm text-green-800">
