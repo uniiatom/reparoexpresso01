@@ -11,7 +11,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   const [showRejectionForm, setShowRejectionForm] = useState(false);
   const [localService, setLocalService] = useState(service);
   const [notification, setNotification] = useState(null);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(user?.role !== 'admin');
   const [showConfirmApprove, setShowConfirmApprove] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [user, setUser] = useState(null);
