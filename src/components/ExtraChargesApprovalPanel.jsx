@@ -12,6 +12,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   const [notification, setNotification] = useState(null);
   const [expanded, setExpanded] = useState(false);
   const [showConfirmApprove, setShowConfirmApprove] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
 
   // Atualiza em tempo real quando o service muda
   useEffect(() => {
@@ -150,24 +151,114 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         </div>
       )}
 
-      {/* Botões de ação */}
-      {expanded && !showRejectionForm && (
-        <div className="flex gap-2 pt-2 border-t border-amber-200">
-          <Button
-            onClick={() => setShowRejectionForm(true)}
-            variant="outline"
-            className="flex-1 rounded-2xl border-red-300 text-red-600 hover:bg-red-50 h-10 font-semibold text-sm"
-            disabled={loading}
-          >
-            <XCircle className="w-4 h-4 mr-1.5" /> Rejeitar
-          </Button>
-          <Button
-            onClick={() => setShowConfirmApprove(true)}
-            className="flex-1 rounded-2xl bg-green-600 hover:bg-green-700 text-white h-10 font-semibold text-sm"
-            disabled={loading}
-          >
-            <CheckCircle2 className="w-4 h-4 mr-1.5" /> Aprovar
-          </Button>
+      {/* Menu de ações */}
+      {expanded && !showRejectionForm && !showConfirmApprove && (
+        <div className="space-y-2 pt-2 border-t border-amber-200">
+          <p className="text-xs font-semibold text-amber-900 px-1">O que você quer fazer?</p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              onClick={() => setShowConfirmApprove(true)}
+              className="rounded-2xl bg-green-600 hover:bg-green-700 text-white h-10 font-semibold text-xs flex flex-col items-center gap-1"
+              disabled={loading}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Aprovar</span>
+            </Button>
+            <Button
+              onClick={() => setSelectedAction('negotiate')}
+              variant="outline"
+              className="rounded-2xl border-blue-300 text-blue-600 hover:bg-blue-50 h-10 font-semibold text-xs flex flex-col items-center gap-1"
+              disabled={loading}
+            >
+              <span>💬</span>
+              <span>Negociar</span>
+            </Button>
+            <Button
+              onClick={() => setSelectedAction('clarify')}
+              variant="outline"
+              className="rounded-2xl border-purple-300 text-purple-600 hover:bg-purple-50 h-10 font-semibold text-xs flex flex-col items-center gap-1"
+              disabled={loading}
+            >
+              <span>❓</span>
+              <span>Esclarecer</span>
+            </Button>
+            <Button
+              onClick={() => setShowRejectionForm(true)}
+              variant="outline"
+              className="rounded-2xl border-red-300 text-red-600 hover:bg-red-50 h-10 font-semibold text-xs flex flex-col items-center gap-1"
+              disabled={loading}
+            >
+              <XCircle className="w-4 h-4" />
+              <span>Rejeitar</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Ação: Negociar */}
+      {selectedAction === 'negotiate' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-3">
+          <p className="text-sm font-semibold text-blue-900">💬 Propor um novo valor</p>
+          <div className="space-y-2">
+            <input
+              type="number"
+              placeholder="Novo valor total (ex: 250)"
+              className="w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+              defaultValue={new_total}
+            />
+            <textarea
+              placeholder="Deixe uma mensagem para o prestador..."
+              className="w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 resize-none"
+              rows={2}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 rounded-xl"
+              onClick={() => setSelectedAction(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+              disabled={loading}
+            >
+              Enviar Proposta
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Ação: Esclarecer */}
+      {selectedAction === 'clarify' && (
+        <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 space-y-3">
+          <p className="text-sm font-semibold text-purple-900">❓ Sua dúvida ou questionamento</p>
+          <textarea
+            placeholder="Qual é sua dúvida sobre este orçamento extra?"
+            className="w-full rounded-xl border border-purple-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400 resize-none"
+            rows={3}
+            autoFocus
+          />
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 rounded-xl"
+              onClick={() => setSelectedAction(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              className="flex-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold"
+              disabled={loading}
+            >
+              Enviar Dúvida
+            </Button>
+          </div>
         </div>
       )}
 
