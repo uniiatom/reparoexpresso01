@@ -30,6 +30,7 @@ import ValvulaTransfModal from "@/components/ValvulaTransfModal";
 import { PaneSeccaAlertModal, LimpezaTelhadoAlertModal, ArCondicionadoModal, LimpezaCalhaTelhadoAlertModal, NaoSeiLitragemModal, SubstituicaoTelhaModal } from "@/components/ServiceAlertModals";
 import { SERVICE_TYPES } from "@/lib/serviceTypes";
 import PhotoLightbox from "@/components/PhotoLightbox";
+import FixacoesDiversasModal from "@/components/FixacoesDiversasModal";
 
 const URGENCY = [
   { value: "agora", label: "Agora", desc: "Preciso urgente" },
@@ -84,16 +85,16 @@ export default function SolicitarServico() {
     if (userLoaded && !clientLoading && step === -1) {
       setStep(clientProfile ? 1 : 0);
     }
-  }, [userLoaded, clientLoading, clientProfile, step]); // -1 = ainda determinando
+  }, [userLoaded, clientLoading, clientProfile, step]);
   const [serviceTab, setServiceTab] = useState(urlParams.get('tipo') && ['troca_pneu','recarga_bateria','conserto_pneu','veiculo_outros'].includes(urlParams.get('tipo')) ? 'veiculo' : 'casa');
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [showProviderSearch, setShowProviderSearch] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [activeBusyAlertId, setActiveBusyAlertId] = useState(null);
   const [showCaixaDaguaModal, setShowCaixaDaguaModal] = useState(false);
-  const [caixaDaguaTipo, setCaixaDaguaTipo] = useState(null); // 'residencia' | 'condominio'
+  const [caixaDaguaTipo, setCaixaDaguaTipo] = useState(null);
   const [caixaDaguaLitragem, setCaixaDaguaLitragem] = useState(null);
-  const [caixaDaguaStep, setCaixaDaguaStep] = useState('tipo'); // 'tipo' | 'litragem'
+  const [caixaDaguaStep, setCaixaDaguaStep] = useState('tipo');
   const [showTvSizeModal, setShowTvSizeModal] = useState(false);
   const [tvSize, setTvSize] = useState(null); // 'ate55' | 'acima55'
   const [showDesentupimentoModal, setShowDesentupimentoModal] = useState(false);
@@ -111,6 +112,8 @@ export default function SolicitarServico() {
   const [showArCondicionadoModal, setShowArCondicionadoModal] = useState(false);
   const [showLimpezaCalhaTelhadoAlert, setShowLimpezaCalhaTelhadoAlert] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState(null);
+  const [showFixacoesModal, setShowFixacoesModal] = useState(false);
+  const [fixacoesTipo, setFixacoesTipo] = useState(null);
   const [showSubstituicaoTelhaModal, setShowSubstituicaoTelhaModal] = useState(false);
   const [substituicaoTelhaTipo, setSubstituicaoTelhaTipo] = useState(null);
   const [towQuestions, setTowQuestions] = useState({});
@@ -269,8 +272,7 @@ export default function SolicitarServico() {
          delivery_neighborhood: data.bairro || '',
          delivery_cep: cleanCep,
        }));
-       // Geocodifica endereço de entrega
-       await geocodeAddress(data.logradouro, '', data.bairro, data.localidade, data.uf, true);
+            await geocodeAddress(data.logradouro, '', data.bairro, data.localidade, data.uf, true);
      } else {
        setForm(prev => ({
          ...prev,
@@ -280,7 +282,6 @@ export default function SolicitarServico() {
          neighborhood: data.bairro || '',
          cep: cleanCep,
        }));
-       // Geocodifica endereço de saída
        await geocodeAddress(data.logradouro, '', data.bairro, data.localidade, data.uf, false);
      }
    } catch {
@@ -291,7 +292,6 @@ export default function SolicitarServico() {
 
 
 
-  // Para verificar disponibilidade de horários quando agendado (sem provider definido ainda, usa lógica global)
   const [scheduledAvailableSlots, setScheduledAvailableSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
@@ -448,7 +448,6 @@ export default function SolicitarServico() {
     if (location) applyGeolocation();
   }, [location]);
 
-  // Calcula distância do reboque via rota real (OSRM) quando coordenadas mudam
   React.useEffect(() => {
     if (!isTow || !form.latitude || !form.longitude || !form.delivery_latitude || !form.delivery_longitude) return;
     setCalculatingRoute(true);
@@ -641,12 +640,10 @@ export default function SolicitarServico() {
     return true;
   };
 
-  // Se não tem perfil, começa no step 0 (cadastro rápido)
   const needsRegister = userLoaded && !clientProfile;
   const totalSteps = needsRegister ? 7 : 6;
-  const displayStep = needsRegister ? step + 1 : step + 1; // step 0 = passo 1 para o usuário
+  const displayStep = step + (needsRegister ? 1 : 0);
 
-  // Aguarda carregar dados do usuário e perfil de cliente, ou determinar step inicial
   if (!userLoaded || clientLoading || step === -1) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -877,6 +874,8 @@ export default function SolicitarServico() {
                     setShowLimpezaTelhadoAlert(true);
                     return;
                   }
+                  if (s.value === 'fixacoes_diversas' && !selected) { setShowFixacoesModal(true); return; }
+                  if (s.value === 'fixacoes_diversas' && selected) { setFixacoesTipo(null); }
                   if (s.value === 'pane_seca' && !selected) {
                     setShowPaneSeccaAlert(true);
                     return;
@@ -901,8 +900,9 @@ export default function SolicitarServico() {
                      ) : s.value === 'valvula_transferidora_pressao' && valvulaTransfTipo ? (
                        <><span>Válvula Transfer.</span><br /><span className="text-[10px] opacity-75">({valvulaTransfTipo === 'visita_tecnica' ? 'Visita' : valvulaTransfTipo === 'instalacao' ? 'Instalação' : 'Reparo'})</span></>
                     ) : s.value === 'desentupimento' && desentupimentoTipo ? (
-                       <><span>Desentupimento</span><br /><span className="text-[10px] opacity-75">({desentupimentoTipo})</span></>
-                     ) : s.label}
+                      <><span>Desentupimento</span><br /><span className="text-[10px] opacity-75">({desentupimentoTipo})</span></>
+                    ) : s.value === 'fixacoes_diversas' && fixacoesTipo ? (<><span>Fixações</span><br /><span className="text-[10px] opacity-75">({fixacoesTipo})</span></>
+                    ) : s.label}
                   </span>
                   {selected && <span className="w-4 h-4 bg-primary rounded-full flex items-center justify-center"><span className="text-white text-[9px] font-black">✓</span></span>}
                 </button>
