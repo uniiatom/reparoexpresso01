@@ -162,30 +162,39 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
 
           {/* Grid de fotos dos últimos prestadores */}
           {recentProviders.length > 0 && (
-            <div className="grid grid-cols-5 gap-2">
-              {recentProviders.map((prov) => (
-                <button
-                  key={prov.id}
-                  onClick={() => setSelectedProvider({ name: prov.name, id: prov.id })}
-                  className={`relative w-full aspect-square rounded-xl overflow-hidden transition-all ${
-                    selectedProvider?.id === prov.id
-                      ? 'ring-2 ring-amber-500 scale-105'
-                      : 'opacity-70 hover:opacity-100'
-                  }`}
-                >
-                  {prov.photo_url ? (
-                    <img
-                      src={prov.photo_url}
-                      alt={prov.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-amber-200 flex items-center justify-center text-xs font-bold text-amber-900">
-                      {prov.name.charAt(0)}
-                    </div>
-                  )}
-                </button>
-              ))}
+            <div>
+              <div className="grid grid-cols-5 gap-2">
+                {recentProviders.map((prov) => (
+                  <button
+                    key={prov.id}
+                    onClick={() => setSelectedProvider({ name: prov.name, id: prov.id })}
+                    className={`relative w-full aspect-square rounded-xl overflow-hidden transition-all ${
+                      selectedProvider?.id === prov.id
+                        ? 'ring-2 ring-amber-500 scale-105'
+                        : 'opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    {prov.photo_url ? (
+                      <img
+                        src={prov.photo_url}
+                        alt={prov.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-amber-200 flex items-center justify-center text-xs font-bold text-amber-900">
+                        {prov.name.charAt(0)}
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+              {selectedProvider?.id && (
+                <div className="text-center mt-2">
+                  <p className="text-xs text-amber-700 font-semibold">
+                    ✓ {selectedProvider.name}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
