@@ -161,19 +161,31 @@ export function SubstituicaoTelhaModal({ onSelect, onClose }) {
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => onSelect('ceramica')}
-            className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+            className="flex flex-col items-center gap-0 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95 overflow-hidden"
           >
-            <span className="text-3xl">🏺</span>
-            <p className="font-bold text-foreground text-sm">Telha Cerâmica</p>
-            <p className="text-xs text-muted-foreground text-center">Barro, colonial, portuguesa</p>
+            <img
+              src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80"
+              alt="Telha cerâmica"
+              className="w-full h-28 object-cover"
+            />
+            <div className="p-3 text-center">
+              <p className="font-bold text-foreground text-sm">Telha Cerâmica</p>
+              <p className="text-xs text-muted-foreground">Barro, colonial, portuguesa</p>
+            </div>
           </button>
           <button
             onClick={() => onSelect('fibrocimento')}
-            className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+            className="flex flex-col items-center gap-0 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95 overflow-hidden"
           >
-            <span className="text-3xl">🏗️</span>
-            <p className="font-bold text-foreground text-sm">Fibrocimento</p>
-            <p className="text-xs text-muted-foreground text-center">Eternit, Brasilit, ondulada</p>
+            <img
+              src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80"
+              alt="Telha fibrocimento"
+              className="w-full h-28 object-cover"
+            />
+            <div className="p-3 text-center">
+              <p className="font-bold text-foreground text-sm">Fibrocimento</p>
+              <p className="text-xs text-muted-foreground">Eternit, Brasilit, ondulada</p>
+            </div>
           </button>
         </div>
       </div>
