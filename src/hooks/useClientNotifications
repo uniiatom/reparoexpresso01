@@ -1,0 +1,44 @@
+import { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
+
+export default function useClientNotifications(clientEmail) {
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    if (!clientEmail) return;
+
+    // Busca notificações iniciais
+    base44.entities.ClientNotification.filter(
+      { client_email: clientEmail, is_read: false },
+      '-created_date',
+      20
+    ).then(setNotifications).catch(() => {});
+
+    // Inscreve em tempo real para novas notificações
+    const unsubscribe = base44.entities.ClientNotification.subscribe((event) => {
+      if (event.type === 'create' && event.data?.client_email === clientEmail) {
+        setNotifications(prev => [event.data, ...prev]);
+
+        // Mostra toast para notificações de orçamento extra
+        if (event.data?.type === 'extra_charges_pending') {
+          toast.info('💰 Novo orçamento extra aguardando aprovação', {
+            duration: 8000,
+            action: {
+              label: 'Ver',
+              onClick: () => window.location.href = `/acompanhar/${event.data.service_id}`,
+            },
+          });
+        }
+      } else if (event.type === 'update' && event.data?.client_email === clientEmail) {
+        setNotifications(prev =>
+          prev.map(n => n.id === event.id ? event.data : n)
+        );
+      }
+    });
+
+    return unsubscribe;
+  }, [clientEmail]);
+
+  return notifications;
+}

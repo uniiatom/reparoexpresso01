@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
@@ -8,22 +8,28 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   const [loading, setLoading] = useState(false);
   const [rejectionNotes, setRejectionNotes] = useState('');
   const [showRejectionForm, setShowRejectionForm] = useState(false);
+  const [localService, setLocalService] = useState(service);
 
-  if (!service?.extra_charges || service.extra_charges.status !== 'pending_approval') {
+  // Atualiza em tempo real quando o service muda
+  useEffect(() => {
+    setLocalService(service);
+  }, [service]);
+
+  if (!localService?.extra_charges || localService.extra_charges.status !== 'pending_approval') {
     return null;
   }
 
-  const { items = [], total = 0, notes = '', new_total = 0 } = service.extra_charges;
-  const originalPrice = service.final_price || service.estimated_price || 0;
+  const { items = [], total = 0, notes = '', new_total = 0 } = localService.extra_charges;
+  const originalPrice = localService.final_price || localService.estimated_price || 0;
 
   const handleApprove = async () => {
     setLoading(true);
     try {
       await base44.functions.invoke('approveExtraCharges', {
-        service_id: service.id,
-        provider_id: service.provider_id,
-        provider_name: service.provider_name,
-        client_name: service.client_name,
+        service_id: localService.id,
+        provider_id: localService.provider_id,
+        provider_name: localService.provider_name,
+        client_name: localService.client_name,
         original_price: originalPrice,
         extra_charges_total: total,
         new_total: new_total,
@@ -48,10 +54,10 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
     setLoading(true);
     try {
       await base44.functions.invoke('rejectExtraCharges', {
-        service_id: service.id,
-        provider_id: service.provider_id,
-        provider_name: service.provider_name,
-        client_name: service.client_name,
+        service_id: localService.id,
+        provider_id: localService.provider_id,
+        provider_name: localService.provider_name,
+        client_name: localService.client_name,
         rejection_notes: rejectionNotes,
       });
 

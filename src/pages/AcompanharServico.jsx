@@ -22,6 +22,7 @@ import BatchProviderChat from '../components/BatchProviderChat';
 import ClientTicketForm from '../components/ClientTicketForm';
 import CouponInput from '../components/CouponInput';
 import ExtraChargesApprovalPanel from '../components/ExtraChargesApprovalPanel';
+import useClientNotifications from '../hooks/useClientNotifications';
 
 const STATUS_STEPS = [
   { key: "aguardando", label: "Aguardando prestador", icon: Clock },
@@ -55,6 +56,9 @@ export default function AcompanharServico() {
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
+
+  // Monitora notificações de orçamento extra em tempo real
+  useClientNotifications(user?.email);
 
   const [allRequests, setAllRequests] = useState([]);
 
