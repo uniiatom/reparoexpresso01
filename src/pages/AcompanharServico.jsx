@@ -14,6 +14,7 @@ import PaymentModal from '../components/PaymentModal';
 import PixPaymentModal from '../components/PixPaymentModal';
 import NotificationPermissionBanner from '../components/NotificationPermissionBanner';
 import SatisfactionSurveyModal from '../components/SatisfactionSurveyModal';
+import ExtraChargesApprovalBanner from '../components/ExtraChargesApprovalBanner';
 
 import BatchProvidersPanel from '../components/BatchProvidersPanel';
 import BatchProviderChat from '../components/BatchProviderChat';
@@ -443,6 +444,17 @@ export default function AcompanharServico() {
             <p className="text-xs text-blue-600">Baseado na localização no momento da aceitação</p>
           </div>
         </div>
+      )}
+
+      {/* Banner de aprovação de orçamento extra */}
+      {['em_andamento', 'concluido'].includes(request.status) && (
+        <ExtraChargesApprovalBanner 
+          serviceId={id} 
+          onApproval={() => {
+            // Atualiza request local
+            base44.entities.ServiceRequest.get(id).then(setRequest);
+          }}
+        />
       )}
 
       {/* Chat */}
