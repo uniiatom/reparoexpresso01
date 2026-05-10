@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, Clock, ChevronLeft, ChevronRight, Sun, Sunset } from 'lucide-react';
+import { Calendar, Clock, ChevronLeft, ChevronRight, Sun, Sunset, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { addDays, format, startOfDay, getDay, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -247,6 +247,47 @@ export default function InteractiveScheduleCalendar({ selectedDate, selectedTime
           {selectedTime && (
             <div className="bg-primary/5 rounded-xl p-3 border border-primary/20 text-sm text-center">
               <span className="font-semibold text-primary">✓ Horário selecionado: {selectedTime}</span>
+            </div>
+          )}
+
+          {/* Alerta quando horário selecionado está cheio */}
+          {selectedTime && getSlotCount(new Date(selectedDateStr + 'T12:00:00'), selectedTime) >= 3 && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-red-800 text-sm">⚠️ Horário não disponível</p>
+                  <p className="text-xs text-red-700 mt-1">O prestador está com agenda cheia neste horário. Selecione outro horário disponível abaixo:</p>
+                </div>
+              </div>
+
+              {/* Sugerir horários disponíveis */}
+              {(() => {
+                const availableSlots = turnoSlots.filter(t => getSlotCount(new Date(selectedDateStr + 'T12:00:00'), t) < 3);
+                if (availableSlots.length === 0) {
+                  return (
+                    <div className="bg-white rounded-lg p-2 text-center text-xs text-red-700 font-semibold">
+                      Nenhum horário disponível neste turno. Tente outro turno ou data.
+                    </div>
+                  );
+                }
+                return (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-red-800">Horários disponíveis:</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {availableSlots.map(t => (
+                        <button
+                          key={t}
+                          onClick={() => onTimeChange(t)}
+                          className="py-2 px-2 rounded-lg bg-white border border-red-200 text-red-700 text-xs font-bold hover:bg-red-50 transition-all"
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
