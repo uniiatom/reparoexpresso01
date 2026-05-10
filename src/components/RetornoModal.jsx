@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { X, RotateCcw, ShieldCheck, ChevronRight, AlertTriangle, Clock, User, Users } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { differenceInDays } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
 import InteractiveScheduleCalendar from '@/components/InteractiveScheduleCalendar';
 import { base44 } from '@/api/base44Client';
 
@@ -44,6 +45,14 @@ export default function RetornoModal({ request, onClose }) {
   const [sucesso, setSucesso] = useState(false);
   const [navigateParams, setNavigateParams] = useState(null);
   const [countdown, setCountdown] = useState(5);
+
+  // Fetch da foto do prestador
+  const { data: provider } = useQuery({
+    queryKey: ['provider-photo', request?.provider_id],
+    queryFn: () => base44.entities.Provider.filter({ id: request.provider_id }),
+    enabled: !!request?.provider_id,
+    select: (data) => data[0] || null,
+  });
 
   // Calcula quantos dias se passaram desde a conclusão
   const conclusaoDate = request?.updated_date ? new Date(request.updated_date) : null;
@@ -303,7 +312,17 @@ export default function RetornoModal({ request, onClose }) {
                     : 'border-border hover:border-primary/40'
                 }`}
               >
-                <User className={`w-6 h-6 ${agendarComOriginal === true ? 'text-primary' : 'text-muted-foreground'}`} />
+                {provider?.photo_url ? (
+                  <img 
+                    src={provider.photo_url} 
+                    alt={request?.provider_name}
+                    className="w-12 h-12 rounded-full object-cover border-2 border-border"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                    <User className={`w-6 h-6 ${agendarComOriginal === true ? 'text-primary' : 'text-muted-foreground'}`} />
+                  </div>
+                )}
                 <p className={`text-xs font-bold text-center leading-tight ${agendarComOriginal === true ? 'text-primary' : 'text-foreground'}`}>
                   {request?.provider_name || 'Mesmo prestador'}
                 </p>
