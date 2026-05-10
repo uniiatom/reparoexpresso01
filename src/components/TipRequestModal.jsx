@@ -90,7 +90,7 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
   if (showProviderList) {
     return (
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
-        <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-6 animate-in fade-in slide-in-from-bottom-5">
+        <div className="bg-card w-full max-w-sm rounded-3xl shadow-2xl p-5 animate-in fade-in slide-in-from-bottom-5">
           <div className="flex items-center gap-3 mb-4">
             <button
               onClick={() => setShowProviderList(false)}
@@ -144,7 +144,7 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
-      <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4 animate-in fade-in slide-in-from-bottom-5">
+      <div className="bg-card w-full max-w-sm rounded-3xl shadow-2xl p-5 space-y-4 animate-in fade-in slide-in-from-bottom-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🎁</span>
