@@ -164,7 +164,7 @@ export function SubstituicaoTelhaModal({ onSelect, onClose }) {
             className="flex flex-col items-center gap-0 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95 overflow-hidden"
           >
             <img
-              src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80"
+              src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f5fd5b3c3_Telhas-Ceramicas.jpg"
               alt="Telha cerâmica"
               className="w-full h-28 object-cover"
             />
