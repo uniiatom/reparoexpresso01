@@ -661,6 +661,19 @@ export default function ProviderApp() {
                       <Phone className="w-3 h-3" /> {job.client_name} · {job.client_phone}
                     </p>
                     <div className="flex gap-2 mt-3">
+                      {(job.description?.includes('RETORNO') || job.status === 'agendado') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 rounded-xl text-muted-foreground hover:bg-muted text-xs"
+                          onClick={() => {
+                            // Link para suporte ou chat
+                            window.open(`https://wa.me/?text=Olá, tenho dúvida sobre o serviço ${job.service_number || job.id}`, '_blank');
+                          }}
+                        >
+                          💬 Suporte
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="outline"
