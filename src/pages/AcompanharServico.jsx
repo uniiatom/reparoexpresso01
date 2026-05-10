@@ -169,17 +169,17 @@ export default function AcompanharServico() {
   });
 
   useEffect(() => {
-    if (request?.status === 'concluido' && !request?.rating_client) {
+    if (request?.status === 'concluido' && !request?.rating_client && !showSatisfactionSurvey) {
       // Delay modal appearance slightly to ensure smooth UX
-      const timer = setTimeout(() => setShowRating(true), 500);
+      const timer = setTimeout(() => setShowRating(true), 2000);
       return () => clearTimeout(timer);
     }
-  }, [request?.status, request?.rating_client]);
+  }, [request?.status, request?.rating_client, showSatisfactionSurvey]);
 
-  // Mostrar pesquisa de satisfação após conclusão
+  // Mostrar pesquisa de satisfação após conclusão (aparece DEPOIS da avaliação)
   useEffect(() => {
-    if (request?.status === 'concluido' && user?.id) {
-      console.log('[AcompanharServico] Serviço concluído, verificando pesquisa de satisfação...');
+    if (request?.status === 'concluido' && request?.rating_client && user?.id) {
+      console.log('[AcompanharServico] Serviço concluído e avaliado, verificando pesquisa de satisfação...');
       // Verifica se já respondeu pesquisa
       base44.entities.SatisfactionSurvey.filter({
         service_request_id: request.id,
@@ -189,12 +189,12 @@ export default function AcompanharServico() {
         console.log('[AcompanharServico] Pesquisas existentes:', surveys.length);
         if (surveys.length === 0) {
           console.log('[AcompanharServico] Mostrando modal de pesquisa de satisfação');
-          const timer = setTimeout(() => setShowSatisfactionSurvey(true), 1000);
+          const timer = setTimeout(() => setShowSatisfactionSurvey(true), 500);
           return () => clearTimeout(timer);
         }
       }).catch(err => console.error('[AcompanharServico] Erro ao carregar pesquisas:', err));
     }
-  }, [request?.status, user?.id, request?.id]);
+  }, [request?.status, request?.rating_client, user?.id, request?.id]);
 
   if (!id) {
     navigate('/');
