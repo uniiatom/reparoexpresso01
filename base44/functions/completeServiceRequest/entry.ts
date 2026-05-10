@@ -75,6 +75,20 @@ Deno.serve(async (req) => {
       decline_reason: JSON.stringify(completionRecord),
     });
 
+    // Aplicar garantia automática se serviço foi concluído com sucesso
+    if (newStatus === 'concluido') {
+      const warrantyDays = serviceRequest.service_type === 'desentupimento' ? 15 : 90;
+      const warrantyEndDate = new Date();
+      warrantyEndDate.setDate(warrantyEndDate.getDate() + warrantyDays);
+
+      await base44.asServiceRole.entities.ServiceRequest.update(service_request_id, {
+        warranty_end_date: warrantyEndDate.toISOString(),
+        warranty_status: 'ativa',
+      });
+
+      console.log(`✓ Garantia de ${warrantyDays} dias aplicada ao serviço ${service_request_id}`);
+    }
+
     // Notificar o cliente
     await base44.asServiceRole.entities.ClientNotification.create({
       client_id: serviceRequest.client_id,
