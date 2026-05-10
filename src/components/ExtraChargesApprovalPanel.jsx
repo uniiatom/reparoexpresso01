@@ -13,6 +13,11 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   const [expanded, setExpanded] = useState(false);
   const [showConfirmApprove, setShowConfirmApprove] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => {});
+  }, []);
 
   // Atualiza em tempo real quando o service muda
   useEffect(() => {
@@ -151,10 +156,34 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         </div>
       )}
 
-      {/* Menu de ações */}
-      {expanded && !showRejectionForm && !showConfirmApprove && (
+      {/* Menu de ações - Cliente (apenas aprovar/rejeitar) */}
+      {expanded && !showRejectionForm && !showConfirmApprove && user?.role === 'user' && (
         <div className="space-y-2 pt-2 border-t border-amber-200">
           <p className="text-xs font-semibold text-amber-900 px-1">O que você quer fazer?</p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              onClick={() => setShowConfirmApprove(true)}
+              className="rounded-2xl bg-green-600 hover:bg-green-700 text-white h-10 font-semibold text-sm"
+              disabled={loading}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-1.5" /> Aprovar
+            </Button>
+            <Button
+              onClick={() => setShowRejectionForm(true)}
+              variant="outline"
+              className="rounded-2xl border-red-300 text-red-600 hover:bg-red-50 h-10 font-semibold text-sm"
+              disabled={loading}
+            >
+              <XCircle className="w-4 h-4 mr-1.5" /> Rejeitar
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Menu de ações - Prestador (todas as opções) */}
+      {expanded && !showRejectionForm && !showConfirmApprove && user?.role === 'admin' && (
+        <div className="space-y-2 pt-2 border-t border-amber-200">
+          <p className="text-xs font-semibold text-amber-900 px-1">Opções disponíveis:</p>
           <div className="grid grid-cols-2 gap-2">
             <Button
               onClick={() => setShowConfirmApprove(true)}
