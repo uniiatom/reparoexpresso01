@@ -15,16 +15,13 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
   const [showConfirmApprove, setShowConfirmApprove] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [user, setUser] = useState(null);
-  const [items, setItems] = useState([]);
-  const [photos, setPhotos] = useState([]);
-
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
   // Abre automaticamente expandido para clientes
   const shouldExpand = useMemo(() => {
-    if (expanded !== null) return expanded; // respeita escolha do usuário
+    if (expanded !== null) return expanded;
     return notification && user && user.role !== 'admin'; // auto-abre para clientes
   }, [expanded, notification, user]);
 
@@ -48,16 +45,6 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
     }).catch(e => console.warn('[ExtraChargesApprovalPanel] Error fetching notification:', e.message));
   }, [service?.id]);
 
-  // Atualiza items quando notification muda
-  useEffect(() => {
-    if (notification?.message) {
-      const total = notification.extra_total || 0;
-      setItems([{ id: 1, description: notification.message, quantity: 0, value: total }]);
-    }
-  }, [notification?.message, notification?.extra_total]);
-
-  // Apenas cliente vê a notificação de aprovação pendente
-  // Prestador sempre vê a interface de criação
   const isProvider = user?.role === 'admin';
   
   if (!isProvider && !notification) {
@@ -210,121 +197,11 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
             <p className="text-sm text-blue-800">{notification.message || 'Orçamento extra solicitado pelo prestador.'}</p>
           </div>
 
-          {/* Fotos (apenas leitura para cliente) */}
-          {photos.length > 0 && (
-            <div className="border-t border-amber-200 pt-3">
-              <p className="text-xs font-semibold text-amber-900 mb-2">📸 Fotos enviadas:</p>
-              <div className="grid grid-cols-3 gap-2">
-                {photos.map((photo, idx) => (
-                  <img key={idx} src={photo} alt={`Foto ${idx + 1}`} className="w-full h-24 object-cover rounded-xl border border-amber-200" />
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
       )}
 
-      {/* Detalhes expandidos - Prestador */}
-      {shouldExpand && isProvider && (
-        <div className="space-y-3 border-t border-amber-200 pt-3">
-          {/* Upload de fotos - apenas prestador pode fazer upload */}
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-            <PhotoUploadGallery 
-              photos={photos} 
-              onPhotosChange={setPhotos}
-              readOnly={user?.role === 'admin' ? false : true}
-            />
-          </div>
 
-          {/* Tabela de materiais */}
-          <div className="bg-white rounded-2xl p-4 space-y-3">
-            <p className="text-sm font-semibold text-foreground mb-3">🔧 Materiais e Serviços:</p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left p-2 text-xs font-semibold text-muted-foreground">Descrição</th>
-                    <th className="text-center p-2 text-xs font-semibold text-muted-foreground">Qtd</th>
-                    <th className="text-right p-2 text-xs font-semibold text-muted-foreground">Valor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => (
-                    <tr key={item.id} className="border-b border-border hover:bg-amber-50">
-                      <td className="p-2 text-foreground">{item.description}</td>
-                      <td className="p-2 text-center text-muted-foreground">{item.quantity || '—'}</td>
-                      <td className="p-2 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <span className="font-semibold text-foreground">R$ {item.value.toFixed(2)}</span>
-                          {item.value === 0 && (
-                            <button
-                              onClick={() => setItems(items.filter(i => i.id !== item.id))}
-                              className="text-xs text-red-600 hover:text-red-700 font-semibold"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <button className="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 mt-2">
-              + Adicionar material
-            </button>
-          </div>
-
-          {/* Mão de obra */}
-          <div className="bg-white rounded-2xl p-4">
-            <p className="text-sm font-semibold text-foreground mb-3">👷 Mão de Obra:</p>
-            <div className="space-y-2">
-              <input
-                type="text"
-                placeholder="Descrição (ex: Instalação de kit ar condicionado)"
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400"
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="Horas"
-                  className="rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400"
-                  onKeyPress={(e) => {
-                    if (!/[\d.,]/.test(e.key)) e.preventDefault();
-                  }}
-                />
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="Valor/hora"
-                  className="rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400"
-                  onKeyPress={(e) => {
-                    if (!/[\d.,]/.test(e.key)) e.preventDefault();
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Resumo total */}
-          <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Valor original:</span>
-              <span className="font-semibold">R$ {originalPrice.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm border-t border-amber-200 pt-2">
-              <span className="text-muted-foreground">+ Materiais:</span>
-              <span className="font-bold text-amber-700">+ R$ {total.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-base font-bold border-t-2 border-amber-300 pt-3">
-              <span className="text-amber-900">Novo total:</span>
-              <span className="text-amber-700">R$ {new_total.toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Menu de ações - Cliente (apenas aprovar/rejeitar) */}
       {shouldExpand && !showRejectionForm && !showConfirmApprove && !isProvider && notification && (
@@ -350,29 +227,7 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         </div>
       )}
 
-      {/* Menu de ações - Prestador (Aprovar ou Rejeitar) */}
-      {shouldExpand && !showRejectionForm && !showConfirmApprove && isProvider && (
-        <div className="space-y-2 pt-2 border-t border-amber-200">
-          <p className="text-xs font-semibold text-amber-900 px-1">Enviar orçamento para o cliente?</p>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              onClick={() => setShowConfirmApprove(true)}
-              className="rounded-2xl bg-green-600 hover:bg-green-700 text-white h-10 font-semibold"
-              disabled={loading}
-            >
-              <CheckCircle2 className="w-4 h-4 mr-2" /> Enviar
-            </Button>
-            <Button
-              onClick={() => setShowRejectionForm(true)}
-              variant="outline"
-              className="rounded-2xl border-red-300 text-red-600 hover:bg-red-50 h-10 font-semibold"
-              disabled={loading}
-            >
-              <XCircle className="w-4 h-4 mr-2" /> Cancelar
-            </Button>
-          </div>
-        </div>
-      )}
+
 
 
 
