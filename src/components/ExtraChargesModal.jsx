@@ -59,17 +59,22 @@ export default function ExtraChargesModal({ job, onClose, onSuccess }) {
       });
 
       // Notifica cliente via função backend
-      await base44.functions.invoke('notifyExtraChargesApproval', {
-        service_id: job.id,
-        client_email: job.created_by,
-        service_number: job.service_number,
-        client_name: job.client_name,
-        provider_name: job.provider_name,
-        items,
-        extra_total: totalExtra,
-        new_total: newTotal,
-        notes,
-      });
+      try {
+        await base44.functions.invoke('notifyExtraChargesApproval', {
+          service_id: job.id,
+          client_email: job.created_by,
+          service_number: job.service_number,
+          client_name: job.client_name,
+          provider_name: job.provider_name,
+          items,
+          extra_total: totalExtra,
+          new_total: newTotal,
+          notes,
+        });
+      } catch (notifyError) {
+        console.error('Erro ao notificar cliente:', notifyError);
+        toast.warning('Orçamento salvo, mas notificação ao cliente falhou');
+      }
 
       toast.success('Orçamento extra enviado para aprovação do cliente');
       onSuccess?.();

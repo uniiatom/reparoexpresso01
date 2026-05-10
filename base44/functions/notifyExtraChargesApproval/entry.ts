@@ -25,9 +25,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Busca o cliente para pegar o client_id
-    const clients = await base44.entities.Client.filter({ user_id: client_email }, '', 1);
-    const clientId = clients[0]?.id || null;
+    // Busca o cliente via User entity para pegar o client_id
+    let clientId = null;
+    try {
+      const users = await base44.entities.User.filter({ email: client_email }, '', 1);
+      if (users[0]?.id) {
+        const clients = await base44.entities.Client.filter({ user_id: users[0].id }, '', 1);
+        clientId = clients[0]?.id || null;
+      }
+    } catch (e) {
+      console.warn('[notifyExtraChargesApproval] Could not fetch client_id:', e.message);
+    }
 
     // Formata itens para exibição
     const itemsList = items
