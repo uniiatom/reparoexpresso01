@@ -22,6 +22,7 @@ import BatchProviderChat from '../components/BatchProviderChat';
 import ClientTicketForm from '../components/ClientTicketForm';
 import CouponInput from '../components/CouponInput';
 import ExtraChargesApprovalPanel from '../components/ExtraChargesApprovalPanel';
+import ServicePriceHistoryPanel from '../components/ServicePriceHistoryPanel';
 import useClientNotifications from '../hooks/useClientNotifications';
 
 const STATUS_STEPS = [
@@ -477,6 +478,9 @@ export default function AcompanharServico() {
           </div>
         </div>
       )}
+
+      {/* Histórico de valores e aprovações */}
+      <ServicePriceHistoryPanel serviceId={id} />
 
       {/* Painel de aprovação de orçamento extra (novo fluxo) */}
       {['em_andamento', 'concluido'].includes(request.status) && (

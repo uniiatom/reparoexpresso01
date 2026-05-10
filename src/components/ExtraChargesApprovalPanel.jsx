@@ -77,6 +77,18 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         new_total: new_total,
       });
 
+      // Registra no histórico
+      await base44.functions.invoke('recordPriceHistory', {
+        service_id: localService.id,
+        service_number: localService.service_number,
+        event_type: 'extra_charges_approved',
+        previous_price: originalPrice,
+        new_price: new_total,
+        extra_charges_total: total,
+        reason: notification.message,
+        status: 'approved',
+      });
+
       toast.success('Orçamento aprovado! O prestador foi notificado.');
       setNotification(null);
       setShowConfirmApprove(false);
@@ -108,6 +120,18 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
         provider_name: localService.provider_name,
         client_name: localService.client_name,
         rejection_notes: rejectionNotes,
+      });
+
+      // Registra no histórico
+      await base44.functions.invoke('recordPriceHistory', {
+        service_id: localService.id,
+        service_number: localService.service_number,
+        event_type: 'extra_charges_rejected',
+        previous_price: originalPrice,
+        new_price: originalPrice,
+        extra_charges_total: total,
+        notes: rejectionNotes,
+        status: 'rejected',
       });
 
       toast.success('Orçamento rejeitado. O prestador foi notificado.');
