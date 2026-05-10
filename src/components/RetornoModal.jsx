@@ -249,6 +249,7 @@ export default function RetornoModal({ request, onClose }) {
                   selectedTime={scheduledTime}
                   onDateChange={setScheduledDate}
                   onTimeChange={setScheduledTime}
+                  providerId={request?.provider_id}
                 />
               </div>
             )}

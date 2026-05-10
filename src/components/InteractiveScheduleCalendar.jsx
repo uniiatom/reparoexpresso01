@@ -13,14 +13,17 @@ const AFTERNOON = TIME_SLOTS.filter(t => parseInt(t) >= 12); // 12, 13, 14, 15, 
 const DAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 // Ocupação: 0=livre, 1=parcial, 2=lotado
-function useAvailabilityMap(monthDate) {
+function useAvailabilityMap(monthDate, providerId = null) {
   const monthStart = format(startOfMonth(monthDate), 'yyyy-MM-dd');
   const monthEnd = format(endOfMonth(monthDate), 'yyyy-MM-dd');
 
   const { data: allServices = [], isLoading } = useQuery({
-    queryKey: ['schedule-availability', monthStart],
+    queryKey: ['schedule-availability', monthStart, providerId],
     queryFn: async () => {
-      const services = await base44.entities.ServiceRequest.filter({ modality: 'agendado' }, '-scheduled_date', 200);
+      const filter = providerId
+        ? { modality: 'agendado', provider_id: providerId }
+        : { modality: 'agendado' };
+      const services = await base44.entities.ServiceRequest.filter(filter, '-scheduled_date', 200);
       const ACTIVE = ['agendado', 'aceito', 'a_caminho', 'em_andamento'];
       return services.filter(s =>
         s.scheduled_date >= monthStart &&
@@ -48,12 +51,12 @@ function SlotOccupancy({ count }) {
   return <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />;
 }
 
-export default function InteractiveScheduleCalendar({ selectedDate, selectedTime, onDateChange, onTimeChange }) {
+export default function InteractiveScheduleCalendar({ selectedDate, selectedTime, onDateChange, onTimeChange, providerId = null }) {
   const today = startOfDay(new Date());
   const [viewMonth, setViewMonth] = useState(startOfMonth(addDays(today, 1)));
   const [activeTurno, setActiveTurno] = useState('manha');
 
-  const { slotMap, isLoading } = useAvailabilityMap(viewMonth);
+  const { slotMap, isLoading } = useAvailabilityMap(viewMonth, providerId);
 
   const monthDays = eachDayOfInterval({ start: startOfMonth(viewMonth), end: endOfMonth(viewMonth) });
   // Pad com dias antes do primeiro dia da semana

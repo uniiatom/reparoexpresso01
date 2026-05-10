@@ -184,7 +184,7 @@ export default function SolicitarServico() {
 
   const [form, setForm] = useState({
    service_type: urlParams.get('tipo') ? [urlParams.get('tipo')] : [],
-   description: '',
+   description: urlParams.get('descricao') || '',
    client_suggested_price: '',
    problem_photos: [],
    address: '',
@@ -206,10 +206,10 @@ export default function SolicitarServico() {
    delivery_latitude: null,
    delivery_longitude: null,
    tow_distance_km: null,
-   modality: 'imediato',
+   modality: urlParams.get('modality') || 'imediato',
    urgency: 'agora',
-   scheduled_date: '',
-   scheduled_time: '',
+   scheduled_date: urlParams.get('scheduled_date') || '',
+   scheduled_time: urlParams.get('scheduled_time') || '',
    client_name: clientProfile?.name || '',
    client_phone: clientProfile?.phone || '',
    referral_code: urlParams.get('ref') || '',
