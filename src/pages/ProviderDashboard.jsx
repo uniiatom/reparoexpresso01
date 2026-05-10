@@ -13,6 +13,7 @@ import ProviderEarningsWithdrawal from '@/components/ProviderEarningsWithdrawal'
 import ServiceRefusalForm from '@/components/ServiceRefusalForm';
 import ServiceCompletionModal from '@/components/ServiceCompletionModal';
 import ProviderDailySchedule from '@/components/ProviderDailySchedule';
+import ProviderMetricsPanel from '@/components/ProviderMetricsPanel';
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
@@ -237,8 +238,9 @@ export default function ProviderDashboard() {
 
         {/* Main Tabs */}
          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-5 mb-6">
               <TabsTrigger value="today">Agenda do Dia</TabsTrigger>
+              <TabsTrigger value="metrics">Métricas</TabsTrigger>
               <TabsTrigger value="overview">Serviços Aceitos</TabsTrigger>
               <TabsTrigger value="earnings">Ganhos</TabsTrigger>
               <TabsTrigger value="support">Suporte</TabsTrigger>
@@ -247,6 +249,11 @@ export default function ProviderDashboard() {
           {/* Tab: Agenda do Dia */}
           <TabsContent value="today" className="space-y-4">
             <ProviderDailySchedule />
+          </TabsContent>
+
+          {/* Tab: Métricas */}
+          <TabsContent value="metrics" className="space-y-4">
+            <ProviderMetricsPanel providerId={provider.id} />
           </TabsContent>
 
           {/* Tab: Serviços Agendados - REMOVIDO */}
