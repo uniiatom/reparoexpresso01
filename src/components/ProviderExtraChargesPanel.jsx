@@ -192,16 +192,33 @@ export default function ProviderExtraChargesPanel({ service, onApprovalChange })
                 onChange={async (e) => {
                   const files = Array.from(e.target.files || []);
                   if (!files.length) return;
+
                   try {
+                    const uploadedPhotos = [];
                     for (const file of files) {
                       const result = await base44.integrations.Core.UploadFile({ file });
-                      setPhotos(prev => [...prev, result.file_url]);
+                      if (result?.file_url) {
+                        uploadedPhotos.push(result.file_url);
+                      }
                     }
-                    toast.success(`${files.length} foto(s) enviada(s)`);
+
+                    if (uploadedPhotos.length > 0) {
+                      setPhotos(prev => [...prev, ...uploadedPhotos]);
+                      toast.success(`${uploadedPhotos.length} foto(s) enviada(s)`);
+                    } else {
+                      toast.error('Nenhuma foto foi enviada');
+                    }
                   } catch (error) {
                     console.error('Erro ao enviar fotos:', error);
-                    toast.error('Erro ao enviar fotos');
+                    if (error?.status === 403) {
+                      toast.error('Permissão negada. Verifique sua autenticação');
+                    } else {
+                      toast.error('Erro ao enviar fotos');
+                    }
                   }
+
+                  // Limpa o input
+                  e.target.value = '';
                 }}
                 className="hidden"
               />
