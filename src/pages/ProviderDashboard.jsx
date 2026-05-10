@@ -16,6 +16,7 @@ import ProviderDailySchedule from '@/components/ProviderDailySchedule';
 import ProviderMetricsPanel from '@/components/ProviderMetricsPanel';
 import AvailableRequestsMap from '@/components/AvailableRequestsMap';
 import ProviderExtraChargesPanel from '@/components/ProviderExtraChargesPanel';
+import TipAnnouncementModal from '@/components/TipAnnouncementModal';
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function ProviderDashboard() {
   const [refusalService, setRefusalService] = useState(null);
   const [completionService, setCompletionService] = useState(null);
   const [selectedServiceForExtra, setSelectedServiceForExtra] = useState(null);
+  const [showTipAnnouncement, setShowTipAnnouncement] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -130,6 +132,15 @@ export default function ProviderDashboard() {
           />
         )}
       </AnimatePresence>
+
+      {/* Modal de Anúncio de Gorjeta */}
+      {showTipAnnouncement && (
+        <TipAnnouncementModal
+          provider={provider}
+          onClose={() => setShowTipAnnouncement(false)}
+          onAccept={() => setShowTipAnnouncement(false)}
+        />
+      )}
 
       {/* Modal de Recusa */}
       {refusalService && (
@@ -415,8 +426,17 @@ export default function ProviderDashboard() {
                                    >
                                      💰 Orçamento Extra
                                    </Button>
-                                 )}
-                                 {(service.status === 'aceito' || service.status === 'a_caminho') && (
+                                   )}
+                                   {service.status === 'concluido' && (
+                                   <Button 
+                                     size="sm"
+                                     onClick={() => setShowTipAnnouncement(true)}
+                                     className="w-full h-8 text-xs rounded-lg bg-amber-500 text-white hover:bg-amber-600"
+                                   >
+                                     🎁 Solicitar Gorjeta
+                                   </Button>
+                                   )}
+                                   {(service.status === 'aceito' || service.status === 'a_caminho') && (
                                    <Button 
                                      size="sm"
                                      variant="outline"
@@ -425,7 +445,7 @@ export default function ProviderDashboard() {
                                    >
                                      Recusar Serviço
                                    </Button>
-                                 )}
+                                   )}
                                </div>
                              )}
                            </div>
