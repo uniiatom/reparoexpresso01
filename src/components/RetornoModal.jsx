@@ -34,7 +34,7 @@ const TIPOS = [
   },
 ];
 
-export default function RetornoModal({ request, onClose }) {
+export default function RetornoModal({ request, onClose, isWarrantyReturn = false }) {
   const navigate = useNavigate();
   const [tipo, setTipo] = useState(null);
   const [descricao, setDescricao] = useState('');
@@ -152,6 +152,13 @@ export default function RetornoModal({ request, onClose }) {
     setLoading(false);
     setSucesso(true);
   };
+
+  // Se é retorno por garantia, pré-seleciona o tipo
+  useEffect(() => {
+    if (isWarrantyReturn && !tipo) {
+      setTipo('retorno_garantia');
+    }
+  }, [isWarrantyReturn]);
 
   // Mostra passo de agendamento depois de preencher tipo + descrição
   const showAgendamento = tipo && !prazoExpirado && descricao.trim().length >= 5;

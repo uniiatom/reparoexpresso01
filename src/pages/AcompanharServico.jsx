@@ -15,6 +15,7 @@ import PixPaymentModal from '../components/PixPaymentModal';
 import NotificationPermissionBanner from '../components/NotificationPermissionBanner';
 import SatisfactionSurveyModal from '../components/SatisfactionSurveyModal';
 import ExtraChargesApprovalBanner from '../components/ExtraChargesApprovalBanner';
+import WarrantyBadge from '../components/WarrantyBadge';
 
 import BatchProvidersPanel from '../components/BatchProvidersPanel';
 import BatchProviderChat from '../components/BatchProviderChat';
@@ -215,6 +216,17 @@ export default function AcompanharServico() {
       <NotificationPermissionBanner />
       {/* Header */}
       <div className="text-center mb-6">
+        {/* Quick Access Button */}
+        <div className="flex justify-center mb-4">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => navigate('/garantia')}
+            className="rounded-full text-xs border-primary/30 text-primary hover:bg-primary/10"
+          >
+            🛡️ Minha Garantia
+          </Button>
+        </div>
 
         <div className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-3", statusColor)}>
           {request.status === 'aguardando' && <Clock className="w-4 h-4 animate-pulse" />}
@@ -287,6 +299,11 @@ export default function AcompanharServico() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Badge de Garantia */}
+      {request.status === 'concluido' && (
+        <WarrantyBadge request={request} />
       )}
 
       {/* Progress */}

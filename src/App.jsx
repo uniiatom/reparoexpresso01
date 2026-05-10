@@ -27,6 +27,7 @@ import TrackingMap from './pages/TrackingMap';
 import MeusPedidos from './pages/MeusPedidos';
 import PartnerRegister from './pages/PartnerRegister';
 import ProviderDashboard from './pages/ProviderDashboard';
+import ClientWarranty from './pages/ClientWarranty';
 import WalletPage from './pages/Wallet';
 import DashboardAdmin from './pages/DashboardAdmin';
 import ProviderAwards from './pages/ProviderAwards';
@@ -61,6 +62,7 @@ const AuthenticatedApp = () => {
         <Route path="/solicitar" element={<SolicitarServico />} />
         <Route path="/acompanhar/:id" element={<AcompanharServico />} />
         <Route path="/meus-pedidos" element={<MeusPedidos />} />
+        <Route path="/garantia" element={<ClientWarranty />} />
         <Route path="/perfil" element={<UserProfile />} />
         <Route path="/prestador" element={<ProviderApp />} />
         <Route path="/prestador/:id" element={<ProviderProfile />} />
