@@ -54,6 +54,39 @@ export default function RetornoModal({ request, onClose }) {
     select: (data) => data[0] || null,
   });
 
+  // Verifica disponibilidade do prestador original nos próximos 30 dias
+  const { data: providerAvailability = [] } = useQuery({
+    queryKey: ['provider-availability', request?.provider_id],
+    queryFn: async () => {
+      if (!request?.provider_id) return [];
+      const services = await base44.entities.ServiceRequest.filter({
+        provider_id: request.provider_id,
+        modality: 'agendado',
+        status: ['agendado', 'aceito', 'a_caminho', 'em_andamento']
+      }, '-scheduled_date', 200);
+      return services;
+    },
+    enabled: !!request?.provider_id,
+  });
+
+  // Calcula se há slots livres para os próximos 30 dias
+  const hasAvailableSlots = (() => {
+    const today = new Date();
+    const in30Days = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+    
+    // Conta quantos serviços agendados existem por slot
+    const slotCounts = {};
+    providerAvailability.forEach(s => {
+      if (s.scheduled_date >= today.toISOString().split('T')[0] && s.scheduled_date <= in30Days.toISOString().split('T')[0]) {
+        const key = `${s.scheduled_date}_${s.scheduled_time}`;
+        slotCounts[key] = (slotCounts[key] || 0) + 1;
+      }
+    });
+
+    // Verifica se existe algum slot com menos de 3 agendamentos (slot livre)
+    return Object.values(slotCounts).some(count => count < 3) || Object.keys(slotCounts).length === 0;
+  })();
+
   // Calcula quantos dias se passaram desde a conclusão
   const conclusaoDate = request?.updated_date ? new Date(request.updated_date) : null;
   const diasPassados = conclusaoDate ? differenceInDays(new Date(), conclusaoDate) : 0;
@@ -302,7 +335,7 @@ export default function RetornoModal({ request, onClose }) {
         {showAgendamento && (
           <div className="space-y-3 border-t border-border pt-3">
             <p className="text-sm font-semibold text-foreground">Atendimento com quem?</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className={`grid ${hasAvailableSlots ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
               {request?.provider_id && (
               <button
                 onClick={() => setAgendarComOriginal(true)}
@@ -329,6 +362,7 @@ export default function RetornoModal({ request, onClose }) {
                 <p className="text-[10px] text-muted-foreground text-center">Prestador original</p>
               </button>
               )}
+              {!hasAvailableSlots && (
               <button
                 onClick={() => setAgendarComOriginal(false)}
                 className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
@@ -343,6 +377,7 @@ export default function RetornoModal({ request, onClose }) {
                 </p>
                 <p className="text-[10px] text-muted-foreground text-center">Disponível na área</p>
               </button>
+              )}
             </div>
 
             {/* Agenda do prestador original */}
@@ -359,9 +394,15 @@ export default function RetornoModal({ request, onClose }) {
               </div>
             )}
 
-            {agendarComOriginal === false && (
+            {!hasAvailableSlots && agendarComOriginal === false && (
               <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-800">
                 ℹ️ Você será redirecionado para buscar um prestador disponível na região.
+              </div>
+            )}
+
+            {hasAvailableSlots && agendarComOriginal === null && (
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-3 text-xs text-green-800">
+                ✓ O prestador original tem horários disponíveis — selecione acima para agendar com ele.
               </div>
             )}
           </div>
