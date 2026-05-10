@@ -20,12 +20,6 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
-  useEffect(() => {
-    if (notification?.message) {
-      setItems([{ id: 1, description: notification.message, quantity: 0, value: total }]);
-    }
-  }, [notification?.message, total]);
-
   // Atualiza em tempo real quando o service muda
   useEffect(() => {
     setLocalService(service);
@@ -45,6 +39,14 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
       }
     }).catch(e => console.warn('[ExtraChargesApprovalPanel] Error fetching notification:', e.message));
   }, [service?.id]);
+
+  // Atualiza items quando notification muda
+  useEffect(() => {
+    if (notification?.message) {
+      const total = notification.extra_total || 0;
+      setItems([{ id: 1, description: notification.message, quantity: 0, value: total }]);
+    }
+  }, [notification?.message, notification?.extra_total]);
 
   // Se não houver notificação pendente, não mostra nada
   if (!notification) {
