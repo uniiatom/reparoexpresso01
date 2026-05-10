@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
@@ -20,11 +20,14 @@ export default function ExtraChargesApprovalPanel({ service, onApprovalChange })
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
-    // Abre automaticamente para clientes
-    if (user && user.role !== 'admin') {
+  }, []);
+
+  // Abre automaticamente expandido para clientes
+  useEffect(() => {
+    if (notification && user && user.role !== 'admin') {
       setExpanded(true);
     }
-  }, [user]);
+  }, [notification, user]);
 
   // Atualiza em tempo real quando o service muda
   useEffect(() => {
