@@ -47,10 +47,27 @@ export default function AcompanharServico() {
   const previousStatusRef = useRef(null);
   const [user, setUser] = useState(null);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [providerPhotos, setProviderPhotos] = useState({});
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
+
+  // Busca fotos dos prestadores envolvidos
+  useEffect(() => {
+    const ids = [...new Set(
+      allRequests
+        .filter(r => r.provider_id)
+        .map(r => r.provider_id)
+        .concat(request?.provider_id ? [request.provider_id] : [])
+    )];
+    ids.forEach(pid => {
+      if (providerPhotos[pid] !== undefined) return;
+      base44.entities.Provider.filter({ id: pid }).then(list => {
+        if (list[0]) setProviderPhotos(prev => ({ ...prev, [pid]: list[0].photo_url || null }));
+      }).catch(() => {});
+    });
+  }, [request?.provider_id, allRequests.length]);
 
   const [allRequests, setAllRequests] = useState([]);
 
@@ -350,8 +367,11 @@ export default function AcompanharServico() {
             <div className="space-y-4">
               {providers.map((r, idx) => (
                 <div key={r.id} className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl font-bold text-primary">{r.provider_name.charAt(0)}</span>
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {r.provider_id && providerPhotos[r.provider_id]
+                      ? <img src={providerPhotos[r.provider_id]} alt={r.provider_name} className="w-full h-full object-cover" />
+                      : <span className="text-2xl font-bold text-primary">{r.provider_name.charAt(0)}</span>
+                    }
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-foreground">{r.provider_name}</p>
