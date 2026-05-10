@@ -31,6 +31,7 @@ import { PaneSeccaAlertModal, LimpezaTelhadoAlertModal, ArCondicionadoModal, Lim
 import { SERVICE_TYPES } from "@/lib/serviceTypes";
 import PhotoLightbox from "@/components/PhotoLightbox";
 import FixacoesDiversasModal from "@/components/FixacoesDiversasModal";
+import OutrosServicoModal from "@/components/OutrosServicoModal";
 
 const URGENCY = [
   { value: "agora", label: "Agora", desc: "Preciso urgente" },
@@ -114,6 +115,7 @@ export default function SolicitarServico() {
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [showFixacoesModal, setShowFixacoesModal] = useState(false);
   const [fixacoesTipo, setFixacoesTipo] = useState(null);
+  const [showOutrosModal, setShowOutrosModal] = useState(false);
   const [showSubstituicaoTelhaModal, setShowSubstituicaoTelhaModal] = useState(false);
   const [substituicaoTelhaTipo, setSubstituicaoTelhaTipo] = useState(null);
   const [towQuestions, setTowQuestions] = useState({});
@@ -124,8 +126,7 @@ export default function SolicitarServico() {
   const [liveWatchId, setLiveWatchId] = useState(null);
 
   const startLiveLocation = () => {
-    if (!navigator.geolocation) return;
-    const id = navigator.geolocation.watchPosition(
+    if (!navigator.geolocation) return; const id = navigator.geolocation.watchPosition(
       (pos) => {
         setForm(prev => ({
           ...prev,
@@ -480,7 +481,6 @@ export default function SolicitarServico() {
   });
 
   const createRequestRef = useRef(false);
-
   const createRequest = useMutation({
     mutationFn: async (formData) => {
       const { _secondProvider, requires_two_providers, tv_size, _caixaCondominio, _substituicaoTelhaTipo, ...cleanData } = formData;
@@ -876,10 +876,9 @@ export default function SolicitarServico() {
                   }
                   if (s.value === 'fixacoes_diversas' && !selected) { setShowFixacoesModal(true); return; }
                   if (s.value === 'fixacoes_diversas' && selected) { setFixacoesTipo(null); }
-                  if (s.value === 'pane_seca' && !selected) {
-                    setShowPaneSeccaAlert(true);
-                    return;
-                  }
+                  if (s.value === 'pane_seca' && !selected) { setShowPaneSeccaAlert(true); return; }
+                  if (s.value === 'outros' && !selected) { setShowOutrosModal(true); return; }
+                  if (s.value === 'outros' && selected) { setDescriptionsPerService(prev => { const n = {...prev}; delete n.outros; return n; }); }
                   set('service_type', selected
                     ? form.service_type.filter(t => t !== s.value)
                     : [...form.service_type, s.value]
@@ -1136,6 +1135,7 @@ export default function SolicitarServico() {
             </div>
           )}
 
+          {showOutrosModal && <OutrosServicoModal onClose={() => setShowOutrosModal(false)} onConfirm={(desc) => { set('service_type', [...form.service_type, 'outros']); setDescriptionsPerService(prev => ({ ...prev, outros: { description: desc, photos: [] } })); setShowOutrosModal(false); }} />}
           {showValvulaTransfModal && <ValvulaTransfModal onSelect={(tipo) => { setValvulaTransfTipo(tipo); set('service_type', [...form.service_type, 'valvula_transferidora_pressao']); setShowValvulaTransfModal(false); }} onCancel={() => setShowValvulaTransfModal(false)} />}
           {showSubstituicaoTelhaModal && <SubstituicaoTelhaModal onSelect={(tipo) => { setSubstituicaoTelhaTipo(tipo); const desc = tipo === 'ceramica' ? 'Substituição de telha cerâmica.' : 'Substituição de telha de fibrocimento. [2 prestadores necessários]'; set('service_type', [...form.service_type, 'substituicao_telha']); setDescriptionsPerService(prev => ({ ...prev, substituicao_telha: { ...prev.substituicao_telha, description: desc } })); setShowSubstituicaoTelhaModal(false); }} onClose={() => setShowSubstituicaoTelhaModal(false)} />}
 
