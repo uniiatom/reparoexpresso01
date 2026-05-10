@@ -21,7 +21,7 @@ export default function useClientNotifications(clientEmail) {
         setNotifications(prev => [event.data, ...prev]);
 
         // Mostra toast para notificações de orçamento extra
-        if (event.data?.type === 'extra_charges_pending') {
+        if (event.data?.type === 'extra_charges_pending' && event.data?.service_id) {
           toast.info('💰 Novo orçamento extra aguardando aprovação', {
             duration: 8000,
             action: {

@@ -75,20 +75,24 @@ Equipe Prática
     });
 
     // Cria notificação in-app
-    if (clientId) {
-      await base44.entities.ClientNotification.create({
-        client_id: clientId,
-        client_email,
-        type: 'extra_charges_pending',
-        service_id,
-        service_number,
-        provider_name,
-        extra_total,
-        new_total,
-        title: `Orçamento Extra de R$ ${extra_total.toFixed(2)}`,
-        message: `${provider_name} solicitou aprovação para itens adicionais`,
-        is_read: false,
-      });
+    if (clientId && service_id) {
+      try {
+        await base44.entities.ClientNotification.create({
+          client_id: clientId,
+          client_email,
+          type: 'extra_charges_pending',
+          service_id: service_id,
+          service_number: service_number || '',
+          provider_name: provider_name || '',
+          extra_total: extra_total || 0,
+          new_total: new_total || 0,
+          title: `Orçamento Extra de R$ ${(extra_total || 0).toFixed(2)}`,
+          message: `${provider_name || 'Prestador'} solicitou aprovação para itens adicionais`,
+          is_read: false,
+        });
+      } catch (e) {
+        console.warn('[notifyExtraChargesApproval] Failed to create in-app notification:', e.message);
+      }
     }
 
     return Response.json({ success: true });
