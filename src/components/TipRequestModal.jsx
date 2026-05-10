@@ -18,31 +18,23 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
 
     setLoading(true);
     try {
-      // Notifica o prestador
-      await base44.functions.invoke('sendPushNotification', {
-        provider_id: request.provider_id,
-        title: '🎁 Cliente quer gratificar!',
-        body: `Você recebeu uma solicitação de gorjeta de R$ ${parseFloat(amount).toFixed(2)}`,
-        data: {
-          service_id: request.id,
-          type: 'tip_request',
-        },
-      });
+      const amountInCents = Math.round(parseFloat(amount) * 100);
 
-      // Registra no histórico
-      await base44.entities.ProviderNotification.create({
-        provider_id: request.provider_id,
-        type: 'tip_request',
-        title: '🎁 Solicitação de Gorjeta',
-        message: `${request.client_name} ofereceu R$ ${parseFloat(amount).toFixed(2)} de gorjeta`,
+      // Cria sessão de checkout para pagamento da gorjeta
+      const result = await base44.functions.invoke('createTipCheckoutSession', {
         service_id: request.id,
-        amount: parseFloat(amount),
-        status: 'pending',
+        provider_id: request.provider_id,
+        amount: amountInCents,
+        client_email: request.created_by,
+        service_number: request.service_number,
       });
 
-      toast.success('Obrigado! Prestador foi notificado da sua gorjeta 🎉');
-      onSuccess?.();
-      onClose();
+      if (!result.data?.checkout_url) {
+        throw new Error('Falha ao gerar link de pagamento');
+      }
+
+      // Abre o checkout do Stripe
+      window.location.href = result.data.checkout_url;
     } catch (error) {
       console.error('Erro ao solicitar gorjeta:', error);
       toast.error('Erro ao enviar gorjeta');
