@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { X, RotateCcw, ShieldCheck, ChevronRight, AlertTriangle, Clock, User, Users } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { differenceInDays } from 'date-fns';
 import InteractiveScheduleCalendar from '@/components/InteractiveScheduleCalendar';
+import { base44 } from '@/api/base44Client';
 
 const TIPOS = [
   {
@@ -42,6 +43,7 @@ export default function RetornoModal({ request, onClose }) {
   const [scheduledTime, setScheduledTime] = useState('');
   const [sucesso, setSucesso] = useState(false);
   const [navigateParams, setNavigateParams] = useState(null);
+  const [countdown, setCountdown] = useState(5);
 
   // Calcula quantos dias se passaram desde a conclusão
   const conclusaoDate = request?.updated_date ? new Date(request.updated_date) : null;
@@ -56,17 +58,48 @@ export default function RetornoModal({ request, onClose }) {
     setLoading(true);
 
     const label = tipo === 'retorno_peca' ? 'RETORNO POR PEÇA' : 'RETORNO GARANTIA';
+
+    // Caso: mesmo prestador + data/hora selecionada → cria OS diretamente
+    if (agendarComOriginal && request.provider_id && scheduledDate && scheduledTime) {
+      try {
+        const newOS = await base44.entities.ServiceRequest.create({
+          service_type: request.service_type,
+          description: `${label} - ${descricao}`,
+          client_name: request.client_name,
+          client_phone: request.client_phone,
+          client_id: request.client_id,
+          address: request.address,
+          number: request.number,
+          neighborhood: request.neighborhood,
+          city: request.city,
+          state: request.state,
+          cep: request.cep,
+          latitude: request.latitude,
+          longitude: request.longitude,
+          modality: 'agendado',
+          scheduled_date: scheduledDate,
+          scheduled_time: scheduledTime,
+          status: 'agendado',
+          provider_id: request.provider_id,
+          provider_name: request.provider_name,
+          provider_phone: request.provider_phone,
+        });
+        setLoading(false);
+        setSucesso(true);
+        setNavigateParams(null); // sinaliza que vai pra home
+      } catch (e) {
+        console.error('Erro ao criar OS de retorno:', e.message);
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Caso: outro prestador → redireciona para /solicitar
     const params = new URLSearchParams({
       tipo: request.service_type,
       retorno_de: request.id,
       descricao: `${label} - ${descricao}`,
     });
-
-    // Se escolheu mesmo prestador, passa o provider_id para pré-selecionar
-    if (agendarComOriginal && request.provider_id) {
-      params.set('provider_id', request.provider_id);
-    }
-    // Se escolheu agendamento com data/hora, passa como agendado
     if (scheduledDate && scheduledTime) {
       params.set('modality', 'agendado');
       params.set('scheduled_date', scheduledDate);
@@ -81,22 +114,50 @@ export default function RetornoModal({ request, onClose }) {
   // Mostra passo de agendamento depois de preencher tipo + descrição
   const showAgendamento = tipo && !prazoExpirado && descricao.trim().length >= 5;
 
+  // Countdown automático na tela de sucesso
+  useEffect(() => {
+    if (!sucesso) return;
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          if (navigateParams === null) {
+            navigate('/');
+          } else {
+            navigate(`/solicitar?${navigateParams}`);
+          }
+          onClose();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [sucesso]);
+
   if (sucesso) {
+    const isDirectSchedule = navigateParams === null;
     return (
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-2">
         <div className="bg-card w-full max-w-md rounded-3xl shadow-2xl p-8 text-center space-y-4">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
             <span className="text-3xl">✅</span>
           </div>
-          <h3 className="text-xl font-bold text-foreground">Retorno aberto com sucesso!</h3>
+          <h3 className="text-xl font-bold text-foreground">Retorno agendado com sucesso!</h3>
           <p className="text-sm text-muted-foreground">
-            Sua solicitação de retorno foi registrada. Em instantes você será redirecionado para buscar um prestador.
+            {isDirectSchedule
+              ? `O retorno foi agendado com ${request?.provider_name || 'o prestador'} para ${scheduledDate} às ${scheduledTime}. O prestador foi notificado.`
+              : 'Sua solicitação foi registrada. Você será redirecionado para buscar um prestador disponível.'}
           </p>
+          <div className="text-4xl font-black text-primary">{countdown}</div>
           <Button
             className="w-full rounded-2xl h-11 font-bold"
-            onClick={() => { navigate(`/solicitar?${navigateParams}`); onClose(); }}
+            onClick={() => {
+              if (isDirectSchedule) { navigate('/'); } else { navigate(`/solicitar?${navigateParams}`); }
+              onClose();
+            }}
           >
-            Continuar →
+            {isDirectSchedule ? 'Ir para o início →' : 'Continuar →'}
           </Button>
         </div>
       </div>
