@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { MapPin, Navigation, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import RouteOptimizer from './RouteOptimizer';
 
 // Ícones personalizados
 const createNumberedIcon = (number, color = '#FF6B35') => {
@@ -139,8 +140,22 @@ export default function ProviderDailyRouteMap({ providerId, currentLocation }) {
       ]
     : [];
 
+  const handleApplyRoute = (orderedServices) => {
+    if (orderedServices && orderedServices.length > 0) {
+      setOptimizedRoute(orderedServices);
+    }
+  };
+
   return (
     <div className="space-y-4">
+      {/* Otimizador de rota interativo */}
+      <RouteOptimizer
+        services={todaysServices}
+        providerLat={currentLocation?.latitude}
+        providerLon={currentLocation?.longitude}
+        onApplyRoute={handleApplyRoute}
+      />
+
       <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
         <div className="flex items-start justify-between">
           <div>
