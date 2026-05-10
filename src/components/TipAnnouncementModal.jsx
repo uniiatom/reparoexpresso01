@@ -28,8 +28,8 @@ export default function TipAnnouncementModal({ provider, onClose, onAccept }) {
           </div>
 
           <p className="text-sm text-amber-800 font-semibold text-center">
-            O cliente deseja enviar uma gratificação para você! 💰
-          </p>
+              O cliente gostou do seu atendimento e quer me gratificar! 💰
+            </p>
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 space-y-2">
