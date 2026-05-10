@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, XCircle, Loader2, Plus } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, Plus, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import PhotoUploadGallery from './PhotoUploadGallery';
 
@@ -157,12 +157,62 @@ export default function ProviderExtraChargesPanel({ service, onApprovalChange })
       {expanded && !showRejectionForm && !showConfirmApprove && (
         <div className="space-y-3 border-t border-blue-200 pt-3">
           {/* Upload de fotos */}
-          <div className="bg-white rounded-2xl p-4 border border-blue-100">
-            <PhotoUploadGallery 
-              photos={photos} 
-              onPhotosChange={setPhotos}
-              readOnly={false}
-            />
+          <div className="bg-white rounded-2xl p-4 border border-blue-100 space-y-3">
+            <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <span>📸</span> Fotos do Serviço
+            </p>
+
+            {/* Grid de fotos existentes */}
+            {photos.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {photos.map((photo, idx) => (
+                  <div key={idx} className="relative group">
+                    <img
+                      src={photo}
+                      alt={`Foto ${idx + 1}`}
+                      className="w-full h-20 object-cover rounded-lg border border-border"
+                    />
+                    <button
+                      onClick={() => setPhotos(photos.filter((_, i) => i !== idx))}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <XCircle className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Botão para adicionar fotos */}
+            <label className="block">
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (!files.length) return;
+                  try {
+                    for (const file of files) {
+                      const result = await base44.integrations.Core.UploadFile({ file });
+                      setPhotos(prev => [...prev, result.file_url]);
+                    }
+                    toast.success(`${files.length} foto(s) enviada(s)`);
+                  } catch (error) {
+                    console.error('Erro ao enviar fotos:', error);
+                    toast.error('Erro ao enviar fotos');
+                  }
+                }}
+                className="hidden"
+              />
+              <div className="border-2 border-dashed border-blue-300 rounded-xl p-4 text-center cursor-pointer hover:bg-blue-50 transition-colors">
+                <div className="flex flex-col items-center gap-2">
+                  <Upload className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm font-semibold text-blue-700">Clique para adicionar fotos</span>
+                  <span className="text-xs text-blue-600">{photos.length} foto(s) adicionada(s)</span>
+                </div>
+              </div>
+            </label>
           </div>
 
           {/* Tabela de materiais */}
