@@ -175,158 +175,155 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
         )}
       </motion.div>
 
-      {/* Card de Nível (apenas cliente) */}
+      {/* Progresso e níveis (cliente) */}
       {ownerType === 'cliente' && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-card border border-border rounded-3xl p-5"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <img src={nivelAtual.medal} alt={nivelAtual.nivel} className="w-10 h-10 object-contain drop-shadow-sm" />
-              <div>
-                <p className="font-bold text-foreground text-base">{nivelAtual.nivel}</p>
-                <p className="text-xs text-muted-foreground">{amigosAtivos} amigo(s) indicado(s) ativo(s)</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-bold text-emerald-600">R$ {nivelAtual.bonusPorServico.toFixed(2)}</p>
-              <p className="text-xs text-muted-foreground">+ {nivelAtual.percentTake}% do take</p>
-            </div>
-          </div>
+        <div className="space-y-3">
+          {/* Card de progresso */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-card border border-border rounded-3xl p-5 space-y-4"
+          >
+            <p className="text-sm font-bold text-foreground flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-600" /> Seu Progresso de Nível
+            </p>
 
-          {/* Barra de progresso */}
-          {proximoNivel && (
-            <div className="mb-3">
-              <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                <span>{amigosAtivos} amigos</span>
-                <span className="flex items-center gap-1">
-                  {proximoNivel.minAmigos} para
-                  <img src={proximoNivel.medal} alt={proximoNivel.nivel} className="w-4 h-4 object-contain inline" />
-                  {proximoNivel.nivel}
-                </span>
+            {/* Nível atual com medalha */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src={nivelAtual.medal} alt={nivelAtual.nivel} className="w-14 h-14 object-contain drop-shadow-md" />
+                <div>
+                  <p className="font-black text-foreground text-lg">{nivelAtual.nivel}</p>
+                  <p className="text-xs text-muted-foreground">{amigosAtivos} amigo(s) ativo(s)</p>
+                </div>
               </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div className="text-right">
+                <p className="text-sm font-bold text-emerald-600">R$ {nivelAtual.bonusPorServico.toFixed(2)}/serviço</p>
+                <p className="text-xs text-muted-foreground">+{nivelAtual.percentTake}% do take</p>
+              </div>
+            </div>
+
+            {/* Barra de progresso de amigos */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs font-semibold text-foreground">👥 Amigos indicados ativos</span>
+                <span className="text-xs font-bold text-emerald-700">{amigosAtivos} confirmado(s)</span>
+              </div>
+              <div className="h-3 bg-muted rounded-full overflow-hidden mb-1">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${progressoPercent}%` }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
                   className="h-full bg-emerald-500 rounded-full"
                 />
               </div>
-            </div>
-          )}
-          {!proximoNivel && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-3 py-2 text-xs text-yellow-800 font-semibold text-center mb-3">
-              👑 Nível máximo atingido!
-            </div>
-          )}
-
-          {/* Botão ver todos os níveis */}
-          <button
-            onClick={() => setShowNiveis(!showNiveis)}
-            className="flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary/80 transition-colors w-full"
-          >
-            <TrendingUp className="w-3.5 h-3.5" />
-            Ver todos os níveis e benefícios
-            <ChevronRight className={cn("w-3.5 h-3.5 ml-auto transition-transform", showNiveis && "rotate-90")} />
-          </button>
-
-          {/* Tabela de níveis */}
-          {showNiveis && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mt-3 space-y-2"
-            >
-              {NIVEIS.map(n => (
-                <div
-                  key={n.nivel}
-                  className={cn(
-                    "flex items-center gap-2 rounded-xl border px-3 py-2 text-xs",
-                    n.nivel === nivelAtual.nivel ? n.color + " font-bold border-2" : "bg-muted/40 border-transparent text-muted-foreground"
-                  )}
-                >
-                  <img src={n.medal} alt={n.nivel} className="w-7 h-7 object-contain flex-shrink-0" />
-                  <span className="w-14 font-semibold">{n.nivel}</span>
-                  <span className="flex-1 text-center">{n.minAmigos}–{n.maxAmigos} amigos</span>
-                  <span className="text-center">R$ {n.bonusPorServico.toFixed(2)}</span>
-                  <span className="text-right">{n.percentTake}%</span>
-                </div>
-              ))}
-              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1.5">
-                <p className="font-bold">⚠️ Regras do cashback por indicação:</p>
-                <p>• O bônus é creditado <strong>somente quando o serviço do amigo indicado for concluído</strong>.</p>
-                <p>• Após a conclusão, o valor cai na carteira em até <strong>48 horas</strong>.</p>
-                <p>• O resgate via PIX está disponível a partir de <strong>R$ 200,00</strong> acumulados.</p>
-                <p>• <Users className="w-3 h-3 inline mr-0.5" />Amigos ativos = indicados com ao menos 1 serviço concluído.</p>
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
-      )}
-
-      {/* Opções de resgate (cliente) */}
-      {ownerType === 'cliente' && (
-        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
-          <p className="text-sm font-bold text-foreground mb-2">💰 Opções de Resgate</p>
-          <div className="flex gap-2">
-            <Button
-              className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs"
-              onClick={() => redeemMutation.mutate('service')}
-              disabled={selectedForRedemption.length === 0 || redeemMutation.isPending}
-            >
-              <Gift className="w-3 h-3 mr-1" />
-              Usar em serviço
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1 rounded-xl text-xs font-semibold"
-              onClick={() => {
-                if (selectedTotal < 200) {
-                  toast.error(`Mínimo R$ 200,00 para PIX. Você tem R$ ${selectedTotal.toFixed(2)}`);
-                  return;
-                }
-                redeemMutation.mutate('pix');
-              }}
-              disabled={selectedForRedemption.length === 0 || redeemMutation.isPending}
-            >
-              <Zap className="w-3 h-3 mr-1" />
-              Sacar PIX
-            </Button>
-          </div>
-          {selectedTotal > 0 && (
-            <p className="text-xs text-muted-foreground text-center">
-              Total selecionado: <strong>R$ {selectedTotal.toFixed(2)}</strong>
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Regras rápidas (apenas cliente) */}
-      {ownerType === 'cliente' && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-2 text-xs text-blue-800">
-          <p className="font-bold text-sm text-blue-900">📋 Como funciona seu cashback</p>
-          <p>1️⃣ Indique amigos usando seu código de indicação.</p>
-          <p>2️⃣ Quando o serviço do amigo for <strong>concluído</strong>, o bônus é gerado.</p>
-          <p>3️⃣ O valor cai na sua carteira após <strong>48 horas</strong> da conclusão do serviço.</p>
-          <p>4️⃣ Use como <strong>crédito</strong> no próximo serviço ou acumule <strong>R$ 200,00+</strong> para PIX.</p>
-          <p>5️⃣ Quanto mais amigos ativos, maior seu nível e mais cashback por serviço!</p>
-          <div className="border-t border-blue-200 pt-2 mt-1">
-            <p className="font-semibold mb-1">📊 Tabela de progressão:</p>
-            <div className="space-y-1">
-              {NIVEIS.map(n => (
-                <div key={n.nivel} className="flex items-center justify-between bg-white/60 rounded-lg px-2 py-1">
-                  <span className="flex items-center gap-1.5">
-                    <img src={n.medal} alt={n.nivel} className="w-5 h-5 object-contain" />
-                    <strong>{n.nivel}</strong> ({n.minAmigos}–{n.maxAmigos === 70 ? '50+' : n.maxAmigos} amigos)
+              {proximoNivel ? (
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{amigosAtivos}/{proximoNivel.minAmigos} amigos</span>
+                  <span className="flex items-center gap-1 font-semibold text-emerald-700">
+                    Próximo:
+                    <img src={proximoNivel.medal} alt={proximoNivel.nivel} className="w-4 h-4 object-contain" />
+                    {proximoNivel.nivel}
                   </span>
-                  <span className="font-bold text-emerald-700">R$ {n.bonusPorServico.toFixed(2)}/serviço</span>
                 </div>
-              ))}
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2 text-xs text-yellow-800 font-semibold text-center">
+                  <img src={nivelAtual.medal} alt={nivelAtual.nivel} className="w-5 h-5 object-contain inline mr-1" />
+                  Nível máximo atingido!
+                </div>
+              )}
             </div>
+
+            {/* Tabela de níveis */}
+            <button
+              onClick={() => setShowNiveis(!showNiveis)}
+              className="flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary/80 transition-colors w-full pt-1 border-t border-border"
+            >
+              <Users className="w-3.5 h-3.5" />
+              Ver tabela de níveis e benefícios
+              <ChevronRight className={cn("w-3.5 h-3.5 ml-auto transition-transform", showNiveis && "rotate-90")} />
+            </button>
+
+            {showNiveis && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="space-y-2"
+              >
+                {NIVEIS.map(n => (
+                  <div
+                    key={n.nivel}
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl border px-3 py-2 text-xs",
+                      n.nivel === nivelAtual.nivel ? n.color + " font-bold border-2" : "bg-muted/40 border-transparent text-muted-foreground"
+                    )}
+                  >
+                    <img src={n.medal} alt={n.nivel} className="w-8 h-8 object-contain flex-shrink-0" />
+                    <span className="w-14 font-semibold">{n.nivel}</span>
+                    <span className="flex-1 text-center">{n.minAmigos}–{n.maxAmigos} amigos</span>
+                    <span className="text-center">R$ {n.bonusPorServico.toFixed(2)}</span>
+                    <span className="text-right">{n.percentTake}%</span>
+                  </div>
+                ))}
+                <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1">
+                  <p className="font-bold">⚠️ Regras do cashback por indicação:</p>
+                  <p>• O bônus é creditado <strong>somente quando o serviço do amigo indicado for concluído</strong>.</p>
+                  <p>• Após a conclusão, o valor cai na carteira em até <strong>48 horas</strong>.</p>
+                  <p>• O resgate via PIX está disponível a partir de <strong>R$ 200,00</strong> acumulados.</p>
+                  <p>• <Users className="w-3 h-3 inline mr-0.5" />Amigos ativos = indicados com ao menos 1 serviço concluído.</p>
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+
+          {/* Opções de resgate */}
+          <div className="bg-card border border-border rounded-2xl p-4">
+            <p className="text-sm font-bold text-foreground mb-2">💰 Opções de Resgate</p>
+            <div className="space-y-2">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                <p className="text-xs font-bold text-emerald-900 flex items-center gap-2 mb-1">
+                  <Gift className="w-3.5 h-3.5" /> Usar em Serviço
+                </p>
+                <p className="text-xs text-emerald-800">Sem mínimo · Desconto direto na próxima OS</p>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                <p className="text-xs font-bold text-blue-900 flex items-center gap-2 mb-1">
+                  <Zap className="w-3.5 h-3.5" /> PIX Direto
+                </p>
+                <p className="text-xs text-blue-800">Mínimo: <strong>R$ 200,00</strong> · Saque em 2 dias úteis</p>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-3">
+              <Button
+                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs"
+                onClick={() => redeemMutation.mutate('service')}
+                disabled={selectedForRedemption.length === 0 || redeemMutation.isPending}
+              >
+                <Gift className="w-3 h-3 mr-1" />
+                Usar em serviço
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 rounded-xl text-xs font-semibold"
+                onClick={() => {
+                  if (selectedTotal < 200) {
+                    toast.error(`Mínimo R$ 200,00 para PIX. Você tem R$ ${selectedTotal.toFixed(2)}`);
+                    return;
+                  }
+                  redeemMutation.mutate('pix');
+                }}
+                disabled={selectedForRedemption.length === 0 || redeemMutation.isPending}
+              >
+                <Zap className="w-3 h-3 mr-1" />
+                Sacar PIX
+              </Button>
+            </div>
+            {selectedTotal > 0 && (
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Total selecionado: <strong>R$ {selectedTotal.toFixed(2)}</strong>
+              </p>
+            )}
           </div>
         </div>
       )}
