@@ -384,9 +384,11 @@ export default function ProviderApp() {
       ...(final_price && { final_price }),
       ...(tech_visit_reason && { tech_visit_reason }),
     }),
-    onSuccess: (_, variables) => {
-      // Atualiza o estado local imediatamente sem depender só do subscribe
-      setMyJobs(prev => prev.map(j => j.id === variables.id ? { ...j, ...variables } : j));
+    onSuccess: (updatedJob) => {
+      // Atualiza o estado local imediatamente com o dado retornado pelo backend
+      if (updatedJob?.id) {
+        setMyJobs(prev => prev.map(j => j.id === updatedJob.id ? { ...j, ...updatedJob } : j));
+      }
     },
   });
 
