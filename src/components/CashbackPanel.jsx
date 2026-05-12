@@ -48,18 +48,26 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
     enabled: !!userId && ownerType === 'cliente',
   });
 
-  // Para prestadores: busca dados reais de serviços e avaliação
-  const { data: provider } = useQuery({
-    queryKey: ['provider-cashback-data', userId],
+  // Para prestadores: busca serviços reais concluídos e avaliação
+  const { data: providerServicos } = useQuery({
+    queryKey: ['provider-cashback-servicos', userId],
     queryFn: async () => {
-      const list = await base44.entities.Provider.filter({ id: userId });
-      return list[0] || null;
+      const [provList, servicos] = await Promise.all([
+        base44.entities.Provider.filter({ id: userId }),
+        base44.entities.ServiceRequest.filter({ provider_id: userId, status: 'concluido' }),
+      ]);
+      const prov = provList[0] || null;
+      const withRatings = servicos.filter(s => s.rating_client);
+      const avgRating = withRatings.length > 0
+        ? withRatings.reduce((sum, s) => sum + s.rating_client, 0) / withRatings.length
+        : (prov?.rating || 5);
+      return { total: servicos.length, rating: avgRating };
     },
     enabled: !!userId && ownerType === 'prestador',
   });
 
-  const totalServicos = provider?.total_jobs || 0;
-  const mediaAvaliacao = provider?.rating || 0;
+  const totalServicos = providerServicos?.total || 0;
+  const mediaAvaliacao = providerServicos?.rating || 0;
   // Blocos de 5 serviços concluídos = bônus
   const blocosCompletos = Math.floor(totalServicos / 5);
   const servicosNoBloco = totalServicos % 5;
