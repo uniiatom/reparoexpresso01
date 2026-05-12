@@ -114,18 +114,6 @@ Deno.serve(async (req) => {
 
     console.log(`✓ Serviço ${service_request_id} marcado como ${newStatus} (${completion_type})`);
 
-    // Enviar pesquisa de satisfação para o cliente quando serviço concluído com sucesso
-    if (newStatus === 'concluido') {
-      try {
-        await base44.asServiceRole.functions.invoke('sendSatisfactionSurvey', {
-          serviceRequestId: service_request_id,
-        });
-        console.log(`✓ Pesquisa de satisfação enviada para OS ${service_request_id}`);
-      } catch (surveyErr) {
-        console.warn('[pesquisa satisfação] Erro ao enviar:', surveyErr.message);
-      }
-    }
-
     return Response.json({
       success: true,
       message: `Serviço marcado como ${completion_type}`,

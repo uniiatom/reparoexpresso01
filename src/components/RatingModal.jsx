@@ -60,6 +60,8 @@ export default function RatingModal({ requestId, onClose }) {
       queryClient.invalidateQueries({ queryKey: ['service-request', requestId] });
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       setDone(true);
+      // Fecha automaticamente após 1.5s avisando que avaliou
+      setTimeout(() => onClose(true), 1500);
     },
   });
 

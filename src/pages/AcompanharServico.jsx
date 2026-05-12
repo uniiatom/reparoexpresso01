@@ -76,12 +76,15 @@ export default function AcompanharServico() {
     return unsub;
   }, [user?.email]);
 
-  const handleRatingClose = () => {
+  const handleRatingClose = (didRate = false) => {
     setShowRating(false);
-    // Após avaliar, mostra modal de gratificação
-    setTimeout(() => {
-      setShowTipRequest(true);
-    }, 300);
+    if (didRate) {
+      // Após avaliar: mostra pesquisa de satisfação primeiro
+      setTimeout(() => setShowSatisfactionSurvey(true), 400);
+    } else {
+      // Pulou avaliação: mostra gratificação
+      setTimeout(() => setShowTipRequest(true), 300);
+    }
   };
 
   const [request, setRequest] = useState(null);
@@ -182,25 +185,7 @@ export default function AcompanharServico() {
     }
   }, [request?.status, request?.rating_client, showSatisfactionSurvey]);
 
-  // Mostrar pesquisa de satisfação após conclusão (aparece DEPOIS da avaliação)
-  useEffect(() => {
-    if (request?.status === 'concluido' && request?.rating_client && user?.id) {
-      console.log('[AcompanharServico] Serviço concluído e avaliado, verificando pesquisa de satisfação...');
-      // Verifica se já respondeu pesquisa
-      base44.entities.SatisfactionSurvey.filter({
-        service_request_id: request.id,
-        respondent_id: user.id,
-        respondent_type: 'cliente'
-      }).then(surveys => {
-        console.log('[AcompanharServico] Pesquisas existentes:', surveys.length);
-        if (surveys.length === 0) {
-          console.log('[AcompanharServico] Mostrando modal de pesquisa de satisfação');
-          const timer = setTimeout(() => setShowSatisfactionSurvey(true), 500);
-          return () => clearTimeout(timer);
-        }
-      }).catch(err => console.error('[AcompanharServico] Erro ao carregar pesquisas:', err));
-    }
-  }, [request?.status, request?.rating_client, user?.id, request?.id]);
+
 
   if (!id) {
     navigate('/');
@@ -708,7 +693,10 @@ export default function AcompanharServico() {
           respondentType="cliente"
           respondentId={user.id}
           respondentName={user.full_name}
-          onClose={() => setShowSatisfactionSurvey(false)}
+          onClose={() => {
+            setShowSatisfactionSurvey(false);
+            setTimeout(() => setShowTipRequest(true), 300);
+          }}
         />
       )}
       {showTipRequest && request.provider_id && (
