@@ -39,9 +39,15 @@ function getNivelCliente(amigosAtivos) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { request_id } = await req.json();
+    const body = await req.json();
 
-    const serviceRequest = await base44.asServiceRole.entities.ServiceRequest.get(request_id);
+    // Suporta chamada manual ({ request_id }) e automação de entidade ({ event, data })
+    let serviceRequest;
+    if (body.event?.entity_id) {
+      serviceRequest = body.data || await base44.asServiceRole.entities.ServiceRequest.get(body.event.entity_id);
+    } else if (body.request_id) {
+      serviceRequest = await base44.asServiceRole.entities.ServiceRequest.get(body.request_id);
+    }
 
     if (!serviceRequest) {
       return Response.json({ error: 'Service request not found' }, { status: 404 });
@@ -50,6 +56,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Service not completed' }, { status: 400 });
     }
 
+    // Evita duplicatas: verifica se já existe cashback para este serviço e prestador
+    if (serviceRequest.provider_id) {
+      const existing = await base44.asServiceRole.entities.Cashback.filter({
+        service_request_id: serviceRequest.id,
+        owner_type: 'prestador',
+      });
+      if (existing.length > 0) {
+        console.log(`[processCashback] Cashback já gerado para OS ${serviceRequest.id}, ignorando.`);
+        return Response.json({ success: true, skipped: true });
+      }
+    }
+
+    const request_id = serviceRequest.id;
     const finalPrice = serviceRequest.final_price || 0;
     const expiresAt = new Date(Date.now() + CASHBACK_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString();
     const results = [];
