@@ -379,7 +379,15 @@ export default function ProviderApp() {
   };
 
   const updateJobStatus = useMutation({
-    mutationFn: ({ id, status, final_price }) => base44.entities.ServiceRequest.update(id, { status, ...(final_price && { final_price }) }),
+    mutationFn: ({ id, status, final_price, tech_visit_reason }) => base44.entities.ServiceRequest.update(id, {
+      status,
+      ...(final_price && { final_price }),
+      ...(tech_visit_reason && { tech_visit_reason }),
+    }),
+    onSuccess: (_, variables) => {
+      // Atualiza o estado local imediatamente sem depender só do subscribe
+      setMyJobs(prev => prev.map(j => j.id === variables.id ? { ...j, ...variables } : j));
+    },
   });
 
   // Banner só bloqueia se há job realmente ativo (não em espera)
