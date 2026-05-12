@@ -9,7 +9,7 @@ const NIVEIS = [
   { nivel: 'Prata',    minJobs: 120, bonus: 3.00, ratingBonus: 5.00, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/8ba4432b4_generated_image.png',  color: 'from-slate-400 to-slate-500'   },
   { nivel: 'Ouro',     minJobs: 160, bonus: 3.50, ratingBonus: 7.50, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f2e46e7a2_generated_image.png',  color: 'from-yellow-400 to-yellow-500' },
   { nivel: 'Diamante', minJobs: 190, bonus: 4.00, ratingBonus: 10.0, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/0d3692af6_generated_image.png',  color: 'from-cyan-400 to-blue-500'     },
-  { nivel: 'Rubi',     minJobs: 220, bonus: 5.00, ratingBonus: 10.0, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/e55dfa06f_generated_image.png',  color: 'from-red-500 to-rose-600'      },
+  { nivel: 'Rubi',     minJobs: 220, bonus: 5.00, ratingBonus: 10.0, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/94c981b4c_ff72e285-f447-4c8f-865e-8987a647a613.jpg',  color: 'from-red-500 to-rose-600'      },
 ];
 
 // Ticket médio por serviço (repasse estimado ao prestador)

@@ -20,7 +20,7 @@ const NIVEIS = [
   { nivel: 'Prata',    minAmigos: 10, maxAmigos: 19, bonusPorServico: 3.50, percentTake: 9.7,  medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/8ba4432b4_generated_image.png',  color: 'bg-slate-100 text-slate-900 border-slate-400' },
   { nivel: 'Ouro',     minAmigos: 20, maxAmigos: 34, bonusPorServico: 4.50, percentTake: 12.5, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f2e46e7a2_generated_image.png',  color: 'bg-yellow-50 text-yellow-900 border-yellow-400' },
   { nivel: 'Diamante', minAmigos: 35, maxAmigos: 49, bonusPorServico: 5.50, percentTake: 15.2, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/0d3692af6_generated_image.png',  color: 'bg-blue-50 text-blue-900 border-blue-400' },
-  { nivel: 'Rubi',     minAmigos: 50, maxAmigos: 70, bonusPorServico: 7.00, percentTake: 19.4, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/e55dfa06f_generated_image.png',  color: 'bg-red-50 text-red-900 border-red-400' },
+  { nivel: 'Rubi',     minAmigos: 50, maxAmigos: 70, bonusPorServico: 7.00, percentTake: 19.4, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/94c981b4c_ff72e285-f447-4c8f-865e-8987a647a613.jpg',  color: 'bg-red-50 text-red-900 border-red-400' },
 ];
 
 function getNivel(amigosAtivos) {
@@ -410,7 +410,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                   { medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/8ba4432b4_generated_image.png',  nivel: 'Prata',    minJobs: 120, maxJobs: 159,  minRating: 4.0, bonus: 'R$ 3,00',  bgAtual: 'bg-slate-100 border-slate-400 text-slate-900' },
                   { medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f2e46e7a2_generated_image.png',  nivel: 'Ouro',     minJobs: 160, maxJobs: 189,  minRating: 4.0, bonus: 'R$ 3,50',  bgAtual: 'bg-yellow-50 border-yellow-400 text-yellow-900' },
                   { medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/0d3692af6_generated_image.png',  nivel: 'Diamante', minJobs: 190, maxJobs: 219,  minRating: 4.0, bonus: 'R$ 4,00',  bgAtual: 'bg-blue-50 border-blue-400 text-blue-900' },
-                  { medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/e55dfa06f_generated_image.png',  nivel: 'Rubi',     minJobs: 220, maxJobs: null, minRating: 4.5, bonus: 'R$ 5,00',  bgAtual: 'bg-red-50 border-red-400 text-red-900' },
+                  { medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/94c981b4c_ff72e285-f447-4c8f-865e-8987a647a613.jpg',  nivel: 'Rubi',     minJobs: 220, maxJobs: null, minRating: 4.5, bonus: 'R$ 5,00',  bgAtual: 'bg-red-50 border-red-400 text-red-900' },
                 ].map(n => {
                   const isAtual = totalServicos >= n.minJobs && (n.maxJobs === null || totalServicos <= n.maxJobs);
                   return (
