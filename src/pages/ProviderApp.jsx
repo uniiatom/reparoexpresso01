@@ -36,6 +36,7 @@ import { useProviderPush } from '../hooks/useProviderPush';
 import NewServiceFullscreenModal from '@/components/NewServiceFullscreenModal';
 import ProviderDailyRouteMap from '@/components/ProviderDailyRouteMap';
 import ProviderEarningsSimulator from '@/components/ProviderEarningsSimulator';
+import ProviderCashbackRules from '@/components/ProviderCashbackRules';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -1058,6 +1059,10 @@ export default function ProviderApp() {
       {activeTab === 'niveis' && (
         <div className="space-y-6">
           <ProviderEarningsSimulator
+            totalJobsCompleted={provider.total_jobs || 0}
+            averageRating={provider.rating || 5}
+          />
+          <ProviderCashbackRules
             totalJobsCompleted={provider.total_jobs || 0}
             averageRating={provider.rating || 5}
           />
