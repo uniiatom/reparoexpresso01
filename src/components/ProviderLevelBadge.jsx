@@ -5,11 +5,11 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const LEVEL_CONFIG = {
-  1: { name: 'Bronze',   icon: '🥉', color: 'from-amber-600 to-amber-700',   textColor: 'text-amber-700',   bgColor: 'bg-amber-50'   },
-  2: { name: 'Prata',    icon: '🥈', color: 'from-slate-400 to-slate-500',   textColor: 'text-slate-700',   bgColor: 'bg-slate-50'   },
-  3: { name: 'Ouro',     icon: '🏅', color: 'from-yellow-400 to-yellow-500', textColor: 'text-yellow-700',  bgColor: 'bg-yellow-50'  },
-  4: { name: 'Diamante', icon: '💎', color: 'from-cyan-400 to-blue-500',     textColor: 'text-blue-700',    bgColor: 'bg-blue-50'    },
-  5: { name: 'Rubi',     icon: '🔴', color: 'from-red-500 to-rose-600',      textColor: 'text-red-700',     bgColor: 'bg-red-50'     },
+  1: { name: 'Bronze',   medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f4e56f3c5_generated_image.png', color: 'from-amber-600 to-amber-700',   textColor: 'text-amber-700',   bgColor: 'bg-amber-50'   },
+  2: { name: 'Prata',    medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/8ba4432b4_generated_image.png', color: 'from-slate-400 to-slate-500',   textColor: 'text-slate-700',   bgColor: 'bg-slate-50'   },
+  3: { name: 'Ouro',     medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f2e46e7a2_generated_image.png', color: 'from-yellow-400 to-yellow-500', textColor: 'text-yellow-700',  bgColor: 'bg-yellow-50'  },
+  4: { name: 'Diamante', medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/0d3692af6_generated_image.png', color: 'from-cyan-400 to-blue-500',     textColor: 'text-blue-700',    bgColor: 'bg-blue-50'    },
+  5: { name: 'Rubi',     medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/e55dfa06f_generated_image.png', color: 'from-red-500 to-rose-600',      textColor: 'text-red-700',     bgColor: 'bg-red-50'     },
 };
 
 const LEVEL_REQUIREMENTS = {
@@ -43,7 +43,7 @@ export default function ProviderLevelBadge({ providerId, showDetails = false, si
   if (size === 'sm') {
     return (
       <div className="flex items-center gap-1.5">
-        <span className="text-xl">{config.icon}</span>
+        <img src={config.medal} alt={config.name} className="w-6 h-6 object-contain drop-shadow-sm" />
         <span className="text-xs font-bold text-foreground">{config.name}</span>
       </div>
     );
@@ -53,7 +53,7 @@ export default function ProviderLevelBadge({ providerId, showDetails = false, si
     <div className={cn('rounded-2xl p-4 border-2', config.bgColor)}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className={`text-4xl drop-shadow-sm`}>{config.icon}</div>
+          <img src={config.medal} alt={config.name} className="w-14 h-14 object-contain drop-shadow-md" />
           <div>
             <p className={cn('text-lg font-black', config.textColor)}>{config.name}</p>
             <p className="text-xs text-muted-foreground">Nível {level}</p>
