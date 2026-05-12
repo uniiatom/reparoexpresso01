@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 
 const LEVEL_CONFIG = {
   1: { name: 'Bronze',   medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f4e56f3c5_generated_image.png', color: 'from-amber-600 to-amber-700',   textColor: 'text-amber-700',   bgColor: 'bg-amber-50'   },
-  2: { name: 'Prata',    medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/8ba4432b4_generated_image.png', color: 'from-slate-400 to-slate-500',   textColor: 'text-slate-700',   bgColor: 'bg-slate-50'   },
-  3: { name: 'Ouro',     medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f2e46e7a2_generated_image.png', color: 'from-yellow-400 to-yellow-500', textColor: 'text-yellow-700',  bgColor: 'bg-yellow-50'  },
+  2: { name: 'Prata',    medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/05ab5e26d_85fcbee0-e8ea-46da-8acc-2123447265f2.jpg', color: 'from-slate-400 to-slate-500',   textColor: 'text-slate-700',   bgColor: 'bg-slate-50'   },
+  3: { name: 'Ouro',     medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/626743952_c309f1db-b2cf-42a1-997f-c1914b668017.jpg', color: 'from-yellow-400 to-yellow-500', textColor: 'text-yellow-700',  bgColor: 'bg-yellow-50'  },
   4: { name: 'Diamante', medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/0d3692af6_generated_image.png', color: 'from-cyan-400 to-blue-500',     textColor: 'text-blue-700',    bgColor: 'bg-blue-50'    },
   5: { name: 'Rubi',     medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/94c981b4c_ff72e285-f447-4c8f-865e-8987a647a613.jpg', color: 'from-red-500 to-rose-600',      textColor: 'text-red-700',     bgColor: 'bg-red-50'     },
 };
