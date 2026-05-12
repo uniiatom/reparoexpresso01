@@ -35,6 +35,7 @@ import ProviderTermsTab from '../components/ProviderTermsTab';
 import { useProviderPush } from '../hooks/useProviderPush';
 import NewServiceFullscreenModal from '@/components/NewServiceFullscreenModal';
 import ProviderDailyRouteMap from '@/components/ProviderDailyRouteMap';
+import ProviderEarningsSimulator from '@/components/ProviderEarningsSimulator';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -1056,6 +1057,10 @@ export default function ProviderApp() {
       {/* ── ABA NÍVEIS + CASHBACK ── */}
       {activeTab === 'niveis' && (
         <div className="space-y-6">
+          <ProviderEarningsSimulator
+            totalJobsCompleted={provider.total_jobs || 0}
+            averageRating={provider.rating || 5}
+          />
           <ProviderLevelBadge providerId={provider.id} showDetails={true} />
           <CashbackPanel userId={provider.id} ownerType="prestador" />
         </div>
