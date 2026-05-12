@@ -406,38 +406,33 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                 animate={{ opacity: 1, height: 'auto' }}
                 className="space-y-2"
               >
-                <div className="grid grid-cols-4 text-xs text-muted-foreground font-semibold px-1 mb-1">
-                  <span>Nível</span>
-                  <span className="text-center">Serviços</span>
-                  <span className="text-center">Estrelas</span>
-                  <span className="text-center">Bônus</span>
-                </div>
                 {[
-                  { emoji: '🌱', nivel: 'Iniciante', minJobs: 0,   maxJobs: 119, minRating: 0,  bonus: '—' },
-                  { emoji: '⭐', nivel: 'Pro',        minJobs: 120, maxJobs: 159, minRating: 4,  bonus: 'R$ 3,00' },
-                  { emoji: '🔥', nivel: 'Pro Plus',   minJobs: 160, maxJobs: 189, minRating: 4,  bonus: 'R$ 3,50' },
-                  { emoji: '💎', nivel: 'Pro Elite',  minJobs: 190, maxJobs: 219, minRating: 4,  bonus: 'R$ 4,00' },
-                  { emoji: '👑', nivel: 'Pro Lenda',  minJobs: 220, maxJobs: null, minRating: 5, bonus: 'R$ 5,00' },
+                  { medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f4e56f3c5_generated_image.png',  nivel: 'Bronze',   minJobs: 0,   maxJobs: 119,  minRating: 0,   bonus: '—',        bgAtual: 'bg-amber-50 border-amber-300 text-amber-900' },
+                  { medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/8ba4432b4_generated_image.png',  nivel: 'Prata',    minJobs: 120, maxJobs: 159,  minRating: 4.0, bonus: 'R$ 3,00',  bgAtual: 'bg-slate-100 border-slate-400 text-slate-900' },
+                  { medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f2e46e7a2_generated_image.png',  nivel: 'Ouro',     minJobs: 160, maxJobs: 189,  minRating: 4.0, bonus: 'R$ 3,50',  bgAtual: 'bg-yellow-50 border-yellow-400 text-yellow-900' },
+                  { medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/0d3692af6_generated_image.png',  nivel: 'Diamante', minJobs: 190, maxJobs: 219,  minRating: 4.0, bonus: 'R$ 4,00',  bgAtual: 'bg-blue-50 border-blue-400 text-blue-900' },
+                  { medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/e55dfa06f_generated_image.png',  nivel: 'Rubi',     minJobs: 220, maxJobs: null, minRating: 4.5, bonus: 'R$ 5,00',  bgAtual: 'bg-red-50 border-red-400 text-red-900' },
                 ].map(n => {
                   const isAtual = totalServicos >= n.minJobs && (n.maxJobs === null || totalServicos <= n.maxJobs);
                   return (
                     <div
                       key={n.nivel}
                       className={cn(
-                        "grid grid-cols-4 items-center rounded-xl border px-3 py-2 text-xs",
-                        isAtual ? "border-emerald-300 bg-emerald-50 font-bold text-emerald-900" : "border-transparent bg-muted/40 text-muted-foreground"
+                        "flex items-center gap-3 rounded-xl border px-3 py-2 text-xs",
+                        isAtual ? `${n.bgAtual} font-bold border-2` : "border-transparent bg-muted/40 text-muted-foreground"
                       )}
                     >
-                      <span className="flex items-center gap-1">{n.emoji} {n.nivel}</span>
-                      <span className="text-center">{n.minJobs}{n.maxJobs ? `–${n.maxJobs}` : '+'}</span>
+                      <img src={n.medal} alt={n.nivel} className="w-8 h-8 object-contain flex-shrink-0" />
+                      <span className="font-semibold w-16">{n.nivel}</span>
+                      <span className="flex-1 text-center">{n.minJobs}{n.maxJobs ? `–${n.maxJobs}` : '+'} serv.</span>
                       <span className="text-center">{n.minRating > 0 ? `≥ ${n.minRating}★` : '—'}</span>
-                      <span className="text-center text-emerald-700 font-semibold">{n.bonus}</span>
+                      <span className="text-right font-semibold">{n.bonus}</span>
                     </div>
                   );
                 })}
                 <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1">
                   <p className="font-bold">⚠️ Regras:</p>
-                  <p>• Bônus de <strong>R$ 2,00 a R$ 5,00 por serviço concluído</strong> (conforme nível).</p>
+                  <p>• Bônus de <strong>R$ 3,00 a R$ 5,00 por serviço concluído</strong> (conforme nível).</p>
                   <p>• Avaliação média <strong>≥ 4,5 ★</strong> gera R$ 10 extra por serviço.</p>
                   <p>• Bônus calculado ao final de cada quinzena.</p>
                   <p>• Resgate via PIX (mín. R$ 200) ou cursos (× 2.5).</p>
