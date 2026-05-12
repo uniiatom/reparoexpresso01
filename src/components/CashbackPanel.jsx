@@ -16,11 +16,11 @@ const SERVICE_LABELS = {
 };
 
 const NIVEIS = [
-  { nivel: 'Iniciante',  minAmigos: 0,  maxAmigos: 9,  bonusPorServico: 2.50, percentTake: 6.9,  emoji: '🌱', color: 'bg-slate-100 text-slate-700 border-slate-200' },
-  { nivel: 'Pro',        minAmigos: 10, maxAmigos: 19, bonusPorServico: 3.50, percentTake: 9.7,  emoji: '⚡', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-  { nivel: 'Elite',      minAmigos: 20, maxAmigos: 34, bonusPorServico: 4.50, percentTake: 12.5, emoji: '💎', color: 'bg-purple-100 text-purple-700 border-purple-200' },
-  { nivel: 'Lendário',   minAmigos: 35, maxAmigos: 49, bonusPorServico: 5.50, percentTake: 15.2, emoji: '🔥', color: 'bg-orange-100 text-orange-700 border-orange-200' },
-  { nivel: 'Imperador',  minAmigos: 50, maxAmigos: 70, bonusPorServico: 7.00, percentTake: 19.4, emoji: '👑', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+  { nivel: 'Bronze',   minAmigos: 0,  maxAmigos: 9,  bonusPorServico: 2.50, percentTake: 6.9,  medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f4e56f3c5_generated_image.png',  color: 'bg-amber-50 text-amber-900 border-amber-300' },
+  { nivel: 'Prata',    minAmigos: 10, maxAmigos: 19, bonusPorServico: 3.50, percentTake: 9.7,  medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/8ba4432b4_generated_image.png',  color: 'bg-slate-100 text-slate-900 border-slate-400' },
+  { nivel: 'Ouro',     minAmigos: 20, maxAmigos: 34, bonusPorServico: 4.50, percentTake: 12.5, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f2e46e7a2_generated_image.png',  color: 'bg-yellow-50 text-yellow-900 border-yellow-400' },
+  { nivel: 'Diamante', minAmigos: 35, maxAmigos: 49, bonusPorServico: 5.50, percentTake: 15.2, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/0d3692af6_generated_image.png',  color: 'bg-blue-50 text-blue-900 border-blue-400' },
+  { nivel: 'Rubi',     minAmigos: 50, maxAmigos: 70, bonusPorServico: 7.00, percentTake: 19.4, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/e55dfa06f_generated_image.png',  color: 'bg-red-50 text-red-900 border-red-400' },
 ];
 
 function getNivel(amigosAtivos) {
@@ -185,7 +185,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">{nivelAtual.emoji}</span>
+              <img src={nivelAtual.medal} alt={nivelAtual.nivel} className="w-10 h-10 object-contain drop-shadow-sm" />
               <div>
                 <p className="font-bold text-foreground text-base">{nivelAtual.nivel}</p>
                 <p className="text-xs text-muted-foreground">{amigosAtivos} amigo(s) indicado(s) ativo(s)</p>
@@ -202,7 +202,11 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
             <div className="mb-3">
               <div className="flex justify-between text-xs text-muted-foreground mb-1">
                 <span>{amigosAtivos} amigos</span>
-                <span>{proximoNivel.minAmigos} para {proximoNivel.emoji} {proximoNivel.nivel}</span>
+                <span className="flex items-center gap-1">
+                  {proximoNivel.minAmigos} para
+                  <img src={proximoNivel.medal} alt={proximoNivel.nivel} className="w-4 h-4 object-contain inline" />
+                  {proximoNivel.nivel}
+                </span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <motion.div
@@ -237,24 +241,19 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
               animate={{ opacity: 1, height: 'auto' }}
               className="mt-3 space-y-2"
             >
-              <div className="grid grid-cols-4 text-xs text-muted-foreground font-semibold px-1 mb-1">
-                <span>Nível</span>
-                <span className="text-center">Amigos</span>
-                <span className="text-center">Bônus fixo</span>
-                <span className="text-center">% take</span>
-              </div>
               {NIVEIS.map(n => (
                 <div
                   key={n.nivel}
                   className={cn(
-                    "grid grid-cols-4 items-center rounded-xl border px-3 py-2 text-xs",
-                    n.nivel === nivelAtual.nivel ? n.color + " font-bold" : "bg-muted/40 border-transparent text-muted-foreground"
+                    "flex items-center gap-2 rounded-xl border px-3 py-2 text-xs",
+                    n.nivel === nivelAtual.nivel ? n.color + " font-bold border-2" : "bg-muted/40 border-transparent text-muted-foreground"
                   )}
                 >
-                  <span className="flex items-center gap-1">{n.emoji} {n.nivel}</span>
-                  <span className="text-center">{n.minAmigos}–{n.maxAmigos}</span>
+                  <img src={n.medal} alt={n.nivel} className="w-7 h-7 object-contain flex-shrink-0" />
+                  <span className="w-14 font-semibold">{n.nivel}</span>
+                  <span className="flex-1 text-center">{n.minAmigos}–{n.maxAmigos} amigos</span>
                   <span className="text-center">R$ {n.bonusPorServico.toFixed(2)}</span>
-                  <span className="text-center">{n.percentTake}%</span>
+                  <span className="text-right">{n.percentTake}%</span>
                 </div>
               ))}
               <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 space-y-1.5">
@@ -320,7 +319,10 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
             <div className="space-y-1">
               {NIVEIS.map(n => (
                 <div key={n.nivel} className="flex items-center justify-between bg-white/60 rounded-lg px-2 py-1">
-                  <span>{n.emoji} <strong>{n.nivel}</strong> ({n.minAmigos}–{n.maxAmigos === 70 ? '50+' : n.maxAmigos} amigos)</span>
+                  <span className="flex items-center gap-1.5">
+                    <img src={n.medal} alt={n.nivel} className="w-5 h-5 object-contain" />
+                    <strong>{n.nivel}</strong> ({n.minAmigos}–{n.maxAmigos === 70 ? '50+' : n.maxAmigos} amigos)
+                  </span>
                   <span className="font-bold text-emerald-700">R$ {n.bonusPorServico.toFixed(2)}/serviço</span>
                 </div>
               ))}
