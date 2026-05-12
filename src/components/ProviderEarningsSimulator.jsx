@@ -5,7 +5,7 @@ import { TrendingUp, Zap, Star, Target, ChevronDown, ChevronUp } from 'lucide-re
 import { cn } from '@/lib/utils';
 
 const NIVEIS = [
-  { nivel: 'Bronze',   minJobs: 0,   bonus: 0,    ratingBonus: 0,    medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/f4e56f3c5_generated_image.png',  color: 'from-amber-500 to-amber-600'   },
+  { nivel: 'Bronze',   minJobs: 0,   bonus: 0,    ratingBonus: 0,    medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/beff780b4_e48a41ce-d15e-44b2-8df1-7487b68f1679.jpg',  color: 'from-amber-500 to-amber-600'   },
   { nivel: 'Prata',    minJobs: 120, bonus: 3.00, ratingBonus: 5.00, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/05ab5e26d_85fcbee0-e8ea-46da-8acc-2123447265f2.jpg',  color: 'from-slate-400 to-slate-500'   },
   { nivel: 'Ouro',     minJobs: 160, bonus: 3.50, ratingBonus: 7.50, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/626743952_c309f1db-b2cf-42a1-997f-c1914b668017.jpg',  color: 'from-yellow-400 to-yellow-500' },
   { nivel: 'Diamante', minJobs: 190, bonus: 4.00, ratingBonus: 10.0, medal: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/986b148d7_5881e20d-7f64-4577-8257-548343ea0eb8.jpg',  color: 'from-cyan-400 to-blue-500'     },
