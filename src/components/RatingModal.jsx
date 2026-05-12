@@ -167,9 +167,7 @@ export default function RatingModal({ requestId, onClose }) {
               >
                 {submitRating.isPending ? "Enviando..." : "Enviar avaliação"}
               </Button>
-              <Button variant="ghost" className="w-full mt-2 rounded-2xl text-muted-foreground" onClick={onClose}>
-                Agora não
-              </Button>
+
             </motion.div>
           ) : (
             <motion.div
