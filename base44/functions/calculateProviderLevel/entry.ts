@@ -39,13 +39,18 @@ Deno.serve(async (req) => {
       : 5;
 
     // Determina o nível baseado em serviços concluídos e avaliação
+    // Bronze:   0–119 serviços (sem requisito de nota)
+    // Prata:    120–159 serviços + 4+ estrelas
+    // Ouro:     160–189 serviços + 4+ estrelas
+    // Diamante: 190–219 serviços + 4+ estrelas
+    // Rubi:     220+ serviços + 4.5+ estrelas
     const totalJobs = completedServices.length;
     let level = 1;
 
-    if (totalJobs >= 100 && averageRating >= 4.8) level = 5;
-    else if (totalJobs >= 50 && averageRating >= 4.7) level = 4;
-    else if (totalJobs >= 20 && averageRating >= 4.6) level = 3;
-    else if (totalJobs >= 5 && averageRating >= 4.5) level = 2;
+    if (totalJobs >= 220 && averageRating >= 4.5) level = 5;
+    else if (totalJobs >= 190 && averageRating >= 4.0) level = 4;
+    else if (totalJobs >= 160 && averageRating >= 4.0) level = 3;
+    else if (totalJobs >= 120 && averageRating >= 4.0) level = 2;
 
     // Calcula bônus de visibilidade por nível
     const visibilityBonusMap = {
@@ -91,7 +96,7 @@ Deno.serve(async (req) => {
         average_rating: parseFloat(averageRating.toFixed(2)),
         achievements_unlocked: unlockedAchievements,
         visibility_bonus_percent: visibilityBonusMap[level],
-        is_featured: level === 5,
+        is_featured: level >= 4,
         level_up_date: oldLevel !== level ? new Date().toISOString() : oldAchievement.level_up_date,
       });
 
@@ -108,7 +113,7 @@ Deno.serve(async (req) => {
         average_rating: parseFloat(averageRating.toFixed(2)),
         achievements_unlocked: unlockedAchievements,
         visibility_bonus_percent: visibilityBonusMap[level],
-        is_featured: level === 5,
+        is_featured: level >= 4,
         level_up_date: new Date().toISOString(),
       });
 

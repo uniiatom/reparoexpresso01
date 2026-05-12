@@ -5,19 +5,19 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const LEVEL_CONFIG = {
-  1: { name: 'Bronze', icon: '🥉', color: 'from-amber-600 to-amber-700', textColor: 'text-amber-700', bgColor: 'bg-amber-50' },
-  2: { name: 'Prata', icon: '🥈', color: 'from-slate-400 to-slate-500', textColor: 'text-slate-700', bgColor: 'bg-slate-50' },
-  3: { name: 'Ouro', icon: '🏅', color: 'from-yellow-400 to-yellow-500', textColor: 'text-yellow-700', bgColor: 'bg-yellow-50' },
-  4: { name: 'Platina', icon: '💎', color: 'from-cyan-400 to-blue-500', textColor: 'text-blue-700', bgColor: 'bg-blue-50' },
-  5: { name: 'Lendário', icon: '⭐', color: 'from-purple-500 to-pink-500', textColor: 'text-purple-700', bgColor: 'bg-purple-50' },
+  1: { name: 'Bronze',   icon: '🥉', color: 'from-amber-600 to-amber-700',   textColor: 'text-amber-700',   bgColor: 'bg-amber-50'   },
+  2: { name: 'Prata',    icon: '🥈', color: 'from-slate-400 to-slate-500',   textColor: 'text-slate-700',   bgColor: 'bg-slate-50'   },
+  3: { name: 'Ouro',     icon: '🏅', color: 'from-yellow-400 to-yellow-500', textColor: 'text-yellow-700',  bgColor: 'bg-yellow-50'  },
+  4: { name: 'Diamante', icon: '💎', color: 'from-cyan-400 to-blue-500',     textColor: 'text-blue-700',    bgColor: 'bg-blue-50'    },
+  5: { name: 'Rubi',     icon: '🔴', color: 'from-red-500 to-rose-600',      textColor: 'text-red-700',     bgColor: 'bg-red-50'     },
 };
 
 const LEVEL_REQUIREMENTS = {
-  1: 'Iniciante',
-  2: '5+ serviços | 4.5+ ⭐',
-  3: '20+ serviços | 4.6+ ⭐',
-  4: '50+ serviços | 4.7+ ⭐',
-  5: '100+ serviços | 4.8+ ⭐',
+  1: '0–119 serviços',
+  2: '120+ serviços | 4+ ⭐',
+  3: '160+ serviços | 4+ ⭐',
+  4: '190+ serviços | 4+ ⭐',
+  5: '220+ serviços | 4.5+ ⭐',
 };
 
 export default function ProviderLevelBadge({ providerId, showDetails = false, size = 'md' }) {
