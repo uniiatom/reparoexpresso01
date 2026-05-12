@@ -26,6 +26,51 @@ if (typeof window !== 'undefined') {
   );
 }
 
+// Vibração contínua — padrão agressivo para chamar atenção
+let vibrationInterval = null;
+
+export function startVibrationLoop() {
+  if (!navigator.vibrate) return () => {};
+  const pattern = [500, 200, 500, 200, 800, 300]; // curto-curto-longo
+  navigator.vibrate(pattern);
+  vibrationInterval = setInterval(() => {
+    navigator.vibrate(pattern);
+  }, 2000);
+  return () => {
+    clearInterval(vibrationInterval);
+    vibrationInterval = null;
+    navigator.vibrate(0); // para vibração
+  };
+}
+
+// Dispara notificação nativa do sistema (aparece mesmo com tela bloqueada)
+export function sendNativeNotification(job) {
+  if (!('Notification' in window)) return;
+  const SERVICE_LABELS = {
+    eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
+    reparo_geral: "Reparo Geral", montagem: "Montagem", alvenaria: "Alvenaria",
+    fechadura: "Fechadura", ar_condicionado: "Ar Condicionado",
+    troca_pneu: "Troca de Pneu", outros: "Outros",
+  };
+  const show = () => {
+    try {
+      new Notification('🔔 Novo chamado!', {
+        body: `${SERVICE_LABELS[job.service_type] || job.service_type} — ${job.address || ''}`,
+        icon: '/favicon.ico',
+        tag: 'novo-chamado',
+        renotify: true,
+        requireInteraction: true,
+        vibrate: [500, 200, 500, 200, 800],
+      });
+    } catch (e) {}
+  };
+  if (Notification.permission === 'granted') {
+    show();
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission().then(perm => { if (perm === 'granted') show(); });
+  }
+}
+
 // Toca uma buzina de caminhão (grave, potente) e retorna função para parar
 export function startHornLoop() {
   let stopped = false;
@@ -105,6 +150,7 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
   const seenIds = useRef(loadSeenIds()); // carrega do sessionStorage ao montar
   const onNewJobRef = useRef(onNewJob);
   const stopHornRef = useRef(null);
+  const stopVibrationRef = useRef(null);
 
   useEffect(() => { enabledRef.current = enabled; }, [enabled]);
   useEffect(() => { providerIdRef.current = providerId; }, [providerId]);
@@ -115,6 +161,8 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
     window.__stopProviderHorn = () => {
       stopHornRef.current?.();
       stopHornRef.current = null;
+      stopVibrationRef.current?.();
+      stopVibrationRef.current = null;
     };
     window.__clearSeenJobIds = () => {
       seenIds.current.clear();
@@ -135,7 +183,14 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
     if (!enabled) {
       stopHornRef.current?.();
       stopHornRef.current = null;
+      stopVibrationRef.current?.();
+      stopVibrationRef.current = null;
       return;
+    }
+
+    // Solicita permissão de notificação nativa ao ativar o modo online
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
     }
 
     const unsubscribe = base44.entities.ServiceRequest.subscribe((event) => {
@@ -173,8 +228,13 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
       if (isNewJob && !seenIds.current.has(event.id)) {
         seenIds.current.add(event.id);
         saveSeenIds(seenIds.current);
+        // Para alertas anteriores
         stopHornRef.current?.();
+        stopVibrationRef.current?.();
+        // Dispara som + vibração + notificação nativa simultaneamente
         stopHornRef.current = startHornLoop();
+        stopVibrationRef.current = startVibrationLoop();
+        sendNativeNotification(data);
         onNewJobRef.current?.(data);
       }
     });
