@@ -228,13 +228,18 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
       if (isNewJob && !seenIds.current.has(event.id)) {
         seenIds.current.add(event.id);
         saveSeenIds(seenIds.current);
+
         // Para alertas anteriores
         stopHornRef.current?.();
         stopVibrationRef.current?.();
-        // Dispara som + vibração + notificação nativa simultaneamente
+
+        // Inicia som + vibração simultâneos
         stopHornRef.current = startHornLoop();
         stopVibrationRef.current = startVibrationLoop();
+
+        // Notificação nativa do sistema (aparece com tela bloqueada)
         sendNativeNotification(data);
+
         onNewJobRef.current?.(data);
       }
     });
