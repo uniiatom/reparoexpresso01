@@ -38,6 +38,7 @@ import ProviderDailyRouteMap from '@/components/ProviderDailyRouteMap';
 import ProviderEarningsSimulator from '@/components/ProviderEarningsSimulator';
 import ProviderCashbackRules from '@/components/ProviderCashbackRules';
 import ProviderLevelProgress from '@/components/ProviderLevelProgress';
+import ProviderLevelHistoryTimeline from '@/components/ProviderLevelHistoryTimeline';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -1068,6 +1069,7 @@ export default function ProviderApp() {
             totalJobsCompleted={provider.total_jobs || 0}
             averageRating={provider.rating || 5}
           />
+          <ProviderLevelHistoryTimeline providerId={provider.id} />
           <ProviderLevelBadge providerId={provider.id} showDetails={true} />
           <CashbackPanel userId={provider.id} ownerType="prestador" />
         </div>

@@ -1,0 +1,71 @@
+{
+  "name": "ProviderLevelHistory",
+  "type": "object",
+  "properties": {
+    "provider_id": {
+      "type": "string",
+      "description": "ID do prestador"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Nome do prestador (desnormalizado)"
+    },
+    "nivel_anterior": {
+      "type": "string",
+      "enum": [
+        "Bronze",
+        "Prata",
+        "Ouro",
+        "Diamante",
+        "Rubi"
+      ],
+      "description": "N\u00edvel antes da mudan\u00e7a"
+    },
+    "nivel_novo": {
+      "type": "string",
+      "enum": [
+        "Bronze",
+        "Prata",
+        "Ouro",
+        "Diamante",
+        "Rubi"
+      ],
+      "description": "N\u00edvel ap\u00f3s a mudan\u00e7a"
+    },
+    "direcao": {
+      "type": "string",
+      "enum": [
+        "subiu",
+        "desceu"
+      ],
+      "description": "Se o prestador subiu ou desceu de n\u00edvel"
+    },
+    "total_jobs_na_mudanca": {
+      "type": "number",
+      "description": "Total de servi\u00e7os conclu\u00eddos no momento da mudan\u00e7a"
+    },
+    "rating_na_mudanca": {
+      "type": "number",
+      "description": "Avalia\u00e7\u00e3o m\u00e9dia no momento da mudan\u00e7a"
+    },
+    "bonus_anterior": {
+      "type": "number",
+      "description": "B\u00f4nus por servi\u00e7o antes (R$)"
+    },
+    "bonus_novo": {
+      "type": "number",
+      "description": "B\u00f4nus por servi\u00e7o depois (R$)"
+    },
+    "mudanca_em": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora da mudan\u00e7a de n\u00edvel"
+    }
+  },
+  "required": [
+    "provider_id",
+    "nivel_anterior",
+    "nivel_novo",
+    "direcao"
+  ]
+}
