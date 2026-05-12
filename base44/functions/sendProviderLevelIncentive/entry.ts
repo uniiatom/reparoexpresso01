@@ -1,10 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const PROVIDER_LEVELS = [
-  { key: 'pro', label: 'Pro', minJobs: 120, minRating: 4 },
-  { key: 'pro_plus', label: 'Pro Plus', minJobs: 160, minRating: 4 },
-  { key: 'pro_elite', label: 'Pro Elite', minJobs: 190, minRating: 4 },
-  { key: 'pro_lenda', label: 'Pro Lenda', minJobs: 220, minRating: 5 },
+  { key: 'prata',    label: 'Prata',    minJobs: 120, minRating: 4.0 },
+  { key: 'ouro',     label: 'Ouro',     minJobs: 160, minRating: 4.0 },
+  { key: 'diamante', label: 'Diamante', minJobs: 190, minRating: 4.0 },
+  { key: 'rubi',     label: 'Rubi',     minJobs: 220, minRating: 4.5 },
 ];
 
 function getNextLevel(totalJobs, rating) {
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     if (!nextLevel) {
       return Response.json({
         success: true,
-        message: `${provider.name} já atingiu o nível máximo (Pro Lenda)! 👑`,
+        message: `${provider.name} já atingiu o nível máximo (Rubi)! 👑`,
         alreadyMaxLevel: true,
       });
     }
