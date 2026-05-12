@@ -617,6 +617,12 @@ export default function ProviderApp() {
         >
           🔐 Fundo
         </button>
+        <button
+          onClick={() => setActiveTab('niveis')}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'niveis' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          🏆 Níveis
+        </button>
       </div>
 
       {/* ── ABA CHAMADOS ── */}
@@ -1045,6 +1051,14 @@ export default function ProviderApp() {
       {/* ── ABA FUNDO DE RESERVA ── */}
       {activeTab === 'fundo' && (
         <ProviderReserveFund providerId={provider.id} />
+      )}
+
+      {/* ── ABA NÍVEIS + CASHBACK ── */}
+      {activeTab === 'niveis' && (
+        <div className="space-y-6">
+          <ProviderLevelBadge providerId={provider.id} showDetails={true} />
+          <CashbackPanel userId={provider.id} ownerType="prestador" />
+        </div>
       )}
 
       {/* Checklist modal */}
