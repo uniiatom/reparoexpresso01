@@ -1036,7 +1036,6 @@ export default function SolicitarServico() {
                     { value: 'Vaso sanitário', emoji: '🚽', preco: 'R$ 150 – 300' },
                     { value: 'Caixa de gordura', emoji: '🔧', preco: 'R$ 250 – 500', taxaMola: true },
                     { value: 'Caixa de esgoto', emoji: '🕳️', preco: 'R$ 300 – 600', taxaMola: true },
-                    { value: 'Coluna de esgoto', emoji: '🏗️', preco: 'R$ 350 – 700', taxaMola: true },
                   ].map(opt => (
                     <button
                       key={opt.value}
