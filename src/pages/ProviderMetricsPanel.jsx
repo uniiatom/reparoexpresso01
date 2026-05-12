@@ -20,10 +20,12 @@ export default function ProviderMetricsPanel() {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
 
-      if (currentUser?.email) {
-        const providers = await base44.entities.Provider.filter({
-          email: currentUser.email
-        });
+      if (currentUser) {
+        // Tenta primeiro por user_id, depois por email
+        let providers = await base44.entities.Provider.filter({ user_id: currentUser.id });
+        if (!providers[0] && currentUser.email) {
+          providers = await base44.entities.Provider.filter({ email: currentUser.email });
+        }
         if (providers[0]) {
           setProvider(providers[0]);
         }
