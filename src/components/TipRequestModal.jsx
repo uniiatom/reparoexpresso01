@@ -152,6 +152,15 @@ export default function TipRequestModal({ request, provider, onClose, onSuccess 
           </button>
         </div>
 
+        {/* Alerta de satisfação */}
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-3 flex items-start gap-2">
+          <span className="text-xl flex-shrink-0">✅</span>
+          <div>
+            <p className="text-sm font-bold text-green-800">O atendimento foi satisfatório!</p>
+            <p className="text-xs text-green-700 mt-0.5">Gratifique o prestador pelo excelente serviço.</p>
+          </div>
+        </div>
+
         <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-3 space-y-3">
           <div className="text-center">
             <p className="text-sm font-bold text-amber-900">Gratifique o prestador</p>
