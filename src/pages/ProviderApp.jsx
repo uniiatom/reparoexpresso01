@@ -318,8 +318,7 @@ export default function ProviderApp() {
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['available-requests'] });
-      // Limpa TODA a fila ao aceitar
-      window.__clearSeenJobIds?.();
+      // NÃO limpa todos os seenIds — apenas mantém os já marcados para evitar re-notificação
       setJobQueue([]);
       toast.success("Chamado aceito! Vá até o cliente.");
     },
@@ -768,6 +767,7 @@ export default function ProviderApp() {
                         onClick={() => {
                           window.__stopProviderHorn?.();
                           window.__markJobSeen?.(job.id);
+                          processedJobsRef.current.add(job.id);
                           setJobQueue(prev => prev.filter(j => j.id !== job.id));
                           acceptJob.mutate(job.id);
                         }}
@@ -845,6 +845,7 @@ export default function ProviderApp() {
                       onClick={() => {
                         window.__stopProviderHorn?.();
                         window.__markJobSeen?.(req.id);
+                        processedJobsRef.current.add(req.id);
                         setJobQueue(prev => prev.filter(j => j.id !== req.id));
                         acceptJob.mutate(req.id);
                       }}
@@ -939,6 +940,7 @@ export default function ProviderApp() {
                         onClick={() => {
                           window.__stopProviderHorn?.();
                           window.__markJobSeen?.(job.id);
+                          processedJobsRef.current.add(job.id);
                           setJobQueue(prev => prev.filter(j => j.id !== job.id));
                           acceptJob.mutate(job.id);
                         }}

@@ -150,12 +150,14 @@ export function useNewJobAlert({ enabled, onNewJob, providerId }) {
         data.status === 'aguardando' &&
         data.modality !== 'agendado';
 
-      // Chamado atribuído automaticamente a este prestador (backend assignServiceToProvider)
+      // Chamado atribuído automaticamente a este prestador pelo backend (assignServiceToProvider)
+      // Não re-notifica se o próprio prestador já aceitou manualmente (estará em seenIds)
       const isAssignedToMe =
         event.type === 'update' &&
         data.status === 'aceito' &&
         providerIdRef.current &&
-        data.provider_id === providerIdRef.current;
+        data.provider_id === providerIdRef.current &&
+        !seenIds.current.has(event.id);
 
       const isNewJob = isOpenJob || isAssignedToMe;
 
