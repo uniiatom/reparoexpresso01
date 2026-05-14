@@ -200,7 +200,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
               </div>
               <div className="text-right">
                 <p className="text-sm font-bold text-emerald-600">R$ {nivelAtual.bonusPorServico.toFixed(2)}/serviço</p>
-                <p className="text-xs text-muted-foreground">+{nivelAtual.percentTake}% do take</p>
+                <p className="text-xs text-muted-foreground">+{nivelAtual.percentTake}% do take <span className="italic">(% sobre o valor do serviço)</span></p>
               </div>
             </div>
 
@@ -272,6 +272,7 @@ export default function CashbackPanel({ userId, ownerType = 'cliente' }) {
                   <p>• Após a conclusão, o valor cai na carteira em até <strong>48 horas</strong>.</p>
                   <p>• O resgate via PIX está disponível a partir de <strong>R$ 200,00</strong> acumulados.</p>
                   <p>• <Users className="w-3 h-3 inline mr-0.5" />Amigos ativos = indicados com ao menos 1 serviço concluído.</p>
+                  <p>• O <strong>% do take</strong> é um percentual calculado sobre o <strong>valor total do serviço</strong> contratado pelo amigo indicado. Ex: se o serviço custou R$ 200 e você está no nível Bronze (6,9%), você ganha R$ 13,80 de cashback desse serviço.</p>
                 </div>
               </motion.div>
             )}
