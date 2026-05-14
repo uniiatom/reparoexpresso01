@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@base44/sdk':
-        specifier: ^0.8.27
-        version: 0.8.27
+        specifier: ^0.8.28
+        version: 0.8.28
       '@base44/vite-plugin':
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.0.16
+        version: 1.0.16
       '@hello-pangea/dnd':
         specifier: ^17.0.0
         version: 17.0.0(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -352,11 +352,11 @@ packages:
     resolution: {integrity: sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A==}
     engines: {node: '>=6.9.0'}
 
-  '@base44/sdk@0.8.27':
-    resolution: {integrity: sha512-TkCQ6TZb0Fqq48Ig6xc1o+SU9LYg0sgzDHTIE0JiRcAmRkoO7Jm8kVzNEe2Nmh3msP6P8sxs0GFwGfukMUoCzg==}
+  '@base44/sdk@0.8.28':
+    resolution: {integrity: sha512-7yVwBYBFdHG6/VYAMJG6QHw/WR5BRUkyZzPzqh1gRveAuShyQ9T8nb17fv/0pJHK4Mitf7ywZLsxBz5jKrmfeQ==}
 
-  '@base44/vite-plugin@1.0.13':
-    resolution: {integrity: sha512-yit3RDGs6BLDXVQPc8lHjifDMF0WTpb/B1ewUdbhfDYoAdP9DzTjfCu/mKybeqjzBGP9xShShczPhRkrUq6rtw==}
+  '@base44/vite-plugin@1.0.16':
+    resolution: {integrity: sha512-vmBrme4/AGuyHItBGE/zsMiUGxfDgSeCtcpnuc77fifaSRmNJTPTRPtyuGwMH/Zid6lcW+fWXzLkjSQP35jM1A==}
 
   '@esbuild/aix-ppc64@0.25.12':
     resolution: {integrity: sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA==}
@@ -3551,7 +3551,7 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@base44/sdk@0.8.27':
+  '@base44/sdk@0.8.28':
     dependencies:
       axios: 1.16.0
       socket.io-client: 4.8.3
@@ -3562,7 +3562,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@base44/vite-plugin@1.0.13':
+  '@base44/vite-plugin@1.0.16':
     dependencies:
       '@babel/generator': 7.29.1
       '@babel/parser': 7.29.3
