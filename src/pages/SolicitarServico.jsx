@@ -94,6 +94,8 @@ export default function SolicitarServico() {
   const [caixaDaguaTipo, setCaixaDaguaTipo] = useState(null);
   const [caixaDaguaLitragem, setCaixaDaguaLitragem] = useState(null);
   const [caixaDaguaStep, setCaixaDaguaStep] = useState('tipo');
+  const [caixaDaguaLaudo, setCaixaDaguaLaudo] = useState(null);
+  const [caixaDaguaLitragenselecionada, setCaixaDaguaLitragemSelecionada] = useState(null);
   const [showTvSizeModal, setShowTvSizeModal] = useState(false);
   const [tvSize, setTvSize] = useState(null); // 'ate55' | 'acima55'
   const [showDesentupimentoModal, setShowDesentupimentoModal] = useState(false);
@@ -832,7 +834,7 @@ export default function SolicitarServico() {
                     return;
                   }
                   if (s.value === 'limpeza_caixa_dagua' && selected) {
-                    setCaixaDaguaTipo(null);
+                    setCaixaDaguaTipo(null); setCaixaDaguaLaudo(null); setCaixaDaguaLitragemSelecionada(null);
                   }
                   if (s.value === 'substituicao_telha' && !selected) {
                     setShowSubstituicaoTelhaModal(true);
@@ -868,7 +870,7 @@ export default function SolicitarServico() {
                     {s.value === 'instalacao_suporte_tv' && tvSize ? (
                       <><span>Suporte de TV</span><br /><span className="text-[10px] opacity-75">({tvSize === 'ate55' ? 'até 55"' : 'acima 55"'})</span></>
                     ) : s.value === 'limpeza_caixa_dagua' && caixaDaguaTipo ? (
-                      <><span>Caixa d'Água</span><br /><span className="text-[10px] opacity-75">({caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio'}{caixaDaguaLitragem && caixaDaguaLitragem !== 'Não sei' ? ` · ${caixaDaguaLitragem}` : ''})</span></>
+                      <><span>Caixa d'Água</span><br /><span className="text-[10px] opacity-75">({caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio'}{caixaDaguaLitragem && caixaDaguaLitragem !== 'Não sei' ? ` · ${caixaDaguaLitragem}` : ''}{caixaDaguaLaudo ? ' · +Laudo' : ''})</span></>
                     ) : s.value === 'reparo_forro_gesso' && forroGessoTipo ? (
                        <><span>Forro de Gesso</span><br /><span className="text-[10px] opacity-75">({forroGessoTipo})</span></>
                      ) : s.value === 'pressurizador' && pressurizadorTipo ? (
@@ -950,6 +952,55 @@ export default function SolicitarServico() {
                   </>
                 )}
 
+                {/* Step 3: Laudo de Potabilidade */}
+                {caixaDaguaStep === 'laudo' && (
+                  <>
+                    <button onClick={() => setCaixaDaguaStep('litragem')} className="text-sm text-muted-foreground mb-3 flex items-center gap-1">
+                      ← Voltar
+                    </button>
+                    <h3 className="text-lg font-bold text-foreground mb-1 text-center">Laudo de Potabilidade</h3>
+                    <p className="text-sm text-muted-foreground text-center mb-2">Deseja solicitar o laudo de potabilidade da água?</p>
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-5 text-xs text-blue-800">
+                      <p className="font-semibold mb-1">💧 O que é o laudo de potabilidade?</p>
+                      <p>É um documento que atesta a qualidade da água após a limpeza, comprovando que está própria para consumo. Recomendado especialmente para famílias com crianças, idosos ou gestantes.</p>
+                      <p className="mt-1 font-semibold">Valor adicional: R$ 80,00</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { value: true, label: 'Sim, quero o laudo', emoji: '📋', desc: '+ R$ 80,00' },
+                        { value: false, label: 'Não, obrigado', emoji: '❌', desc: 'Sem laudo' },
+                      ].map(opt => (
+                        <button
+                          key={String(opt.value)}
+                          onClick={() => {
+                            setCaixaDaguaLaudo(opt.value);
+                            const litro = caixaDaguaLitragenselecionada?.litro;
+                            const preco = caixaDaguaLitragenselecionada?.preco;
+                            setCaixaDaguaLitragem(litro);
+                            const tipoLabel = caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio';
+                            const laudoDesc = opt.value ? ' + Laudo de potabilidade (R$ 80,00)' : '';
+                            const autoDesc = `Limpeza de caixa d'água ${tipoLabel} — ${litro}${preco ? ` (${preco})` : ''}${laudoDesc}.`;
+                            const newTypes = [...form.service_type, 'limpeza_caixa_dagua'];
+                            set('service_type', newTypes);
+                            if (newTypes.length === 1) set('description', autoDesc);
+                            setDescriptionsPerService(prev => ({
+                              ...prev,
+                              limpeza_caixa_dagua: { ...prev.limpeza_caixa_dagua, description: autoDesc }
+                            }));
+                            setShowCaixaDaguaModal(false);
+                            setCaixaDaguaStep('tipo');
+                          }}
+                          className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
+                        >
+                          <span className="text-3xl">{opt.emoji}</span>
+                          <p className="font-bold text-foreground text-sm text-center">{opt.label}</p>
+                          <p className={cn("text-xs font-semibold", opt.value ? "text-primary" : "text-muted-foreground")}>{opt.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
                 {/* Step 2: Litragem */}
                 {caixaDaguaStep === 'litragem' && (
                   <>
@@ -984,30 +1035,12 @@ export default function SolicitarServico() {
                         <button
                           key={litro}
                           onClick={() => {
-                            if (litro === 'Não sei') {
-                              setShowNaoSeiAlert(true);
-                              return;
-                            }
-                            setCaixaDaguaLitragem(litro);
-                            const tipoLabel = caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio';
-                            const litDesc = litro === 'Não sei' ? '' : ` — ${litro}`;
-                            const precoDesc = preco ? ` (${preco})` : '';
-                            const autoDesc = `Limpeza de caixa d'água ${tipoLabel}${litDesc}${precoDesc}.`;
-                            const newTypes = [...form.service_type, 'limpeza_caixa_dagua'];
-                            set('service_type', newTypes);
-                            // Se vai ser o único serviço, preenche description diretamente
-                            if (newTypes.length === 1) {
-                              set('description', autoDesc);
-                            }
-                            setDescriptionsPerService(prev => ({
-                              ...prev,
-                              limpeza_caixa_dagua: {
-                                ...prev.limpeza_caixa_dagua,
-                                description: autoDesc,
-                              }
-                            }));
-                            setShowCaixaDaguaModal(false);
-                            setCaixaDaguaStep('tipo');
+                           if (litro === 'Não sei') {
+                             setShowNaoSeiAlert(true);
+                             return;
+                           }
+                           setCaixaDaguaLitragemSelecionada({ litro, preco });
+                           setCaixaDaguaStep('laudo');
                           }}
                           className="flex flex-col items-center justify-center gap-1 p-4 rounded-2xl border-2 border-border hover:border-primary/50 transition-all active:scale-95"
                         >
