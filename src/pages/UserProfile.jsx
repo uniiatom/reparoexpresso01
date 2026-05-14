@@ -4,7 +4,7 @@ import CashbackPanel from '@/components/CashbackPanel';
 import RecurringServiceCalendar from '@/components/RecurringServiceCalendar';
 import ClientNotificationCenter from '@/components/ClientNotificationCenter';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, LogOut, Calendar, Gift, Camera, Wrench, FileText, Wallet } from "lucide-react";
+import { ArrowLeft, LogOut, Calendar, Gift, Camera, Wrench, FileText, Wallet, Trophy } from "lucide-react";
 import ClientTicketForm from '@/components/ClientTicketForm';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -196,6 +196,11 @@ export default function UserProfile() {
             </Link>
           </>
         )}
+        <Link to="/jornada" className="block">
+          <Button variant="outline" className="w-full rounded-2xl h-12 font-semibold border-amber-400 text-amber-600 hover:bg-amber-50">
+            <Trophy className="w-4 h-4 mr-2" /> Minha Jornada & Conquistas
+          </Button>
+        </Link>
         <Link to="/recompensas" className="block">
           <Button variant="outline" className="w-full rounded-2xl h-12 font-semibold border-primary/30 text-primary hover:bg-primary/10">
             <Gift className="w-4 h-4 mr-2" /> Meu Programa de Fidelidade

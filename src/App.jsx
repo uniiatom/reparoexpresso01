@@ -34,6 +34,7 @@ import ProviderAwards from './pages/ProviderAwards';
 import ClienteDossie from './pages/ClienteDossie';
 import MeusServicos from './pages/MeusServicos';
 import ProviderMetricsPanel from './pages/ProviderMetricsPanel';
+import Jornada from './pages/Jornada';
 import { Toaster as SonnerToaster } from "sonner";
 
 const AuthenticatedApp = () => {
@@ -86,6 +87,7 @@ const AuthenticatedApp = () => {
         <Route path="/termos-prestador" element={<TermosPrestador />} />
         <Route path="/cadastro-parceiro" element={<PartnerRegister />} />
         <Route path="/painel-metricas" element={<ProviderMetricsPanel />} />
+        <Route path="/jornada" element={<Jornada />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
