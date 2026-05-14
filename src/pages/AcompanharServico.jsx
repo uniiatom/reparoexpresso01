@@ -96,9 +96,9 @@ export default function AcompanharServico() {
       if (list[0]) {
         setRequest(list[0]);
       } else {
-        navigate('/');
+        navigate('/inicio');
       }
-    }).catch(() => navigate('/'));
+    }).catch(() => navigate('/inicio'));
     
     // Atualização em tempo real
     const unsub = base44.entities.ServiceRequest.subscribe((event) => {
@@ -174,7 +174,7 @@ export default function AcompanharServico() {
 
   const cancelRequest = useMutation({
     mutationFn: () => base44.entities.ServiceRequest.update(id, { status: 'cancelado' }),
-    onSuccess: () => navigate('/'),
+    onSuccess: () => navigate('/inicio'),
   });
 
   useEffect(() => {
@@ -185,12 +185,9 @@ export default function AcompanharServico() {
     }
   }, [request?.status, request?.rating_client, showSatisfactionSurvey]);
 
-
-
-  if (!id) {
-    navigate('/');
-    return null;
-  }
+  useEffect(() => {
+    if (!id) navigate('/inicio', { replace: true });
+  }, [id, navigate]);
 
   if (!request) {
     return (
@@ -674,7 +671,7 @@ export default function AcompanharServico() {
           <Button 
             variant="outline"
             className="w-full rounded-2xl"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/inicio')}
           >
             Voltar ao início
           </Button>

@@ -29,8 +29,8 @@ const SERVICE_LABELS = {
   reparo_geral: "Reparo Geral", montagem: "Montagem", alvenaria: "Alvenaria",
   fechadura: "Fechadura", ar_condicionado: "Ar Condicionado",
   limpeza_caixa_dagua: "Limpeza Caixa d'Água", desentupimento: "Desentupimento",
-  instalacao_suporte_tv: "Suporte de TV", ar_condicionado: "Ar Condicionado",
-  outros: "Outros",
+    instalacao_suporte_tv: "Suporte de TV",
+    outros: "Outros",
 };
 
 export default function ClientConsultaAdmin() {

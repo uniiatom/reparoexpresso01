@@ -4,7 +4,13 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  logLevel: 'error', // Suppress warnings, only show errors
+  logLevel: 'info', // Mantém URL do servidor visível; reduz ruído em relação a 'info'
+  server: {
+    /** Acesse: http://localhost:3002 — se 3002 estiver ocupada, o Vite usa a próxima porta livre. */
+    port: 3002,
+    strictPort: false,
+    open: true,
+  },
   plugins: [
     base44({
       // Support for legacy code that imports the base44 SDK with @/integrations, @/entities, etc.

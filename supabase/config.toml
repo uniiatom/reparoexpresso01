@@ -1,0 +1,10 @@
+# Reparo Expresso — Supabase local / CI
+# Project ref: sedvqswypuhpiglnilxk
+
+project_id = "sedvqswypuhpiglnilxk"
+
+[api]
+enabled = true
+
+[functions]
+enabled = true

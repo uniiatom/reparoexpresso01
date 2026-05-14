@@ -36,6 +36,7 @@ import CouponsAdmin from '../components/admin/CouponsAdmin';
 import SurchargeRulesAdmin from '../components/admin/SurchargeRulesAdmin';
 import CashbackConfigAdmin from '../components/admin/CashbackConfigAdmin';
 import { logAdminAction } from '@/lib/adminLog';
+import { useAuth } from '@/lib/AuthContext';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Link } from 'react-router-dom';
@@ -62,15 +63,29 @@ const SERVICE_LABELS = {
 
 export default function AdminPanel() {
   const queryClient = useQueryClient();
+  const { user: authUser } = useAuth();
   const [revealedPasswords, setRevealedPasswords] = useState({});
   const [cancelConfirm, setCancelConfirm] = useState(null);
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [adminUser, setAdminUser] = useState(null);
 
-  // Carrega usuário admin uma vez
   React.useEffect(() => {
-    base44.auth.me().then(u => setAdminUser(u)).catch(() => {});
-  }, []);
+    setAdminUser(authUser ?? null);
+  }, [authUser]);
+
+  if (authUser?.role === 'attendant') {
+    return (
+      <div className="container max-w-5xl mx-auto py-8 px-4 space-y-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Central de suporte</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Papel atendente: acesso apenas aos tickets (PRD §2.4).
+          </p>
+        </div>
+        <TicketsAdmin />
+      </div>
+    );
+  }
 
   const togglePassword = (reqId) => {
     setRevealedPasswords(prev => ({ ...prev, [reqId]: !prev[reqId] }));

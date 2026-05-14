@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, MapPin, Calendar, DollarSign, Star, Clock, CheckCircle2, AlertCircle, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
 
 const STATUS_CONFIG = {
   aguardando: { label: "Aguardando", color: "bg-yellow-100 text-yellow-800", icon: Clock },
@@ -45,12 +46,8 @@ const SERVICE_LABELS = {
 
 export default function MeusPedidos() {
   const navigate = useNavigate();
-  const [user, setUser] = React.useState(null);
+  const { user, isLoadingAuth } = useAuth();
   const [activeTab, setActiveTab] = React.useState('new');
-
-  React.useEffect(() => {
-    base44.auth.me().then(u => setUser(u)).catch(() => navigate('/'));
-  }, [navigate]);
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['meus-pedidos', user?.email],
@@ -58,7 +55,7 @@ export default function MeusPedidos() {
     enabled: !!user?.email,
   });
 
-  if (isLoading) {
+  if (isLoadingAuth || (user?.email && isLoading)) {
     return (
       <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-primary rounded-full animate-spin"></div>

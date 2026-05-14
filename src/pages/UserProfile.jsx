@@ -10,25 +10,18 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import ServiceHistory from '@/components/ServiceHistory';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function UserProfile() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, isLoadingAuth, logout } = useAuth();
   const [userLoading, setUserLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await base44.auth.me();
-        setUser(userData);
-      } catch (err) {
-        navigate('/');
-      } finally {
-        setUserLoading(false);
-      }
-    };
-    fetchUser();
-  }, [navigate]);
+    if (isLoadingAuth) return;
+    if (!user) navigate('/');
+    setUserLoading(false);
+  }, [isLoadingAuth, user, navigate]);
 
   const { data: client } = useQuery({
     queryKey: ['my-client-profile'],
@@ -60,8 +53,9 @@ export default function UserProfile() {
     enabled: !!user?.email,
   });
 
-  const handleLogout = () => {
-    base44.auth.logout('/');
+  const handleLogout = async () => {
+    await logout();
+    navigate('/', { replace: true });
   };
 
   if (userLoading) {
@@ -82,7 +76,7 @@ export default function UserProfile() {
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
-        <button onClick={() => navigate('/')} className="p-2 hover:bg-accent rounded-xl">
+        <button type="button" onClick={() => navigate('/inicio')} className="p-2 hover:bg-accent rounded-xl">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-2xl font-bold text-foreground flex-1">Meu Perfil</h1>

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,18 +24,16 @@ function formatMonth(m) {
 
 export default function ProviderAwards() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedMonth, setSelectedMonth] = useState(CURRENT_MONTH);
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [confirmRelease, setConfirmRelease] = useState(false);
 
-  // Auth: apenas admin
   useEffect(() => {
-    base44.auth.me().then(u => {
-      if (!u || u.role !== 'admin') navigate('/');
-    }).catch(() => navigate('/'));
-  }, [navigate]);
+    if (!user || user.role !== 'admin') navigate('/');
+  }, [navigate, user]);
 
   const { data: providers = [] } = useQuery({
     queryKey: ['awards-providers'],

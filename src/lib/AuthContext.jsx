@@ -1,95 +1,128 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
+import { supabase } from '@/lib/supabase/client';
+import { normalizeRole } from '@/lib/auth/roles';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
+
+function mapUser(sessionUser, profile) {
+  if (!sessionUser) return null;
+  const role = normalizeRole(profile?.role) ?? 'user';
+  return {
+    id: sessionUser.id,
+    email: sessionUser.email ?? profile?.email,
+    full_name:
+      profile?.full_name ??
+      sessionUser.user_metadata?.full_name ??
+      (sessionUser.email ? sessionUser.email.split('@')[0] : ''),
+    avatar_url: profile?.avatar_url ?? null,
+    role,
+    /** Compatível com telas que ainda checam `prestador`. */
+    legacyRole: role === 'provider' ? 'prestador' : role,
+  };
+}
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [session, setSession] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
-  const [authError, setAuthError] = useState(null);
-  const [appPublicSettings, setAppPublicSettings] = useState(null);
 
-  useEffect(() => {
-    checkAppState();
+  const loadProfile = useCallback(async (userId) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error) {
+      console.error('[auth] perfil:', error);
+      setProfile(null);
+      return;
+    }
+    setProfile(data ?? null);
   }, []);
 
-  const checkAppState = async () => {
-    try {
-      setIsLoadingPublicSettings(true);
-      setAuthError(null);
+  useEffect(() => {
+    let cancelled = false;
 
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        setIsAuthenticated(true);
-        setAppPublicSettings({});
-      } catch (appError) {
-        console.error('App state check failed:', appError);
-
-        const status = appError?.status || appError?.response?.status;
-        const reason = appError?.data?.extra_data?.reason || appError?.response?.data?.extra_data?.reason;
-
-        if (status === 403 && reason) {
-          if (reason === 'auth_required') {
-            setAuthError({ type: 'auth_required', message: 'Authentication required' });
-          } else if (reason === 'user_not_registered') {
-            setAuthError({ type: 'user_not_registered', message: 'User not registered for this app' });
-          } else {
-            setAuthError({ type: reason, message: appError.message });
-          }
-        } else if (status === 401) {
-          setAuthError({ type: 'auth_required', message: 'Authentication required' });
-        }
-        // If no error status, user is just not logged in (public app)
-        setIsAuthenticated(false);
-        setUser(null);
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      setAuthError({ type: 'unknown', message: error.message || 'An unexpected error occurred' });
-    } finally {
-      setIsLoadingPublicSettings(false);
+    (async () => {
+      const {
+        data: { session: initial },
+      } = await supabase.auth.getSession();
+      if (cancelled) return;
+      setSession(initial);
+      if (initial?.user) await loadProfile(initial.user.id);
       setIsLoadingAuth(false);
-    }
-  };
+    })();
 
-  const logout = (shouldRedirect = true) => {
-    setUser(null);
-    setIsAuthenticated(false);
-    if (shouldRedirect) {
-      base44.auth.logout(window.location.href);
-    } else {
-      base44.auth.logout();
-    }
-  };
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+      setSession(nextSession);
+      if (nextSession?.user) await loadProfile(nextSession.user.id);
+      else setProfile(null);
+    });
 
-  const navigateToLogin = () => {
-    base44.auth.redirectToLogin(window.location.href);
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
+  }, [loadProfile]);
+
+  const user = useMemo(
+    () => mapUser(session?.user ?? null, profile),
+    [session, profile]
+  );
+
+  const signInWithPassword = useCallback(async (email, password) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+  }, []);
+
+  const signUpWithPassword = useCallback(async (email, password, fullName) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName || '' },
+      },
+    });
+    if (error) throw error;
+  }, []);
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+  }, []);
+
+  const refreshProfile = useCallback(async () => {
+    const uid = session?.user?.id;
+    if (uid) await loadProfile(uid);
+  }, [session?.user?.id, loadProfile]);
+
+  const value = {
+    session,
+    user,
+    profile,
+    isAuthenticated: !!session?.user,
+    isLoadingAuth,
+    signInWithPassword,
+    signUpWithPassword,
+    logout,
+    refreshProfile,
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated,
-      isLoadingAuth,
-      isLoadingPublicSettings,
-      authError,
-      appPublicSettings,
-      logout,
-      navigateToLogin,
-      checkAppState
-    }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth deve ser usado dentro de AuthProvider');
+  return ctx;
 };

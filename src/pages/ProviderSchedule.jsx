@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, AlertCircle } from "lucide-react";
@@ -20,6 +21,7 @@ const DAYS = [
 
 export default function ProviderSchedule() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [provider, setProvider] = useState(null);
   const [editingDay, setEditingDay] = useState(null);
@@ -27,12 +29,15 @@ export default function ProviderSchedule() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      if (!user?.id) {
+        navigate('/');
+        return;
+      }
+      if (!(user?.role === 'provider' || user?.role === 'prestador' || user?.role === 'admin')) {
+        navigate('/inicio');
+        return;
+      }
       try {
-        const user = await base44.auth.me();
-        if (!user || user?.role !== 'prestador') {
-          navigate('/');
-          return;
-        }
         const providers = await base44.entities.Provider.filter({ user_id: user.id });
         if (providers.length > 0) {
           setProvider(providers[0]);
@@ -43,7 +48,7 @@ export default function ProviderSchedule() {
       }
     };
     checkAuth();
-  }, [navigate]);
+  }, [navigate, user]);
 
   // Fetch availability
   const { data: availability = [] } = useQuery({

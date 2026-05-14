@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import {
+  listMyActiveServiceRequests,
+  subscribeMyServiceRequests,
+} from '@/lib/repositories/serviceRequestsRepository';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Wrench, Zap, Droplets, Paintbrush, Wind, Lock, Hammer, Settings, Star, Shield, Clock, Car, UserCheck, ClipboardList, BadgeCheck, Smartphone, Waves, Layers, HardHat, Thermometer, ChefHat, Truck, ShowerHead, Pipette, Gift, Heart, Store, Minimize2, Maximize2, Sparkles, DoorOpen, Phone, Gauge, ShieldAlert, Video } from "lucide-react";
@@ -62,15 +67,15 @@ const STATUS_LABEL = {
   a_caminho:  { label: 'Prestador a caminho!', color: 'bg-orange-500/10 border-orange-500/30 text-orange-300', dot: 'bg-orange-400' },
   em_andamento: { label: 'Em execução', color: 'bg-primary/10 border-primary/30 text-primary', dot: 'bg-primary' },
   em_espera:  { label: 'Em espera (peças)', color: 'bg-amber-500/10 border-amber-500/30 text-amber-300', dot: 'bg-amber-400' },
+  agendado:   { label: 'Agendado', color: 'bg-violet-500/10 border-violet-500/30 text-violet-300', dot: 'bg-violet-400' },
 };
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user, isLoadingAuth } = useAuth();
   const [splashDone, setSplashDone] = useState(false);
-  const [userLoaded, setUserLoaded] = useState(false);
   const [mainTab, setMainTab] = useState('cliente');
   const [serviceTab, setServiceTab] = useState('casa');
-  const [user, setUser] = useState(null);
   const [showElectricalModal, setShowElectricalModal] = useState(false);
   const [selectedElectricalService, setSelectedElectricalService] = useState(null);
   const [showHydraulicModal, setShowHydraulicModal] = useState(false);
@@ -89,31 +94,52 @@ export default function Home() {
   const [filteredVehicleServices, setFilteredVehicleServices] = useState(vehicleServices);
 
   useEffect(() => {
-    base44.auth.me().then(u => { setUser(u); setUserLoaded(true); }).catch(() => setUserLoaded(true));
-  }, []);
-
-  useEffect(() => {
-    if (!user?.email) return;
-    const loadActive = () =>
-      base44.entities.ServiceRequest.filter({ created_by: user.email }).then(all =>
-        setActiveRequests(all.filter(r => !['concluido', 'cancelado'].includes(r.status)))
-      );
-    loadActive();
-    const unsub = base44.entities.ServiceRequest.subscribe((event) => {
-      if (event.data?.created_by !== user.email) return;
-      setActiveRequests(prev => {
-        if (['concluido', 'cancelado'].includes(event.data?.status)) return prev.filter(r => r.id !== event.id);
-        const exists = prev.some(r => r.id === event.id);
-        if (exists) return prev.map(r => r.id === event.id ? event.data : r);
-        return [...prev, event.data];
+    if (!user?.id) {
+      setActiveRequests([]);
+      return;
+    }
+    let cleanup = () => {};
+    (async () => {
+      try {
+        const list = await listMyActiveServiceRequests();
+        setActiveRequests(list);
+      } catch {
+        setActiveRequests([]);
+      }
+      cleanup = await subscribeMyServiceRequests((payload) => {
+        const row = payload.new || payload.old;
+        if (!row) return;
+        if (payload.eventType === 'DELETE') {
+          setActiveRequests((prev) => prev.filter((r) => r.id !== row.id));
+          return;
+        }
+        if (['concluido', 'cancelado'].includes(row.status)) {
+          setActiveRequests((prev) => prev.filter((r) => r.id !== row.id));
+          return;
+        }
+        setActiveRequests((prev) => {
+          const i = prev.findIndex((r) => r.id === row.id);
+          if (i >= 0) {
+            const next = [...prev];
+            next[i] = row;
+            return next;
+          }
+          return [...prev, row];
+        });
       });
-    });
-    return unsub;
-  }, [user?.email]);
+    })();
+    return () => cleanup();
+  }, [user?.id]);
 
   const { data: pricingList = [] } = useQuery({
     queryKey: ['service-pricing'],
-    queryFn: () => base44.entities.ServicePricing.list(),
+    queryFn: async () => {
+      try {
+        return await base44.entities.ServicePricing.list();
+      } catch {
+        return [];
+      }
+    },
   });
 
   const getPriceLabel = (serviceType) => {
@@ -199,20 +225,6 @@ export default function Home() {
                  {/* ── CLIENTE ── */}
                  {mainTab === 'cliente' && (
                    <motion.div key="cliente" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                     {/* Banner de login para usuários não autenticados */}
-                     {userLoaded && !user && (
-                       <div className="mb-6 bg-primary/8 border border-primary/25 rounded-xl p-4 flex flex-col gap-3">
-                         <p className="text-sm font-semibold text-foreground">👋 Faça login ou crie sua conta para solicitar serviços</p>
-                         <div className="flex gap-2">
-                           <Button size="sm" className="flex-1 rounded-xl font-semibold" onClick={() => base44.auth.redirectToLogin('/')}>
-                             Entrar
-                           </Button>
-                           <Button size="sm" variant="outline" className="flex-1 rounded-xl font-semibold" onClick={() => base44.auth.redirectToLogin('/')}>
-                             Criar conta
-                           </Button>
-                         </div>
-                       </div>
-                     )}
                      {/* Banner de OS ativas */}
                      {activeRequests.length > 0 && (
                        <div className="mb-5 space-y-2">
