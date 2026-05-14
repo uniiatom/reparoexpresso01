@@ -89,7 +89,7 @@ export default function Jornada() {
         <JornadaNivelRoadmap totalServices={totalServices} />
       )}
       {activeTab === 'badges' && (
-        <JornadaBadgesGrid totalServices={totalServices} totalSpent={totalSpent} totalPoints={totalPoints} serviceRequests={serviceRequests} />
+        <JornadaBadgesGrid totalServices={totalServices} totalSpent={totalSpent} totalPoints={totalPoints} serviceRequests={serviceRequests} loyalty={loyalty} />
       )}
       {activeTab === 'beneficios' && (
         <JornadaBeneficios totalServices={totalServices} />

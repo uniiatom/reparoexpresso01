@@ -21,6 +21,8 @@ const BADGES = [
   { key: 'points_100',         cat: 'pontos',    emoji: '⚡', nome: 'Acumulador',          desc: 'Acumulou 100 pontos',                 req: (s, sp, pts) => pts >= 100,  hint: '100 pontos', recompensa: null },
   { key: 'points_500',         cat: 'pontos',    emoji: '🚀', nome: 'Power User',          desc: 'Acumulou 500 pontos',                 req: (s, sp, pts) => pts >= 500,  hint: '500 pontos', recompensa: null },
   { key: 'points_1000',        cat: 'pontos',    emoji: '🌟', nome: 'Super Star',          desc: 'Acumulou 1.000 pontos',               req: (s, sp, pts) => pts >= 1000, hint: '1.000 pontos', recompensa: 'Resgate duplo' },
+  // Especial — Avaliador de Elite
+  { key: 'elite_reviewer',     cat: 'especiais', emoji: '🏅', nome: 'Avaliador de Elite',  desc: 'Fez uma avaliação detalhada com foto e texto', req: (s, sp, pts, reqs, loyalty) => !!loyalty?.elite_reviewer_badge, hint: 'Avalie com foto + texto', recompensa: '+50 pontos' },
 ];
 
 const CAT_LABELS = {
@@ -31,11 +33,11 @@ const CAT_LABELS = {
   especiais:'✨ Especiais',
 };
 
-export default function JornadaBadgesGrid({ totalServices, totalSpent, totalPoints, serviceRequests }) {
+export default function JornadaBadgesGrid({ totalServices, totalSpent, totalPoints, serviceRequests, loyalty }) {
   const [filter, setFilter] = useState('todos');
   const [selected, setSelected] = useState(null);
 
-  const unlocked = (badge) => badge.req(totalServices, totalSpent, totalPoints, serviceRequests);
+  const unlocked = (badge) => badge.req(totalServices, totalSpent, totalPoints, serviceRequests, loyalty);
 
   const filtered = filter === 'todos' ? BADGES : BADGES.filter(b => b.cat === filter);
   const unlockedCount = BADGES.filter(b => unlocked(b)).length;
