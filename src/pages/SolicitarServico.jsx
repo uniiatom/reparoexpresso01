@@ -33,6 +33,7 @@ import PhotoLightbox from "@/components/PhotoLightbox";
 import FixacoesDiversasModal from "@/components/FixacoesDiversasModal";
 import OutrosServicoModal from "@/components/OutrosServicoModal";
 import InteractiveScheduleCalendar from "@/components/InteractiveScheduleCalendar";
+import SurchargeAlert from "@/components/SurchargeAlert";
 
 const URGENCY = [
   { value: "agora", label: "Agora", desc: "Preciso urgente" },
@@ -1796,6 +1797,9 @@ export default function SolicitarServico() {
               {couponError && <p className="text-xs text-destructive">{couponError}</p>}
             </div>
           </div>
+          {/* Alerta de sobretaxa */}
+          <SurchargeAlert serviceType={form.service_type?.[0]} />
+
           {/* Resumo */}
           <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20 space-y-1">
             <p className="text-sm font-semibold text-foreground mb-2">Resumo do pedido</p>
