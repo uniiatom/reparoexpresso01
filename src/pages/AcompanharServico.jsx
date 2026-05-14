@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock, User, Phone, Star, MapPin, Wrench, AlertCircle, Plus } from "lucide-react";
 import FavoriteButton from '../components/FavoriteButton';
 import { cn } from "@/lib/utils";
-import RatingModal from '../components/RatingModal';
+import DetailedRatingModal from '../components/DetailedRatingModal';
 import RetornoModal from '../components/RetornoModal';
 import LocationTracker from '../components/LocationTracker';
 import ServiceChat from '../components/ServiceChat';
@@ -685,7 +685,7 @@ export default function AcompanharServico() {
         requestId={id}
         active={['aguardando','aceito','a_caminho','em_andamento'].includes(request?.status)}
       />
-      {showRating && <RatingModal requestId={id} onClose={handleRatingClose} />}
+      {showRating && <DetailedRatingModal requestId={id} request={request} onClose={handleRatingClose} />}
       {showRetorno && <RetornoModal request={request} onClose={() => setShowRetorno(false)} />}
       {showSatisfactionSurvey && user && (
         <SatisfactionSurveyModal
