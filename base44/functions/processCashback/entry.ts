@@ -1,39 +1,40 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// Tabela de níveis de cashback do cliente (por amigos indicadores ativos)
-const NIVEIS_CLIENTE = [
-  { nivel: 'Iniciante',  minAmigos: 0,  maxAmigos: 9,  bonusPorServico: 2.50, percentTake: 6.9  },
-  { nivel: 'Pro',        minAmigos: 10, maxAmigos: 19, bonusPorServico: 3.50, percentTake: 9.7  },
-  { nivel: 'Elite',      minAmigos: 20, maxAmigos: 34, bonusPorServico: 4.50, percentTake: 12.5 },
-  { nivel: 'Lendário',   minAmigos: 35, maxAmigos: 49, bonusPorServico: 5.50, percentTake: 15.2 },
-  { nivel: 'Imperador',  minAmigos: 50, maxAmigos: 70, bonusPorServico: 7.00, percentTake: 19.4 },
-];
-
 const PRESTADOR_BONUS_META = 5;
 const PRESTADOR_BONUS_VALOR = 20;
 const PRESTADOR_BONUS_AVALIACAO = 10;
 const CASHBACK_EXPIRY_DAYS = 90;
 
-// Bônus por nível de desempenho do prestador (por serviço concluído)
-const NIVEIS_PRESTADOR = [
-  { key: 'pro_lenda', minJobs: 220, minRating: 5, bonus: 5.00, label: 'Pro Lenda 👑' },
-  { key: 'pro_elite', minJobs: 190, minRating: 4, bonus: 4.00, label: 'Pro Elite 💎' },
-  { key: 'pro_plus',  minJobs: 160, minRating: 4, bonus: 3.00, label: 'Pro Plus 🔥' },
-  { key: 'pro',       minJobs: 120, minRating: 4, bonus: 2.00, label: 'Pro ⭐' },
+// Fallbacks caso não haja config no banco
+const NIVEIS_CLIENTE_DEFAULT = [
+  { nivel: 'Iniciante',  min_amigos: 0,  bonus_fixo: 2.50, percent_take: 6.9  },
+  { nivel: 'Pro',        min_amigos: 10, bonus_fixo: 3.50, percent_take: 9.7  },
+  { nivel: 'Elite',      min_amigos: 20, bonus_fixo: 4.50, percent_take: 12.5 },
+  { nivel: 'Lendário',   min_amigos: 35, bonus_fixo: 5.50, percent_take: 15.2 },
+  { nivel: 'Imperador',  min_amigos: 50, bonus_fixo: 7.00, percent_take: 19.4 },
 ];
 
-function getNivelPrestador(totalJobs, rating) {
-  for (const lvl of NIVEIS_PRESTADOR) {
-    if (totalJobs >= lvl.minJobs && rating >= lvl.minRating) return lvl;
+const NIVEIS_PRESTADOR_DEFAULT = [
+  { nivel: 'Rubi',     min_jobs: 220, min_rating: 4.5, bonus_fixo: 5.00 },
+  { nivel: 'Diamante', min_jobs: 190, min_rating: 4.0, bonus_fixo: 4.00 },
+  { nivel: 'Ouro',     min_jobs: 160, min_rating: 4.0, bonus_fixo: 3.50 },
+  { nivel: 'Prata',    min_jobs: 120, min_rating: 4.0, bonus_fixo: 3.00 },
+];
+
+function getNivelPrestador(totalJobs, rating, niveis) {
+  const sorted = [...niveis].sort((a, b) => b.min_jobs - a.min_jobs);
+  for (const lvl of sorted) {
+    if (totalJobs >= (lvl.min_jobs || 0) && rating >= (lvl.min_rating || 0)) return lvl;
   }
   return null;
 }
 
-function getNivelCliente(amigosAtivos) {
-  for (let i = NIVEIS_CLIENTE.length - 1; i >= 0; i--) {
-    if (amigosAtivos >= NIVEIS_CLIENTE[i].minAmigos) return NIVEIS_CLIENTE[i];
+function getNivelCliente(amigosAtivos, niveis) {
+  const sorted = [...niveis].sort((a, b) => b.min_amigos - a.min_amigos);
+  for (const lvl of sorted) {
+    if (amigosAtivos >= (lvl.min_amigos || 0)) return lvl;
   }
-  return NIVEIS_CLIENTE[0];
+  return niveis[0];
 }
 
 Deno.serve(async (req) => {
@@ -73,6 +74,13 @@ Deno.serve(async (req) => {
     const expiresAt = new Date(Date.now() + CASHBACK_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString();
     const results = [];
 
+    // Busca configurações do banco (CashbackConfig)
+    const allConfigs = await base44.asServiceRole.entities.CashbackConfig.filter({ is_active: true }).catch(() => []);
+    const configsPrestador = allConfigs.filter(c => c.owner_type === 'prestador');
+    const configsCliente = allConfigs.filter(c => c.owner_type === 'cliente');
+    const niveisPrestador = configsPrestador.length > 0 ? configsPrestador : NIVEIS_PRESTADOR_DEFAULT;
+    const niveisCliente = configsCliente.length > 0 ? configsCliente : NIVEIS_CLIENTE_DEFAULT;
+
     // ── CASHBACK CLIENTE (baseado em amigos indicados ativos) ──
     if (serviceRequest.client_id) {
       // Busca indicações confirmadas do cliente (amigos ativos = que já fizeram ao menos 1 serviço)
@@ -81,11 +89,12 @@ Deno.serve(async (req) => {
         reward_status: 'confirmada',
       });
       const amigosAtivos = referrals.length;
-      const nivel = getNivelCliente(amigosAtivos);
+      const nivel = getNivelCliente(amigosAtivos, niveisCliente);
 
       // Cashback = bônus fixo por serviço do nível + % do take sobre o valor do serviço
-      const bonusFixo = nivel.bonusPorServico;
-      const bonusPercent = finalPrice > 0 ? parseFloat((finalPrice * nivel.percentTake / 100).toFixed(2)) : 0;
+      const bonusFixo = nivel.bonus_fixo || nivel.bonusPorServico || 0;
+      const percentTake = nivel.percent_take || nivel.percentTake || 0;
+      const bonusPercent = finalPrice > 0 ? parseFloat((finalPrice * percentTake / 100).toFixed(2)) : 0;
       const cashbackTotal = parseFloat((bonusFixo + bonusPercent).toFixed(2));
 
       await base44.asServiceRole.entities.Cashback.create({
@@ -97,7 +106,7 @@ Deno.serve(async (req) => {
         service_value: finalPrice,
         cashback_amount: cashbackTotal,
         cashback_percent: nivel.percentTake,
-        reason: `🏅 Nível ${nivel.nivel} · R$ ${bonusFixo.toFixed(2)} fixo + ${nivel.percentTake}% do take (${amigosAtivos} amigos ativos)`,
+        reason: `🏅 Nível ${nivel.nivel} · R$ ${bonusFixo.toFixed(2)} fixo + ${percentTake}% do take (${amigosAtivos} amigos ativos)`,
         status: 'disponivel',
         expires_at: expiresAt,
       });
@@ -135,7 +144,7 @@ Deno.serve(async (req) => {
       // Bônus de nível por serviço concluído
       const providerEntity = await base44.asServiceRole.entities.Provider.get(serviceRequest.provider_id).catch(() => null);
       if (providerEntity) {
-        const nivelPrestador = getNivelPrestador(providerEntity.total_jobs || 0, providerEntity.rating || 0);
+        const nivelPrestador = getNivelPrestador(providerEntity.total_jobs || 0, providerEntity.rating || 0, niveisPrestador);
         if (nivelPrestador) {
           await base44.asServiceRole.entities.Cashback.create({
             owner_id: serviceRequest.provider_id,
@@ -144,9 +153,9 @@ Deno.serve(async (req) => {
             service_request_id: request_id,
             service_type: serviceRequest.service_type,
             service_value: finalPrice,
-            cashback_amount: nivelPrestador.bonus,
+            cashback_amount: nivelPrestador.bonus_fixo || nivelPrestador.bonus || 0,
             cashback_percent: 0,
-            reason: `${nivelPrestador.label} · bônus por nível (R$ ${nivelPrestador.bonus.toFixed(2)}/serviço)`,
+            reason: `${nivelPrestador.label || nivelPrestador.nivel} · bônus por nível (R$ ${(nivelPrestador.bonus_fixo || nivelPrestador.bonus || 0).toFixed(2)}/serviço)`,
             status: 'disponivel',
             expires_at: expiresAt,
           });

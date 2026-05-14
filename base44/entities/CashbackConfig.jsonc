@@ -1,0 +1,60 @@
+{
+  "name": "CashbackConfig",
+  "type": "object",
+  "properties": {
+    "config_key": {
+      "type": "string",
+      "description": "Chave \u00fanica da configura\u00e7\u00e3o (ex: nivel_prestador, nivel_cliente)"
+    },
+    "nivel": {
+      "type": "string",
+      "description": "Nome do n\u00edvel (ex: Prata, Ouro, Pro, Elite)"
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": [
+        "prestador",
+        "cliente"
+      ],
+      "description": "Tipo de dono: prestador ou cliente"
+    },
+    "min_jobs": {
+      "type": "number",
+      "description": "Quantidade m\u00ednima de servi\u00e7os para atingir o n\u00edvel"
+    },
+    "max_jobs": {
+      "type": "number",
+      "description": "Quantidade m\u00e1xima de servi\u00e7os do n\u00edvel (null = ilimitado)"
+    },
+    "min_rating": {
+      "type": "number",
+      "description": "Avalia\u00e7\u00e3o m\u00ednima exigida (prestador)"
+    },
+    "min_amigos": {
+      "type": "number",
+      "description": "Amigos ativos m\u00ednimos (cliente)"
+    },
+    "max_amigos": {
+      "type": "number",
+      "description": "Amigos ativos m\u00e1ximos (cliente)"
+    },
+    "bonus_fixo": {
+      "type": "number",
+      "description": "B\u00f4nus fixo por servi\u00e7o em R$"
+    },
+    "percent_take": {
+      "type": "number",
+      "description": "Percentual sobre o take do servi\u00e7o (cliente)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se esta configura\u00e7\u00e3o est\u00e1 ativa"
+    }
+  },
+  "required": [
+    "config_key",
+    "nivel",
+    "owner_type"
+  ]
+}

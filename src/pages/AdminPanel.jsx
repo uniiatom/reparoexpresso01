@@ -34,6 +34,7 @@ import ReembolsosRepasses from '../components/admin/ReembolsosRepasses';
 import ActivityLog from '../components/admin/ActivityLog';
 import CouponsAdmin from '../components/admin/CouponsAdmin';
 import SurchargeRulesAdmin from '../components/admin/SurchargeRulesAdmin';
+import CashbackConfigAdmin from '../components/admin/CashbackConfigAdmin';
 import { logAdminAction } from '@/lib/adminLog';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -294,6 +295,9 @@ export default function AdminPanel() {
           <TabsTrigger value="coupons" className="text-xs px-2 py-1">
             🎫 Cupons
           </TabsTrigger>
+          <TabsTrigger value="cashback-config" className="text-xs px-2 py-1">
+            💰 Cashback
+          </TabsTrigger>
           <TabsTrigger value="sobretaxas" className="text-xs px-2 py-1">
             ⏰ Sobretaxas
           </TabsTrigger>
@@ -513,6 +517,10 @@ export default function AdminPanel() {
 
         <TabsContent value="coupons">
           <CouponsAdmin />
+        </TabsContent>
+
+        <TabsContent value="cashback-config">
+          <CashbackConfigAdmin />
         </TabsContent>
 
         <TabsContent value="sobretaxas">
