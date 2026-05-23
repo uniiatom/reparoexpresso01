@@ -16,6 +16,8 @@ import PaymentModal from "@/components/PaymentModal";
 import AvailableScheduleSelector from "@/components/AvailableScheduleSelector";
 import FleetMap from "@/components/FleetMap";
 import ServiceSearch from "@/components/ServiceSearch";
+import AdminHomePanel from '@/components/home/AdminHomePanel';
+import { ROLES } from '@/lib/auth/roles';
 
 const homeServices = [
   { icon: Zap, label: "Elétrica", subtitle: "Chuveiro, tomada, QDC", type: "eletrica", color: "bg-amber-500/15 text-amber-400" },
@@ -147,6 +149,24 @@ export default function Home() {
     return `R$ ${p.price_min} - R$ ${p.price_max}`;
   };
 
+  useEffect(() => {
+    if (user?.role === ROLES.PROVIDER || user?.role === 'prestador') {
+      setMainTab('prestador');
+    } else if (user?.role === ROLES.PARTNER) {
+      setMainTab('parceiro');
+    } else if (user?.role !== ROLES.ADMIN && user?.role !== ROLES.ATTENDANT) {
+      setMainTab('cliente');
+    }
+  }, [user?.role]);
+
+  if (user?.role === ROLES.ADMIN) {
+    return <AdminHomePanel />;
+  }
+
+  if (user?.role === ROLES.ATTENDANT) {
+    return <AdminHomePanel />;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -154,29 +174,35 @@ export default function Home() {
       transition={{ duration: 0.4 }}
       className="min-h-screen bg-background"
     >
-          {/* Main tabs card */}
-          <div className="max-w-lg mx-auto px-4 pt-4">
+          {/* Main tabs card — full screen */}
+          <div className="w-full px-3 sm:px-6 lg:px-10 pt-4">
             <div className="bg-card rounded-xl shadow-2xl overflow-hidden ring-1 ring-border circuit-bg">
               <div className="flex border-b border-border overflow-x-auto">
-                 <button
-                   onClick={() => setMainTab('cliente')}
-                   className={`flex-1 py-3.5 text-xs font-display tracking-widest transition-all whitespace-nowrap uppercase ${mainTab === 'cliente' ? 'text-primary border-b-2 border-primary bg-primary/8' : 'text-muted-foreground hover:text-foreground'}`}
-                 >
-                   👤 Cliente
-                 </button>
-                 <button
-                   onClick={() => setMainTab('prestador')}
-                   className={`flex-1 py-3.5 text-xs font-display tracking-widest transition-all whitespace-nowrap uppercase ${mainTab === 'prestador' ? 'text-primary border-b-2 border-primary bg-primary/8' : 'text-muted-foreground hover:text-foreground'}`}
-                 >
-                   🔧 Prestador
-                 </button>
-                 <button
-                   onClick={() => setMainTab('parceiro')}
-                   className={`flex-1 py-3.5 text-xs font-display tracking-widest transition-all whitespace-nowrap uppercase ${mainTab === 'parceiro' ? 'text-primary border-b-2 border-primary bg-primary/8' : 'text-muted-foreground hover:text-foreground'}`}
-                 >
-                   🏪 Parceiro
-                 </button>
-                 {user && (
+                 {(user?.role === ROLES.USER || !user) && (
+                   <button
+                     onClick={() => setMainTab('cliente')}
+                     className={`flex-1 py-3.5 text-xs font-display tracking-widest transition-all whitespace-nowrap uppercase ${mainTab === 'cliente' ? 'text-primary border-b-2 border-primary bg-primary/8' : 'text-muted-foreground hover:text-foreground'}`}
+                   >
+                     👤 Cliente
+                   </button>
+                 )}
+                 {(user?.role === ROLES.PROVIDER || user?.role === 'prestador' || !user) && (
+                   <button
+                     onClick={() => setMainTab('prestador')}
+                     className={`flex-1 py-3.5 text-xs font-display tracking-widest transition-all whitespace-nowrap uppercase ${mainTab === 'prestador' ? 'text-primary border-b-2 border-primary bg-primary/8' : 'text-muted-foreground hover:text-foreground'}`}
+                   >
+                     🔧 Prestador
+                   </button>
+                 )}
+                 {(user?.role === ROLES.PARTNER || !user) && (
+                   <button
+                     onClick={() => setMainTab('parceiro')}
+                     className={`flex-1 py-3.5 text-xs font-display tracking-widest transition-all whitespace-nowrap uppercase ${mainTab === 'parceiro' ? 'text-primary border-b-2 border-primary bg-primary/8' : 'text-muted-foreground hover:text-foreground'}`}
+                   >
+                     🏪 Parceiro
+                   </button>
+                 )}
+                 {user?.role === ROLES.USER && (
                    <>
                      <button
                        onClick={() => setMainTab('favoritos')}
@@ -248,7 +274,7 @@ export default function Home() {
                           onFilterChange={setFilteredHomeServices}
                           placeholder="Buscar serviços de casa..."
                         />
-                        <div className="grid grid-cols-4 gap-3">
+                        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3">
                           {filteredHomeServices.map((s, i) => (
                           <motion.div key={`home-${s.type}-${i}`} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
                             {s.type === 'eletrica' ? (
@@ -609,7 +635,7 @@ export default function Home() {
                            onFilterChange={setFilteredVehicleServices}
                            placeholder="Buscar serviços para veículos..."
                          />
-                         <div className="grid grid-cols-3 gap-3">
+                         <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-9 gap-3">
                            {filteredVehicleServices.map((s, i) => (
                             <motion.div key={`vehicle-${s.type}-${i}`} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
                               <Link to={`/solicitar?tipo=${s.type}`}>
@@ -737,7 +763,7 @@ export default function Home() {
           )}
 
           {/* Nearby Providers Map Button */}
-          <div className="max-w-lg mx-auto px-4 mt-4">
+          <div className="w-full px-3 sm:px-6 lg:px-10 mt-4">
             <button
               onClick={() => setShowNearbyMap(true)}
               className="w-full flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/30 hover:bg-accent transition-all shadow-sm"
@@ -755,7 +781,7 @@ export default function Home() {
           </div>
 
           {/* Trust */}
-          <div className="max-w-lg mx-auto px-4 mt-4 grid grid-cols-3 gap-3 pb-10">
+          <div className="w-full px-3 sm:px-6 lg:px-10 mt-4 grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-7 gap-3 pb-10">
             {[
               { icon: Shield, title: "Homologados", desc: "Certificados pela Escola Prática" },
               { icon: Clock, title: "Rápido", desc: "Previsão de chegada em tempo real" },

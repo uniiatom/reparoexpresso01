@@ -9,6 +9,7 @@ import ClientTicketForm from '@/components/ClientTicketForm';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import ServiceHistory from '@/components/ServiceHistory';
+import ChangePasswordForm from '@/components/auth/ChangePasswordForm';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -160,6 +161,9 @@ export default function UserProfile() {
           <ServiceHistory serviceRequests={serviceRequests} />
         )}
       </div>
+
+      {/* Alterar senha */}
+      <ChangePasswordForm />
 
       {/* Actions */}
       <div className="space-y-2">

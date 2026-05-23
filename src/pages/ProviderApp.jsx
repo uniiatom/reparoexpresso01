@@ -448,6 +448,11 @@ export default function ProviderApp() {
   }, [scheduledJobs.length, provider?.is_online, provider?.is_approved]);
 
   if (!provider) {
+    // Admin e atendente não devem ver o formulário de cadastro de prestador
+    if (user?.role === 'admin' || user?.role === 'attendant') {
+      navigate('/admin', { replace: true });
+      return null;
+    }
     return <ProviderSetupModal user={user} onCreated={() => queryClient.invalidateQueries({ queryKey: ['my-provider'] })} />;
   }
 

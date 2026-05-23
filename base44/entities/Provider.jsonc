@@ -234,6 +234,14 @@
     "experience_years": {
       "type": "number"
     },
+    "qualifications": {
+      "type": "string",
+      "description": "Certificações, cursos e qualificações do prestador"
+    },
+    "service_hourly_rates_json": {
+      "type": "string",
+      "description": "JSON com tipos de serviço e preço por hora"
+    },
     "push_subscription": {
       "type": "string",
       "description": "JSON da Web Push subscription do navegador do prestador"

@@ -50,29 +50,40 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let cancelled = false;
 
-    (async () => {
-      const {
-        data: { session: initial },
-      } = await supabase.auth.getSession();
-      if (cancelled) return;
-      setSession(initial);
-      if (initial?.user) await loadProfile(initial.user.id);
-      setIsLoadingAuth(false);
-    })();
+    supabase.auth
+      .getSession()
+      .then(({ data: { session: initial } }) => {
+        if (cancelled) return;
+        setSession(initial);
+      })
+      .catch((err) => {
+        console.error('[auth] sessão:', err);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingAuth(false);
+      });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
-      if (nextSession?.user) await loadProfile(nextSession.user.id);
-      else setProfile(null);
+      if (!nextSession?.user) setProfile(null);
     });
 
     return () => {
       cancelled = true;
       subscription.unsubscribe();
     };
-  }, [loadProfile]);
+  }, []);
+
+  useEffect(() => {
+    const userId = session?.user?.id;
+    if (!userId) {
+      setProfile(null);
+      return;
+    }
+    loadProfile(userId);
+  }, [session?.user?.id, loadProfile]);
 
   const user = useMemo(
     () => mapUser(session?.user ?? null, profile),
@@ -99,6 +110,20 @@ export const AuthProvider = ({ children }) => {
     await supabase.auth.signOut();
   }, []);
 
+  const updatePassword = useCallback(async (currentPassword, newPassword) => {
+    const email = session?.user?.email;
+    if (!email) throw new Error('Sessão inválida. Faça login novamente.');
+
+    const { error: verifyError } = await supabase.auth.signInWithPassword({
+      email,
+      password: currentPassword,
+    });
+    if (verifyError) throw new Error('Senha atual incorreta.');
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+  }, [session?.user?.email]);
+
   const refreshProfile = useCallback(async () => {
     const uid = session?.user?.id;
     if (uid) await loadProfile(uid);
@@ -113,6 +138,7 @@ export const AuthProvider = ({ children }) => {
     signInWithPassword,
     signUpWithPassword,
     logout,
+    updatePassword,
     refreshProfile,
   };
 

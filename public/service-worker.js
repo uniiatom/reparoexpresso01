@@ -27,8 +27,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || '🔔 Novo Chamado — Reparo Expresso!';
   const options = {
     body: data.message || 'Um cliente está aguardando seu atendimento. Abra o app agora!',
-    icon: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg',
-    badge: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg',
+    icon: '/logo.png',
+    badge: '/logo.png',
     tag: 'novo-chamado',
     renotify: true,
     requireInteraction: true,  // Mantém notificação visível até o usuário interagir

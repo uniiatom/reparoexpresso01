@@ -38,6 +38,7 @@ import ClienteDossie from './pages/ClienteDossie';
 import MeusServicos from './pages/MeusServicos';
 import ProviderMetricsPanel from './pages/ProviderMetricsPanel';
 import Jornada from './pages/Jornada';
+import ProviderAgenda from './pages/ProviderAgenda';
 import { Toaster as SonnerToaster } from "sonner";
 
 function AuthedShell() {
@@ -68,6 +69,7 @@ function AppRoutes() {
         <Route path="/garantia" element={<ClientWarranty />} />
         <Route path="/perfil" element={<UserProfile />} />
         <Route path="/prestador" element={<ProviderApp />} />
+        <Route path="/prestador/cadastro" element={<ProviderRegister />} />
         <Route path="/prestador/:id" element={<ProviderProfile />} />
         <Route path="/recompensas" element={<LoyaltyRewards />} />
         <Route path="/carteira" element={<WalletPage />} />
@@ -82,6 +84,7 @@ function AppRoutes() {
         <Route element={<RoleRoute allow={[ROLES.ADMIN]} />}>
           <Route path="/dashboard-admin" element={<DashboardAdmin />} />
           <Route path="/premiacao" element={<ProviderAwards />} />
+          <Route path="/agenda" element={<ProviderAgenda />} />
         </Route>
 
         <Route element={<RoleRoute allow={[ROLES.PROVIDER, ROLES.ADMIN]} />}>
@@ -104,7 +107,7 @@ function App() {
     <AuthProvider>
       <NotificationProvider>
         <QueryClientProvider client={queryClientInstance}>
-          <Router>
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <AppRoutes />
           </Router>
           <Toaster />

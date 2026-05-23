@@ -25,8 +25,8 @@ export function usePushNotifications() {
   const sendNotification = (title, options = {}) => {
     if ('Notification' in window && Notification.permission === 'granted') {
       const notification = new Notification(title, {
-        icon: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg',
-        badge: 'https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/b2b780191_d9741c6a-dbbe-4b19-a2b3-b5734557ae14.jpg',
+        icon: '/logo.png',
+        badge: '/logo.png',
         ...options,
       });
 

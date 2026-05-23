@@ -5,7 +5,8 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5174/)",
       "Bash(pnpm add *)",
       "Bash(curl -s -o /dev/null -w \"HTTP:%{http_code}\" http://localhost:5175/)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "PowerShell(Get-ChildItem \"C:\\\\1.2 - reparo expresso\\\\reparoexpresso01\\\\src\" -Recurse -Name | Where-Object { $_ -match '\\\\.\\(jsx?|tsx?|css|html\\)$' } | Select-Object -First 50)"
     ]
   }
 }
