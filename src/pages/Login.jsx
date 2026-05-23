@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Wrench } from 'lucide-react';
+import { Wrench } from 'lucide-react'; // mantido para fallback
 
 export default function Login() {
   const { isAuthenticated, isLoadingAuth, signInWithPassword } = useAuth();
@@ -45,13 +45,22 @@ export default function Login() {
     <div className="min-h-screen flex flex-col lg:flex-row bg-zinc-950 text-zinc-100">
       <div className="lg:w-1/2 relative overflow-hidden flex flex-col justify-between p-8 lg:p-12 border-b lg:border-b-0 lg:border-r border-zinc-800/80">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/15 via-transparent to-transparent pointer-events-none" />
+        {/* Logo com fundo transparente — evidência de marca */}
         <div className="relative z-10 flex items-center gap-3">
-          <div className="h-12 w-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
-            <Wrench className="h-6 w-6 text-amber-400" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-white">Reparo Expresso</h1>
-            <p className="text-xs text-zinc-500 uppercase tracking-widest">Marketplace de reparos</p>
+          <div className="relative group">
+            {/* Glow âmbar de fundo */}
+            <span className="absolute inset-0 rounded-2xl bg-amber-500/20 blur-xl scale-125 pointer-events-none" />
+            <img
+              src="/logo-titulo.png"
+              alt="Reparo Expresso"
+              className="relative h-14 w-auto object-contain drop-shadow-[0_2px_16px_rgba(245,158,11,0.5)]"
+              style={{ filter: 'drop-shadow(0 0 12px rgba(245,158,11,0.45))' }}
+              onError={(e) => {
+                // fallback caso logo-titulo não exista
+                e.target.src = '/logo.png';
+                e.target.className = 'relative h-12 w-12 object-contain drop-shadow-[0_0_12px_rgba(245,158,11,0.45)]';
+              }}
+            />
           </div>
         </div>
         <div className="relative z-10 mt-10 lg:mt-0 max-w-md">

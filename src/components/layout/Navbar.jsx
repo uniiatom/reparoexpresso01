@@ -36,12 +36,17 @@ export default function Navbar() {
       <div className="h-[2px] bg-gradient-to-r from-primary via-primary/60 to-transparent" />
 
       <div className="max-w-5xl mx-auto px-4 h-15 flex items-center justify-between" style={{ height: '60px' }}>
-        <Link to="/inicio" className="flex items-center gap-2 group">
-          <img
-            src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/6252ddb37_generated_image.png"
-            alt="Reparo Expresso"
-            className="h-9 w-auto object-contain"
-          />
+        <Link to="/inicio" className="flex items-center gap-2 group" aria-label="Reparo Expresso — Início">
+          <div className="relative flex items-center">
+            {/* Halo âmbar sutil atrás da logo */}
+            <span className="absolute inset-0 rounded-xl bg-amber-500/10 blur-md scale-110 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <img
+              src="/logo.png"
+              alt="Reparo Expresso"
+              className="relative h-10 w-auto object-contain drop-shadow-[0_0_8px_rgba(245,158,11,0.35)] group-hover:drop-shadow-[0_0_14px_rgba(245,158,11,0.65)] transition-all duration-300 group-hover:scale-105"
+              style={{ filter: 'drop-shadow(0 0 6px rgba(245,158,11,0.3))' }}
+            />
+          </div>
         </Link>
 
         <div className="hidden sm:flex items-center gap-1">
