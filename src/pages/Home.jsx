@@ -72,8 +72,7 @@ const STATUS_LABEL = {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user, isLoadingAuth } = useAuth();
-  const [splashDone, setSplashDone] = useState(false);
+  const { user } = useAuth();
   const [mainTab, setMainTab] = useState('cliente');
   const [serviceTab, setServiceTab] = useState('casa');
   const [showElectricalModal, setShowElectricalModal] = useState(false);
@@ -149,38 +148,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <AnimatePresence>
-        {!splashDone && (
-          <motion.div
-            key="splash"
-            className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center cursor-pointer"
-            onClick={() => setSplashDone(true)}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.4 }}
-          >
-            <motion.img
-              src="https://media.base44.com/images/public/69bdfd09a4593d6a3b1890df/ec85c20dc_generated_image.png"
-              alt="Reparo Expresso"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="w-full h-full object-contain"
-            />
-            <motion.div
-              animate={{ opacity: [0.4, 1, 0.4] }}
-              transition={{ repeat: Infinity, duration: 1.6 }}
-              className="absolute bottom-10 text-muted-foreground text-sm font-medium tracking-wide"
-            >
-              Toque para continuar
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main content — only renders after splash */}
-      {splashDone && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="min-h-screen bg-background"
+    >
           {/* Main tabs card */}
           <div className="max-w-lg mx-auto px-4 pt-4">
             <div className="bg-card rounded-xl shadow-2xl overflow-hidden ring-1 ring-border circuit-bg">
@@ -797,8 +770,6 @@ export default function Home() {
               </div>
             ))}
           </div>
-        </motion.div>
-      )}
-    </div>
+    </motion.div>
   );
 }
