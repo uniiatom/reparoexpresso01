@@ -3,9 +3,16 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle, FileText, PlusCircle, Users } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { CheckCircle2, XCircle, FileText, PlusCircle, Users, Settings } from 'lucide-react';
 import { logAdminAction } from '@/lib/adminLog';
 import ProviderRegistrationForm from '@/components/providers/ProviderRegistrationForm';
+import ProviderSettings from '@/components/admin/ProviderSettings';
 import { parseServiceOfferings } from '@/lib/providerRegistration';
 
 export default function AdminProvidersPanel({
@@ -17,6 +24,7 @@ export default function AdminProvidersPanel({
 }) {
   const queryClient = useQueryClient();
   const [view, setView] = useState('list');
+  const [showSettings, setShowSettings] = useState(false);
 
   const visibleProviders = providers.filter((p) => !p.is_blocked && !p.is_rejected);
 
@@ -36,6 +44,7 @@ export default function AdminProvidersPanel({
 
   return (
     <div className="space-y-4">
+      {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
@@ -43,22 +52,46 @@ export default function AdminProvidersPanel({
             Prestadores de serviço
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Cadastre prestadores com qualificações, serviços, horários e preço por hora.
+            Cadastre e gerencie prestadores. Configure serviços, horários e regiões nas ⚙️ Configurações.
           </p>
         </div>
-        <Button
-          size="sm"
-          className="rounded-xl gap-1.5"
-          onClick={() => setView((v) => (v === 'create' ? 'list' : 'create'))}
-        >
-          {view === 'create' ? (
-            'Ver lista'
-          ) : (
-            <><PlusCircle className="w-4 h-4" /> Cadastrar prestador</>
-          )}
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-xl gap-1.5"
+            onClick={() => setShowSettings(true)}
+          >
+            <Settings className="w-4 h-4" /> Configurações
+          </Button>
+          <Button
+            size="sm"
+            className="rounded-xl gap-1.5"
+            onClick={() => setView((v) => (v === 'create' ? 'list' : 'create'))}
+          >
+            {view === 'create' ? (
+              'Ver lista'
+            ) : (
+              <><PlusCircle className="w-4 h-4" /> Cadastrar prestador</>
+            )}
+          </Button>
+        </div>
       </div>
 
+      {/* ── Modal de configurações ──────────────────────────────────────── */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto card-glass border-primary/20">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-primary" />
+              Configurações de Prestadores
+            </DialogTitle>
+          </DialogHeader>
+          <ProviderSettings onClose={() => setShowSettings(false)} />
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Conteúdo ────────────────────────────────────────────────────── */}
       {view === 'create' ? (
         <ProviderRegistrationForm
           mode="admin"
@@ -96,7 +129,7 @@ export default function AdminProvidersPanel({
                           )}
                           {offerings.length > 0 && (
                             <p className="text-xs text-primary/80 mt-1">
-                              {offerings.slice(0, 3).map((o) => `${o.label}: R$ ${o.hourly_rate}/h`).join(' · ')}
+                              {offerings.slice(0, 3).map((o) => o.label).join(' · ')}
                               {offerings.length > 3 ? '…' : ''}
                             </p>
                           )}
