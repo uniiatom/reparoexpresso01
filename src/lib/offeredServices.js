@@ -101,7 +101,11 @@ export function resolveAllowedProviderServices(allOptions, allowedSlugs, { activ
   let list = allOptions ?? [];
   if (activeOnly) list = list.filter((o) => o.isActive !== false);
   if (!allowedSlugs?.length) return list;
-  return list.filter((o) => allowedSlugs.includes(o.value));
+
+  const filtered = list.filter((o) => allowedSlugs.includes(o.value));
+  // Slugs legados no config que não batem com o catálogo atual → exibe todos os ativos
+  if (filtered.length === 0 && list.length > 0) return list;
+  return filtered;
 }
 
 export function getProviderServiceLabel(value, catalogRows = []) {

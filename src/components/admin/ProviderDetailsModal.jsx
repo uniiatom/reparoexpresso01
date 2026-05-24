@@ -1,5 +1,5 @@
 import React, { useState, useMutation } from 'react';
-import { X, Star, Phone, Mail, MapPin, Briefcase, Calendar, User, IdCard, ShieldCheck, ShieldOff, Plus, Trash2 } from 'lucide-react';
+import { X, Star, Phone, Mail, MapPin, Briefcase, Calendar, User, IdCard, ShieldCheck, ShieldOff, Plus, Trash2, Pencil } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,7 @@ const SPECIALTY_LABELS = {
   fechadura: "Fechadura", ar_condicionado: "Ar Condicionado", outros: "Outros",
 };
 
-export default function ProviderDetailsModal({ provider, onClose, onApprove, onReject, onBlock }) {
+export default function ProviderDetailsModal({ provider, onClose, onApprove, onReject, onBlock, onEdit }) {
   const [blockReason, setBlockReason] = useState('');
   const [showBlockForm, setShowBlockForm] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
@@ -383,6 +383,18 @@ export default function ProviderDetailsModal({ provider, onClose, onApprove, onR
           {/* Ações */}
           {!provider.is_blocked && !provider.is_rejected && (
             <div className="flex gap-3 pt-2 flex-wrap">
+              {onEdit && (
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-2xl min-w-[140px]"
+                  onClick={() => {
+                    onEdit(provider);
+                    onClose();
+                  }}
+                >
+                  <Pencil className="w-4 h-4 mr-2" /> Editar dados
+                </Button>
+              )}
               {!provider.is_approved ? (
                 <>
                   <Button className="flex-1 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold" onClick={() => { onApprove(provider.id, true); onClose(); }}>

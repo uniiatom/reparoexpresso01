@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -9,18 +9,27 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Loader2, CheckCircle2,
-  Eye, EyeOff, MapPin, Navigation, FileUp,
+  Eye, EyeOff, MapPin, Navigation, FileUp, CloudUpload,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useAuth } from '@/lib/AuthContext';
 import { useProviderServiceOptions } from '@/hooks/useProviderServiceOptions';
+import { useProviderRegistrationDraft } from '@/hooks/useProviderRegistrationDraft';
 import { resolveAllowedProviderServices } from '@/lib/offeredServices';
+import ImagePickerField from '@/components/media/ImagePickerField';
 import {
   DEFAULT_PROVIDER_FORM,
+  providerToForm,
   registerProvider,
+  updateProviderRecord,
 } from '@/lib/providerRegistration';
 import { createDefaultSchedule } from '@/lib/providerSchedule';
 import { ProviderDayScheduleEditor } from '@/components/providers/ProviderDayScheduleEditor';
+import ProviderServicesMultiSelect from '@/components/providers/ProviderServicesMultiSelect';
+import ProviderDocumentsSection from '@/components/providers/ProviderDocumentsSection';
+import { useOfferedServiceGroups } from '@/hooks/useOfferedServiceGroups';
+import AppLoadingScreen from '@/components/ui/AppLoadingScreen';
 
 // ─── Helper: formata CEP ─────────────────────────────────────────────────────
 function formatCep(value) {
@@ -31,21 +40,70 @@ function formatCep(value) {
 
 export default function ProviderRegistrationForm({
   mode = 'self',
+  provider = null,
   userId,
   onSuccess,
   onCancel,
   className,
 }) {
   const isAdmin = mode === 'admin';
+  const isEdit = Boolean(provider?.id);
+  const { user } = useAuth();
+  const draftContext = isAdmin ? 'admin' : 'self';
 
   const [form, setForm] = useState({
     ...DEFAULT_PROVIDER_FORM,
     qualifications: [],
     schedule: createDefaultSchedule(),
   });
-  const [autoApprove, setAutoApprove] = useState(false);
-  // Valores dos campos personalizados definidos pelo admin
   const [customFieldValues, setCustomFieldValues] = useState({});
+  const draftAppliedRef = useRef(false);
+
+  const {
+    isLoadingDraft,
+    draftLoaded,
+    saveStatus,
+    lastSavedAt,
+    restoredForm,
+    restoredCustomFields,
+    hasRestoredDraft,
+    clearDraft,
+  } = useProviderRegistrationDraft({
+    context: draftContext,
+    form,
+    customFieldValues,
+    enabled: Boolean(user?.id) && !isEdit,
+  });
+
+  const { data: providerAvailability = [], isLoading: isLoadingAvailability } = useQuery({
+    queryKey: ['provider-availability', provider?.id],
+    queryFn: () => base44.entities.ProviderAvailability.filter({ provider_id: provider.id }),
+    enabled: isEdit,
+  });
+
+  useEffect(() => {
+    if (!isEdit || !provider) return;
+    setForm(providerToForm(provider, providerAvailability));
+  }, [isEdit, provider, providerAvailability]);
+
+  useEffect(() => {
+    if (!draftLoaded || draftAppliedRef.current) return;
+    draftAppliedRef.current = true;
+    if (restoredForm) {
+      setForm(restoredForm);
+      setCustomFieldValues(restoredCustomFields ?? {});
+      if (hasRestoredDraft) {
+        toast.message('Rascunho recuperado', {
+          description: 'Continuamos de onde você parou no cadastro.',
+        });
+      }
+    }
+  }, [
+    draftLoaded,
+    restoredForm,
+    restoredCustomFields,
+    hasRestoredDraft,
+  ]);
 
   // ── Password visibility ──────────────────────────────
   const [showPassword, setShowPassword] = useState(false);
@@ -69,13 +127,8 @@ export default function ProviderRegistrationForm({
     return config.required_fields?.includes(field);
   };
 
-  // ── Qualificações do admin ───────────────────────────
-  const { data: qualificationsList = [] } = useQuery({
-    queryKey: ['qualifications'],
-    queryFn: () => base44.entities.Qualification.list(),
-  });
-
   const { data: catalogServiceOptions = [], isLoading: isLoadingServices } = useProviderServiceOptions();
+  const { data: serviceGroups = [] } = useOfferedServiceGroups();
 
   // ── Serviços disponíveis (catálogo admin + filtro de config) ────────
   const availableServices = resolveAllowedProviderServices(
@@ -90,17 +143,6 @@ export default function ProviderRegistrationForm({
   // ── Helper set ───────────────────────────────────────
   const set = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
-  // ── Qualificações ────────────────────────────────────
-  const toggleQualification = (qualName) => {
-    setForm((prev) => {
-      const current = Array.isArray(prev.qualifications) ? prev.qualifications : [];
-      const next = current.includes(qualName)
-        ? current.filter((q) => q !== qualName)
-        : [...current, qualName];
-      return { ...prev, qualifications: next };
-    });
-  };
-
   // ── Serviços (checkboxes, sem preço) ─────────────────
   const toggleService = (value) => {
     setForm((prev) => {
@@ -111,8 +153,6 @@ export default function ProviderRegistrationForm({
       return { ...prev, serviceOfferings: next };
     });
   };
-  const isServiceSelected = (value) =>
-    form.serviceOfferings.some((o) => o.serviceType === value);
 
   // ── CEP lookup (ViaCEP) ──────────────────────────────
   const lookupCep = async (rawValue) => {
@@ -248,21 +288,33 @@ export default function ProviderRegistrationForm({
           throw new Error(`O campo "${field.label}" é obrigatório.`);
         }
       }
-      return registerProvider({
-        form: { ...form, custom_field_values: customFieldValues },
-        userId,
-        autoApprove: isAdmin && autoApprove,
-        mode: isAdmin ? 'admin' : 'self',
-      });
+      return isEdit
+        ? updateProviderRecord({
+          form: { ...form, custom_field_values: customFieldValues },
+          providerId: provider.id,
+          userId: provider.user_id,
+        })
+        : registerProvider({
+          form: { ...form, custom_field_values: customFieldValues },
+          userId,
+          mode: isAdmin ? 'admin' : 'self',
+        });
     },
-    onSuccess: (provider) => {
+    onSuccess: async (savedProvider) => {
+      if (!isEdit) await clearDraft();
       toast.success(
-        isAdmin
-          ? 'Prestador cadastrado com sucesso!'
-          : 'Cadastro enviado! Aguarde a análise da equipe.',
+        isEdit
+          ? 'Prestador atualizado com sucesso!'
+          : isAdmin
+            ? 'Prestador cadastrado! Aguardando análise de documentos.'
+            : 'Cadastro enviado! Aguarde a análise da equipe.',
       );
-      setForm({ ...DEFAULT_PROVIDER_FORM, qualifications: [], schedule: createDefaultSchedule() });
-      onSuccess?.(provider);
+      if (!isEdit) {
+        setForm({ ...DEFAULT_PROVIDER_FORM, qualifications: [], schedule: createDefaultSchedule() });
+        setCustomFieldValues({});
+        draftAppliedRef.current = false;
+      }
+      onSuccess?.(savedProvider);
     },
     onError: (err) => {
       toast.error(err.message || 'Erro ao cadastrar prestador.');
@@ -270,8 +322,106 @@ export default function ProviderRegistrationForm({
   });
 
   // ─────────────────────────────────────────────────────
+  if (isLoadingDraft || (isEdit && isLoadingAvailability)) {
+    return <AppLoadingScreen fullScreen={false} className="min-h-[40vh] rounded-2xl" />;
+  }
+
   return (
     <div className={cn('space-y-4', className)}>
+      {isEdit && (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+          <p className="text-sm font-medium text-foreground">Editando: {provider.name}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Altere os dados abaixo e salve. Para trocar a senha, preencha os campos de acesso.
+          </p>
+        </div>
+      )}
+
+      {user?.id && !isEdit && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+          <div className="flex items-center gap-2 text-sm text-foreground">
+            <CloudUpload className="w-4 h-4 text-primary shrink-0" />
+            <span>
+              {hasRestoredDraft
+                ? 'Rascunho recuperado — os dados são salvos automaticamente no banco.'
+                : 'Os dados preenchidos são salvos automaticamente no banco enquanto você edita.'}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground shrink-0">
+            {saveStatus === 'saving' && 'Salvando rascunho…'}
+            {saveStatus === 'saved' && lastSavedAt && (
+              <>Salvo às {lastSavedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</>
+            )}
+            {saveStatus === 'error' && 'Não foi possível salvar o rascunho agora.'}
+          </p>
+        </div>
+      )}
+
+      {isAdmin && (
+        <Card className="card-glow">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">🔐 Dados de acesso</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              {isEdit
+                ? 'E-mail obrigatório. Deixe a senha em branco para manter a atual ou preencha para alterar.'
+                : 'Informe e-mail e senha para o prestador acessar a plataforma.'}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>E-mail *</Label>
+              <Input
+                type="email"
+                value={form.email}
+                onChange={(e) => set('email', e.target.value)}
+                placeholder="email@exemplo.com"
+                className="rounded-xl"
+                autoComplete="email"
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>
+                  Senha {isEdit ? '(opcional)' : '*'}
+                  <span className="text-muted-foreground font-normal"> · mín. 6</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={(e) => set('password', e.target.value)}
+                    placeholder="••••••••"
+                    className="rounded-xl pr-10"
+                    autoComplete="new-password"
+                  />
+                  <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Confirmar senha{isEdit ? '' : ' *'}</Label>
+                <div className="relative">
+                  <Input
+                    type={showConfirm ? 'text' : 'password'}
+                    value={form.confirmPassword}
+                    onChange={(e) => set('confirmPassword', e.target.value)}
+                    placeholder="••••••••"
+                    className={cn('rounded-xl pr-10', form.confirmPassword && form.password !== form.confirmPassword ? 'border-destructive focus-visible:ring-destructive' : '')}
+                    autoComplete="new-password"
+                  />
+                  <button type="button" onClick={() => setShowConfirm((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {form.confirmPassword && form.password !== form.confirmPassword && (
+                  <p className="text-xs text-destructive">As senhas não coincidem</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ══ ACESSO (somente modo self) ══════════════════ */}
       {!isAdmin && (
@@ -374,50 +524,49 @@ export default function ProviderRegistrationForm({
               className="rounded-xl"
             />
           </div>
-          {/* E-mail no modo admin */}
-          {isAdmin && (
-            <div className="space-y-1.5">
-              <Label>E-mail</Label>
-              <Input
-                type="email"
-                value={form.email}
-                onChange={(e) => set('email', e.target.value)}
-                placeholder="email@exemplo.com"
-                className="rounded-xl"
-              />
-            </div>
-          )}
-          {!isAdmin && (
-            <>
-              <div className="space-y-1.5">
-                <Label>Data de nascimento {isRequired('birth_date') ? '*' : '(opcional)'}</Label>
-                <Input
-                  type="date"
-                  value={form.birth_date}
-                  onChange={(e) => set('birth_date', e.target.value)}
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>CPF {isRequired('cpf') ? '*' : '(opcional)'}</Label>
-                <Input
-                  value={form.cpf}
-                  onChange={(e) => set('cpf', e.target.value)}
-                  placeholder="000.000.000-00"
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label>RG {isRequired('rg') ? '*' : '(opcional)'}</Label>
-                <Input
-                  value={form.rg}
-                  onChange={(e) => set('rg', e.target.value)}
-                  placeholder="Número do RG"
-                  className="rounded-xl"
-                />
-              </div>
-            </>
-          )}
+          <div className="space-y-1.5">
+            <Label>Data de nascimento {isRequired('birth_date') ? '*' : '(opcional)'}</Label>
+            <Input
+              type="date"
+              value={form.birth_date}
+              onChange={(e) => set('birth_date', e.target.value)}
+              className="rounded-xl"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>CPF {isRequired('cpf') ? '*' : '(opcional)'}</Label>
+            <Input
+              value={form.cpf}
+              onChange={(e) => set('cpf', e.target.value)}
+              placeholder="000.000.000-00"
+              className="rounded-xl"
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>RG {isRequired('rg') ? '*' : '(opcional)'}</Label>
+            <Input
+              value={form.rg}
+              onChange={(e) => set('rg', e.target.value)}
+              placeholder="Número do RG"
+              className="rounded-xl"
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <ImagePickerField
+              label={`Foto de rosto${isRequired('photo_url') ? ' *' : ' (opcional)'}`}
+              value={form.photo_url || ''}
+              onChange={(url) => set('photo_url', url)}
+              uploadSource="provider_photo"
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <ImagePickerField
+              label={`Foto de corpo inteiro${isRequired('photo_body_url') ? ' *' : ' (opcional)'}`}
+              value={form.photo_body_url || ''}
+              onChange={(url) => set('photo_body_url', url)}
+              uploadSource="provider_photo"
+            />
+          </div>
         </CardContent>
       </Card>
 
@@ -594,46 +743,23 @@ export default function ProviderRegistrationForm({
         </CardContent>
       </Card>
 
-      {/* ══ QUALIFICAÇÕES ═══════════════════════════════ */}
+      {/* ══ OBSERVAÇÕES ═════════════════════════════════ */}
       <Card className="card-section">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Qualificações *</CardTitle>
+          <CardTitle className="text-base">
+            Observações {isRequired('bio') ? '*' : '(opcional)'}
+          </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Selecione suas certificações e especializações.
+            Ferramentas, diferenciais, experiência relevante ou outras informações úteis.
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {qualificationsList.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic">
-              Nenhuma qualificação cadastrada ainda. A equipe pode adicionar opções no painel admin.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {qualificationsList.map((qual) => (
-                <label
-                  key={qual.id}
-                  className="flex items-center gap-2 p-3 border border-border/50 rounded-xl cursor-pointer bg-card/40 hover:bg-primary/5 hover:border-primary/30 transition-all shadow-sm"
-                >
-                  <Checkbox
-                    checked={form.qualifications.includes(qual.name)}
-                    onCheckedChange={() => toggleQualification(qual.name)}
-                  />
-                  <span className="text-sm font-medium">{qual.name}</span>
-                </label>
-              ))}
-            </div>
-          )}
-          <div className="space-y-1.5">
-            <Label>
-              Observações {isRequired('bio') ? '*' : '(opcional)'}
-            </Label>
-            <Textarea
-              value={form.bio}
-              onChange={(e) => set('bio', e.target.value)}
-              placeholder="Ferramentas, diferenciais, experiência relevante..."
-              className="rounded-xl min-h-[70px]"
-            />
-          </div>
+        <CardContent>
+          <Textarea
+            value={form.bio}
+            onChange={(e) => set('bio', e.target.value)}
+            placeholder="Ferramentas, diferenciais, experiência relevante..."
+            className="rounded-xl min-h-[70px]"
+          />
         </CardContent>
       </Card>
 
@@ -642,34 +768,18 @@ export default function ProviderRegistrationForm({
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Serviços que você presta *</CardTitle>
           <p className="text-xs text-muted-foreground">
-            Marque todos os tipos de serviço que você oferece.
+            Selecione na lista todos os tipos de serviço que você oferece (múltipla escolha).
           </p>
         </CardHeader>
         <CardContent>
-          {isLoadingServices ? (
-            <div className="flex justify-center py-6">
-              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-            </div>
-          ) : availableServices.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic">
-              Nenhum serviço disponível no momento. Entre em contato com a equipe.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {availableServices.map((svc) => (
-                <label
-                  key={svc.value}
-                  className="flex items-center gap-2 p-3 border border-border/50 rounded-xl cursor-pointer bg-card/40 hover:bg-primary/5 hover:border-primary/30 transition-all shadow-sm"
-                >
-                  <Checkbox
-                    checked={isServiceSelected(svc.value)}
-                    onCheckedChange={() => toggleService(svc.value)}
-                  />
-                  <span className="text-sm font-medium">{svc.label}</span>
-                </label>
-              ))}
-            </div>
-          )}
+          <ProviderServicesMultiSelect
+            services={availableServices}
+            groups={serviceGroups}
+            selectedValues={form.serviceOfferings.map((o) => o.serviceType).filter(Boolean)}
+            onToggle={toggleService}
+            isLoading={isLoadingServices}
+            emptyMessage="Nenhum serviço disponível. Cadastre serviços em Admin → Serviços Prestados ou ajuste as Configurações de Prestadores."
+          />
         </CardContent>
       </Card>
 
@@ -748,6 +858,20 @@ export default function ProviderRegistrationForm({
         </Card>
       )}
 
+      {/* ══ DOCUMENTOS ══════════════════════════════════ */}
+      <Card className="card-section">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Documentos</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Envie CNH, CRLV, comprovante de endereço, foto segurando documento e antecedentes.
+            Após o cadastro, a equipe analisa em Documentos antes de liberar o acesso.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <ProviderDocumentsSection form={form} set={set} isRequired={isRequired} />
+        </CardContent>
+      </Card>
+
       {/* ══ DISPONIBILIDADE ═════════════════════════════ */}
       <Card className="card-section">
         <CardHeader className="pb-3">
@@ -794,16 +918,6 @@ export default function ProviderRegistrationForm({
         </button>
       )}
 
-      {isAdmin && (
-        <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
-          <Checkbox
-            checked={autoApprove}
-            onCheckedChange={(v) => setAutoApprove(Boolean(v))}
-          />
-          Aprovar prestador imediatamente após cadastro
-        </label>
-      )}
-
       {/* ══ BOTÕES ══════════════════════════════════════ */}
       <div className="flex flex-col sm:flex-row gap-2 pt-1">
         {onCancel && (
@@ -826,6 +940,8 @@ export default function ProviderRegistrationForm({
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Salvando...
             </>
+          ) : isEdit ? (
+            'Salvar alterações'
           ) : isAdmin ? (
             'Cadastrar prestador'
           ) : (

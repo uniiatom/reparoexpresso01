@@ -1,4 +1,5 @@
 export const LOGO_TITLE_SRC = '/logo-titulo.png';
+export const LOGO_SHIELD_SRC = '/logo-re-transparente.png';
 
 const FIRST_LOGIN_SPLASH_KEY = (userId) => `reparo_first_login_splash_${userId}`;
 export const PENDING_LOGIN_SPLASH_KEY = 'reparo_pending_login_splash';

@@ -29,6 +29,9 @@ export const WEEKDAYS = [
   { value: 6, label: 'Sáb' },
 ];
 
+/** Campos do cadastro de prestador que o admin pode tornar obrigatórios */
+export { REGISTRATION_FIELDS, REGISTRATION_FIELD_GROUPS } from '@/lib/providerRegistrationFields';
+
 export function getServiceLabel(value) {
   return PROVIDER_SERVICE_TYPES.find((t) => t.value === value)?.label ?? value;
 }

@@ -1,20 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   CheckCircle2, XCircle, Clock, FileText, Camera, ChevronRight,
-  Download, AlertCircle, Eye, X, ShieldCheck, ShieldX, Building2, User
+  Eye, X, ShieldCheck, User, MapPin, Mail, Phone, Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import {
+  PROVIDER_DOCUMENT_FIELD_MAP,
+  CRLV_VEHICLE_TYPES,
+  providerCanBeReleased,
+  getProviderDocumentReviewStatus,
+} from '@/lib/providerRegistrationFields';
+import { parseServiceOfferings } from '@/lib/providerRegistration';
 
 const STATUS_CONFIG = {
   aprovado:    { label: 'Aprovado',    color: 'bg-green-100 text-green-700',  icon: CheckCircle2, border: 'border-green-300' },
   reprovado:   { label: 'Reprovado',   color: 'bg-red-100 text-red-700',      icon: XCircle,      border: 'border-red-300' },
   pendente:    { label: 'Pendente',    color: 'bg-yellow-100 text-yellow-700', icon: Clock,        border: 'border-yellow-300' },
-  nao_enviado: { label: 'Não enviado', color: 'bg-gray-100 text-gray-500',    icon: AlertCircle,  border: 'border-gray-200' },
+  nao_enviado: { label: 'Não enviado', color: 'bg-gray-100 text-gray-500',    icon: Clock,        border: 'border-gray-200' },
 };
 
 function StatusBadge({ status }) {
@@ -24,6 +30,75 @@ function StatusBadge({ status }) {
     <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold', cfg.color)}>
       <Icon className="w-3 h-3" /> {cfg.label}
     </span>
+  );
+}
+
+function InfoRow({ icon: Icon, label, value }) {
+  if (!value) return null;
+  return (
+    <div className="flex items-start gap-2 text-sm">
+      <Icon className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+      <div>
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="font-medium text-foreground">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function RegistrationSummary({ provider }) {
+  const services = parseServiceOfferings(provider)
+    .map((o) => o.label || o.service_type || o.serviceType)
+    .filter(Boolean);
+
+  const vehicleLabel = CRLV_VEHICLE_TYPES.find((v) => v.value === provider.crlv_vehicle_type)?.label;
+
+  const addressParts = [
+    provider.address,
+    provider.neighborhood,
+    provider.city && provider.state ? `${provider.city} - ${provider.state}` : provider.city,
+    provider.zip_code,
+  ].filter(Boolean);
+
+  return (
+    <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-3">
+      <h3 className="font-bold text-foreground flex items-center gap-2">
+        <User className="w-4 h-4" /> Dados do cadastro
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <InfoRow icon={Mail} label="E-mail" value={provider.email} />
+        <InfoRow icon={Phone} label="Telefone" value={provider.phone} />
+        <InfoRow icon={User} label="CPF" value={provider.cpf} />
+        <InfoRow icon={User} label="RG" value={provider.rg} />
+        <InfoRow icon={Calendar} label="Nascimento" value={provider.birth_date} />
+        <InfoRow icon={MapPin} label="Endereço" value={addressParts.join(' · ')} />
+      </div>
+      {vehicleLabel && (
+        <p className="text-sm"><span className="text-muted-foreground">Veículo (CRLV):</span> <strong>{vehicleLabel}</strong></p>
+      )}
+      {services.length > 0 && (
+        <div>
+          <p className="text-xs text-muted-foreground mb-1">Serviços</p>
+          <div className="flex flex-wrap gap-1.5">
+            {services.map((s) => (
+              <span key={s} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">{s}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {provider.bio && (
+        <div>
+          <p className="text-xs text-muted-foreground mb-1">Observações</p>
+          <p className="text-sm text-foreground whitespace-pre-wrap">{provider.bio}</p>
+        </div>
+      )}
+      {(provider.coverage_regions?.length ?? 0) > 0 && (
+        <div>
+          <p className="text-xs text-muted-foreground mb-1">Regiões de atuação</p>
+          <p className="text-sm">{provider.coverage_regions.join(', ')}</p>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -51,7 +126,7 @@ function DocumentCard({ title, url, status, rejectionReason, onApprove, onReject
 
       {rejectionReason && status === 'reprovado' && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-2 text-xs text-red-700">
-          ⚠️ Motivo: {rejectionReason}
+          Motivo: {rejectionReason}
         </div>
       )}
 
@@ -97,7 +172,7 @@ function DocumentCard({ title, url, status, rejectionReason, onApprove, onReject
         <div className="space-y-2">
           <textarea
             value={reason}
-            onChange={e => setReason(e.target.value)}
+            onChange={(e) => setReason(e.target.value)}
             placeholder="Informe o motivo da reprovação..."
             rows={2}
             className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
@@ -116,7 +191,35 @@ function DocumentCard({ title, url, status, rejectionReason, onApprove, onReject
   );
 }
 
-function ProviderDocumentModal({ provider, onClose, onUpdate }) {
+function buildDocumentReviewList(provider) {
+  const docs = Object.entries(PROVIDER_DOCUMENT_FIELD_MAP).map(([key, def]) => ({
+    key,
+    title: def.label,
+    url: provider[def.urlKey],
+    status: provider[def.urlKey]
+      ? (provider[def.statusKey] || def.defaultStatus)
+      : 'nao_enviado',
+    rejectionReason: provider[def.rejectionKey],
+    statusField: def.statusKey,
+    rejectionField: def.rejectionKey,
+  }));
+
+  if (provider.cnpj_url) {
+    docs.push({
+      key: 'cnpj',
+      title: 'CNPJ – Comprovante de PJ',
+      url: provider.cnpj_url,
+      status: provider.cnpj_status || 'pendente',
+      rejectionReason: provider.cnpj_rejection_reason,
+      statusField: 'cnpj_status',
+      rejectionField: 'cnpj_rejection_reason',
+    });
+  }
+
+  return docs;
+}
+
+function ProviderDocumentModal({ provider, requiredFields, onClose, onUpdate }) {
   const queryClient = useQueryClient();
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -129,20 +232,15 @@ function ProviderDocumentModal({ provider, onClose, onUpdate }) {
     },
   });
 
-  const setDocStatus = (field, statusField, rejectionField) => (status, reason = null) => {
+  const setDocStatus = (statusField, rejectionField) => (status, reason = null) => {
     const data = { [statusField]: status };
     if (reason) data[rejectionField] = reason;
     if (status !== 'reprovado') data[rejectionField] = '';
     updateMutation.mutate(data);
   };
 
-  const allDocsApproved = () => {
-    const cnh = provider.cnh_status === 'aprovado';
-    const crlv = provider.crlv_status === 'aprovado';
-    const cnpj = provider.cnpj_status === 'aprovado' || provider.cnpj_status === 'nao_enviado';
-    const bg = provider.background_check_status === 'aprovado' || provider.background_check_status === 'nao_enviado';
-    return cnh && crlv && cnpj && bg;
-  };
+  const docs = buildDocumentReviewList(provider);
+  const canRelease = providerCanBeReleased(provider, requiredFields);
 
   const approveProvider = useMutation({
     mutationFn: () => base44.entities.Provider.update(provider.id, { is_approved: true }),
@@ -153,56 +251,22 @@ function ProviderDocumentModal({ provider, onClose, onUpdate }) {
     },
   });
 
-  const docs = [
-    {
-      title: 'CNH – Carteira de Habilitação',
-      url: provider.cnh_url,
-      status: provider.cnh_status || 'pendente',
-      rejectionReason: provider.cnh_rejection_reason,
-      onApprove: () => setDocStatus('cnh', 'cnh_status', 'cnh_rejection_reason')('aprovado'),
-      onReject: (r) => setDocStatus('cnh', 'cnh_status', 'cnh_rejection_reason')('reprovado', r),
-      onClearReject: () => setDocStatus('cnh', 'cnh_status', 'cnh_rejection_reason')('pendente'),
-    },
-    {
-      title: 'CRLV – Registro do Veículo',
-      url: provider.crlv_url,
-      status: provider.crlv_status || 'pendente',
-      rejectionReason: provider.crlv_rejection_reason,
-      onApprove: () => setDocStatus('crlv', 'crlv_status', 'crlv_rejection_reason')('aprovado'),
-      onReject: (r) => setDocStatus('crlv', 'crlv_status', 'crlv_rejection_reason')('reprovado', r),
-      onClearReject: () => setDocStatus('crlv', 'crlv_status', 'crlv_rejection_reason')('pendente'),
-    },
-    {
-      title: 'CNPJ – Comprovante de PJ',
-      url: provider.cnpj_url,
-      status: provider.cnpj_status || 'nao_enviado',
-      rejectionReason: provider.cnpj_rejection_reason,
-      onApprove: () => setDocStatus('cnpj', 'cnpj_status', 'cnpj_rejection_reason')('aprovado'),
-      onReject: (r) => setDocStatus('cnpj', 'cnpj_status', 'cnpj_rejection_reason')('reprovado', r),
-      onClearReject: () => setDocStatus('cnpj', 'cnpj_status', 'cnpj_rejection_reason')('pendente'),
-    },
-    {
-      title: 'Antecedentes Criminais',
-      url: provider.background_check_url,
-      status: provider.background_check_status || 'nao_enviado',
-      rejectionReason: provider.background_check_rejection_reason,
-      onApprove: () => setDocStatus('bg', 'background_check_status', 'background_check_rejection_reason')('aprovado'),
-      onReject: (r) => setDocStatus('bg', 'background_check_status', 'background_check_rejection_reason')('reprovado', r),
-      onClearReject: () => setDocStatus('bg', 'background_check_status', 'background_check_rejection_reason')('pendente'),
-    },
-  ];
-
   const docSummary = {
-    aprovados: docs.filter(d => d.status === 'aprovado').length,
-    pendentes: docs.filter(d => d.status === 'pendente').length,
-    reprovados: docs.filter(d => d.status === 'reprovado').length,
+    aprovados: docs.filter((d) => d.status === 'aprovado').length,
+    pendentes: docs.filter((d) => d.status === 'pendente' || d.status === 'nao_enviado').length,
+    reprovados: docs.filter((d) => d.status === 'reprovado').length,
   };
+
+  const photos = [
+    { label: 'Foto do Rosto', url: provider.photo_url },
+    { label: 'Foto Corpo Inteiro', url: provider.photo_body_url },
+    { label: 'Segurando Documento', url: provider.id_holding_document_url },
+  ];
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-border p-5 flex items-center justify-between">
+        <div className="sticky top-0 bg-white border-b border-border p-5 flex items-center justify-between z-10">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full overflow-hidden bg-muted flex-shrink-0">
               {provider.photo_url
@@ -212,11 +276,14 @@ function ProviderDocumentModal({ provider, onClose, onUpdate }) {
             </div>
             <div>
               <h2 className="text-xl font-bold text-foreground">{provider.name}</h2>
-              <p className="text-sm text-muted-foreground">{provider.cpf} · {provider.phone}</p>
-              <div className="flex gap-2 mt-1">
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">✓ {docSummary.aprovados} aprovados</span>
-                {docSummary.pendentes > 0 && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold">⏳ {docSummary.pendentes} pendentes</span>}
-                {docSummary.reprovados > 0 && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold">✗ {docSummary.reprovados} reprovados</span>}
+              <p className="text-sm text-muted-foreground">{provider.cpf || 'CPF não informado'} · {provider.phone}</p>
+              <div className="flex gap-2 mt-1 flex-wrap">
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">{docSummary.aprovados} aprovados</span>
+                {docSummary.pendentes > 0 && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold">{docSummary.pendentes} pendentes</span>}
+                {docSummary.reprovados > 0 && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold">{docSummary.reprovados} reprovados</span>}
+                {!provider.is_approved && (
+                  <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">Aguardando liberação</span>
+                )}
               </div>
             </div>
           </div>
@@ -225,31 +292,37 @@ function ProviderDocumentModal({ provider, onClose, onUpdate }) {
           </button>
         </div>
 
-        {/* Docs */}
         <div className="p-5 space-y-4">
+          <RegistrationSummary provider={provider} />
+
           <h3 className="font-bold text-foreground flex items-center gap-2">
-            <FileText className="w-4 h-4" /> Documentos para Revisão
+            <FileText className="w-4 h-4" /> Documentos para revisão
           </h3>
 
           {docs.map((doc) => (
-            <DocumentCard key={doc.title} {...doc} />
+            <DocumentCard
+              key={doc.key}
+              title={doc.title}
+              url={doc.url}
+              status={doc.status}
+              rejectionReason={doc.rejectionReason}
+              onApprove={() => setDocStatus(doc.statusField, doc.rejectionField)('aprovado')}
+              onReject={(r) => setDocStatus(doc.statusField, doc.rejectionField)('reprovado', r)}
+              onClearReject={() => setDocStatus(doc.statusField, doc.rejectionField)('pendente')}
+            />
           ))}
 
-          {/* Fotos */}
           <h3 className="font-bold text-foreground flex items-center gap-2 pt-2">
-            <Camera className="w-4 h-4" /> Fotos
+            <Camera className="w-4 h-4" /> Fotos enviadas
           </h3>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: 'Foto do Rosto', url: provider.photo_url },
-              { label: 'Foto Corpo Inteiro', url: provider.photo_body_url },
-            ].map(photo => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {photos.map((photo) => (
               <div
                 key={photo.label}
                 onClick={() => photo.url && setSelectedImage(photo.url)}
                 className={cn(
                   'rounded-2xl border-2 overflow-hidden cursor-pointer hover:shadow-lg transition-all',
-                  photo.url ? 'border-green-200' : 'border-gray-200'
+                  photo.url ? 'border-green-200' : 'border-gray-200',
                 )}
               >
                 <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
@@ -260,29 +333,28 @@ function ProviderDocumentModal({ provider, onClose, onUpdate }) {
                 </div>
                 <div className="p-2 text-center">
                   <p className="text-xs font-semibold text-foreground">{photo.label}</p>
-                  <p className="text-xs text-muted-foreground">{photo.url ? '✓ Enviada' : 'Não enviada'}</p>
+                  <p className="text-xs text-muted-foreground">{photo.url ? 'Enviada' : 'Não enviada'}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Footer */}
         <div className="sticky bottom-0 bg-white border-t border-border p-5 flex gap-3">
           <Button variant="outline" className="flex-1 rounded-xl" onClick={onClose}>Fechar</Button>
           {!provider.is_approved && (
             <Button
               className="flex-1 rounded-xl bg-green-600 hover:bg-green-700 gap-2"
-              disabled={!allDocsApproved() || approveProvider.isPending}
+              disabled={!canRelease || approveProvider.isPending}
               onClick={() => approveProvider.mutate()}
             >
               <ShieldCheck className="w-4 h-4" />
-              {allDocsApproved() ? 'Liberar Acesso' : 'Documentos Pendentes'}
+              {canRelease ? 'Liberar acesso' : 'Documentos pendentes'}
             </Button>
           )}
           {provider.is_approved && (
             <div className="flex-1 flex items-center justify-center gap-2 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm font-semibold">
-              <ShieldCheck className="w-4 h-4" /> Acesso Liberado
+              <ShieldCheck className="w-4 h-4" /> Acesso liberado
             </div>
           )}
         </div>
@@ -302,59 +374,74 @@ export default function ProviderDocumentReview() {
   const [filter, setFilter] = useState('todos');
   const queryClient = useQueryClient();
 
+  const { data: config = {} } = useQuery({
+    queryKey: ['provider-config'],
+    queryFn: async () => {
+      const list = await base44.entities.ProviderConfig.list();
+      return list[0] || {};
+    },
+  });
+
+  const requiredFields = config.required_fields ?? [];
+
   const { data: providers = [], isLoading } = useQuery({
     queryKey: ['providers-doc-review'],
     queryFn: () => base44.entities.Provider.filter({}),
   });
 
-  const getProviderDocStatus = (p) => {
-    const statuses = [
-      p.cnh_status || 'pendente',
-      p.crlv_status || 'pendente',
-    ];
-    if (p.cnpj_url) statuses.push(p.cnpj_status || 'pendente');
-    if (p.background_check_url) statuses.push(p.background_check_status || 'pendente');
-    if (statuses.every(s => s === 'aprovado')) return 'aprovado';
-    if (statuses.some(s => s === 'reprovado')) return 'reprovado';
-    return 'pendente';
-  };
+  useEffect(() => {
+    if (!selectedProvider) return;
+    const fresh = providers.find((p) => p.id === selectedProvider.id);
+    if (fresh) setSelectedProvider(fresh);
+  }, [providers, selectedProvider?.id]);
 
-  const filtered = providers
-    .filter(p => !p.is_blocked && !p.is_archived)
-    .filter(p => filter === 'todos' || getProviderDocStatus(p) === filter);
+  const activeProviders = useMemo(
+    () => providers.filter((p) => !p.is_blocked && !p.is_archived),
+    [providers],
+  );
+
+  const getProviderDocStatus = (p) => getProviderDocumentReviewStatus(p, requiredFields);
+
+  const filtered = activeProviders.filter((p) => filter === 'todos' || getProviderDocStatus(p) === filter);
 
   const counts = {
-    todos: providers.filter(p => !p.is_blocked && !p.is_archived).length,
-    pendente: providers.filter(p => !p.is_blocked && !p.is_archived && getProviderDocStatus(p) === 'pendente').length,
-    reprovado: providers.filter(p => !p.is_blocked && !p.is_archived && getProviderDocStatus(p) === 'reprovado').length,
-    aprovado: providers.filter(p => !p.is_blocked && !p.is_archived && getProviderDocStatus(p) === 'aprovado').length,
+    todos: activeProviders.length,
+    pendente: activeProviders.filter((p) => getProviderDocStatus(p) === 'pendente').length,
+    reprovado: activeProviders.filter((p) => getProviderDocStatus(p) === 'reprovado').length,
+    aprovado: activeProviders.filter((p) => getProviderDocStatus(p) === 'aprovado').length,
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center p-12"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-bold text-foreground mb-1">Revisão de Documentos</h2>
-        <p className="text-sm text-muted-foreground">Analise e aprove documentos dos prestadores: CNPJ, CNH, CRLV e antecedentes criminais.</p>
+        <h2 className="text-xl font-bold text-foreground mb-1">Revisão de documentos</h2>
+        <p className="text-sm text-muted-foreground">
+          Analise o cadastro completo, fotos e documentos (CNH, CRLV, comprovante, antecedentes).
+          Libere o prestador somente após aprovar tudo que foi enviado.
+        </p>
       </div>
 
-      {/* Filtros */}
       <div className="flex gap-2 flex-wrap">
         {[
           { key: 'todos', label: 'Todos', color: 'bg-muted text-foreground' },
           { key: 'pendente', label: 'Pendentes', color: 'bg-yellow-100 text-yellow-700' },
           { key: 'reprovado', label: 'Reprovados', color: 'bg-red-100 text-red-700' },
           { key: 'aprovado', label: 'Aprovados', color: 'bg-green-100 text-green-700' },
-        ].map(f => (
+        ].map((f) => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
             className={cn(
               'px-3 py-1.5 rounded-xl text-sm font-semibold transition-all border-2',
-              filter === f.key ? 'border-primary ' + f.color : 'border-transparent ' + f.color + ' opacity-60'
+              filter === f.key ? 'border-primary ' + f.color : 'border-transparent ' + f.color + ' opacity-60',
             )}
           >
             {f.label} ({counts[f.key]})
@@ -369,17 +456,9 @@ export default function ProviderDocumentReview() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map(provider => {
+          {filtered.map((provider) => {
             const docStatus = getProviderDocStatus(provider);
-            const cfg = STATUS_CONFIG[docStatus];
-            const Icon = cfg.icon;
-
-            const docItems = [
-              { label: 'CNH', status: provider.cnh_status || 'pendente', url: provider.cnh_url },
-              { label: 'CRLV', status: provider.crlv_status || 'pendente', url: provider.crlv_url },
-              { label: 'CNPJ', status: provider.cnpj_status || 'nao_enviado', url: provider.cnpj_url },
-              { label: 'Antecedentes', status: provider.background_check_status || 'nao_enviado', url: provider.background_check_url },
-            ];
+            const docItems = buildDocumentReviewList(provider);
 
             return (
               <button
@@ -395,20 +474,22 @@ export default function ProviderDocumentReview() {
                     }
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <p className="font-bold text-foreground truncate">{provider.name}</p>
-                      {provider.is_approved && (
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex-shrink-0 font-semibold">✓ Acesso Liberado</span>
+                      {provider.is_approved ? (
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex-shrink-0 font-semibold">Acesso liberado</span>
+                      ) : (
+                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full flex-shrink-0 font-semibold">Aguardando liberação</span>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mb-2">{provider.city} · {provider.phone}</p>
                     <div className="flex gap-1.5 flex-wrap">
-                      {docItems.map(doc => {
+                      {docItems.map((doc) => {
                         const dcfg = STATUS_CONFIG[doc.status] || STATUS_CONFIG.nao_enviado;
                         const DIcon = dcfg.icon;
                         return (
-                          <span key={doc.label} className={cn('inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-medium', dcfg.color)}>
-                            <DIcon className="w-2.5 h-2.5" /> {doc.label}
+                          <span key={doc.key} className={cn('inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-medium', dcfg.color)}>
+                            <DIcon className="w-2.5 h-2.5" /> {doc.title.split('–')[0].trim()}
                           </span>
                         );
                       })}
@@ -425,8 +506,9 @@ export default function ProviderDocumentReview() {
       {selectedProvider && (
         <ProviderDocumentModal
           provider={selectedProvider}
+          requiredFields={requiredFields}
           onClose={() => setSelectedProvider(null)}
-          onUpdate={() => setSelectedProvider(prev => ({ ...prev }))}
+          onUpdate={() => queryClient.invalidateQueries({ queryKey: ['providers-doc-review'] })}
         />
       )}
     </div>

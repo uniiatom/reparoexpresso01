@@ -1,7 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Loader2, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useOfferedServices } from '@/hooks/useOfferedServices';
+import { useOfferedServiceGroups } from '@/hooks/useOfferedServiceGroups';
+import { buildGroupFilterTabs } from '@/lib/offeredServiceGroups';
 import OfferedServiceCard from '@/components/offered-services/OfferedServiceCard';
 import { cn } from '@/lib/utils';
 
@@ -15,11 +17,26 @@ export default function OfferedServicesCatalog({
   hideHeader = false,
   onServiceClick,
 }) {
-  const [internalGroup, setInternalGroup] = useState('casa');
+  const { data: serviceGroups = [] } = useOfferedServiceGroups();
+  const groupTabs = useMemo(
+    () => buildGroupFilterTabs(serviceGroups).filter((tab) => tab.id !== 'all'),
+    [serviceGroups],
+  );
+  const defaultGroup = serviceGroups[0]?.slug ?? 'casa';
+  const [internalGroup, setInternalGroup] = useState(defaultGroup);
   const [searchQuery, setSearchQuery] = useState('');
   const group = controlledGroup ?? internalGroup;
   const setGroup = onGroupChange ?? setInternalGroup;
   const isCardLayout = variant === 'cards';
+
+  useEffect(() => {
+    if (controlledGroup != null) return;
+    if (serviceGroups.length === 0) return;
+    const validSlugs = serviceGroups.map((g) => g.slug);
+    if (!validSlugs.includes(internalGroup)) {
+      setInternalGroup(validSlugs[0]);
+    }
+  }, [serviceGroups, controlledGroup, internalGroup]);
 
   const { data: services = [], isLoading } = useOfferedServices(group);
 
@@ -53,12 +70,9 @@ export default function OfferedServicesCatalog({
         </div>
       )}
 
-      {!hideGroupTabs && (
-        <div className="flex gap-2">
-          {[
-            { id: 'casa', label: '🏠 Casa' },
-            { id: 'veiculo', label: '🚗 Veículo' },
-          ].map((tab) => (
+      {!hideGroupTabs && groupTabs.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {groupTabs.map((tab) => (
             <button
               key={tab.id}
               type="button"

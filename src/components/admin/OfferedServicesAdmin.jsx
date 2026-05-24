@@ -19,9 +19,12 @@ import {
   slugifyServiceName,
 } from '@/lib/offeredServices';
 import {
-  Settings2, Plus, Pencil, Trash2, Loader2, Layers, Sparkles, Search, X,
+  Settings2, Plus, Pencil, Trash2, Loader2, Layers, Sparkles, Search, X, FolderTree,
 } from 'lucide-react';
 import ImagePickerField from '@/components/media/ImagePickerField';
+import OfferedServiceGroupsDialog from '@/components/admin/OfferedServiceGroupsDialog';
+import { useOfferedServiceGroups } from '@/hooks/useOfferedServiceGroups';
+import { buildGroupFilterTabs, formatGroupTabLabel, getDefaultServiceGroupSlug } from '@/lib/offeredServiceGroups';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -82,7 +85,15 @@ export default function OfferedServicesAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
   const [serviceDialog, setServiceDialog] = useState(null);
   const [configOpen, setConfigOpen] = useState(false);
+  const [groupsOpen, setGroupsOpen] = useState(false);
   const [templateEdit, setTemplateEdit] = useState(null);
+
+  const { data: serviceGroups = [] } = useOfferedServiceGroups({ includeInactive: true });
+  const activeGroups = useMemo(
+    () => serviceGroups.filter((g) => g.is_active !== false),
+    [serviceGroups],
+  );
+  const groupTabs = useMemo(() => buildGroupFilterTabs(activeGroups), [activeGroups]);
 
   const { data: services = [], isLoading } = useQuery({
     queryKey: ['admin-offered-services'],
@@ -172,7 +183,11 @@ export default function OfferedServicesAdmin() {
     },
   });
 
-  const openCreate = () => setServiceDialog({ ...EMPTY_SERVICE, sort_order: services.length + 1 });
+  const openCreate = () => setServiceDialog({
+    ...EMPTY_SERVICE,
+    service_group: getDefaultServiceGroupSlug(activeGroups),
+    sort_order: services.length + 1,
+  });
 
   const openEdit = (service) => setServiceDialog({
     ...EMPTY_SERVICE,
@@ -297,6 +312,10 @@ export default function OfferedServicesAdmin() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button variant="outline" className="rounded-xl border-amber-400/30 hover:bg-amber-400/10" onClick={() => setGroupsOpen(true)}>
+              <FolderTree className="w-4 h-4 mr-2" />
+              Grupos
+            </Button>
             <Button variant="outline" className="rounded-xl border-amber-400/30 hover:bg-amber-400/10" onClick={() => setConfigOpen(true)}>
               <Settings2 className="w-4 h-4 mr-2" />
               Campos padrão
@@ -332,11 +351,7 @@ export default function OfferedServicesAdmin() {
           )}
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
-          {[
-            { id: 'all', label: 'Todos' },
-            { id: 'casa', label: '🏠 Casa' },
-            { id: 'veiculo', label: '🚗 Veículo' },
-          ].map((tab) => (
+          {groupTabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
@@ -428,10 +443,13 @@ export default function OfferedServicesAdmin() {
                 <div className="space-y-2">
                   <Label>Grupo</Label>
                   <Select value={serviceDialog.service_group} onValueChange={(v) => setServiceDialog((p) => ({ ...p, service_group: v }))}>
-                    <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="rounded-xl"><SelectValue placeholder="Selecione o grupo" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="casa">Casa</SelectItem>
-                      <SelectItem value="veiculo">Veículo</SelectItem>
+                      {activeGroups.map((group) => (
+                        <SelectItem key={group.slug} value={group.slug}>
+                          {formatGroupTabLabel(group)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -595,6 +613,13 @@ export default function OfferedServicesAdmin() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <OfferedServiceGroupsDialog
+        open={groupsOpen}
+        onOpenChange={setGroupsOpen}
+        groups={serviceGroups}
+        services={services}
+      />
     </div>
   );
 }

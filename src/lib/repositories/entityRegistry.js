@@ -44,6 +44,7 @@ const ENTITY_TABLES = {
   QuoteRequest: { table: 'quote_requests' },
   ServiceCategory: { table: 'service_categories' },
   OfferedService: { table: 'offered_services', defaultSort: 'sort_order' },
+  OfferedServiceGroup: { table: 'offered_service_groups', defaultSort: 'sort_order' },
   OfferedServiceFieldTemplate: { table: 'offered_service_field_templates', defaultSort: 'sort_order' },
   MediaLibrary: { table: 'media_library', defaultSort: '-created_at' },
 };

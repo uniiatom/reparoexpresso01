@@ -1,0 +1,2 @@
+-- Aplicado via MCP (versão 20260524040144).
+-- Conteúdo equivalente: supabase/migrations/20260524130100_provider_config_v2.sql

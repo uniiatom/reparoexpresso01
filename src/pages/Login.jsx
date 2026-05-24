@@ -8,8 +8,8 @@ import { ROLES } from '@/lib/auth/roles';
 import { isStaffAllowedPath } from '@/components/auth/StaffAreaGuard';
 import AppLoadingScreen from '@/components/ui/AppLoadingScreen';
 import BrandSplashScreen from '@/components/ui/BrandSplashScreen';
+import BrandTitleLogo from '@/components/ui/BrandTitleLogo';
 import {
-  LOGO_TITLE_SRC,
   markFirstLoginSplashSeen,
   markPendingLoginSplash,
   PENDING_LOGIN_SPLASH_KEY,
@@ -79,17 +79,10 @@ export default function Login() {
     <div className="min-h-screen flex flex-col lg:flex-row bg-zinc-950 text-zinc-100">
       <div className="lg:w-1/2 relative overflow-hidden flex flex-col justify-between p-8 lg:p-12 border-b lg:border-b-0 lg:border-r border-zinc-800/80">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/15 via-transparent to-transparent pointer-events-none" />
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="relative group">
-            <span className="absolute inset-0 rounded-2xl bg-amber-500/20 blur-xl scale-125 pointer-events-none" />
-            <img
-              src={LOGO_TITLE_SRC}
-              alt="Reparo Expresso"
-              className="relative h-14 w-auto object-contain drop-shadow-[0_2px_16px_rgba(245,158,11,0.5)]"
-            />
-          </div>
+        <div className="relative z-10">
+          <BrandTitleLogo variant="hero" />
         </div>
-        <div className="relative z-10 mt-10 lg:mt-0 max-w-md">
+        <div className="relative z-10 mt-8 lg:mt-0 max-w-xl">
           <p className="text-2xl lg:text-3xl font-semibold text-white leading-snug">
             Profissionais homologados, atendimento rápido e acompanhamento em tempo real.
           </p>

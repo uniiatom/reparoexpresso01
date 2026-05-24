@@ -16,7 +16,7 @@ import PaymentModal from "@/components/PaymentModal";
 import AvailableScheduleSelector from "@/components/AvailableScheduleSelector";
 import FleetMap from "@/components/FleetMap";
 import ServiceSearch from "@/components/ServiceSearch";
-import OfferedServicesCatalog from '@/components/offered-services/OfferedServicesCatalog';
+import ProviderHomePanel from '@/components/home/ProviderHomePanel';
 import AppLoadingScreen from '@/components/ui/AppLoadingScreen';
 import { ROLES } from '@/lib/auth/roles';
 

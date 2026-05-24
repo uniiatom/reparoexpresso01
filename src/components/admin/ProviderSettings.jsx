@@ -23,7 +23,7 @@ import {
   Pencil, Layers, Search,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { REGISTRATION_FIELDS, WEEKDAYS } from '@/lib/constants/providerServiceTypes';
+import { REGISTRATION_FIELD_GROUPS, WEEKDAYS } from '@/lib/constants/providerServiceTypes';
 import { cn } from '@/lib/utils';
 import { useProviderServiceOptions } from '@/hooks/useProviderServiceOptions';
 import { useOfferedServiceGroups } from '@/hooks/useOfferedServiceGroups';
@@ -314,29 +314,33 @@ export default function ProviderSettings({ onClose }) {
         </CardHeader>
         <CardContent className="space-y-6">
 
-          {/* Campos fixos */}
-          <div className="space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Campos padrão</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {REGISTRATION_FIELDS.map((field) => (
-                <label
-                  key={field.id}
-                  className="flex items-center gap-2 p-3 border border-border/50 rounded-xl cursor-pointer bg-card/40 hover:bg-primary/5 hover:border-primary/30 transition-all"
-                >
-                  <Checkbox
-                    checked={config.required_fields?.includes(field.id)}
-                    onCheckedChange={() => {
-                      const current = config.required_fields ?? [];
-                      const next = current.includes(field.id)
-                        ? current.filter((id) => id !== field.id)
-                        : [...current, field.id];
-                      setConfig((p) => ({ ...p, required_fields: next }));
-                    }}
-                  />
-                  <span className="text-sm font-medium">{field.label}</span>
-                </label>
-              ))}
-            </div>
+          {/* Campos fixos por grupo */}
+          <div className="space-y-5">
+            {REGISTRATION_FIELD_GROUPS.map((group) => (
+              <div key={group.id} className="space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{group.label}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {group.fields.map((field) => (
+                    <label
+                      key={field.id}
+                      className="flex items-center gap-2 p-3 border border-border/50 rounded-xl cursor-pointer bg-card/40 hover:bg-primary/5 hover:border-primary/30 transition-all"
+                    >
+                      <Checkbox
+                        checked={config.required_fields?.includes(field.id)}
+                        onCheckedChange={() => {
+                          const current = config.required_fields ?? [];
+                          const next = current.includes(field.id)
+                            ? current.filter((id) => id !== field.id)
+                            : [...current, field.id];
+                          setConfig((p) => ({ ...p, required_fields: next }));
+                        }}
+                      />
+                      <span className="text-sm font-medium">{field.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
             <Button
               size="sm"
               className="rounded-xl"
