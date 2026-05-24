@@ -39,6 +39,7 @@ import ProviderEarningsSimulator from '@/components/ProviderEarningsSimulator';
 import ProviderCashbackRules from '@/components/ProviderCashbackRules';
 import ProviderLevelProgress from '@/components/ProviderLevelProgress';
 import ProviderLevelHistoryTimeline from '@/components/ProviderLevelHistoryTimeline';
+import ProviderProfileTab from '@/components/providers/ProviderProfileTab';
 
 const SERVICE_LABELS = {
   eletrica: "Elétrica", hidraulica: "Hidráulica", pintura: "Pintura",
@@ -593,6 +594,12 @@ export default function ProviderApp() {
       {/* Abas de navegação - linha 2 */}
       <div className="flex gap-1 mb-5 bg-muted rounded-2xl p-1">
         <button
+          onClick={() => setActiveTab('perfil')}
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'perfil' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
+        >
+          👤 Perfil
+        </button>
+        <button
           onClick={() => navigate('/painel-metricas')}
           className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all text-muted-foreground hover:bg-card hover:text-foreground"
           title="Ver painel de desempenho"
@@ -1072,6 +1079,14 @@ export default function ProviderApp() {
       {/* ── ABA FUNDO DE RESERVA ── */}
       {activeTab === 'fundo' && (
         <ProviderReserveFund providerId={provider.id} />
+      )}
+
+      {/* ── ABA PERFIL ── */}
+      {activeTab === 'perfil' && (
+        <ProviderProfileTab
+          provider={provider}
+          onUpdate={() => queryClient.invalidateQueries({ queryKey: ['my-provider'] })}
+        />
       )}
 
       {/* ── ABA NÍVEIS + CASHBACK ── */}
