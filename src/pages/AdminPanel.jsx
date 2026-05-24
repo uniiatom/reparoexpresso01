@@ -27,6 +27,7 @@ import ServiceMetrics from '../components/admin/ServiceMetrics';
 import ClientBlacklist from '../components/admin/ClientBlacklist';
 import TowPricing from '../components/admin/TowPricing';
 import ProviderDocumentReview from '../components/admin/ProviderDocumentReview';
+import AdminKpiCollapsible from '../components/admin/AdminKpiCollapsible';
 import ExpiringServicesAlert from '../components/admin/ExpiringServicesAlert';
 import ProviderTermsManager from '../components/admin/ProviderTermsManager';
 import ClientTermsManager from '../components/admin/ClientTermsManager';
@@ -265,27 +266,8 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        {/* â”€â”€ KPIs â”€â”€ */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 mb-4">
-          {[
-            { label: 'Chamados',   value: stats.total,              icon: Briefcase,  color: 'text-foreground'  },
-            { label: 'Ativos',     value: stats.active,             icon: Clock,      color: 'text-amber-500'   },
-            { label: 'ConcluÃ­dos', value: stats.completed,          icon: CheckCircle2,color:'text-green-500'   },
-            { label: 'Clientes',   value: stats.clients_total,      icon: Users,      color: 'text-sky-500'     },
-            { label: 'UsuÃ¡rios',   value: stats.users_total,        icon: Activity,   color: 'text-purple-500'  },
-            { label: 'Online',     value: stats.providers_online,   icon: Zap,        color: 'text-amber-500'   },
-            { label: 'Aprovados',  value: stats.providers_approved, icon: Star,       color: 'text-blue-400'    },
-            { label: 'Receita',    value: `R$ ${Math.floor(stats.revenue)}`, icon: TrendingUp, color: 'text-primary' },
-          ].map(s => (
-            <Card key={s.label} className="border-primary/[0.14] hover:border-primary/25 transition-colors">
-              <CardContent className="p-2 text-center">
-                <s.icon className={cn('w-3.5 h-3.5 mx-auto mb-0.5', s.color)} />
-                <p className={cn('text-sm font-bold leading-none', s.color)}>{s.value}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{s.label}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* ── KPIs (recolhível) ── */}
+        <AdminKpiCollapsible stats={stats} />
 
         {/* â”€â”€ Alertas â”€â”€ */}
         {pendingProviders.length > 0 && (
