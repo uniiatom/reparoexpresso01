@@ -5,6 +5,12 @@ import {
   createProviderAvailability,
   listProviderConfig,
 } from '@/lib/repositories/providersRepository';
+import {
+  createDefaultSchedule,
+  normalizeSchedule,
+  scheduleToAvailabilityRecords,
+  validateSchedule,
+} from '@/lib/providerSchedule';
 
 export const DEFAULT_PROVIDER_FORM = {
   // ── Acesso ──────────────────────────────────────────
@@ -33,12 +39,7 @@ export const DEFAULT_PROVIDER_FORM = {
   experience_years: '',
   bio: '',
   serviceOfferings: [{ serviceType: '', hourlyRate: '' }],
-  schedule: {
-    days: [1, 2, 3, 4, 5],
-    startTime: '08:00',
-    endTime: '18:00',
-    maxSlotsPerDay: 5,
-  },
+  schedule: createDefaultSchedule(),
   acceptsHomologation: false,
 };
 
@@ -113,18 +114,9 @@ export async function validateProviderForm(form, { mode = 'self' } = {}) {
     errors.push('Adicione ao menos um tipo de serviço com preço por hora.');
   }
 
-  if (!form.schedule?.days?.length) errors.push('Selecione ao menos um dia de atendimento.');
-  
-  // Support for multiple slots
-  if (form.schedule?.slots?.length > 0) {
-    form.schedule.slots.forEach((slot, i) => {
-      if (!slot.startTime || !slot.endTime) {
-        errors.push(`Informe o horário de início e fim para o slot ${i+1}.`);
-      }
-    });
-  } else if (!form.schedule?.startTime || !form.schedule?.endTime) {
-    errors.push('Informe o horário de início e fim do atendimento.');
-  }
+  const schedule = normalizeSchedule(form.schedule);
+  const scheduleErrors = validateSchedule(schedule);
+  errors.push(...scheduleErrors);
 
   return { errors, validOfferings };
 }
@@ -201,42 +193,12 @@ export async function registerProvider({ form, userId, autoApprove = false, mode
       .eq('id', resolvedUserId);
   }
 
-  const { days, maxSlotsPerDay, slots = [] } = form.schedule;
-  
-  // Create availability for each day and each slot
-  const availabilityPromises = [];
-  days.forEach(day => {
-    if (slots.length > 0) {
-      slots.forEach(slot => {
-        if (slot.startTime && slot.endTime) {
-          availabilityPromises.push(
-            createProviderAvailability({
-              provider_id: provider.id,
-              day_of_week: day,
-              start_time: slot.startTime,
-              end_time: slot.endTime,
-              is_available: true,
-              max_slots_per_day: Number(maxSlotsPerDay) || 5,
-            })
-          );
-        }
-      });
-    } else if (form.schedule.startTime && form.schedule.endTime) {
-      // Fallback for legacy format
-      availabilityPromises.push(
-        createProviderAvailability({
-          provider_id: provider.id,
-          day_of_week: day,
-          start_time: form.schedule.startTime,
-          end_time: form.schedule.endTime,
-          is_available: true,
-          max_slots_per_day: Number(maxSlotsPerDay) || 5,
-        })
-      );
-    }
-  });
+  const schedule = normalizeSchedule(form.schedule);
+  const availabilityRecords = scheduleToAvailabilityRecords(schedule, provider.id);
 
-  await Promise.all(availabilityPromises);
+  await Promise.all(
+    availabilityRecords.map((record) => createProviderAvailability(record)),
+  );
 
   return provider;
 }

@@ -15,7 +15,13 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { WEEKDAYS } from '@/lib/constants/providerServiceTypes';
+import { ProviderDayScheduleEditor } from '@/components/providers/ProviderDayScheduleEditor';
+import {
+  availabilityToSchedule,
+  createDefaultSchedule,
+  scheduleToAvailabilityRecords,
+  validateSchedule,
+} from '@/lib/providerSchedule';
 
 const RESET_COOLDOWN_KEY = 'provider_pwd_reset_ts';
 const RESET_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24h
@@ -120,52 +126,25 @@ export default function ProviderProfileTab({ provider, onUpdate }) {
     enabled: !!provider?.id,
   });
 
-  // Estado local da disponibilidade
-  const initDays = () => {
-    if (availabilities.length) return [...new Set(availabilities.map((a) => a.day_of_week))].sort((a, b) => a - b);
-    return [1, 2, 3, 4, 5];
-  };
-  const initTime = (field) => {
-    if (availabilities.length) return availabilities[0][field] || (field === 'start_time' ? '08:00' : '18:00');
-    return field === 'start_time' ? '08:00' : '18:00';
-  };
-
-  const [selectedDays, setSelectedDays] = useState([]);
-  const [startTime, setStartTime] = useState('08:00');
-  const [endTime, setEndTime] = useState('18:00');
+  const [schedule, setSchedule] = useState(createDefaultSchedule());
 
   useEffect(() => {
     if (availabilities.length) {
-      setSelectedDays([...new Set(availabilities.map((a) => a.day_of_week))].sort((a, b) => a - b));
-      setStartTime(availabilities[0]?.start_time || '08:00');
-      setEndTime(availabilities[0]?.end_time || '18:00');
+      setSchedule(availabilityToSchedule(availabilities));
+    } else {
+      setSchedule(createDefaultSchedule());
     }
-  }, [availabilities.length]);
-
-  const toggleDay = (day) => {
-    setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort((a, b) => a - b),
-    );
-  };
+  }, [availabilities]);
 
   const saveAvailability = useMutation({
     mutationFn: async () => {
-      if (!selectedDays.length) throw new Error('Selecione ao menos um dia de atendimento.');
-      if (!startTime || !endTime) throw new Error('Informe o horário de início e fim.');
+      const errors = validateSchedule(schedule);
+      if (errors.length) throw new Error(errors[0]);
 
-      // Remove disponibilidades antigas e recria
       await Promise.all(availabilities.map((a) => base44.entities.ProviderAvailability.delete(a.id)));
+      const records = scheduleToAvailabilityRecords(schedule, provider.id);
       await Promise.all(
-        selectedDays.map((day) =>
-          base44.entities.ProviderAvailability.create({
-            provider_id: provider.id,
-            day_of_week: day,
-            start_time: startTime,
-            end_time: endTime,
-            is_available: true,
-            max_slots_per_day: availabilities[0]?.max_slots_per_day ?? 5,
-          }),
-        ),
+        records.map((record) => base44.entities.ProviderAvailability.create(record)),
       );
     },
     onSuccess: () => {
@@ -176,9 +155,13 @@ export default function ProviderProfileTab({ provider, onUpdate }) {
   });
 
   // ── Redefinição de senha ─────────────────────────────
-  const lastReset = localStorage.getItem(RESET_COOLDOWN_KEY);
+  const [resetRequestedAt, setResetRequestedAt] = useState(() => {
+    const stored = localStorage.getItem(RESET_COOLDOWN_KEY);
+    return stored ? Number(stored) : null;
+  });
+
   const canRequestReset =
-    !lastReset || Date.now() - Number(lastReset) > RESET_COOLDOWN_MS;
+    !resetRequestedAt || Date.now() - resetRequestedAt > RESET_COOLDOWN_MS;
 
   const requestPasswordReset = useMutation({
     mutationFn: () =>
@@ -190,7 +173,9 @@ export default function ProviderProfileTab({ provider, onUpdate }) {
         status: 'aberto',
       }),
     onSuccess: () => {
-      localStorage.setItem(RESET_COOLDOWN_KEY, String(Date.now()));
+      const now = Date.now();
+      localStorage.setItem(RESET_COOLDOWN_KEY, String(now));
+      setResetRequestedAt(now);
       toast.success('Solicitação enviada! Nossa equipe entrará em contato em breve.');
       queryClient.invalidateQueries({ queryKey: ['provider-tickets', provider.id] });
     },
@@ -311,52 +296,7 @@ export default function ProviderProfileTab({ provider, onUpdate }) {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Dias */}
-          <div>
-            <Label className="mb-2 block text-sm">Dias da semana</Label>
-            <div className="flex flex-wrap gap-2">
-              {WEEKDAYS.map((day) => {
-                const active = selectedDays.includes(day.value);
-                return (
-                  <button
-                    key={day.value}
-                    type="button"
-                    onClick={() => toggleDay(day.value)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-xl text-sm font-medium border transition-colors',
-                      active
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border text-muted-foreground hover:border-primary/40',
-                    )}
-                  >
-                    {day.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Horário */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-sm">Início</Label>
-              <Input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="rounded-xl"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm">Fim</Label>
-              <Input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="rounded-xl"
-              />
-            </div>
-          </div>
+          <ProviderDayScheduleEditor schedule={schedule} onChange={setSchedule} />
 
           <Button
             type="button"

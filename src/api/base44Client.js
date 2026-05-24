@@ -1,25 +1,20 @@
-import '@/lib/disable-base44-analytics.js';
-import { createClient } from '@base44/sdk';
-import { appParams } from '@/lib/app-params';
+import { createAllEntityAdapters } from '@/lib/repositories/entityRegistry';
+import { createSupabaseAuthAdapter } from '@/lib/supabaseAuthAdapter';
+import { createSupabaseIntegrations } from '@/lib/supabaseStorage';
+import { invokeFunction } from '@/lib/supabaseFunctions';
 
-const { appId, token, functionsVersion, appBaseUrl } = appParams;
+/**
+ * Cliente de API do frontend — 100% Supabase.
+ * O export `base44` mantém compatibilidade com imports legados; nenhuma chamada vai à Base44.
+ */
+export const base44 = {
+  entities: createAllEntityAdapters(),
+  auth: createSupabaseAuthAdapter(),
+  integrations: createSupabaseIntegrations(),
+  functions: {
+    invoke: invokeFunction,
+  },
+};
 
-/** Cliente legado Base44 (entidades/funções ainda em migração para Supabase). */
-export const base44 = createClient({
-  appId,
-  token,
-  functionsVersion,
-  serverUrl: '',
-  requiresAuth: false,
-  appBaseUrl,
-});
-
-/** Remove ?analytics-enable=false da barra de endereço após o SDK ler a config. */
-if (typeof window !== 'undefined') {
-  const url = new URL(window.location.href);
-  if (url.searchParams.has('analytics-enable')) {
-    url.searchParams.delete('analytics-enable');
-    const qs = url.searchParams.toString();
-    window.history.replaceState({}, '', `${url.pathname}${qs ? `?${qs}` : ''}${url.hash}`);
-  }
-}
+/** Alias preferencial para código novo. */
+export const api = base44;

@@ -3,7 +3,7 @@ import {
   Navigation2, UserCheck, Search, Camera, FileText, Ban,
   Tag, ArrowRightLeft, Receipt, Lock, RefreshCw,
   Percent, Ticket, Clock, CheckSquare, ListPlus, FileCheck,
-  Headphones, ScrollText, LayoutDashboard, Trophy, Home, User,
+  Headphones, ScrollText, LayoutDashboard, Trophy, Home, User, Settings
 } from 'lucide-react';
 
 export const ADMIN_NAV_GROUPS = [
@@ -57,6 +57,7 @@ export const ADMIN_NAV_GROUPS = [
       { value: 'sobretaxas', icon: Clock, label: 'Sobretaxas' },
       { value: 'checklists', icon: CheckSquare, label: 'Checklists' },
       { value: 'additional', icon: ListPlus, label: 'Pontos Extras' },
+      { value: 'provider-settings', icon: Settings, label: 'Config. Prestadores' },
       { value: 'termos', icon: FileCheck, label: 'Termos Clientes' },
       { value: 'termos-prestador', icon: FileCheck, label: 'Termos Prestadores' },
     ],

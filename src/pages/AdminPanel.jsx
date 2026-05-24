@@ -30,6 +30,7 @@ import ProviderTermsManager from '../components/admin/ProviderTermsManager';
 import ClientTermsManager from '../components/admin/ClientTermsManager';
 import TicketsAdmin from '../components/admin/TicketsAdmin';
 import ScheduledCalendar from '../components/admin/ScheduledCalendar';
+import ProviderSettings from '../components/admin/ProviderSettings';
 import UndoProviderAction from '../components/admin/UndoProviderAction';
 import ReembolsosRepasses from '../components/admin/ReembolsosRepasses';
 import ActivityLog from '../components/admin/ActivityLog';
@@ -338,6 +339,7 @@ export default function AdminPanel() {
           {activeTab === 'termos-prestador'&& <ProviderTermsManager />}
           {activeTab === 'tickets'         && <TicketsAdmin />}
           {activeTab === 'logs'            && <ActivityLog />}
+          {activeTab === 'provider-settings' && <ProviderSettings />}
 
           {/* â”€â”€ Chamados (inline) â”€â”€ */}
           {activeTab === 'requests' && (

@@ -7,26 +7,9 @@ import React, {
   useMemo,
 } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import { normalizeRole } from '@/lib/auth/roles';
+import { mapSessionUser } from '@/lib/auth/mapSessionUser';
 
 const AuthContext = createContext(null);
-
-function mapUser(sessionUser, profile) {
-  if (!sessionUser) return null;
-  const role = normalizeRole(profile?.role) ?? 'user';
-  return {
-    id: sessionUser.id,
-    email: sessionUser.email ?? profile?.email,
-    full_name:
-      profile?.full_name ??
-      sessionUser.user_metadata?.full_name ??
-      (sessionUser.email ? sessionUser.email.split('@')[0] : ''),
-    avatar_url: profile?.avatar_url ?? null,
-    role,
-    /** Compatível com telas que ainda checam `prestador`. */
-    legacyRole: role === 'provider' ? 'prestador' : role,
-  };
-}
 
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
@@ -86,7 +69,7 @@ export const AuthProvider = ({ children }) => {
   }, [session?.user?.id, loadProfile]);
 
   const user = useMemo(
-    () => mapUser(session?.user ?? null, profile),
+    () => mapSessionUser(session?.user ?? null, profile),
     [session, profile]
   );
 

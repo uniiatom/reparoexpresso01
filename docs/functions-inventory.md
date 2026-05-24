@@ -45,5 +45,18 @@ Este arquivo agrupa as funções em [base44/functions](../base44/functions/) por
 
 ## Próximos passos sugeridos
 
-1. Migrar primeiro **webhooks de pagamento** (`stripeWebhook`, PIX) para Edge + secrets no painel Supabase.
-2. Registrar cada função migrada aqui com link para `supabase/functions/<nome>/`.
+1. Configurar secrets no Supabase — ver [edge-functions-secrets.md](./edge-functions-secrets.md).
+2. Deploy: `supabase functions deploy --project-ref sedvqswypuhpiglnilxk` (ou MCP).
+3. Migrar Sprint P5+ (lembretes, recorrência, gamificação restante).
+
+## Funções já migradas para `supabase/functions/`
+
+| Função | Sprint |
+|--------|--------|
+| `validateCoupon`, `generateServicePasswords`, `getGoogleMapsKey` | Base |
+| `createCheckoutSession`, `stripeWebhook`, `generatePixQrCode`, `incrementCouponUsage` | P0 |
+| `assignServiceToProvider`, `completeServiceRequest`, `approveServiceEstimate`, `onServiceCreated` | P1 |
+| `sendExtraChargesRequest`, `approveExtraCharges`, `rejectExtraCharges`, `notifyExtraChargesApproval`, `notifyExtraChargesRejected`, `updateCheckoutWithExtraCharges`, `recordPriceHistory`, `getApplicableSurcharges` | P2 |
+| `processWalletWithdrawal`, `creditBonusToWallet`, `processCashbackRedemption`, `processCouponBonus`, `acceptClientTerms`, `acceptProviderTerms`, `notifyTermsUpdate`, `notifyClientTermsUpdate`, `createTipCheckoutSession`, `validateCNPJ`, `saveProviderCNPJData`, `notificarOutrosServico`, `processProviderRepayment`, `processServiceRefusal` | P3 |
+| `autoClosingReview`, `generateBiweeklyClosings`, `sendClosingAlert`, `grantEliteReviewerBadge`, `recordTechVisitResult`, `generateServiceReport`, `sendProviderLevelIncentive`, `optimizeRouteV2`, `optimizeServiceRoute` | P4 |
+| `sendPushNotification`, `rankProvidersForService`, `updateProviderJobCount`, `validateServiceCompletion`, `sendServiceReminders24h`, `processRecurringServices`, `checkExpiringServices`, `processBusyAlerts`, `calculateProviderLevel`, `recalcAllProviderLevels`, `updateBiweeklyClosings`, `processServiceReserveFund`, `sendEstimateApprovalNotification`, `creditAllPendingBonuses` | P5 |

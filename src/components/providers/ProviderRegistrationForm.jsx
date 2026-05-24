@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -20,11 +20,13 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { PROVIDER_SERVICE_TYPES, WEEKDAYS } from '@/lib/constants/providerServiceTypes';
+import { PROVIDER_SERVICE_TYPES } from '@/lib/constants/providerServiceTypes';
 import {
   DEFAULT_PROVIDER_FORM,
   registerProvider,
 } from '@/lib/providerRegistration';
+import { createDefaultSchedule } from '@/lib/providerSchedule';
+import { ProviderDayScheduleEditor } from '@/components/providers/ProviderDayScheduleEditor';
 
 export default function ProviderRegistrationForm({
   mode = 'self',
@@ -38,10 +40,7 @@ export default function ProviderRegistrationForm({
   const [form, setForm] = useState({
     ...DEFAULT_PROVIDER_FORM,
     qualifications: [],
-    schedule: {
-      ...DEFAULT_PROVIDER_FORM.schedule,
-      slots: [{ startTime: '08:00', endTime: '18:00' }],
-    },
+    schedule: createDefaultSchedule(),
   });
   const [autoApprove, setAutoApprove] = useState(false);
 
@@ -166,40 +165,6 @@ export default function ProviderRegistrationForm({
     );
   };
 
-  // ── Slots de horário ─────────────────────────────────
-  const addSlot = () =>
-    setForm((prev) => ({
-      ...prev,
-      schedule: {
-        ...prev.schedule,
-        slots: [...prev.schedule.slots, { startTime: '', endTime: '' }],
-      },
-    }));
-
-  const removeSlot = (index) =>
-    setForm((prev) => ({
-      ...prev,
-      schedule: {
-        ...prev.schedule,
-        slots: prev.schedule.slots.filter((_, i) => i !== index),
-      },
-    }));
-
-  const updateSlot = (index, field, value) =>
-    setForm((prev) => {
-      const next = [...prev.schedule.slots];
-      next[index] = { ...next[index], [field]: value };
-      return { ...prev, schedule: { ...prev.schedule, slots: next } };
-    });
-
-  const toggleDay = (day) =>
-    setForm((prev) => {
-      const days = prev.schedule.days.includes(day)
-        ? prev.schedule.days.filter((d) => d !== day)
-        : [...prev.schedule.days, day].sort((a, b) => a - b);
-      return { ...prev, schedule: { ...prev.schedule, days } };
-    });
-
   // ── Serviços ─────────────────────────────────────────
   const updateOffering = (index, field, value) =>
     setForm((prev) => {
@@ -235,7 +200,7 @@ export default function ProviderRegistrationForm({
           ? 'Prestador cadastrado com sucesso!'
           : 'Cadastro enviado! Aguarde a análise da equipe.',
       );
-      setForm({ ...DEFAULT_PROVIDER_FORM, qualifications: [], schedule: { ...DEFAULT_PROVIDER_FORM.schedule, slots: [{ startTime: '08:00', endTime: '18:00' }] } });
+      setForm({ ...DEFAULT_PROVIDER_FORM, qualifications: [], schedule: createDefaultSchedule() });
       onSuccess?.(provider);
     },
     onError: (err) => {
@@ -530,27 +495,28 @@ export default function ProviderRegistrationForm({
       <Card className="border-border/60">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Qualificações *</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Selecione suas certificações e informe sua experiência
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {qualificationsList.length > 0 && (
+          {qualificationsList.length === 0 ? (
+            <p className="text-sm text-muted-foreground italic">
+              Nenhuma qualificação cadastrada ainda. A equipe pode adicionar opções no painel admin.
+            </p>
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {qualificationsList.map((qual) => (
-                <div
+                <label
                   key={qual.id}
-                  className={cn(
-                    'flex items-center gap-2 p-3 border rounded-xl cursor-pointer transition-colors',
-                    form.qualifications.includes(qual.name)
-                      ? 'bg-primary/5 border-primary/40'
-                      : 'hover:bg-muted/50',
-                  )}
-                  onClick={() => toggleQualification(qual.name)}
+                  className="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-muted/50 transition-colors"
                 >
                   <Checkbox
                     checked={form.qualifications.includes(qual.name)}
                     onCheckedChange={() => toggleQualification(qual.name)}
                   />
                   <span className="text-sm font-medium">{qual.name}</span>
-                </div>
+                </label>
               ))}
             </div>
           )}
@@ -567,28 +533,24 @@ export default function ProviderRegistrationForm({
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label>Certificações / cursos (opcional)</Label>
+            <Label>
+              Observações {isRequired('bio') ? '*' : '(opcional)'}
+            </Label>
             <Textarea
               value={form.bio}
               onChange={(e) => set('bio', e.target.value)}
-              placeholder="Ex.: Curso SENAI Elétrica, NR-10, homologação Escola Prática..."
+              placeholder="Ferramentas, diferenciais, regiões que atende..."
               className="rounded-xl min-h-[70px]"
             />
           </div>
         </CardContent>
       </Card>
 
-      {/* ══ SERVIÇOS ════════════════════════════════════ */}
+      {/* ══ SERVIÇOS E PREÇO ════════════════════════════ */}
       <Card className="border-border/60">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2">
           <CardTitle className="text-base">Serviços e preço por hora *</CardTitle>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="rounded-xl h-8"
-            onClick={addOffering}
-          >
+          <Button type="button" size="sm" variant="outline" className="rounded-xl h-8 shrink-0" onClick={addOffering}>
             <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar
           </Button>
         </CardHeader>
@@ -608,9 +570,9 @@ export default function ProviderRegistrationForm({
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    {PROVIDER_SERVICE_TYPES.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
+                    {PROVIDER_SERVICE_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -624,7 +586,7 @@ export default function ProviderRegistrationForm({
                   step="0.01"
                   value={offering.hourlyRate}
                   onChange={(e) => updateOffering(index, 'hourlyRate', e.target.value)}
-                  placeholder="80.00"
+                  placeholder="0,00"
                   className="rounded-xl"
                 />
               </div>
@@ -647,101 +609,16 @@ export default function ProviderRegistrationForm({
       {/* ══ DISPONIBILIDADE ═════════════════════════════ */}
       <Card className="border-border/60">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Horário de atendimento *</CardTitle>
+          <CardTitle className="text-base">Disponibilidade *</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Dias e horários em que você aceita chamados
+          </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Dias da semana */}
-          <div>
-            <Label className="mb-2 block">Dias da semana</Label>
-            <div className="flex flex-wrap gap-2">
-              {WEEKDAYS.map((day) => {
-                const active = form.schedule.days.includes(day.value);
-                return (
-                  <button
-                    key={day.value}
-                    type="button"
-                    onClick={() => toggleDay(day.value)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-xl text-sm font-medium border transition-colors',
-                      active
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border text-muted-foreground',
-                    )}
-                  >
-                    {day.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Slots de horário */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Horários *</Label>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="h-8 rounded-xl"
-                onClick={addSlot}
-              >
-                <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar intervalo
-              </Button>
-            </div>
-            {form.schedule.slots.map((slot, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end"
-              >
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Início</Label>
-                  <Input
-                    type="time"
-                    value={slot.startTime}
-                    onChange={(e) => updateSlot(index, 'startTime', e.target.value)}
-                    className="rounded-xl h-9"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Fim</Label>
-                  <Input
-                    type="time"
-                    value={slot.endTime}
-                    onChange={(e) => updateSlot(index, 'endTime', e.target.value)}
-                    className="rounded-xl h-9"
-                  />
-                </div>
-                {form.schedule.slots.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-xl text-destructive h-9"
-                    onClick={() => removeSlot(index)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
-            <div className="space-y-1.5 pt-1">
-              <Label>Máx. serviços/dia</Label>
-              <Input
-                type="number"
-                min={1}
-                max={20}
-                value={form.schedule.maxSlotsPerDay}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    schedule: { ...prev.schedule, maxSlotsPerDay: e.target.value },
-                  }))
-                }
-                className="rounded-xl"
-              />
-            </div>
-          </div>
+        <CardContent>
+          <ProviderDayScheduleEditor
+            schedule={form.schedule}
+            onChange={(schedule) => setForm((prev) => ({ ...prev, schedule }))}
+          />
         </CardContent>
       </Card>
 

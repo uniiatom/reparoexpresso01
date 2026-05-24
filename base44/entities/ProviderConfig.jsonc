@@ -1,0 +1,12 @@
+{
+  "name": "ProviderConfig",
+  "label": "Configuração de Prestadores",
+  "fields": [
+    {
+      "name": "required_fields",
+      "type": "string[]",
+      "label": "Campos Obrigatórios",
+      "description": "Lista de campos que devem ser obrigatórios no cadastro do prestador"
+    }
+  ]
+}

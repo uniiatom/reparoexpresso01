@@ -6,5 +6,26 @@ project_id = "sedvqswypuhpiglnilxk"
 [api]
 enabled = true
 
-[functions]
-enabled = true
+[functions.stripeWebhook]
+verify_jwt = false
+
+[functions.health]
+verify_jwt = false
+
+[functions.sendServiceReminders24h]
+verify_jwt = false
+
+[functions.processRecurringServices]
+verify_jwt = false
+
+[functions.checkExpiringServices]
+verify_jwt = false
+
+[functions.processBusyAlerts]
+verify_jwt = false
+
+[functions.recalcAllProviderLevels]
+verify_jwt = false
+
+[functions.creditAllPendingBonuses]
+verify_jwt = false
