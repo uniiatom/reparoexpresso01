@@ -43,6 +43,9 @@ const ENTITY_TABLES = {
   Professional: { table: 'professionals' },
   QuoteRequest: { table: 'quote_requests' },
   ServiceCategory: { table: 'service_categories' },
+  OfferedService: { table: 'offered_services', defaultSort: 'sort_order' },
+  OfferedServiceFieldTemplate: { table: 'offered_service_field_templates', defaultSort: 'sort_order' },
+  MediaLibrary: { table: 'media_library', defaultSort: '-created_at' },
 };
 
 /**
@@ -54,6 +57,7 @@ export function createAllEntityAdapters() {
   for (const [entityName, config] of Object.entries(ENTITY_TABLES)) {
     adapters[entityName] = createSupabaseEntityAdapter(config.table, {
       realtime: config.realtime ?? false,
+      defaultSort: config.defaultSort,
     });
   }
 

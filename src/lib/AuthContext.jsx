@@ -12,65 +12,75 @@ import { mapSessionUser } from '@/lib/auth/mapSessionUser';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [session, setSession] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [session, setSession]               = useState(null);
+  const [profile, setProfile]               = useState(null);
+  const [isLoadingAuth, setIsLoadingAuth]   = useState(true);
+  // Controla se o perfil está sendo carregado APÓS uma troca de sessão
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
   const loadProfile = useCallback(async (userId) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-    if (error) {
-      console.error('[auth] perfil:', error);
-      setProfile(null);
-      return;
+    setIsLoadingProfile(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) {
+        console.error('[auth] perfil:', error);
+        setProfile(null);
+        return;
+      }
+      setProfile(data ?? null);
+    } finally {
+      setIsLoadingProfile(false);
     }
-    setProfile(data ?? null);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
 
-    supabase.auth
-      .getSession()
-      .then(({ data: { session: initial } }) => {
+    // ── Carga inicial (page reload / deep link) ──────────────────────────────
+    // isLoadingAuth permanece true até session + profile estarem resolvidos.
+    (async () => {
+      try {
+        const { data: { session: initial } } = await supabase.auth.getSession();
         if (cancelled) return;
         setSession(initial);
-      })
-      .catch((err) => {
-        console.error('[auth] sessão:', err);
-      })
-      .finally(() => {
+        if (initial?.user?.id) {
+          await loadProfile(initial.user.id);
+        }
+      } catch (err) {
+        console.error('[auth] sessão/perfil:', err);
+      } finally {
         if (!cancelled) setIsLoadingAuth(false);
-      });
+      }
+    })();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
-      if (!nextSession?.user) setProfile(null);
-    });
+    // ── Mudanças de auth em tempo real (login / logout / refresh) ────────────
+    // isLoadingProfile = true enquanto o perfil carrega → RoleRoute aguarda.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, nextSession) => {
+        if (cancelled) return;
+        setSession(nextSession);
+        if (nextSession?.user?.id) {
+          // Carrega perfil de forma assíncrona; isLoadingProfile bloqueia RoleRoute
+          loadProfile(nextSession.user.id);
+        } else {
+          setProfile(null);
+        }
+      },
+    );
 
     return () => {
       cancelled = true;
       subscription.unsubscribe();
     };
-  }, []);
-
-  useEffect(() => {
-    const userId = session?.user?.id;
-    if (!userId) {
-      setProfile(null);
-      return;
-    }
-    loadProfile(userId);
-  }, [session?.user?.id, loadProfile]);
+  }, [loadProfile]);
 
   const user = useMemo(
     () => mapSessionUser(session?.user ?? null, profile),
-    [session, profile]
+    [session, profile],
   );
 
   const signInWithPassword = useCallback(async (email, password) => {
@@ -82,9 +92,7 @@ export const AuthProvider = ({ children }) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { full_name: fullName || '' },
-      },
+      options: { data: { full_name: fullName || '' } },
     });
     if (error) throw error;
   }, []);
@@ -96,13 +104,8 @@ export const AuthProvider = ({ children }) => {
   const updatePassword = useCallback(async (currentPassword, newPassword) => {
     const email = session?.user?.email;
     if (!email) throw new Error('Sessão inválida. Faça login novamente.');
-
-    const { error: verifyError } = await supabase.auth.signInWithPassword({
-      email,
-      password: currentPassword,
-    });
+    const { error: verifyError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
     if (verifyError) throw new Error('Senha atual incorreta.');
-
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) throw error;
   }, [session?.user?.email]);
@@ -117,7 +120,8 @@ export const AuthProvider = ({ children }) => {
     user,
     profile,
     isAuthenticated: !!session?.user,
-    isLoadingAuth,
+    // Combina os dois estados de loading: RoleRoute e Navbar esperam ambos
+    isLoadingAuth: isLoadingAuth || isLoadingProfile,
     signInWithPassword,
     signUpWithPassword,
     logout,

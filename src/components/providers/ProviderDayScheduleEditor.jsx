@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WEEKDAYS } from '@/lib/constants/providerServiceTypes';
 import {
@@ -17,11 +17,29 @@ import {
 
 /**
  * Editor de horários por dia da semana (vários intervalos por dia).
+ *
+ * Props novas:
+ *   allowedWeekdays  int[] | undefined  — filtra quais dias aparecem
+ *   hoursStart       string | undefined — hint de horário mínimo (ex: '07:00')
+ *   hoursEnd         string | undefined — hint de horário máximo (ex: '20:00')
  */
-export function ProviderDayScheduleEditor({ schedule, onChange, showMaxSlots = true }) {
-  const activeDay = schedule.activeDay ?? 1;
+export function ProviderDayScheduleEditor({
+  schedule,
+  onChange,
+  showMaxSlots = true,
+  allowedWeekdays,
+  hoursStart,
+  hoursEnd,
+}) {
+  // Filtra os dias conforme config do admin
+  const days =
+    allowedWeekdays?.length
+      ? WEEKDAYS.filter((d) => allowedWeekdays.includes(d.value))
+      : WEEKDAYS;
+
+  const activeDay = schedule.activeDay ?? (days[0]?.value ?? 1);
   const activeSlots = getSlotsForDay(schedule, activeDay);
-  const activeDayLabel = WEEKDAYS.find((d) => d.value === activeDay)?.label ?? '';
+  const activeDayLabel = days.find((d) => d.value === activeDay)?.label ?? '';
 
   const handleSelectDay = (day) => {
     onChange(setActiveDay(schedule, day));
@@ -33,14 +51,17 @@ export function ProviderDayScheduleEditor({ schedule, onChange, showMaxSlots = t
     <div className="space-y-4">
       <div>
         <Label className="mb-2 block">Dias da semana</Label>
+        {hoursStart && hoursEnd && (
+          <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            Horários permitidos: {hoursStart} às {hoursEnd}
+          </p>
+        )}
         <p className="text-xs text-muted-foreground mb-2">
-          Selecione um dia e configure os horários dele. Cada dia pode ter intervalos diferentes.
-        </p>
-        <p className="text-xs text-muted-foreground mb-2">
-          Ex.: Segunda 08:00–13:00 e 15:00–18:00 · Terça 09:00–11:00
+          Selecione um dia e configure os horários. Cada dia pode ter intervalos diferentes.
         </p>
         <div className="flex flex-wrap gap-2">
-          {WEEKDAYS.map((day) => {
+          {days.map((day) => {
             const isEditing = activeDay === day.value;
             const hasHours = dayHasConfiguredSlots(getSlotsForDay(schedule, day.value));
             return (
@@ -67,7 +88,7 @@ export function ProviderDayScheduleEditor({ schedule, onChange, showMaxSlots = t
         </div>
       </div>
 
-      <div className="space-y-3 rounded-xl border border-border/60 p-3 bg-muted/20">
+      <div className="space-y-3 rounded-2xl border border-primary/15 p-3 bg-gradient-to-br from-primary/[0.05] to-muted/10 shadow-md shadow-black/20">
         <div className="flex items-center justify-between gap-2">
           <Label>Horários — {activeDayLabel} *</Label>
           <Button
@@ -87,9 +108,11 @@ export function ProviderDayScheduleEditor({ schedule, onChange, showMaxSlots = t
             className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end"
           >
             <div className="space-y-1.5">
-              <Label className="text-xs">Início</Label>
+              <Label className="text-xs">Início{hoursStart ? ` (a partir de ${hoursStart})` : ''}</Label>
               <Input
                 type="time"
+                min={hoursStart}
+                max={hoursEnd}
                 value={slot.startTime}
                 onChange={(e) =>
                   onChange(updateSlotOnDay(schedule, activeDay, index, 'startTime', e.target.value))
@@ -98,9 +121,11 @@ export function ProviderDayScheduleEditor({ schedule, onChange, showMaxSlots = t
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Fim</Label>
+              <Label className="text-xs">Fim{hoursEnd ? ` (até ${hoursEnd})` : ''}</Label>
               <Input
                 type="time"
+                min={hoursStart}
+                max={hoursEnd}
                 value={slot.endTime}
                 onChange={(e) =>
                   onChange(updateSlotOnDay(schedule, activeDay, index, 'endTime', e.target.value))

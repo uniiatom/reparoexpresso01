@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ProviderDayScheduleEditor } from '@/components/providers/ProviderDayScheduleEditor';
+import OfferedServicesCatalog from '@/components/offered-services/OfferedServicesCatalog';
 import {
   availabilityToSchedule,
   createDefaultSchedule,
@@ -346,6 +347,15 @@ export default function ProviderProfileTab({ provider, onUpdate }) {
               Você já enviou uma solicitação recentemente. Aguarde 24h para enviar outra.
             </p>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Serviços disponíveis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <OfferedServicesCatalog title="Serviços que você pode atender" />
         </CardContent>
       </Card>
     </div>

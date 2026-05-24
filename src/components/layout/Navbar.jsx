@@ -34,13 +34,13 @@ export default function Navbar() {
 
       <div className="w-full px-4 sm:px-6 h-[56px] flex items-center justify-between">
 
-        {/* ── Logo ── */}
-        <Link to="/inicio" className="flex items-center group" aria-label="Reparo Expresso — Início">
+        {/* ── Logo ── admin vai direto para /admin */}
+        <Link to={isAdmin || isAttendant ? '/admin' : '/inicio'} className="flex items-center group" aria-label="Reparo Expresso — Início">
           <span className="absolute inset-0 rounded-xl bg-amber-500/8 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
           <img
             src="/logo.png"
             alt="Reparo Expresso"
-            className="relative h-9 w-auto object-contain
+            className="relative h-12 w-auto object-contain
                        drop-shadow-[0_0_6px_rgba(245,158,11,0.3)]
                        group-hover:drop-shadow-[0_0_14px_rgba(245,158,11,0.6)]
                        transition-all duration-300 group-hover:scale-105"

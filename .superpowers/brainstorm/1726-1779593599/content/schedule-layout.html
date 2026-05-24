@@ -1,0 +1,177 @@
+<h2>Layout do Editor de Horários por Dia</h2>
+<p class="subtitle">Cada dia da semana pode ter múltiplos intervalos de horário. Como você prefere editar isso?</p>
+
+<div class="cards">
+
+  <!-- Opção A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#0f0f11;border-radius:8px;">
+      <p style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Linhas por dia</p>
+      <!-- Segunda -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="width:28px;font-size:11px;font-weight:700;color:#a78bfa;">Seg</span>
+        <div style="display:flex;align-items:center;gap:4px;background:#1c1c22;border:1px solid #2a2a35;border-radius:6px;padding:4px 8px;flex:1;">
+          <span style="font-size:11px;color:#d4d4d8;">11:00</span>
+          <span style="font-size:10px;color:#555;">→</span>
+          <span style="font-size:11px;color:#d4d4d8;">20:00</span>
+          <span style="margin-left:auto;font-size:10px;color:#7c3aed;cursor:pointer;">+ intervalo</span>
+        </div>
+      </div>
+      <!-- Terça -->
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;">
+        <span style="width:28px;font-size:11px;font-weight:700;color:#a78bfa;padding-top:5px;">Ter</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+          <div style="display:flex;align-items:center;gap:4px;background:#1c1c22;border:1px solid #2a2a35;border-radius:6px;padding:4px 8px;">
+            <span style="font-size:11px;color:#d4d4d8;">20:00</span>
+            <span style="font-size:10px;color:#555;">→</span>
+            <span style="font-size:11px;color:#d4d4d8;">22:00</span>
+            <span style="margin-left:auto;font-size:10px;color:#ef4444;cursor:pointer;">✕</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;background:#1c1c22;border:1px solid #2a2a35;border-radius:6px;padding:4px 8px;">
+            <span style="font-size:11px;color:#d4d4d8;">22:00</span>
+            <span style="font-size:10px;color:#555;">→</span>
+            <span style="font-size:11px;color:#d4d4d8;">23:00</span>
+            <span style="margin-left:auto;font-size:10px;color:#ef4444;cursor:pointer;">✕</span>
+          </div>
+          <span style="font-size:10px;color:#7c3aed;cursor:pointer;">+ intervalo</span>
+        </div>
+      </div>
+      <!-- Quarta -->
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <span style="width:28px;font-size:11px;font-weight:700;color:#a78bfa;padding-top:5px;">Qua</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+          <div style="display:flex;align-items:center;gap:4px;background:#1c1c22;border:1px solid #2a2a35;border-radius:6px;padding:4px 8px;">
+            <span style="font-size:11px;color:#d4d4d8;">08:00</span>
+            <span style="font-size:10px;color:#555;">→</span>
+            <span style="font-size:11px;color:#d4d4d8;">11:00</span>
+            <span style="margin-left:auto;font-size:10px;color:#ef4444;cursor:pointer;">✕</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;background:#1c1c22;border:1px solid #2a2a35;border-radius:6px;padding:4px 8px;">
+            <span style="font-size:11px;color:#d4d4d8;">13:00</span>
+            <span style="font-size:10px;color:#555;">→</span>
+            <span style="font-size:11px;color:#d4d4d8;">15:00</span>
+            <span style="margin-left:auto;font-size:10px;color:#ef4444;cursor:pointer;">✕</span>
+          </div>
+          <span style="font-size:10px;color:#7c3aed;cursor:pointer;">+ intervalo</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Lista expandível por dia</h3>
+      <p>Cada dia mostra seus intervalos em coluna. Clique em "+ intervalo" para adicionar. Simples e compacto.</p>
+    </div>
+  </div>
+
+  <!-- Opção B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#0f0f11;border-radius:8px;">
+      <p style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Grade visual semanal</p>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;">
+        <!-- Headers -->
+        <div style="font-size:9px;color:#888;padding:2px;">Dom</div>
+        <div style="font-size:9px;color:#a78bfa;font-weight:700;padding:2px;">Seg</div>
+        <div style="font-size:9px;color:#a78bfa;font-weight:700;padding:2px;">Ter</div>
+        <div style="font-size:9px;color:#a78bfa;font-weight:700;padding:2px;">Qua</div>
+        <div style="font-size:9px;color:#888;padding:2px;">Qui</div>
+        <div style="font-size:9px;color:#888;padding:2px;">Sex</div>
+        <div style="font-size:9px;color:#888;padding:2px;">Sáb</div>
+        <!-- Slot rows -->
+        <div style="height:20px;background:#1c1c22;border-radius:3px;"></div>
+        <div style="height:20px;background:#7c3aed55;border:1px solid #7c3aed;border-radius:3px;display:flex;align-items:center;justify-content:center;"><span style="font-size:8px;color:#c4b5fd;">11–20</span></div>
+        <div style="height:20px;background:#7c3aed55;border:1px solid #7c3aed;border-radius:3px;display:flex;align-items:center;justify-content:center;"><span style="font-size:8px;color:#c4b5fd;">20–22</span></div>
+        <div style="height:20px;background:#7c3aed55;border:1px solid #7c3aed;border-radius:3px;display:flex;align-items:center;justify-content:center;"><span style="font-size:8px;color:#c4b5fd;">08–11</span></div>
+        <div style="height:20px;background:#1c1c22;border-radius:3px;"></div>
+        <div style="height:20px;background:#1c1c22;border-radius:3px;"></div>
+        <div style="height:20px;background:#1c1c22;border-radius:3px;"></div>
+        <!-- 2nd row -->
+        <div style="height:20px;background:#1c1c22;border-radius:3px;"></div>
+        <div style="height:20px;background:#1c1c22;border-radius:3px;"></div>
+        <div style="height:20px;background:#7c3aed55;border:1px solid #7c3aed;border-radius:3px;display:flex;align-items:center;justify-content:center;"><span style="font-size:8px;color:#c4b5fd;">22–23</span></div>
+        <div style="height:20px;background:#7c3aed55;border:1px solid #7c3aed;border-radius:3px;display:flex;align-items:center;justify-content:center;"><span style="font-size:8px;color:#c4b5fd;">13–15</span></div>
+        <div style="height:20px;background:#1c1c22;border-radius:3px;"></div>
+        <div style="height:20px;background:#1c1c22;border-radius:3px;"></div>
+        <div style="height:20px;background:#1c1c22;border-radius:3px;"></div>
+        <!-- Add row -->
+        <div style="height:16px;"></div>
+        <div style="height:16px;display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;color:#7c3aed;">+</span></div>
+        <div style="height:16px;display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;color:#7c3aed;">+</span></div>
+        <div style="height:16px;display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;color:#7c3aed;">+</span></div>
+        <div style="height:16px;"></div>
+        <div style="height:16px;"></div>
+        <div style="height:16px;"></div>
+      </div>
+      <p style="font-size:9px;color:#555;margin-top:8px;text-align:center;">Clique numa coluna para editar aquele dia</p>
+    </div>
+    <div class="card-body">
+      <h3>B — Grade visual semanal</h3>
+      <p>Visão de semana completa com todos os slots em colunas. Mais visual, mais difícil de editar horários precisos.</p>
+    </div>
+  </div>
+
+  <!-- Opção C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#0f0f11;border-radius:8px;">
+      <p style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Accordion por dia</p>
+      <!-- Seg fechado -->
+      <div style="border:1px solid #2a2a35;border-radius:8px;margin-bottom:4px;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#1c1c22;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:8px;height:8px;background:#7c3aed;border-radius:50%;"></div>
+            <span style="font-size:12px;font-weight:600;color:#d4d4d8;">Segunda-feira</span>
+          </div>
+          <span style="font-size:10px;color:#888;">1 intervalo · 11:00–20:00 ▸</span>
+        </div>
+      </div>
+      <!-- Ter aberto -->
+      <div style="border:1px solid #7c3aed55;border-radius:8px;margin-bottom:4px;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#1c1c2280;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:8px;height:8px;background:#7c3aed;border-radius:50%;"></div>
+            <span style="font-size:12px;font-weight:600;color:#d4d4d8;">Terça-feira</span>
+          </div>
+          <span style="font-size:10px;color:#a78bfa;">2 intervalos ▾</span>
+        </div>
+        <div style="padding:8px 12px;background:#0f0f1180;border-top:1px solid #2a2a35;display:flex;flex-direction:column;gap:4px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="time" value="20:00" style="background:#1c1c22;border:1px solid #2a2a35;border-radius:5px;color:#d4d4d8;font-size:11px;padding:3px 6px;width:80px;" />
+            <span style="font-size:10px;color:#555;">até</span>
+            <input type="time" value="22:00" style="background:#1c1c22;border:1px solid #2a2a35;border-radius:5px;color:#d4d4d8;font-size:11px;padding:3px 6px;width:80px;" />
+            <span style="font-size:10px;color:#ef4444;cursor:pointer;margin-left:auto;">✕</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="time" value="22:00" style="background:#1c1c22;border:1px solid #2a2a35;border-radius:5px;color:#d4d4d8;font-size:11px;padding:3px 6px;width:80px;" />
+            <span style="font-size:10px;color:#555;">até</span>
+            <input type="time" value="23:00" style="background:#1c1c22;border:1px solid #2a2a35;border-radius:5px;color:#d4d4d8;font-size:11px;padding:3px 6px;width:80px;" />
+            <span style="font-size:10px;color:#ef4444;cursor:pointer;margin-left:auto;">✕</span>
+          </div>
+          <button style="font-size:10px;color:#7c3aed;background:transparent;border:1px dashed #7c3aed44;border-radius:5px;padding:3px 8px;cursor:pointer;">+ Adicionar intervalo</button>
+        </div>
+      </div>
+      <!-- Qua fechado -->
+      <div style="border:1px solid #2a2a35;border-radius:8px;margin-bottom:4px;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#1c1c22;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:8px;height:8px;background:#7c3aed;border-radius:50%;"></div>
+            <span style="font-size:12px;font-weight:600;color:#d4d4d8;">Quarta-feira</span>
+          </div>
+          <span style="font-size:10px;color:#888;">2 intervalos · 08–11, 13–15 ▸</span>
+        </div>
+      </div>
+      <!-- Qui desabilitado -->
+      <div style="border:1px solid #1a1a22;border-radius:8px;overflow:hidden;opacity:0.45;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#18181f;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:8px;height:8px;background:#444;border-radius:50%;"></div>
+            <span style="font-size:12px;color:#666;">Quinta-feira</span>
+          </div>
+          <span style="font-size:10px;color:#555;">Desativado · Clique para ativar</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Accordion por dia (nomes completos)</h3>
+      <p>Cada dia é uma linha colapsável. Mostra um resumo fechado e expande com os inputs de time. Mais espaço para editar com precisão.</p>
+    </div>
+  </div>
+
+</div>

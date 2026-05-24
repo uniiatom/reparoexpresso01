@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { ROLES } from '@/lib/auth/roles';
+import { ROLES, hasAnyRole } from '@/lib/auth/roles';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 
-export default function GlobalAdminSidebar() {
+export default function GlobalAdminSidebar({ open, onOpenChange }) {
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
 
-  const isAdmin = user?.role === ROLES.ADMIN;
-  const isAttendant = user?.role === ROLES.ATTENDANT;
+  const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
+  const isAttendant = hasAnyRole(user, [ROLES.ATTENDANT]);
 
   const { data: providers = [] } = useQuery({
     queryKey: ['sidebar-providers'],
@@ -29,7 +28,7 @@ export default function GlobalAdminSidebar() {
   return (
     <AdminSidebar
       open={open}
-      onToggle={() => setOpen((prev) => !prev)}
+      onToggle={() => onOpenChange?.((prev) => !prev)}
       pendingCount={pendingProviders.length}
       pendingPhotos={pendingPhotoProviders.length}
       role={isAttendant ? 'attendant' : 'admin'}

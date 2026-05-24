@@ -1,13 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Wrench } from 'lucide-react'; // mantido para fallback
+import { ROLES } from '@/lib/auth/roles';
+import { isStaffAllowedPath } from '@/components/auth/StaffAreaGuard';
+import AppLoadingScreen from '@/components/ui/AppLoadingScreen';
+import BrandSplashScreen from '@/components/ui/BrandSplashScreen';
+import {
+  LOGO_TITLE_SRC,
+  markFirstLoginSplashSeen,
+  markPendingLoginSplash,
+  PENDING_LOGIN_SPLASH_KEY,
+  shouldShowFirstLoginSplash,
+} from '@/lib/brandAssets';
 
 export default function Login() {
-  const { isAuthenticated, isLoadingAuth, signInWithPassword } = useAuth();
+  const { isAuthenticated, isLoadingAuth, signInWithPassword, user } = useAuth();
   const location = useLocation();
   const from = location.state?.from || '/inicio';
 
@@ -15,17 +25,39 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [splashPhase, setSplashPhase] = useState(null);
 
-  if (isLoadingAuth) {
+  useEffect(() => {
+    if (isLoadingAuth || !isAuthenticated || !user?.id || splashPhase !== null) return;
+
+    if (shouldShowFirstLoginSplash(user.id)) {
+      setSplashPhase('show');
+    } else {
+      setSplashPhase('done');
+    }
+  }, [isLoadingAuth, isAuthenticated, user?.id, splashPhase]);
+
+  if (isLoadingAuth || (isAuthenticated && splashPhase === null)) {
+    return <AppLoadingScreen />;
+  }
+
+  if (splashPhase === 'show') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-        <div className="h-10 w-10 border-2 border-zinc-700 border-t-amber-400 rounded-full animate-spin" />
-      </div>
+      <BrandSplashScreen
+        duration={2000}
+        onComplete={() => {
+          markFirstLoginSplashSeen(user.id);
+          setSplashPhase('done');
+        }}
+      />
     );
   }
 
-  if (isAuthenticated) {
-    return <Navigate to={from === '/' ? '/inicio' : from} replace />;
+  if (isAuthenticated && splashPhase === 'done') {
+    const isStaff = user?.role === ROLES.ADMIN || user?.role === ROLES.ATTENDANT;
+    const defaultDest = isStaff ? '/admin' : '/inicio';
+    const dest = from === '/' ? defaultDest : (isStaff && !isStaffAllowedPath(from) ? '/admin' : from);
+    return <Navigate to={dest} replace />;
   }
 
   const onSubmit = async (e) => {
@@ -33,8 +65,10 @@ export default function Login() {
     setError('');
     setSubmitting(true);
     try {
+      markPendingLoginSplash();
       await signInWithPassword(email.trim(), password);
     } catch (err) {
+      sessionStorage.removeItem(PENDING_LOGIN_SPLASH_KEY);
       setError(err.message || 'Não foi possível entrar. Verifique e-mail e senha.');
     } finally {
       setSubmitting(false);
@@ -45,21 +79,13 @@ export default function Login() {
     <div className="min-h-screen flex flex-col lg:flex-row bg-zinc-950 text-zinc-100">
       <div className="lg:w-1/2 relative overflow-hidden flex flex-col justify-between p-8 lg:p-12 border-b lg:border-b-0 lg:border-r border-zinc-800/80">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/15 via-transparent to-transparent pointer-events-none" />
-        {/* Logo com fundo transparente — evidência de marca */}
         <div className="relative z-10 flex items-center gap-3">
           <div className="relative group">
-            {/* Glow âmbar de fundo */}
             <span className="absolute inset-0 rounded-2xl bg-amber-500/20 blur-xl scale-125 pointer-events-none" />
             <img
-              src="/logo-titulo.png"
+              src={LOGO_TITLE_SRC}
               alt="Reparo Expresso"
               className="relative h-14 w-auto object-contain drop-shadow-[0_2px_16px_rgba(245,158,11,0.5)]"
-              style={{ filter: 'drop-shadow(0 0 12px rgba(245,158,11,0.45))' }}
-              onError={(e) => {
-                // fallback caso logo-titulo não exista
-                e.target.src = '/logo.png';
-                e.target.className = 'relative h-12 w-12 object-contain drop-shadow-[0_0_12px_rgba(245,158,11,0.45)]';
-              }}
             />
           </div>
         </div>

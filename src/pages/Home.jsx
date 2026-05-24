@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import {
@@ -16,35 +16,9 @@ import PaymentModal from "@/components/PaymentModal";
 import AvailableScheduleSelector from "@/components/AvailableScheduleSelector";
 import FleetMap from "@/components/FleetMap";
 import ServiceSearch from "@/components/ServiceSearch";
-import AdminHomePanel from '@/components/home/AdminHomePanel';
+import OfferedServicesCatalog from '@/components/offered-services/OfferedServicesCatalog';
+import AppLoadingScreen from '@/components/ui/AppLoadingScreen';
 import { ROLES } from '@/lib/auth/roles';
-
-const homeServices = [
-  { icon: Zap, label: "Elétrica", subtitle: "Chuveiro, tomada, QDC", type: "eletrica", color: "bg-amber-500/15 text-amber-400" },
-  { icon: Pipette, label: "Hidráulica", subtitle: "Vazamento, registro", type: "hidraulica", color: "bg-sky-500/15 text-sky-400" },
-  { icon: Lock, label: "Fechadura", subtitle: "Serviços de fechadura", type: "fechadura", color: "bg-emerald-500/15 text-emerald-400" },
-  { icon: Thermometer, label: "Ar Condicionado", subtitle: "Instalação e reparo", type: "ar_condicionado", color: "bg-cyan-500/15 text-cyan-400" },
-  { icon: Waves, label: "Limpeza Caixa d'Água", subtitle: "Limpeza especializada", type: "limpeza_caixa_dagua", color: "bg-sky-500/15 text-sky-400" },
-  { icon: Droplets, label: "Limpeza de Calha", subtitle: "Desobstrução", type: "limpeza_calha", color: "bg-slate-500/15 text-slate-400" },
-  { icon: Layers, label: "Substituição de Telha", subtitle: "Reparos de cobertura", type: "substituicao_telha", color: "bg-orange-500/15 text-orange-400" },
-  { icon: Sparkles, label: "Limpeza de Telhado", subtitle: "Limpeza de cobertura", type: "limpeza_telhado", color: "bg-yellow-500/15 text-yellow-400" },
-  { icon: ChefHat, label: "Coifa de Parede", subtitle: "Instalação de coifa", type: "instalacao_coifa_parede", color: "bg-teal-500/15 text-teal-400" },
-  { icon: ShowerHead, label: "Conversão Vaso CX Acoplada", subtitle: "Adaptação sanitária", type: "conversao_vaso_coplado", color: "bg-indigo-500/15 text-indigo-400" },
-  { icon: Layers, label: "Reparo Forro de Gesso", subtitle: "Manutenção de forro", type: "reparo_forro_gesso", color: "bg-stone-500/15 text-stone-400" },
-  { icon: Droplets, label: "Desentupimento", subtitle: "Desobstrução rápida", type: "desentupimento", color: "bg-orange-500/15 text-orange-400" },
-  { icon: Droplets, label: "Caça Vazamento", subtitle: "Detecção de vazamentos", type: "caca_vazamento", color: "bg-sky-500/15 text-sky-400" },
-  { icon: ClipboardList, label: "Check-up", subtitle: "Vistoria completa", type: "checkup", color: "bg-emerald-500/15 text-emerald-400" },
-  { icon: Layers, label: "Rejunte", subtitle: "Rejunte de azulejos", type: "rejunte", color: "bg-rose-500/15 text-rose-400" },
-  { icon: DoorOpen, label: "Portão Eletrônico", subtitle: "Instalação e reparo", type: "portao_eletronico", color: "bg-sky-500/15 text-sky-400" },
-  { icon: Gauge, label: "Pressurizador", subtitle: "Instalação e reparo", type: "pressurizador", color: "bg-cyan-500/15 text-cyan-400" },
-];
-
-const vehicleServices = [
-  { icon: Settings, label: "Troca de Pneu", subtitle: "Pneus novos", type: "troca_pneu", color: "bg-slate-500/15 text-slate-400" },
-  { icon: Zap, label: "Recarga Bateria", subtitle: "Carregamento rápido", type: "recarga_bateria", color: "bg-amber-500/15 text-amber-400" },
-  { icon: Wrench, label: "Conserto Pneu", subtitle: "Reparo de furos", type: "conserto_pneu", color: "bg-red-500/15 text-red-400" },
-  { icon: Truck, label: "Reboque", subtitle: "Transporte seguro", type: "reboque", color: "bg-orange-500/15 text-orange-400" },
-];
 
 const electricalServices = [
   { label: "Chuveiro", type: "eletrica_chuveiro", price: "R$ 80 - R$ 150" },
@@ -74,7 +48,7 @@ const STATUS_LABEL = {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoadingAuth } = useAuth();
   const [mainTab, setMainTab] = useState('cliente');
   const [serviceTab, setServiceTab] = useState('casa');
   const [showElectricalModal, setShowElectricalModal] = useState(false);
@@ -91,8 +65,6 @@ export default function Home() {
   const [electricalModalExpanded, setElectricalModalExpanded] = useState(true);
   const [hydraulicModalExpanded, setHydraulicModalExpanded] = useState(true);
   const [activeRequests, setActiveRequests] = useState([]);
-  const [filteredHomeServices, setFilteredHomeServices] = useState(homeServices);
-  const [filteredVehicleServices, setFilteredVehicleServices] = useState(vehicleServices);
 
   useEffect(() => {
     if (!user?.id) {
@@ -159,12 +131,13 @@ export default function Home() {
     }
   }, [user?.role]);
 
-  if (user?.role === ROLES.ADMIN) {
-    return <AdminHomePanel />;
+  // Admin e atendente não devem ver a área do cliente — redireciona para o painel
+  if (isLoadingAuth) {
+    return <AppLoadingScreen fullScreen={false} className="min-h-screen" />;
   }
 
-  if (user?.role === ROLES.ATTENDANT) {
-    return <AdminHomePanel />;
+  if (user?.role === ROLES.ADMIN || user?.role === ROLES.ATTENDANT) {
+    return <Navigate to="/admin" replace />;
   }
 
   return (
@@ -267,400 +240,23 @@ export default function Home() {
                       </button>
                      </div>
 
-                     {serviceTab === 'casa' && (
-                      <div className="space-y-4">
-                        <ServiceSearch
-                          services={homeServices}
-                          onFilterChange={setFilteredHomeServices}
-                          placeholder="Buscar serviços de casa..."
-                        />
-                        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3">
-                          {filteredHomeServices.map((s, i) => (
-                          <motion.div key={`home-${s.type}-${i}`} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
-                            {s.type === 'eletrica' ? (
-                              <button 
-                                onClick={() => setShowElectricalModal(true)}
-                                className="w-full h-full"
-                              >
-                                <div className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-accent transition-colors cursor-pointer">
-                                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${s.color}`}>
-                                    <s.icon className="w-6 h-6" />
-                                  </div>
-                                  <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
-                                  <span className="text-xs text-center text-muted-foreground">{s.subtitle}</span>
-                                </div>
-                              </button>
-                            ) : s.type === 'hidraulica' ? (
-                              <button 
-                                onClick={() => setShowHydraulicModal(true)}
-                                className="w-full h-full"
-                              >
-                                <div className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-accent transition-colors cursor-pointer">
-                                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${s.color}`}>
-                                    <s.icon className="w-6 h-6" />
-                                  </div>
-                                  <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
-                                  <span className="text-xs text-center text-muted-foreground">{s.subtitle}</span>
-                                </div>
-                              </button>
-                            ) : (
-                             <Link to={`/solicitar?tipo=${s.type}`}>
-                               <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-accent transition-colors cursor-pointer">
-                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.color}`}>
-                                   <s.icon className="w-6 h-6" />
-                                 </div>
-                                 <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
-                                 <span className="text-xs text-center text-muted-foreground">{getPriceLabel(s.type) || s.subtitle}</span>
-                               </div>
-                             </Link>
-                            )}
-                          </motion.div>
-                        ))}
-                        </div>
-                        {filteredHomeServices.length === 0 && (
-                        <div className="text-center py-8">
-                          <p className="text-sm text-muted-foreground">Nenhum serviço encontrado</p>
-                        </div>
-                        )}
-                        </div>
-                        )}
+                     {serviceTab === 'veiculo' && (
+                       <p className="text-xs text-muted-foreground mb-4">
+                         Atendimento emergencial para veículos — prestadores homologados pela Escola Prática
+                       </p>
+                     )}
 
-                        {/* Modal de Agendamento */}
-                    <AnimatePresence>
-                      {showScheduleModal && !scheduleType && (
-                        <>
-                          <motion.div
-                            key="overlay-schedule"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowScheduleModal(false)}
-                            className="fixed inset-0 bg-black/40 z-50"
-                          />
-                          <motion.div
-                            key="modal-schedule"
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed inset-x-4 top-12 z-[60] bg-card rounded-xl p-4 shadow-2xl max-w-sm mx-auto ring-1 ring-border"
-                          >
-                            <h2 className="text-xl font-bold text-foreground mb-4">Quando você precisa?</h2>
-                            <div className="space-y-3">
-                              <button
-                                onClick={() => setScheduleType('imediato')}
-                                className="w-full p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/8 transition-all text-left"
-                              >
-                                <p className="font-bold text-foreground">⚡ Agora</p>
-                                <p className="text-xs text-muted-foreground mt-1">Prestador disponível em minutos</p>
-                              </button>
-                              <button
-                                onClick={() => setScheduleType('agendado')}
-                                className="w-full p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/8 transition-all text-left"
-                              >
-                                <p className="font-bold text-foreground">📅 Agendar</p>
-                                <p className="text-xs text-muted-foreground mt-1">Escolher data e hora</p>
-                              </button>
-                            </div>
-                            <button
-                              onClick={() => setShowScheduleModal(false)}
-                              className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors mt-4"
-                            >
-                              Fechar
-                            </button>
-                          </motion.div>
-                        </>
-                      )}
+                     <OfferedServicesCatalog
+                       variant="cards"
+                       group={serviceTab}
+                       hideGroupTabs
+                       hideHeader
+                       onServiceClick={(service) => navigate(`/solicitar?tipo=${encodeURIComponent(service.slug)}`)}
+                     />
+                   </motion.div>
+                 )}
 
-                      {showScheduleModal && scheduleType === 'imediato' && (
-                        <>
-                          <motion.div
-                            key="overlay-imediato"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => { setShowScheduleModal(false); setScheduleType(null); }}
-                            className="fixed inset-0 bg-black/40 z-50"
-                          />
-                          <motion.div
-                            key="modal-imediato"
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="fixed inset-x-4 top-12 z-[60] bg-card rounded-xl p-4 shadow-2xl max-w-sm mx-auto ring-1 ring-border"
-                          >
-                            <button 
-                              onClick={() => setScheduleType(null)}
-                              className="text-sm text-primary font-semibold mb-3 flex items-center gap-1"
-                            >
-                              ← Voltar
-                            </button>
-                            <h2 className="text-xl font-bold text-foreground mb-4">Serviço Imediato</h2>
-                            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-4">
-                              <p className="text-sm text-emerald-400 font-semibold">✓ Prestadores disponíveis agora!</p>
-                              <p className="text-xs text-emerald-500/80 mt-2">Você será conectado a um prestador em até 5 minutos</p>
-                            </div>
-                            {(selectedElectricalService || selectedHydraulicService) && (
-                              <button 
-                                onClick={() => {
-                                  const isElectrical = selectedElectricalService !== null;
-                                  setPendingServiceData({
-                                    type: isElectrical ? 'eletrica' : 'hidraulica',
-                                    subtipo: isElectrical ? selectedElectricalService.type : selectedHydraulicService.type,
-                                    modality: 'imediato',
-                                    price: isElectrical ? selectedElectricalService.price : selectedHydraulicService.price
-                                  });
-                                  setShowPaymentModal(true);
-                                  setShowElectricalModal(false);
-                                  setShowHydraulicModal(false);
-                                  setShowScheduleModal(false);
-                                  setSelectedElectricalService(null);
-                                  setSelectedHydraulicService(null);
-                                }}
-                                className="block w-full"
-                              >
-                                <Button className="w-full h-10 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700">
-                                  Confirmar Serviço Imediato
-                                </Button>
-                              </button>
-                            )}
-                          </motion.div>
-                        </>
-                      )}
-
-                      {showScheduleModal && scheduleType === 'agendado' && (
-                        <>
-                          <motion.div
-                            key="overlay-agendado"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => { setShowScheduleModal(false); setScheduleType(null); }}
-                            className="fixed inset-0 bg-black/40 z-50"
-                          />
-                          <AvailableScheduleSelector
-                            onConfirm={(scheduleData) => {
-                              const isElectrical = selectedElectricalService !== null;
-                              setPendingServiceData({
-                                type: isElectrical ? 'eletrica' : 'hidraulica',
-                                subtipo: isElectrical ? selectedElectricalService.type : selectedHydraulicService.type,
-                                modality: 'agendado',
-                                date: scheduleData.date,
-                                time: scheduleData.time,
-                                price: isElectrical ? selectedElectricalService.price : selectedHydraulicService.price
-                              });
-                              setShowPaymentModal(true);
-                              setShowElectricalModal(false);
-                              setShowHydraulicModal(false);
-                              setShowScheduleModal(false);
-                              setSelectedElectricalService(null);
-                              setSelectedHydraulicService(null);
-                            }}
-                            onCancel={() => { setShowScheduleModal(false); setScheduleType(null); }}
-                          />
-                        </>
-                      )}
-                    </AnimatePresence>
-
-                    {/* Modal de Hidráulica */}
-                    <AnimatePresence>
-                      {showHydraulicModal && (
-                        <>
-                          <motion.div
-                            key="overlay-hydraulic"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowHydraulicModal(false)}
-                            className="fixed inset-0 bg-black/40 z-40"
-                          />
-                          {!selectedHydraulicService ? (
-                            <motion.div
-                              key="modal-hydraulic-list"
-                              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                              className={`fixed inset-x-4 z-50 bg-card rounded-xl p-4 shadow-2xl mx-auto transition-all ring-1 ring-border ${hydraulicModalExpanded ? 'top-12 max-w-sm' : 'bottom-4 max-w-xs'}`}
-                            >
-                              <div className="flex items-center justify-between mb-4">
-                                <h2 className={`font-bold text-foreground ${hydraulicModalExpanded ? 'text-2xl' : 'text-lg'}`}>Serviços Hidráulicos</h2>
-                                <button
-                                  onClick={() => setHydraulicModalExpanded(!hydraulicModalExpanded)}
-                                  className="p-1 hover:bg-muted rounded-lg transition-colors"
-                                >
-                                  {hydraulicModalExpanded ? <Minimize2 className="w-4 h-4 text-muted-foreground" /> : <Maximize2 className="w-4 h-4 text-muted-foreground" />}
-                                </button>
-                              </div>
-                              {hydraulicModalExpanded && (
-                                <div className="space-y-2 mb-4">
-                                  {hydraulicServices.map(service => (
-                                    <button 
-                                      key={service.type}
-                                      onClick={() => setSelectedHydraulicService(service)}
-                                      className="w-full px-4 py-3 text-left rounded-lg border border-border hover:border-primary/40 hover:bg-primary/8 transition-all font-semibold text-foreground"
-                                    >
-                                      💧 {service.label}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                              {hydraulicModalExpanded && (
-                                <button
-                                  onClick={() => setShowHydraulicModal(false)}
-                                  className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors"
-                                >
-                                  Fechar
-                                </button>
-                              )}
-                            </motion.div>
-                          ) : (
-                            <motion.div
-                              key="modal-hydraulic-detail"
-                              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                              className="fixed inset-x-4 top-12 z-50 bg-card rounded-xl p-4 shadow-2xl max-w-sm mx-auto ring-1 ring-border"
-                            >
-                              <button 
-                                onClick={() => setSelectedHydraulicService(null)}
-                                className="text-sm text-primary font-semibold mb-3 flex items-center gap-1"
-                              >
-                                ← Voltar
-                              </button>
-                              <h2 className="text-2xl font-bold text-foreground mb-2">💧 {selectedHydraulicService.label}</h2>
-                              <div className="bg-primary/10 rounded-xl p-4 mb-4 border border-primary/30">
-                                <p className="text-sm text-muted-foreground mb-1">Valor estimado:</p>
-                                <p className="text-2xl font-bold text-primary">{getPriceLabel('hidraulica') || selectedHydraulicService.price}</p>
-                              </div>
-                              <p className="text-xs text-muted-foreground mb-4">Prestadores disponíveis em sua região</p>
-                              <Button 
-                                onClick={() => setShowScheduleModal(true)}
-                                className="w-full h-10 rounded-2xl font-bold text-sm"
-                              >
-                                Agendar Serviço
-                              </Button>
-                            </motion.div>
-                          )}
-                        </>
-                      )}
-                    </AnimatePresence>
-
-                    {/* Modal de Elétrica */}
-                    <AnimatePresence>
-                      {showElectricalModal && (
-                        <>
-                          <motion.div
-                            key="overlay"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowElectricalModal(false)}
-                            className="fixed inset-0 bg-black/40 z-40"
-                          />
-                          {!selectedElectricalService ? (
-                            <motion.div
-                              key="modal-list"
-                              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                              className={`fixed inset-x-4 z-50 bg-card rounded-xl p-4 shadow-2xl mx-auto transition-all ring-1 ring-border ${electricalModalExpanded ? 'top-12 max-w-sm' : 'bottom-4 max-w-xs'}`}
-                            >
-                              <div className="flex items-center justify-between mb-4">
-                                <h2 className={`font-bold text-foreground ${electricalModalExpanded ? 'text-2xl' : 'text-lg'}`}>Serviços Elétricos</h2>
-                                <button
-                                  onClick={() => setElectricalModalExpanded(!electricalModalExpanded)}
-                                  className="p-1 hover:bg-muted rounded-lg transition-colors"
-                                >
-                                  {electricalModalExpanded ? <Minimize2 className="w-4 h-4 text-muted-foreground" /> : <Maximize2 className="w-4 h-4 text-muted-foreground" />}
-                                </button>
-                              </div>
-                              {electricalModalExpanded && (
-                                <div className="space-y-2 mb-4">
-                                  {electricalServices.map(service => (
-                                    <button 
-                                      key={service.type}
-                                      onClick={() => setSelectedElectricalService(service)}
-                                      className="w-full px-4 py-3 text-left rounded-lg border border-border hover:border-primary/40 hover:bg-primary/8 transition-all font-semibold text-foreground"
-                                    >
-                                      ⚡ {service.label}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                              {electricalModalExpanded && (
-                                <button
-                                  onClick={() => setShowElectricalModal(false)}
-                                  className="w-full py-2 rounded-2xl text-muted-foreground hover:bg-muted transition-colors"
-                                >
-                                  Fechar
-                                </button>
-                              )}
-                              </motion.div>
-                              ) : (
-                            <motion.div
-                              key="modal-detail"
-                              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                              className="fixed inset-x-4 top-12 z-50 bg-card rounded-xl p-4 shadow-2xl max-w-sm mx-auto ring-1 ring-border"
-                            >
-                              <button 
-                                onClick={() => setSelectedElectricalService(null)}
-                                className="text-sm text-primary font-semibold mb-3 flex items-center gap-1"
-                              >
-                                ← Voltar
-                              </button>
-                              <h2 className="text-2xl font-bold text-foreground mb-2">⚡ {selectedElectricalService.label}</h2>
-                              <div className="bg-primary/10 rounded-xl p-4 mb-4 border border-primary/30">
-                                <p className="text-sm text-muted-foreground mb-1">Valor estimado:</p>
-                                <p className="text-2xl font-bold text-primary">{getPriceLabel('eletrica') || selectedElectricalService.price}</p>
-                              </div>
-                              <p className="text-xs text-muted-foreground mb-4">Prestadores disponíveis em sua região</p>
-                              <Button 
-                                onClick={() => setShowScheduleModal(true)}
-                                className="w-full h-10 rounded-2xl font-bold text-sm"
-                              >
-                                Agendar Serviço
-                              </Button>
-                            </motion.div>
-                          )}
-                        </>
-                      )}
-                    </AnimatePresence>
-
-                    {serviceTab === 'veiculo' && (
-                       <div className="space-y-4">
-                         <p className="text-xs text-muted-foreground">Atendimento emergencial para veículos — prestadores homologados pela Escola Prática</p>
-                         <ServiceSearch
-                           services={vehicleServices}
-                           onFilterChange={setFilteredVehicleServices}
-                           placeholder="Buscar serviços para veículos..."
-                         />
-                         <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-9 gap-3">
-                           {filteredVehicleServices.map((s, i) => (
-                            <motion.div key={`vehicle-${s.type}-${i}`} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
-                              <Link to={`/solicitar?tipo=${s.type}`}>
-                                <div className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-accent hover:border-primary/20 transition-colors cursor-pointer border border-border">
-                                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${s.color}`}>
-                                    <s.icon className="w-6 h-6" />
-                                  </div>
-                                  <span className="text-xs text-center text-foreground font-medium leading-tight">{s.label}</span>
-                                  <span className="text-xs text-center text-muted-foreground">{s.subtitle}</span>
-                                </div>
-                              </Link>
-                            </motion.div>
-                          ))}
-                          </div>
-                          {filteredVehicleServices.length === 0 && (
-                          <div className="text-center py-8">
-                            <p className="text-sm text-muted-foreground">Nenhum serviço encontrado</p>
-                          </div>
-                          )}
-                          </div>
-                          )}
-                  </motion.div>
-                )}
-
-                {/* ── FAVORITOS ── */}
+                 {/* ── FAVORITOS ── */}
                 {mainTab === 'favoritos' && user && (
                   <motion.div key="favoritos" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <FavoritesList />

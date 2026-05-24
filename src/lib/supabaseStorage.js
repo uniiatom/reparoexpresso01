@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase/client';
+import { DEFAULT_MEDIA_BUCKET, isImageFile, registerMediaAsset } from '@/lib/mediaLibrary';
 
-const DEFAULT_BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'uploads';
+const DEFAULT_BUCKET = DEFAULT_MEDIA_BUCKET;
 
 function buildObjectPath(file) {
   const ext = file.name.includes('.') ? file.name.split('.').pop() : 'bin';
@@ -12,7 +13,7 @@ function buildObjectPath(file) {
  * Envia arquivo para Supabase Storage.
  * Compatível com base44.integrations.Core.UploadFile({ file }).
  */
-export async function uploadFile({ file, bucket = DEFAULT_BUCKET }) {
+export async function uploadFile({ file, bucket = DEFAULT_BUCKET, source = null }) {
   if (!file) throw new Error('Arquivo não informado.');
 
   const path = buildObjectPath(file);
@@ -25,7 +26,19 @@ export async function uploadFile({ file, bucket = DEFAULT_BUCKET }) {
   if (error) throw error;
 
   const { data: publicData } = supabase.storage.from(bucket).getPublicUrl(data.path);
-  return { file_url: publicData.publicUrl, path: data.path };
+  const file_url = publicData.publicUrl;
+
+  if (isImageFile(file)) {
+    await registerMediaAsset({
+      file_url,
+      storage_path: data.path,
+      bucket,
+      file,
+      source,
+    });
+  }
+
+  return { file_url, path: data.path };
 }
 
 /** Substitui base44.integrations.Core. */

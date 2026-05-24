@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, Clock, Users, Briefcase, Star, TrendingUp, KeyRound, Eye, EyeOff, FileText, Activity, Zap } from "lucide-react";
+import OfferedServicesAdmin from '../components/admin/OfferedServicesAdmin';
+import MediaLibraryAdmin from '../components/admin/MediaLibraryAdmin';
 import AdminCreateOrder from '../components/admin/AdminCreateOrder';
 import ServicePricingByRegion from '../components/admin/ServicePricingByRegion';
 import ServicePricingByCategory from '../components/admin/ServicePricingByCategory';
@@ -273,7 +275,7 @@ export default function AdminPanel() {
             { label: 'Aprovados',  value: stats.providers_approved, icon: Star,       color: 'text-blue-400'    },
             { label: 'Receita',    value: `R$ ${Math.floor(stats.revenue)}`, icon: TrendingUp, color: 'text-primary' },
           ].map(s => (
-            <Card key={s.label} className="border-border/50">
+            <Card key={s.label} className="border-primary/[0.14] hover:border-primary/25 transition-colors">
               <CardContent className="p-2 text-center">
                 <s.icon className={cn('w-3.5 h-3.5 mx-auto mb-0.5', s.color)} />
                 <p className={cn('text-sm font-bold leading-none', s.color)}>{s.value}</p>
@@ -287,7 +289,7 @@ export default function AdminPanel() {
         {pendingProviders.length > 0 && (
           <button
             onClick={() => handleNavigate('providers')}
-            className="w-full text-left bg-amber-500/8 border border-amber-500/20 rounded-xl p-2 mb-2 text-xs hover:bg-amber-500/12 transition-colors"
+            className="w-full text-left bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/30 rounded-2xl p-3 mb-2 text-xs hover:from-amber-500/15 hover:to-amber-500/8 transition-all shadow-md shadow-amber-500/10"
           >
             <span className="font-semibold text-amber-400">
               âš ï¸ {pendingProviders.length} prestador{pendingProviders.length > 1 ? 'es' : ''} aguardando aprovaÃ§Ã£o
@@ -298,7 +300,7 @@ export default function AdminPanel() {
         {pendingPhotoProviders.length > 0 && (
           <button
             onClick={() => handleNavigate('photos')}
-            className="w-full text-left bg-orange-500/8 border border-orange-500/20 rounded-xl p-2 mb-4 text-xs hover:bg-orange-500/12 transition-colors"
+            className="w-full text-left bg-gradient-to-r from-orange-500/10 to-orange-500/5 border border-orange-500/30 rounded-2xl p-3 mb-4 text-xs hover:from-orange-500/15 hover:to-orange-500/8 transition-all shadow-md shadow-orange-500/10"
           >
             <span className="font-semibold text-orange-400">
               ðŸ“· {pendingPhotoProviders.length} foto{pendingPhotoProviders.length > 1 ? 's' : ''} aguardando aprovaÃ§Ã£o
@@ -408,6 +410,8 @@ export default function AdminPanel() {
           )}
 
           {/* â”€â”€ Prestadores (inline) â”€â”€ */}
+          {activeTab === 'servicos-prestados' && <OfferedServicesAdmin />}
+          {activeTab === 'biblioteca' && <MediaLibraryAdmin />}
           {activeTab === 'providers' && (
             <AdminProvidersPanel
               providers={providers}

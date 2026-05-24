@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase/client';
-import { getServiceLabel } from '@/lib/constants/providerServiceTypes';
+import { getProviderServiceLabel } from '@/lib/offeredServices';
+import { base44 } from '@/api/base44Client';
 import {
   createProvider,
   createProviderAvailability,
@@ -25,20 +26,23 @@ export const DEFAULT_PROVIDER_FORM = {
   rg: '',
   photo_url: '',
   photo_body_url: '',
-  address: '',
+  // ── Endereço (campos separados) ─────────────────────
+  zip_code: '',
+  street: '',
+  address_number: '',
   neighborhood: '',
   city: '',
   state: '',
-  zip_code: '',
   // ── Região de atuação ───────────────────────────────
   coverage_regions: [],
   coverage_latitude: null,
   coverage_longitude: null,
   // ── Qualificações ───────────────────────────────────
-  qualifications: '',
-  experience_years: '',
+  qualifications: [],
   bio: '',
-  serviceOfferings: [{ serviceType: '', hourlyRate: '' }],
+  // ── Serviços (sem preço por hora) ───────────────────
+  serviceOfferings: [{ serviceType: '' }],
+  // ── Agenda ──────────────────────────────────────────
   schedule: createDefaultSchedule(),
   acceptsHomologation: false,
 };
@@ -55,7 +59,7 @@ export function parseServiceOfferings(provider) {
 
 export async function validateProviderForm(form, { mode = 'self' } = {}) {
   const errors = [];
-  
+
   // Fetch dynamic config
   let requiredFields = [];
   try {
@@ -68,8 +72,8 @@ export async function validateProviderForm(form, { mode = 'self' } = {}) {
   }
 
   const isRequired = (field) => {
-    // Default required fields
-    if (['name', 'phone', 'address', 'city', 'state', 'zip_code', 'qualifications', 'experience_years'].includes(field)) return true;
+    // Campos sempre obrigatórios
+    if (['name', 'phone', 'zip_code', 'street', 'city', 'state'].includes(field)) return true;
     return requiredFields.includes(field);
   };
 
@@ -92,28 +96,28 @@ export async function validateProviderForm(form, { mode = 'self' } = {}) {
   }
   if (isRequired('rg') && !form.rg?.trim()) errors.push('Informe o RG.');
 
-  if (!form.address?.trim()) errors.push('Informe o endereço (rua e número).');
+  // ── Endereço ──
+  if (!form.zip_code?.trim()) errors.push('Informe o CEP.');
+  if (!form.street?.trim()) errors.push('Informe a rua/logradouro.');
   if (!form.city?.trim()) errors.push('Informe a cidade.');
   if (!form.state?.trim()) errors.push('Informe o estado (UF).');
-  if (!form.zip_code?.trim()) errors.push('Informe o CEP.');
 
   if (mode === 'self') {
     if (!form.acceptsHomologation) errors.push('Aceite o processo de homologação para continuar.');
   }
 
+  // ── Qualificações ──
   if (!form.qualifications || (Array.isArray(form.qualifications) && form.qualifications.length === 0)) {
     errors.push('Selecione ao menos uma qualificação do prestador.');
   }
-  
-  if (!form.experience_years && form.experience_years !== 0) errors.push('Informe os anos de experiência.');
 
-  const validOfferings = (form.serviceOfferings ?? []).filter(
-    (o) => o.serviceType && o.hourlyRate !== '' && Number(o.hourlyRate) > 0,
-  );
+  // ── Serviços (só tipo, sem preço) ──
+  const validOfferings = (form.serviceOfferings ?? []).filter((o) => o.serviceType);
   if (validOfferings.length === 0) {
-    errors.push('Adicione ao menos um tipo de serviço com preço por hora.');
+    errors.push('Selecione ao menos um tipo de serviço.');
   }
 
+  // ── Agenda ──
   const schedule = normalizeSchedule(form.schedule);
   const scheduleErrors = validateSchedule(schedule);
   errors.push(...scheduleErrors);
@@ -146,7 +150,13 @@ export async function registerProvider({ form, userId, autoApprove = false, mode
     }
   }
 
-  const specialties = validOfferings.map((o) => getServiceLabel(o.serviceType));
+  const catalogRows = await base44.entities.OfferedService.list('sort_order', 300);
+  const specialties = validOfferings.map((o) => getProviderServiceLabel(o.serviceType, catalogRows));
+
+  // Constrói o campo address a partir dos campos separados
+  const addressLine = form.street?.trim()
+    ? `${form.street.trim()}, ${form.address_number?.trim() || 'S/N'}`
+    : (form.address?.trim() || '');
 
   const payload = {
     user_id: resolvedUserId || undefined,
@@ -158,23 +168,24 @@ export async function registerProvider({ form, userId, autoApprove = false, mode
     rg: form.rg?.trim() || undefined,
     photo_url: form.photo_url || undefined,
     photo_body_url: form.photo_body_url || undefined,
-    address: form.address.trim(),
+    address: addressLine,
     neighborhood: form.neighborhood?.trim() || undefined,
     city: form.city.trim(),
     state: form.state.trim().toUpperCase(),
-    zip_code: form.zip_code.trim(),
+    zip_code: form.zip_code.trim().replace(/\D/g, ''),
     coverage_regions: form.coverage_regions ?? [],
     ...(form.coverage_latitude != null && { latitude: form.coverage_latitude }),
     ...(form.coverage_longitude != null && { longitude: form.coverage_longitude }),
-    qualifications: Array.isArray(form.qualifications) ? form.qualifications.join(', ') : (form.qualifications || ''),
+    qualifications: Array.isArray(form.qualifications)
+      ? form.qualifications.join(', ')
+      : (form.qualifications || ''),
     bio: form.bio?.trim() || undefined,
-    experience_years: Number(form.experience_years) || 0,
     specialties,
     service_hourly_rates_json: JSON.stringify(
       validOfferings.map((o) => ({
         service_type: o.serviceType,
-        label: getServiceLabel(o.serviceType),
-        hourly_rate: Number(o.hourlyRate),
+        label: getProviderServiceLabel(o.serviceType, catalogRows),
+        hourly_rate: 0, // campo descontinuado; mantido por compatibilidade
       })),
     ),
     is_online: false,

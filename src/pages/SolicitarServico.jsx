@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import BusyAlertClientView from "@/components/BusyAlertClientView";
 import WarrantyBanner from "@/components/WarrantyBanner";
 import { useNavigate, Link } from 'react-router-dom';
@@ -29,6 +29,9 @@ import PressurizadorModal from "@/components/PressurizadorModal";
 import ValvulaTransfModal from "@/components/ValvulaTransfModal";
 import { PaneSeccaAlertModal, LimpezaTelhadoAlertModal, ArCondicionadoModal, LimpezaCalhaTelhadoAlertModal, NaoSeiLitragemModal, SubstituicaoTelhaModal } from "@/components/ServiceAlertModals";
 import { SERVICE_TYPES } from "@/lib/serviceTypes";
+import { useOfferedServices } from '@/hooks/useOfferedServices';
+import { mergePickerServices } from '@/lib/offeredServices';
+import OfferedServiceCard from '@/components/offered-services/OfferedServiceCard';
 import PhotoLightbox from "@/components/PhotoLightbox";
 import FixacoesDiversasModal from "@/components/FixacoesDiversasModal";
 import OutrosServicoModal from "@/components/OutrosServicoModal";
@@ -296,6 +299,88 @@ export default function SolicitarServico() {
 
 
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const { data: catalogServices = [] } = useOfferedServices();
+  const pickerServices = useMemo(() => mergePickerServices(catalogServices), [catalogServices]);
+
+  const getServiceLabel = (value) =>
+    pickerServices.find((s) => s.value === value)?.label
+    || SERVICE_TYPES.find((s) => s.value === value)?.label
+    || value;
+
+  const handleServicePick = (s) => {
+    const selected = form.service_type.includes(s.value);
+    if (s.value === 'instalacao_suporte_tv' && !selected) {
+      setShowTvSizeModal(true);
+      return;
+    }
+    if (s.value === 'instalacao_suporte_tv' && selected) {
+      setTvSize(null);
+    }
+    if (s.value === 'reparo_forro_gesso' && !selected) {
+      setShowForroGessoModal(true);
+      return;
+    }
+    if (s.value === 'reparo_forro_gesso' && selected) {
+      setForroGessoTipo(null);
+    }
+    if (s.value === 'pressurizador' && !selected) {
+      setShowPressurizadorModal(true);
+      return;
+    }
+    if (s.value === 'pressurizador' && selected) {
+      setPressurizadorTipo(null);
+    }
+    if (s.value === 'valvula_transferidora_pressao' && !selected) {
+      setShowValvulaTransfModal(true);
+      return;
+    }
+    if (s.value === 'valvula_transferidora_pressao' && selected) {
+      setValvulaTransfTipo(null);
+    }
+    if (s.value === 'desentupimento' && !selected) {
+      setShowDesentupimentoModal(true);
+      return;
+    }
+    if (s.value === 'desentupimento' && selected) {
+      setDesentupimentoTipo(null);
+    }
+    if (s.value === 'limpeza_caixa_dagua' && !selected) {
+      setShowCaixaDaguaModal(true);
+      return;
+    }
+    if (s.value === 'limpeza_caixa_dagua' && selected) {
+      setCaixaDaguaTipo(null); setCaixaDaguaLaudo(null); setCaixaDaguaLitragemSelecionada(null);
+    }
+    if (s.value === 'substituicao_telha' && !selected) {
+      setShowSubstituicaoTelhaModal(true);
+      return;
+    }
+    if (s.value === 'substituicao_telha' && selected) { setSubstituicaoTelhaTipo(null); }
+    if (s.value === 'ar_condicionado' && !selected) {
+      setShowArCondicionadoModal(true);
+      return;
+    }
+    if (s.value === 'limpeza_calha' && !selected) {
+      setShowLimpezaCalhaTelhadoAlert(true);
+      return;
+    }
+    if (s.value === 'limpeza_telhado' && !selected) {
+      setShowLimpezaTelhadoAlert(true);
+      return;
+    }
+    if (s.value === 'fixacoes_diversas' && !selected) { setShowFixacoesModal(true); return; }
+    if (s.value === 'fixacoes_diversas' && selected) { setFixacoesTipo(null); }
+    if (s.value === 'pane_seca' && !selected) { setShowPaneSeccaAlert(true); return; }
+    if (s.value === 'outros' && !selected) { setShowOutrosModal(true); return; }
+    if (s.value === 'outros' && selected) {
+      setDescriptionsPerService((prev) => { const n = { ...prev }; delete n.outros; return n; });
+    }
+    set('service_type', selected
+      ? form.service_type.filter((t) => t !== s.value)
+      : [...form.service_type, s.value],
+    );
+  };
 
   const validateAndApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -788,104 +873,24 @@ export default function SolicitarServico() {
               🚗 Veículo
             </button>
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            {SERVICE_TYPES.filter(s => s.group === serviceTab).map(s => {
-              const Icon = s.icon;
-              const selected = form.service_type.includes(s.value);
-              return (
-                <button key={s.value} onClick={() => {
-                  if (s.value === 'instalacao_suporte_tv' && !selected) {
-                    setShowTvSizeModal(true);
-                    return;
-                  }
-                  if (s.value === 'instalacao_suporte_tv' && selected) {
-                    setTvSize(null);
-                  }
-                  if (s.value === 'reparo_forro_gesso' && !selected) {
-                    setShowForroGessoModal(true);
-                    return;
-                  }
-                  if (s.value === 'reparo_forro_gesso' && selected) {
-                    setForroGessoTipo(null);
-                  }
-                  if (s.value === 'pressurizador' && !selected) {
-                    setShowPressurizadorModal(true);
-                    return;
-                  }
-                  if (s.value === 'pressurizador' && selected) {
-                    setPressurizadorTipo(null);
-                  }
-                  if (s.value === 'valvula_transferidora_pressao' && !selected) {
-                    setShowValvulaTransfModal(true);
-                    return;
-                  }
-                  if (s.value === 'valvula_transferidora_pressao' && selected) {
-                    setValvulaTransfTipo(null);
-                  }
-                  if (s.value === 'desentupimento' && !selected) {
-                    setShowDesentupimentoModal(true);
-                    return;
-                  }
-                  if (s.value === 'desentupimento' && selected) {
-                    setDesentupimentoTipo(null);
-                  }
-                  if (s.value === 'limpeza_caixa_dagua' && !selected) {
-                    setShowCaixaDaguaModal(true);
-                    return;
-                  }
-                  if (s.value === 'limpeza_caixa_dagua' && selected) {
-                    setCaixaDaguaTipo(null); setCaixaDaguaLaudo(null); setCaixaDaguaLitragemSelecionada(null);
-                  }
-                  if (s.value === 'substituicao_telha' && !selected) {
-                    setShowSubstituicaoTelhaModal(true);
-                    return;
-                  }
-                  if (s.value === 'substituicao_telha' && selected) { setSubstituicaoTelhaTipo(null); }
-                  if (s.value === 'ar_condicionado' && !selected) {
-                    setShowArCondicionadoModal(true);
-                    return;
-                  }
-                  if (s.value === 'limpeza_calha' && !selected) {
-                    setShowLimpezaCalhaTelhadoAlert(true);
-                    return;
-                  }
-                  if (s.value === 'limpeza_telhado' && !selected) {
-                    setShowLimpezaTelhadoAlert(true);
-                    return;
-                  }
-                  if (s.value === 'fixacoes_diversas' && !selected) { setShowFixacoesModal(true); return; }
-                  if (s.value === 'fixacoes_diversas' && selected) { setFixacoesTipo(null); }
-                  if (s.value === 'pane_seca' && !selected) { setShowPaneSeccaAlert(true); return; }
-                  if (s.value === 'outros' && !selected) { setShowOutrosModal(true); return; }
-                  if (s.value === 'outros' && selected) { setDescriptionsPerService(prev => { const n = {...prev}; delete n.outros; return n; }); }
-                  set('service_type', selected
-                    ? form.service_type.filter(t => t !== s.value)
-                    : [...form.service_type, s.value]
-                  );
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
+            {pickerServices.filter((s) => s.group === serviceTab).map((s) => (
+              <OfferedServiceCard
+                key={s.value}
+                service={{
+                  name: s.label,
+                  slug: s.value,
+                  image_url: s.image_url,
+                  icon_key: s.icon_key,
+                  icon: s.icon,
+                  average_price: s.average_price,
+                  estimated_duration_minutes: s.estimated_duration_minutes,
+                  description: s.description,
                 }}
-                  className={cn("flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all active:scale-95",
-                    selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40")}>
-                  <Icon className={cn("w-7 h-7", selected ? "text-primary" : "text-muted-foreground")} />
-                  <span className={cn("text-xs font-medium text-center leading-tight", selected ? "text-primary" : "text-foreground")}>
-                    {s.value === 'instalacao_suporte_tv' && tvSize ? (
-                      <><span>Suporte de TV</span><br /><span className="text-[10px] opacity-75">({tvSize === 'ate55' ? 'até 55"' : 'acima 55"'})</span></>
-                    ) : s.value === 'limpeza_caixa_dagua' && caixaDaguaTipo ? (
-                      <><span>Caixa d'Água</span><br /><span className="text-[10px] opacity-75">({caixaDaguaTipo === 'residencia' ? 'Residencial' : 'Condomínio'}{caixaDaguaLitragem && caixaDaguaLitragem !== 'Não sei' ? ` · ${caixaDaguaLitragem}` : ''}{caixaDaguaLaudo ? ' · +Laudo' : ''})</span></>
-                    ) : s.value === 'reparo_forro_gesso' && forroGessoTipo ? (
-                       <><span>Forro de Gesso</span><br /><span className="text-[10px] opacity-75">({forroGessoTipo})</span></>
-                     ) : s.value === 'pressurizador' && pressurizadorTipo ? (
-                       <><span>Pressurizador</span><br /><span className="text-[10px] opacity-75">({pressurizadorTipo === 'visita_tecnica' ? 'Visita' : pressurizadorTipo === 'instalacao' ? 'Instalação' : 'Reparo'})</span></>
-                     ) : s.value === 'valvula_transferidora_pressao' && valvulaTransfTipo ? (
-                       <><span>Válvula Transfer.</span><br /><span className="text-[10px] opacity-75">({valvulaTransfTipo === 'visita_tecnica' ? 'Visita' : valvulaTransfTipo === 'instalacao' ? 'Instalação' : 'Reparo'})</span></>
-                    ) : s.value === 'desentupimento' && desentupimentoTipo ? (
-                      <><span>Desentupimento</span><br /><span className="text-[10px] opacity-75">({desentupimentoTipo})</span></>
-                    ) : s.value === 'fixacoes_diversas' && fixacoesTipo ? (<><span>Fixações</span><br /><span className="text-[10px] opacity-75">({fixacoesTipo})</span></>
-                    ) : s.label}
-                  </span>
-                  {selected && <span className="w-4 h-4 bg-primary rounded-full flex items-center justify-center"><span className="text-white text-[9px] font-black">✓</span></span>}
-                </button>
-              );
-            })}
+                selected={form.service_type.includes(s.value)}
+                onClick={() => handleServicePick(s)}
+              />
+            ))}
           </div>
 
           {showPressurizadorModal && <PressurizadorModal isOpen={showPressurizadorModal} onClose={() => setShowPressurizadorModal(false)} onSelect={(tipo) => { setPressurizadorTipo(tipo); set('service_type', [...form.service_type, 'pressurizador']); setShowPressurizadorModal(false); }} />}
