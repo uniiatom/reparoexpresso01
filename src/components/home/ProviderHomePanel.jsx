@@ -46,7 +46,7 @@ function FeatureCard({ item, index }) {
       className="card-subtle p-4 flex items-start gap-3 hover:border-primary/25 transition-colors"
     >
       <div className="w-10 h-10 rounded-xl bg-primary/12 border border-primary/20 flex items-center justify-center flex-shrink-0">
-        <Icon className="w-4.5 h-4.5 text-primary" />
+        <Icon className="w-4 h-4 text-primary" />
       </div>
       <div className="min-w-0">
         <p className="text-sm font-semibold text-foreground">{item.title}</p>
@@ -113,8 +113,13 @@ export default function ProviderHomePanel() {
     queryKey: ['my-provider', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const list = await base44.entities.Provider.filter({ user_id: user.id });
-      return list[0] || null;
+      const byUser = await base44.entities.Provider.filter({ user_id: user.id });
+      if (byUser[0]) return byUser[0];
+      if (user.email) {
+        const byEmail = await base44.entities.Provider.filter({ email: user.email.trim() });
+        return byEmail[0] || null;
+      }
+      return null;
     },
     enabled: Boolean(user?.id),
   });
@@ -154,7 +159,7 @@ export default function ProviderHomePanel() {
       )}
 
       {!isApproved && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {BENEFIT_ITEMS.map((item, index) => (
             <FeatureCard key={item.title} item={item} index={index} />
           ))}
@@ -176,7 +181,7 @@ export default function ProviderHomePanel() {
       {isApproved && (
         <div className="space-y-3">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Seu painel</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {APP_CARDS.map((item, index) => (
               <ActionCard key={item.to} item={item} index={index} />
             ))}

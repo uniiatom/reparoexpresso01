@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronDown, LayoutDashboard } from 'lucide-react';
+import { ChevronDown, LayoutDashboard, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   getAdminNavGroups,
@@ -267,6 +267,37 @@ export default function AdminSidebar({
               </Link>
             );
           })}
+        </div>
+
+        <div className="border-t border-white/[0.05] mt-2 pt-2">
+          <motion.p
+            animate={{ opacity: open ? 1 : 0, height: open ? 'auto' : 0 }}
+            className="overflow-hidden px-4 pb-1 text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-600 whitespace-nowrap"
+          >
+            Conta
+          </motion.p>
+          <Link to="/perfil" onClick={(e) => e.stopPropagation()}>
+            <div
+              className={cn(
+                'flex items-center gap-3 px-[17px] py-[7px] hover:bg-white/[0.04] transition-colors',
+                location.pathname === '/perfil' && 'bg-amber-500/[0.07]',
+              )}
+            >
+              <motion.div className="w-[22px] flex items-center justify-center flex-shrink-0">
+                <User className={cn('w-[15px] h-[15px]', location.pathname === '/perfil' ? 'text-amber-400' : 'text-zinc-600')} />
+              </motion.div>
+              <motion.span
+                animate={{ opacity: open ? 1 : 0 }}
+                transition={{ duration: 0.12, delay: open ? 0.08 : 0 }}
+                className={cn(
+                  'text-[12px] font-medium whitespace-nowrap',
+                  location.pathname === '/perfil' ? 'text-amber-400' : 'text-zinc-500',
+                )}
+              >
+                Perfil
+              </motion.span>
+            </div>
+          </Link>
         </div>
       </div>
 

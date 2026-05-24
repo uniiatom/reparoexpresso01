@@ -14,8 +14,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3002,
-    strictPort: false,
+    port: 3000,
+    strictPort: true,
     open: true,
   },
   plugins: [react()],

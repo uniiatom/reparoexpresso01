@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -198,6 +199,9 @@ export default function AdminProvidersPanel({
               <Settings className="w-5 h-5 text-primary" />
               Configurações de Prestadores
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Defina campos obrigatórios, serviços, horários e regiões do cadastro de prestadores.
+            </DialogDescription>
           </DialogHeader>
           <ProviderSettings onClose={() => setShowSettings(false)} />
         </DialogContent>

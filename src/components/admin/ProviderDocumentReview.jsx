@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
-  CheckCircle2, XCircle, Clock, FileText, Camera, ChevronRight,
-  Eye, X, ShieldCheck, User, MapPin, Mail, Phone, Calendar,
+  CheckCircle2, XCircle, Clock, FileText, Camera,
+  Eye, X, ShieldCheck, User, MapPin, Mail, Phone, Calendar, AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -12,22 +13,32 @@ import {
   PROVIDER_DOCUMENT_FIELD_MAP,
   CRLV_VEHICLE_TYPES,
   providerCanBeReleased,
-  getProviderDocumentReviewStatus,
+  getProviderDocumentListStatus,
+  countPendingDocuments,
 } from '@/lib/providerRegistrationFields';
 import { parseServiceOfferings } from '@/lib/providerRegistration';
+import { LOGO_SHIELD_SRC } from '@/lib/brandAssets';
 
 const STATUS_CONFIG = {
-  aprovado:    { label: 'Aprovado',    color: 'bg-green-100 text-green-700',  icon: CheckCircle2, border: 'border-green-300' },
-  reprovado:   { label: 'Reprovado',   color: 'bg-red-100 text-red-700',      icon: XCircle,      border: 'border-red-300' },
-  pendente:    { label: 'Pendente',    color: 'bg-yellow-100 text-yellow-700', icon: Clock,        border: 'border-yellow-300' },
-  nao_enviado: { label: 'Não enviado', color: 'bg-gray-100 text-gray-500',    icon: Clock,        border: 'border-gray-200' },
+  aprovado:    { label: 'Aprovado',    color: 'bg-green-500/15 text-green-400 border-green-500/30',  icon: CheckCircle2 },
+  reprovado:   { label: 'Reprovado',   color: 'bg-red-500/15 text-red-400 border-red-500/30',      icon: XCircle },
+  pendente:    { label: 'Pendente',    color: 'bg-amber-500/15 text-amber-400 border-amber-500/30', icon: Clock },
+  nao_enviado: { label: 'Não enviado', color: 'bg-muted text-muted-foreground border-border',       icon: Clock },
+  liberado:    { label: 'Liberado',    color: 'bg-primary/15 text-primary border-primary/30',       icon: ShieldCheck },
 };
+
+const FILTER_TABS = [
+  { key: 'todos',     label: 'Todos',      color: 'bg-muted text-foreground' },
+  { key: 'pendente',  label: 'Pendentes',  color: 'bg-amber-500/15 text-amber-400' },
+  { key: 'reprovado', label: 'Reprovados', color: 'bg-red-500/15 text-red-400' },
+  { key: 'liberado',  label: 'Liberados',  color: 'bg-primary/15 text-primary' },
+];
 
 function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.nao_enviado;
   const Icon = cfg.icon;
   return (
-    <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold', cfg.color)}>
+    <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border', cfg.color)}>
       <Icon className="w-3 h-3" /> {cfg.label}
     </span>
   );
@@ -52,7 +63,6 @@ function RegistrationSummary({ provider }) {
     .filter(Boolean);
 
   const vehicleLabel = CRLV_VEHICLE_TYPES.find((v) => v.value === provider.crlv_vehicle_type)?.label;
-
   const addressParts = [
     provider.address,
     provider.neighborhood,
@@ -92,12 +102,6 @@ function RegistrationSummary({ provider }) {
           <p className="text-sm text-foreground whitespace-pre-wrap">{provider.bio}</p>
         </div>
       )}
-      {(provider.coverage_regions?.length ?? 0) > 0 && (
-        <div>
-          <p className="text-xs text-muted-foreground mb-1">Regiões de atuação</p>
-          <p className="text-sm">{provider.coverage_regions.join(', ')}</p>
-        </div>
-      )}
     </div>
   );
 }
@@ -115,7 +119,7 @@ function DocumentCard({ title, url, status, rejectionReason, onApprove, onReject
   };
 
   return (
-    <div className={cn('rounded-2xl border-2 p-4 space-y-3', cfg.border, 'bg-card')}>
+    <div className={cn('rounded-2xl border p-4 space-y-3 bg-card', cfg.color.split(' ').slice(2).join(' ') || 'border-border')}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <FileText className="w-4 h-4 text-muted-foreground" />
@@ -125,7 +129,7 @@ function DocumentCard({ title, url, status, rejectionReason, onApprove, onReject
       </div>
 
       {rejectionReason && status === 'reprovado' && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-2 text-xs text-red-700">
+        <div className="bg-red-500/10 border border-red-500/25 rounded-xl p-2 text-xs text-red-300">
           Motivo: {rejectionReason}
         </div>
       )}
@@ -141,29 +145,20 @@ function DocumentCard({ title, url, status, rejectionReason, onApprove, onReject
         )}
 
         {url && status !== 'aprovado' && (
-          <button
-            onClick={onApprove}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-green-600 text-white hover:bg-green-700 text-sm font-medium transition-colors"
-          >
+          <button type="button" onClick={onApprove} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-green-600 text-white hover:bg-green-700 text-sm font-medium transition-colors">
             <CheckCircle2 className="w-3.5 h-3.5" /> Aprovar
           </button>
         )}
 
         {url && status !== 'reprovado' && (
-          <button
-            onClick={() => setShowRejectForm(!showRejectForm)}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 text-sm font-medium transition-colors"
-          >
+          <button type="button" onClick={() => setShowRejectForm(!showRejectForm)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-500/10 text-red-400 border border-red-500/25 hover:bg-red-500/15 text-sm font-medium transition-colors">
             <XCircle className="w-3.5 h-3.5" /> Reprovar
           </button>
         )}
 
         {status === 'reprovado' && (
-          <button
-            onClick={onClearReject}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 text-sm font-medium transition-colors"
-          >
-            <Clock className="w-3.5 h-3.5" /> Voltar para Pendente
+          <button type="button" onClick={onClearReject} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/25 text-sm font-medium transition-colors">
+            <Clock className="w-3.5 h-3.5" /> Voltar para pendente
           </button>
         )}
       </div>
@@ -178,12 +173,8 @@ function DocumentCard({ title, url, status, rejectionReason, onApprove, onReject
             className="w-full px-3 py-2 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
           />
           <div className="flex gap-2">
-            <button onClick={() => setShowRejectForm(false)} className="px-3 py-1.5 rounded-xl border border-border text-sm hover:bg-muted transition-colors">
-              Cancelar
-            </button>
-            <button onClick={handleReject} className="px-3 py-1.5 rounded-xl bg-red-600 text-white text-sm hover:bg-red-700 transition-colors">
-              Confirmar Reprovação
-            </button>
+            <button type="button" onClick={() => setShowRejectForm(false)} className="px-3 py-1.5 rounded-xl border border-border text-sm hover:bg-muted transition-colors">Cancelar</button>
+            <button type="button" onClick={handleReject} className="px-3 py-1.5 rounded-xl bg-red-600 text-white text-sm hover:bg-red-700 transition-colors">Confirmar</button>
           </div>
         </div>
       )}
@@ -195,10 +186,9 @@ function buildDocumentReviewList(provider) {
   const docs = Object.entries(PROVIDER_DOCUMENT_FIELD_MAP).map(([key, def]) => ({
     key,
     title: def.label,
+    shortLabel: def.label.split('–')[0].trim(),
     url: provider[def.urlKey],
-    status: provider[def.urlKey]
-      ? (provider[def.statusKey] || def.defaultStatus)
-      : 'nao_enviado',
+    status: provider[def.urlKey] ? (provider[def.statusKey] || def.defaultStatus) : 'nao_enviado',
     rejectionReason: provider[def.rejectionKey],
     statusField: def.statusKey,
     rejectionField: def.rejectionKey,
@@ -208,6 +198,7 @@ function buildDocumentReviewList(provider) {
     docs.push({
       key: 'cnpj',
       title: 'CNPJ – Comprovante de PJ',
+      shortLabel: 'CNPJ',
       url: provider.cnpj_url,
       status: provider.cnpj_status || 'pendente',
       rejectionReason: provider.cnpj_rejection_reason,
@@ -217,6 +208,94 @@ function buildDocumentReviewList(provider) {
   }
 
   return docs;
+}
+
+function ProviderReviewCard({ provider, requiredFields, onClick, index }) {
+  const listStatus = getProviderDocumentListStatus(provider, requiredFields);
+  const pendingCount = countPendingDocuments(provider, requiredFields);
+  const docItems = buildDocumentReviewList(provider);
+  const approvedCount = docItems.filter((d) => d.status === 'aprovado').length;
+
+  return (
+    <motion.button
+      type="button"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.28 }}
+      onClick={onClick}
+      className={cn(
+        'group relative text-left rounded-2xl border bg-card/80 overflow-hidden',
+        'hover:border-primary/35 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 transition-all duration-300',
+        listStatus === 'liberado' ? 'border-primary/20' : 'border-border/70',
+      )}
+    >
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/60 via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+      <div className="p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="relative shrink-0">
+            <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted border border-border/60">
+              {provider.photo_url
+                ? <img src={provider.photo_url} alt={provider.name} className="w-full h-full object-cover" />
+                : <img src={LOGO_SHIELD_SRC} alt="" className="w-full h-full object-contain p-2 opacity-80" />
+              }
+            </div>
+            {pendingCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500 text-zinc-950 text-[9px] font-bold shadow-md shadow-amber-500/30">
+                <AlertTriangle className="w-2.5 h-2.5" />
+                {pendingCount}
+              </span>
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-foreground truncate leading-tight">{provider.name}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">{provider.city || 'Cidade não informada'}</p>
+            <p className="text-[11px] text-muted-foreground/80 truncate">{provider.phone}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-1.5">
+          {listStatus === 'liberado' ? (
+            <StatusBadge status="liberado" />
+          ) : listStatus === 'reprovado' ? (
+            <StatusBadge status="reprovado" />
+          ) : (
+            <StatusBadge status="pendente" />
+          )}
+
+          {pendingCount > 0 && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-amber-500/12 text-amber-300 border-amber-500/30">
+              <FileText className="w-2.5 h-2.5" />
+              {pendingCount} doc. pendente{pendingCount > 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-1.5">
+          {docItems.slice(0, 4).map((doc) => {
+            const dcfg = STATUS_CONFIG[doc.status] || STATUS_CONFIG.nao_enviado;
+            const DIcon = dcfg.icon;
+            return (
+              <span key={doc.key} className={cn('inline-flex items-center gap-1 px-1.5 py-1 rounded-lg text-[10px] font-medium border truncate', dcfg.color)}>
+                <DIcon className="w-2.5 h-2.5 shrink-0" />
+                <span className="truncate">{doc.shortLabel}</span>
+              </span>
+            );
+          })}
+        </div>
+
+        {docItems.length > 4 && (
+          <p className="text-[10px] text-muted-foreground">+{docItems.length - 4} documento(s)</p>
+        )}
+
+        <div className="flex items-center justify-between pt-1 border-t border-border/50">
+          <span className="text-[10px] text-muted-foreground">{approvedCount}/{docItems.length} aprovados</span>
+          <span className="text-[10px] text-primary font-semibold opacity-0 group-hover:opacity-100 transition-opacity">Revisar →</span>
+        </div>
+      </div>
+    </motion.button>
+  );
 }
 
 function ProviderDocumentModal({ provider, requiredFields, onClose, onUpdate }) {
@@ -241,6 +320,7 @@ function ProviderDocumentModal({ provider, requiredFields, onClose, onUpdate }) 
 
   const docs = buildDocumentReviewList(provider);
   const canRelease = providerCanBeReleased(provider, requiredFields);
+  const pendingCount = countPendingDocuments(provider, requiredFields);
 
   const approveProvider = useMutation({
     mutationFn: () => base44.entities.Provider.update(provider.id, { is_approved: true }),
@@ -264,11 +344,11 @@ function ProviderDocumentModal({ provider, requiredFields, onClose, onUpdate }) 
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-border p-5 flex items-center justify-between z-10">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-card rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border shadow-2xl">
+        <div className="sticky top-0 bg-card/95 backdrop-blur border-b border-border p-5 flex items-center justify-between z-10">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full overflow-hidden bg-muted flex-shrink-0">
+            <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted flex-shrink-0 border border-border">
               {provider.photo_url
                 ? <img src={provider.photo_url} alt={provider.name} className="w-full h-full object-cover" />
                 : <User className="w-8 h-8 m-3 text-muted-foreground" />
@@ -278,27 +358,26 @@ function ProviderDocumentModal({ provider, requiredFields, onClose, onUpdate }) 
               <h2 className="text-xl font-bold text-foreground">{provider.name}</h2>
               <p className="text-sm text-muted-foreground">{provider.cpf || 'CPF não informado'} · {provider.phone}</p>
               <div className="flex gap-2 mt-1 flex-wrap">
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">{docSummary.aprovados} aprovados</span>
-                {docSummary.pendentes > 0 && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold">{docSummary.pendentes} pendentes</span>}
-                {docSummary.reprovados > 0 && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold">{docSummary.reprovados} reprovados</span>}
-                {!provider.is_approved && (
-                  <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">Aguardando liberação</span>
+                {provider.is_approved && <StatusBadge status="liberado" />}
+                {pendingCount > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-amber-500/12 text-amber-300 border-amber-500/30">
+                    <AlertTriangle className="w-3 h-3" /> {pendingCount} doc. pendente{pendingCount > 1 ? 's' : ''}
+                  </span>
                 )}
+                <span className="text-xs text-muted-foreground">{docSummary.aprovados} aprovados · {docSummary.pendentes} pendentes</span>
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-muted rounded-xl">
+          <button type="button" onClick={onClose} className="p-2 hover:bg-muted rounded-xl">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
         <div className="p-5 space-y-4">
           <RegistrationSummary provider={provider} />
-
           <h3 className="font-bold text-foreground flex items-center gap-2">
             <FileText className="w-4 h-4" /> Documentos para revisão
           </h3>
-
           {docs.map((doc) => (
             <DocumentCard
               key={doc.key}
@@ -311,7 +390,6 @@ function ProviderDocumentModal({ provider, requiredFields, onClose, onUpdate }) 
               onClearReject={() => setDocStatus(doc.statusField, doc.rejectionField)('pendente')}
             />
           ))}
-
           <h3 className="font-bold text-foreground flex items-center gap-2 pt-2">
             <Camera className="w-4 h-4" /> Fotos enviadas
           </h3>
@@ -322,7 +400,7 @@ function ProviderDocumentModal({ provider, requiredFields, onClose, onUpdate }) 
                 onClick={() => photo.url && setSelectedImage(photo.url)}
                 className={cn(
                   'rounded-2xl border-2 overflow-hidden cursor-pointer hover:shadow-lg transition-all',
-                  photo.url ? 'border-green-200' : 'border-gray-200',
+                  photo.url ? 'border-green-500/30' : 'border-border',
                 )}
               >
                 <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
@@ -333,14 +411,13 @@ function ProviderDocumentModal({ provider, requiredFields, onClose, onUpdate }) 
                 </div>
                 <div className="p-2 text-center">
                   <p className="text-xs font-semibold text-foreground">{photo.label}</p>
-                  <p className="text-xs text-muted-foreground">{photo.url ? 'Enviada' : 'Não enviada'}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="sticky bottom-0 bg-white border-t border-border p-5 flex gap-3">
+        <div className="sticky bottom-0 bg-card/95 backdrop-blur border-t border-border p-5 flex gap-3">
           <Button variant="outline" className="flex-1 rounded-xl" onClick={onClose}>Fechar</Button>
           {!provider.is_approved && (
             <Button
@@ -353,7 +430,7 @@ function ProviderDocumentModal({ provider, requiredFields, onClose, onUpdate }) 
             </Button>
           )}
           {provider.is_approved && (
-            <div className="flex-1 flex items-center justify-center gap-2 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm font-semibold">
+            <div className="flex-1 flex items-center justify-center gap-2 bg-primary/10 border border-primary/25 rounded-xl text-primary text-sm font-semibold">
               <ShieldCheck className="w-4 h-4" /> Acesso liberado
             </div>
           )}
@@ -400,15 +477,15 @@ export default function ProviderDocumentReview() {
     [providers],
   );
 
-  const getProviderDocStatus = (p) => getProviderDocumentReviewStatus(p, requiredFields);
+  const getListStatus = (p) => getProviderDocumentListStatus(p, requiredFields);
 
-  const filtered = activeProviders.filter((p) => filter === 'todos' || getProviderDocStatus(p) === filter);
+  const filtered = activeProviders.filter((p) => filter === 'todos' || getListStatus(p) === filter);
 
   const counts = {
-    todos: activeProviders.length,
-    pendente: activeProviders.filter((p) => getProviderDocStatus(p) === 'pendente').length,
-    reprovado: activeProviders.filter((p) => getProviderDocStatus(p) === 'reprovado').length,
-    aprovado: activeProviders.filter((p) => getProviderDocStatus(p) === 'aprovado').length,
+    todos:     activeProviders.length,
+    pendente:  activeProviders.filter((p) => getListStatus(p) === 'pendente').length,
+    reprovado: activeProviders.filter((p) => getListStatus(p) === 'reprovado').length,
+    liberado:  activeProviders.filter((p) => getListStatus(p) === 'liberado').length,
   };
 
   if (isLoading) {
@@ -424,20 +501,15 @@ export default function ProviderDocumentReview() {
       <div>
         <h2 className="text-xl font-bold text-foreground mb-1">Revisão de documentos</h2>
         <p className="text-sm text-muted-foreground">
-          Analise o cadastro completo, fotos e documentos (CNH, CRLV, comprovante, antecedentes).
-          Libere o prestador somente após aprovar tudo que foi enviado.
+          Analise cadastros e documentos. Prestadores liberados aparecem na aba Liberados, mesmo que ainda existam docs pendentes de revisão.
         </p>
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {[
-          { key: 'todos', label: 'Todos', color: 'bg-muted text-foreground' },
-          { key: 'pendente', label: 'Pendentes', color: 'bg-yellow-100 text-yellow-700' },
-          { key: 'reprovado', label: 'Reprovados', color: 'bg-red-100 text-red-700' },
-          { key: 'aprovado', label: 'Aprovados', color: 'bg-green-100 text-green-700' },
-        ].map((f) => (
+        {FILTER_TABS.map((f) => (
           <button
             key={f.key}
+            type="button"
             onClick={() => setFilter(f.key)}
             className={cn(
               'px-3 py-1.5 rounded-xl text-sm font-semibold transition-all border-2',
@@ -450,56 +522,21 @@ export default function ProviderDocumentReview() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-12 bg-muted/30 rounded-2xl">
-          <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
+        <div className="text-center py-12 bg-muted/30 rounded-2xl border border-border/50">
+          <CheckCircle2 className="w-12 h-12 text-primary mx-auto mb-3 opacity-60" />
           <p className="font-semibold text-foreground">Nenhum prestador nesta categoria</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {filtered.map((provider) => {
-            const docStatus = getProviderDocStatus(provider);
-            const docItems = buildDocumentReviewList(provider);
-
-            return (
-              <button
-                key={provider.id}
-                onClick={() => setSelectedProvider(provider)}
-                className="w-full text-left p-4 rounded-2xl border border-border hover:border-primary/40 hover:shadow-md transition-all bg-card"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                    {provider.photo_url
-                      ? <img src={provider.photo_url} alt={provider.name} className="w-full h-full object-cover" />
-                      : <User className="w-6 h-6 m-3 text-muted-foreground" />
-                    }
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <p className="font-bold text-foreground truncate">{provider.name}</p>
-                      {provider.is_approved ? (
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex-shrink-0 font-semibold">Acesso liberado</span>
-                      ) : (
-                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full flex-shrink-0 font-semibold">Aguardando liberação</span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-2">{provider.city} · {provider.phone}</p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {docItems.map((doc) => {
-                        const dcfg = STATUS_CONFIG[doc.status] || STATUS_CONFIG.nao_enviado;
-                        const DIcon = dcfg.icon;
-                        return (
-                          <span key={doc.key} className={cn('inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-medium', dcfg.color)}>
-                            <DIcon className="w-2.5 h-2.5" /> {doc.title.split('–')[0].trim()}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                </div>
-              </button>
-            );
-          })}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filtered.map((provider, index) => (
+            <ProviderReviewCard
+              key={provider.id}
+              provider={provider}
+              requiredFields={requiredFields}
+              index={index}
+              onClick={() => setSelectedProvider(provider)}
+            />
+          ))}
         </div>
       )}
 

@@ -493,7 +493,7 @@ export default function ProviderApp() {
   }
 
   return (
-    <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6">
+    <div className="min-h-screen bg-background px-4 py-6 max-w-lg mx-auto lg:max-w-none lg:px-8 xl:px-12">
       {/* Lightbox para ampliar fotos */}
       {lightboxUrl && (
         <div

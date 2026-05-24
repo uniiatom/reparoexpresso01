@@ -16,6 +16,7 @@ import PaymentModal from "@/components/PaymentModal";
 import AvailableScheduleSelector from "@/components/AvailableScheduleSelector";
 import FleetMap from "@/components/FleetMap";
 import ServiceSearch from "@/components/ServiceSearch";
+import OfferedServicesCatalog from '@/components/offered-services/OfferedServicesCatalog';
 import ProviderHomePanel from '@/components/home/ProviderHomePanel';
 import AppLoadingScreen from '@/components/ui/AppLoadingScreen';
 import { ROLES } from '@/lib/auth/roles';
@@ -305,43 +306,7 @@ export default function Home() {
                 )}
 
                 {/* ── PRESTADOR ── */}
-                {mainTab === 'prestador' && (
-                  <motion.div key="prestador" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                    <p className="text-sm text-muted-foreground text-center mb-2">
-                      Faça parte da nossa rede de profissionais homologados pela <span className="font-semibold text-foreground">Escola Prática</span>
-                    </p>
-                    <div className="space-y-3">
-                      {[
-                        { icon: Smartphone, title: "App para prestadores", desc: "Receba alertas sonoros de novos chamados no celular" },
-                        { icon: ClipboardList, title: "Aceite ou recuse", desc: "Você decide quais chamados atender" },
-                        { icon: BadgeCheck, title: "Homologação gratuita", desc: "Certificação pela Escola Prática inclusa" },
-                        { icon: Star, title: "Construa reputação", desc: "Avaliações que aumentam seus ganhos" },
-                      ].map(item => (
-                        <div key={item.title} className="flex items-start gap-3 p-3 bg-secondary/50 border border-border rounded-xl hover:border-primary/20 transition-colors">
-                          <div className="w-9 h-9 bg-primary/15 border border-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <item.icon className="w-4 h-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                            <p className="text-xs text-muted-foreground">{item.desc}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex flex-col gap-3 pt-2">
-                      <Link to="/prestador">
-                        <Button className="w-full h-12 rounded-2xl font-bold text-sm">
-                          <UserCheck className="w-4 h-4 mr-2" /> Já sou cadastrado — Entrar
-                        </Button>
-                      </Link>
-                      <Link to="/cadastro-prestador">
-                        <Button variant="outline" className="w-full h-12 rounded-2xl font-bold text-sm">
-                          Quero me cadastrar como prestador
-                        </Button>
-                      </Link>
-                    </div>
-                  </motion.div>
-                )}
+                {mainTab === 'prestador' && <ProviderHomePanel />}
               </div>
             </div>
           </div>

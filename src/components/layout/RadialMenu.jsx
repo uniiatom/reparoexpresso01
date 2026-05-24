@@ -14,19 +14,22 @@ import {
   isAdminNavItemActive,
 } from '@/lib/navigation/adminNavigation';
 
-/* ─── Nav items por perfil (cliente, prestador, parceiro) ── */
+import {
+  getProviderNavItems,
+  getProviderDiskNavStructure,
+  isProviderNavItemActive,
+} from '@/lib/navigation/providerNavigation';
+
+/* ─── Nav items por perfil (cliente, parceiro) ── */
 function getStandardNavItems(user) {
   const r = user?.role;
 
   if (r === ROLES.PROVIDER) {
-    return [
-      { key: 'inicio', to: '/inicio', icon: Home, label: 'Início' },
-      { key: 'prestador', to: '/prestador', icon: Wrench, label: 'Chamados' },
-      { key: 'ganhos', to: '/prestador/ganhos', icon: DollarSign, label: 'Ganhos' },
-      { key: 'horarios', to: '/prestador/horarios', icon: Calendar, label: 'Horários' },
-      { key: 'metricas', to: '/painel-metricas', icon: BarChart3, label: 'Métricas' },
-      { key: 'perfil', to: '/perfil', icon: User, label: 'Perfil' },
-    ];
+    return getProviderNavItems().map((item) => ({
+      ...item,
+      type: 'route',
+      tab: null,
+    }));
   }
 
   if (r === ROLES.PARTNER) {
@@ -237,7 +240,13 @@ export default function RadialMenu() {
   const adminNav = isStaff ? getAdminDiskNavStructure(staffRole) : null;
 
   const menuItems = useMemo(() => {
-    if (!isStaff || !adminNav) return standardItems;
+    if (!isStaff || !adminNav) {
+      if (user?.role === ROLES.PROVIDER) {
+        const providerNav = getProviderDiskNavStructure();
+        return [...providerNav.shortcuts, providerNav.profile];
+      }
+      return standardItems;
+    }
 
     if (diskMenuId) {
       const currentMenu = adminNav.menus.find((menu) => menu.id === diskMenuId);
@@ -259,7 +268,7 @@ export default function RadialMenu() {
     ];
   }, [isStaff, adminNav, diskMenuId, standardItems]);
 
-  const compact = isStaff;
+  const compact = isStaff || user?.role === ROLES.PROVIDER;
   const slot = compact ? ITEM_SLOT.compact : ITEM_SLOT.standard;
   const activeMenuLabel = diskMenuId
     ? adminNav?.menus.find((menu) => menu.id === diskMenuId)?.label
@@ -289,6 +298,9 @@ export default function RadialMenu() {
   const isItemActive = (item) => {
     if (isStaff) {
       return isAdminNavItemActive(item, location.pathname, searchTab);
+    }
+    if (user?.role === ROLES.PROVIDER) {
+      return isProviderNavItemActive(item, location.pathname);
     }
     return location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
   };

@@ -108,17 +108,18 @@ export default function ProviderSettings({ onClose }) {
 
   const saveConfig = useMutation({
     mutationFn: async (patch) => {
-      const next = { ...config, ...patch };
       if (savedConfig?.id) {
-        return base44.entities.ProviderConfig.update(savedConfig.id, next);
+        return base44.entities.ProviderConfig.update(savedConfig.id, patch);
       }
-      return base44.entities.ProviderConfig.create(next);
+      return base44.entities.ProviderConfig.create({ ...config, ...patch });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['provider-config'] });
       toast.success('Configurações salvas!');
     },
-    onError: () => toast.error('Erro ao salvar.'),
+    onError: (err) => {
+      toast.error(err?.message || 'Erro ao salvar.');
+    },
   });
 
   // ── Serviços ativos (catálogo) ─────────────────────────────────────────────

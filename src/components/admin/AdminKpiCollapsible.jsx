@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Briefcase, CheckCircle2, Clock, Star, TrendingUp, Users, Activity, Zap, ChevronLeft,
@@ -7,6 +7,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 import { LOGO_SHIELD_SRC } from '@/lib/brandAssets';
+
+const KPI_EXPANDED_STORAGE_KEY = 'reparo_admin_kpi_expanded';
+
+function readKpiExpandedPreference() {
+  if (typeof window === 'undefined') return false;
+  try {
+    return localStorage.getItem(KPI_EXPANDED_STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
 
 const KPI_ITEMS = [
   { key: 'total', label: 'Chamados', icon: Briefcase, color: 'text-foreground', format: (s) => s.total },
@@ -64,7 +75,15 @@ function KpiToggle({ expanded, onClick }) {
 }
 
 export default function AdminKpiCollapsible({ stats }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(readKpiExpandedPreference);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(KPI_EXPANDED_STORAGE_KEY, expanded ? '1' : '0');
+    } catch {
+      // modo privado ou quota — ignora
+    }
+  }, [expanded]);
 
   return (
     <div className="relative mb-4">

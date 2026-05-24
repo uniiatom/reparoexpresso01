@@ -157,3 +157,26 @@ export function getProviderDocumentReviewStatus(provider, requiredFields = []) {
   if (statuses.some((s) => s === 'pendente' || s === 'nao_enviado')) return 'pendente';
   return 'pendente';
 }
+
+/** Status para filtros da lista admin (documentos) */
+export function getProviderDocumentListStatus(provider, requiredFields = []) {
+  if (provider?.is_approved) return 'liberado';
+  const docStatus = getProviderDocumentReviewStatus(provider, requiredFields);
+  if (docStatus === 'reprovado') return 'reprovado';
+  return 'pendente';
+}
+
+/** Quantidade de documentos ainda não aprovados (para selo no card) */
+export function countPendingDocuments(provider, requiredFields = []) {
+  const docKeys = getDocumentFieldsFromConfig(requiredFields);
+  const relevant = docKeys.length > 0 ? docKeys : Object.keys(PROVIDER_DOCUMENT_FIELD_MAP);
+
+  return relevant.reduce((acc, key) => {
+    const def = PROVIDER_DOCUMENT_FIELD_MAP[key];
+    const url = provider?.[def.urlKey];
+    if (!url) return acc + 1;
+    const status = provider?.[def.statusKey] || def.defaultStatus;
+    if (status !== 'aprovado') return acc + 1;
+    return acc;
+  }, 0);
+}

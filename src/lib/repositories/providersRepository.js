@@ -174,6 +174,26 @@ export async function deleteProviderUnavailability(id) {
 
 // ─── ProviderConfig ─────────────────────────────────────────
 
+const PROVIDER_CONFIG_WRITABLE_KEYS = [
+  'required_fields',
+  'allowed_services',
+  'allowed_weekdays',
+  'allowed_hours_start',
+  'allowed_hours_end',
+  'allowed_regions',
+  'allowed_day_schedules',
+  'custom_registration_fields',
+];
+
+/** Remove campos legados Base44 e colunas somente leitura antes do insert/update. */
+export function sanitizeProviderConfigPayload(payload = {}) {
+  const clean = {};
+  for (const key of PROVIDER_CONFIG_WRITABLE_KEYS) {
+    if (payload[key] !== undefined) clean[key] = payload[key];
+  }
+  return clean;
+}
+
 export async function listProviderConfig() {
   const { data, error } = await supabase.from('provider_config').select('*').limit(1);
   if (error) throw error;
@@ -181,9 +201,10 @@ export async function listProviderConfig() {
 }
 
 export async function createProviderConfig(payload) {
+  const row = sanitizeProviderConfigPayload(payload);
   const { data, error } = await supabase
     .from('provider_config')
-    .insert(payload)
+    .insert(row)
     .select()
     .single();
   if (error) throw error;
@@ -191,9 +212,10 @@ export async function createProviderConfig(payload) {
 }
 
 export async function updateProviderConfig(id, payload) {
+  const row = sanitizeProviderConfigPayload(payload);
   const { data, error } = await supabase
     .from('provider_config')
-    .update(payload)
+    .update(row)
     .eq('id', id)
     .select()
     .single();

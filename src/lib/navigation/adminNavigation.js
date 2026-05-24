@@ -33,13 +33,22 @@ export const ADMIN_NAV_GROUPS = [
     label: 'Cadastros',
     icon: Users,
     items: [
-      { value: 'servicos-prestados', icon: Layers, label: 'Serviços Prestados' },
-      { value: 'locais-atuacao', icon: MapPin, label: 'Locais de Atuação', badge: 'pendingCoverage' },
-      { value: 'providers', icon: UserCheck, label: 'Prestadores', badge: 'pending' },
       { value: 'consulta-cliente', icon: Search, label: 'Clientes' },
-      { value: 'photos', icon: Camera, label: 'Fotos', badge: 'pendingPhotos' },
-      { value: 'documentos', icon: FileText, label: 'Documentos' },
       { value: 'blacklist', icon: Ban, label: 'Blacklist' },
+    ],
+  },
+  {
+    id: 'prestadores',
+    label: 'Prestadores',
+    icon: UserCheck,
+    items: [
+      { value: 'providers', icon: UserCheck, label: 'Lista de prestadores', badge: 'pending' },
+      { value: 'documentos', icon: FileText, label: 'Documentos' },
+      { value: 'photos', icon: Camera, label: 'Fotos', badge: 'pendingPhotos' },
+      { value: 'servicos-prestados', icon: Layers, label: 'Serviços prestados' },
+      { value: 'locais-atuacao', icon: MapPin, label: 'Locais de atuação', badge: 'pendingCoverage' },
+      { value: 'provider-settings', icon: Settings, label: 'Config. prestadores' },
+      { value: 'termos-prestador', icon: FileCheck, label: 'Termos prestadores' },
     ],
   },
   {
@@ -65,9 +74,7 @@ export const ADMIN_NAV_GROUPS = [
       { value: 'sobretaxas', icon: Clock, label: 'Sobretaxas' },
       { value: 'checklists', icon: CheckSquare, label: 'Checklists' },
       { value: 'additional', icon: ListPlus, label: 'Pontos Extras' },
-      { value: 'provider-settings', icon: Settings, label: 'Config. Prestadores' },
       { value: 'termos', icon: FileCheck, label: 'Termos Clientes' },
-      { value: 'termos-prestador', icon: FileCheck, label: 'Termos Prestadores' },
     ],
   },
   {
