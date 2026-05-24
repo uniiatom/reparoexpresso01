@@ -40,6 +40,7 @@ import ProviderMetricsPanel from './pages/ProviderMetricsPanel';
 import Jornada from './pages/Jornada';
 import ProviderAgenda from './pages/ProviderAgenda';
 import { Toaster as SonnerToaster } from "sonner";
+import SupabaseConfigGuard from '@/components/config/SupabaseConfigGuard';
 
 function AuthedShell() {
   return (
@@ -104,17 +105,19 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <AppRoutes />
-          </Router>
-          <Toaster />
-          <SonnerToaster position="top-center" richColors />
-        </QueryClientProvider>
-      </NotificationProvider>
-    </AuthProvider>
+    <SupabaseConfigGuard>
+      <AuthProvider>
+        <NotificationProvider>
+          <QueryClientProvider client={queryClientInstance}>
+            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <AppRoutes />
+            </Router>
+            <Toaster />
+            <SonnerToaster position="top-center" richColors />
+          </QueryClientProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </SupabaseConfigGuard>
   );
 }
 

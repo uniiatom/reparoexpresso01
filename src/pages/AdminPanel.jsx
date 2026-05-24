@@ -37,6 +37,7 @@ import ProviderSettings from '../components/admin/ProviderSettings';
 import UndoProviderAction from '../components/admin/UndoProviderAction';
 import ReembolsosRepasses from '../components/admin/ReembolsosRepasses';
 import ActivityLog from '../components/admin/ActivityLog';
+import AdminUsersManager from '../components/admin/AdminUsersManager';
 import CouponsAdmin from '../components/admin/CouponsAdmin';
 import SurchargeRulesAdmin from '../components/admin/SurchargeRulesAdmin';
 import CashbackConfigAdmin from '../components/admin/CashbackConfigAdmin';
@@ -295,6 +296,7 @@ export default function AdminPanel() {
 
         {/* â”€â”€ SeÃ§Ãµes de conteÃºdo â”€â”€ */}
         <div className="mt-2">
+          {activeTab === 'usuarios'         && <AdminUsersManager />}
           {activeTab === 'analytics'       && <Analytics />}
           {activeTab === 'metricas'        && <ServiceMetrics />}
           {activeTab === 'novo-pedido'     && <AdminCreateOrder />}

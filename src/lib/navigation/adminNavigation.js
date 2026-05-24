@@ -33,6 +33,7 @@ export const ADMIN_NAV_GROUPS = [
     label: 'Cadastros',
     icon: Users,
     items: [
+      { value: 'usuarios', icon: Users, label: 'Usuários' },
       { value: 'consulta-cliente', icon: Search, label: 'Clientes' },
       { value: 'blacklist', icon: Ban, label: 'Blacklist' },
     ],
