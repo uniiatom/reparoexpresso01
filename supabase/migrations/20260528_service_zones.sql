@@ -275,34 +275,33 @@ ALTER TABLE public.zone_blocklist               ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.service_coverage_requests    ENABLE ROW LEVEL SECURITY;
 
 -- Leitura pública (zonas ativas)
-CREATE POLICY IF NOT EXISTS "zone_cities_read_public"
+CREATE POLICY "zone_cities_read_public"
   ON public.zone_cities FOR SELECT USING (true);
 
-CREATE POLICY IF NOT EXISTS "zone_neighborhoods_read_public"
+CREATE POLICY "zone_neighborhoods_read_public"
   ON public.zone_neighborhoods FOR SELECT USING (true);
 
 -- Escrita: apenas admin (service_role ou função admin no JWT)
--- Ajuste conforme sua configuração de roles
-CREATE POLICY IF NOT EXISTS "zone_cities_admin_all"
+CREATE POLICY "zone_cities_admin_all"
   ON public.zone_cities FOR ALL
   USING (auth.role() = 'service_role' OR (auth.jwt()->>'role')::text = 'admin')
   WITH CHECK (auth.role() = 'service_role' OR (auth.jwt()->>'role')::text = 'admin');
 
-CREATE POLICY IF NOT EXISTS "zone_neighborhoods_admin_all"
+CREATE POLICY "zone_neighborhoods_admin_all"
   ON public.zone_neighborhoods FOR ALL
   USING (auth.role() = 'service_role' OR (auth.jwt()->>'role')::text = 'admin')
   WITH CHECK (auth.role() = 'service_role' OR (auth.jwt()->>'role')::text = 'admin');
 
-CREATE POLICY IF NOT EXISTS "zone_blocklist_admin_all"
+CREATE POLICY "zone_blocklist_admin_all"
   ON public.zone_blocklist FOR ALL
   USING (auth.role() = 'service_role' OR (auth.jwt()->>'role')::text = 'admin')
   WITH CHECK (auth.role() = 'service_role' OR (auth.jwt()->>'role')::text = 'admin');
 
 -- Chamados: qualquer autenticado pode inserir; admin gerencia
-CREATE POLICY IF NOT EXISTS "coverage_requests_insert_authenticated"
+CREATE POLICY "coverage_requests_insert_authenticated"
   ON public.service_coverage_requests FOR INSERT
   WITH CHECK (true);
 
-CREATE POLICY IF NOT EXISTS "coverage_requests_admin_all"
+CREATE POLICY "coverage_requests_admin_all"
   ON public.service_coverage_requests FOR ALL
   USING (auth.role() = 'service_role' OR (auth.jwt()->>'role')::text = 'admin');
