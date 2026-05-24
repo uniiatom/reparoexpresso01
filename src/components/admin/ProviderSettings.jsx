@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,14 +17,17 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from '@/components/ui/popover';
 import {
-  Loader2, Plus, Trash2, Settings, Award,
+  Loader2, Plus, Trash2, Settings,
   CalendarDays, MapPin, Link2, Copy,
   ExternalLink, Type, AlignLeft, Hash, FileUp,
-  Pencil, Layers,
+  Pencil, Layers, Search,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { REGISTRATION_FIELDS, WEEKDAYS } from '@/lib/constants/providerServiceTypes';
 import { cn } from '@/lib/utils';
+import { useProviderServiceOptions } from '@/hooks/useProviderServiceOptions';
+import { useOfferedServiceGroups } from '@/hooks/useOfferedServiceGroups';
+import ProviderServicesMultiSelect from '@/components/providers/ProviderServicesMultiSelect';
 
 // ─── Tipos de campos personalizados ──────────────────────────────────────────
 const CUSTOM_FIELD_TYPES = [
@@ -117,12 +121,18 @@ export default function ProviderSettings({ onClose }) {
     onError: () => toast.error('Erro ao salvar.'),
   });
 
-  // ── Serviços ativos (apenas contagem) ──────────────────────────────────────
-  const { data: offeredServices = [] } = useQuery({
-    queryKey: ['offered-services-count'],
-    queryFn: () => base44.entities.OfferedService.list('sort_order', 300),
-  });
-  const activeCount = offeredServices.filter((s) => s.is_active !== false).length;
+  // ── Serviços ativos (catálogo) ─────────────────────────────────────────────
+  const { data: catalogServiceOptions = [], isLoading: isLoadingServiceOptions } = useProviderServiceOptions();
+  const { data: serviceGroups = [] } = useOfferedServiceGroups();
+  const activeCount = catalogServiceOptions.filter((s) => s.isActive !== false).length;
+
+  const toggleAllowedService = (slug) => {
+    const current = config.allowed_services ?? [];
+    const next = current.includes(slug)
+      ? current.filter((s) => s !== slug)
+      : [...current, slug];
+    setConfig((p) => ({ ...p, allowed_services: next }));
+  };
 
   // ── Campos personalizados ───────────────────────────────────────────────────
   const customFields = config.custom_registration_fields ?? [];
@@ -216,38 +226,62 @@ export default function ProviderSettings({ onClose }) {
   const totalSlots = Object.values(daySchedules).reduce((acc, s) => acc + s.length, 0);
   const activeDays = Object.keys(daySchedules).length;
 
-  // ── Regiões ─────────────────────────────────────────────────────────────────
-  const [newRegion, setNewRegion] = useState('');
-  const addRegion = () => {
-    const trimmed = newRegion.trim();
-    if (!trimmed || config.allowed_regions?.includes(trimmed)) return;
-    setConfig((p) => ({ ...p, allowed_regions: [...(p.allowed_regions ?? []), trimmed] }));
-    setNewRegion('');
-  };
-  const removeRegion = (r) =>
-    setConfig((p) => ({ ...p, allowed_regions: p.allowed_regions.filter((x) => x !== r) }));
+  // ── Regiões (zone-based) ────────────────────────────────────────────────────
+  const [regionSearch, setRegionSearch] = useState('');
 
-  // ── Qualificações ───────────────────────────────────────────────────────────
-  const [newQualName, setNewQualName] = useState('');
-  const { data: qualifications = [], isLoading: isLoadingQuals } = useQuery({
-    queryKey: ['qualifications'],
-    queryFn: () => base44.entities.Qualification.list(),
-  });
-  const addQual = useMutation({
-    mutationFn: (name) => base44.entities.Qualification.create({ name }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['qualifications'] });
-      setNewQualName('');
-      toast.success('Qualificação adicionada!');
+  const { data: zoneCities = [] } = useQuery({
+    queryKey: ['zone-cities-active'],
+    queryFn: async () => {
+      const { data } = await supabase.from('zone_cities').select('id, name').eq('active', true).order('name');
+      return data ?? [];
     },
   });
-  const deleteQual = useMutation({
-    mutationFn: (id) => base44.entities.Qualification.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['qualifications'] });
-      toast.success('Qualificação removida.');
+
+  const { data: zoneNeighborhoods = [] } = useQuery({
+    queryKey: ['zone-neighborhoods-active'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('zone_neighborhoods').select('id, name, city_id').eq('active', true).order('name');
+      return data ?? [];
     },
   });
+
+  const neighborhoodsByCity = useMemo(() => {
+    const map = {};
+    zoneNeighborhoods.forEach((n) => {
+      if (!map[n.city_id]) map[n.city_id] = [];
+      map[n.city_id].push(n);
+    });
+    return map;
+  }, [zoneNeighborhoods]);
+
+  const filteredCities = useMemo(() => {
+    const q = regionSearch.toLowerCase();
+    if (!q) return zoneCities;
+    return zoneCities.filter((c) => {
+      const cityMatch = c.name.toLowerCase().includes(q);
+      const neighMatch = (neighborhoodsByCity[c.id] ?? []).some((n) => n.name.toLowerCase().includes(q));
+      return cityMatch || neighMatch;
+    });
+  }, [zoneCities, neighborhoodsByCity, regionSearch]);
+
+  const selectedRegions = config.allowed_regions ?? [];
+
+  const toggleNeighborhood = (neighId) => {
+    const next = selectedRegions.includes(neighId)
+      ? selectedRegions.filter((id) => id !== neighId)
+      : [...selectedRegions, neighId];
+    setConfig((p) => ({ ...p, allowed_regions: next }));
+  };
+
+  const toggleAllCity = (cityId) => {
+    const cityNeighs = (neighborhoodsByCity[cityId] ?? []).map((n) => n.id);
+    const allSelected = cityNeighs.length > 0 && cityNeighs.every((id) => selectedRegions.includes(id));
+    const next = allSelected
+      ? selectedRegions.filter((id) => !cityNeighs.includes(id))
+      : [...new Set([...selectedRegions, ...cityNeighs])];
+    setConfig((p) => ({ ...p, allowed_regions: next }));
+  };
 
   const copyLink = () => {
     const url = `${window.location.origin}/cadastro-prestador`;
@@ -410,32 +444,57 @@ export default function ProviderSettings({ onClose }) {
           <CardTitle className="text-base flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary" /> Serviços Disponíveis
           </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Escolha quais serviços do catálogo aparecem no cadastro do prestador. Se nenhum estiver marcado, todos os ativos ficam disponíveis.
+          </p>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex-1">
-              <p className="text-sm text-foreground mb-1">
-                Os serviços cadastrados em{' '}
-                <span className="font-semibold text-primary">Serviços Prestados</span>{' '}
-                aparecem automaticamente no cadastro do prestador.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {activeCount > 0
-                  ? `${activeCount} serviço${activeCount !== 1 ? 's' : ''} ativo${activeCount !== 1 ? 's' : ''} no catálogo.`
-                  : 'Nenhum serviço cadastrado ainda. Adicione na aba Serviços Prestados.'}
-              </p>
+        <CardContent className="space-y-4">
+          <ProviderServicesMultiSelect
+            services={catalogServiceOptions}
+            groups={serviceGroups}
+            selectedValues={config.allowed_services ?? []}
+            onToggle={toggleAllowedService}
+            isLoading={isLoadingServiceOptions}
+            emptyMessage="Nenhum serviço no catálogo. Cadastre em Serviços Prestados."
+            listClassName="max-h-72"
+          />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <p className="text-xs text-muted-foreground flex-1">
+              {activeCount > 0
+                ? `${activeCount} serviço${activeCount !== 1 ? 's' : ''} ativo${activeCount !== 1 ? 's' : ''} no catálogo.`
+                : 'Nenhum serviço cadastrado ainda.'}
+            </p>
+            <div className="flex gap-2 shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => setConfig((p) => ({ ...p, allowed_services: [] }))}
+              >
+                Liberar todos
+              </Button>
+              <Button
+                size="sm"
+                className="rounded-xl"
+                onClick={() => saveConfig.mutate({ allowed_services: config.allowed_services ?? [] })}
+                disabled={saveConfig.isPending}
+              >
+                {saveConfig.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                Salvar serviços
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl gap-2"
+                onClick={() => {
+                  onClose?.();
+                  setSearchParams({ tab: 'servicos-prestados' });
+                }}
+              >
+                <ExternalLink className="w-4 h-4" />
+                Gerenciar catálogo
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              className="rounded-xl gap-2 shrink-0"
-              onClick={() => {
-                onClose?.();
-                setSearchParams({ tab: 'servicos-prestados' });
-              }}
-            >
-              <ExternalLink className="w-4 h-4" />
-              Gerenciar serviços
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -571,86 +630,138 @@ export default function ProviderSettings({ onClose }) {
             <MapPin className="w-4 h-4 text-primary" /> Regiões de Atuação
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Bairros e zonas disponíveis para seleção pelo prestador. Se vazio, o prestador digita livremente.
+            Selecione os bairros disponíveis para o prestador. Se nenhum selecionado, o campo fica livre.
+            Gerencie cidades e bairros em{' '}
+            <button
+              type="button"
+              className="text-primary underline-offset-2 hover:underline"
+              onClick={() => { onClose?.(); setSearchParams({ tab: 'locais-atuacao' }); }}
+            >
+              Locais de Atuação
+            </button>.
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2">
+        <CardContent className="space-y-3">
+
+          {/* Busca */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder="Ex: Vila Mariana, Mooca, Zona Norte…"
-              value={newRegion}
-              onChange={(e) => setNewRegion(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addRegion(); }
-              }}
-              className="rounded-xl flex-1"
+              placeholder="Buscar cidade ou bairro…"
+              value={regionSearch}
+              onChange={(e) => setRegionSearch(e.target.value)}
+              className="rounded-xl pl-9"
             />
-            <Button variant="outline" className="rounded-xl px-3" onClick={addRegion} disabled={!newRegion.trim()}>
-              <Plus className="w-4 h-4" />
-            </Button>
           </div>
 
-          {config.allowed_regions?.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {config.allowed_regions.map((r) => (
-                <span key={r} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary border border-primary/20">
-                  <MapPin className="w-3 h-3" />
-                  {r}
-                  <button type="button" onClick={() => removeRegion(r)} className="ml-0.5 hover:text-destructive transition-colors">✕</button>
-                </span>
-              ))}
+          {/* Lista */}
+          {zoneCities.length === 0 ? (
+            <div className="text-sm text-muted-foreground text-center py-8">
+              Nenhuma cidade cadastrada ainda.{' '}
+              <button
+                type="button"
+                className="text-primary hover:underline inline-flex items-center gap-1"
+                onClick={() => { onClose?.(); setSearchParams({ tab: 'locais-atuacao' }); }}
+              >
+                Cadastrar agora <ExternalLink className="w-3 h-3" />
+              </button>
+            </div>
+          ) : filteredCities.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Nenhum resultado para &quot;{regionSearch}&quot;.
+            </p>
+          ) : (
+            <div className="divide-y divide-border/50 border border-border/50 rounded-xl overflow-hidden max-h-72 overflow-y-auto">
+              {filteredCities.map((city) => {
+                const cityNeighs = (neighborhoodsByCity[city.id] ?? []).filter((n) => {
+                  const q = regionSearch.toLowerCase();
+                  if (!q) return true;
+                  return (
+                    n.name.toLowerCase().includes(q) ||
+                    city.name.toLowerCase().includes(q)
+                  );
+                });
+                const allSelected =
+                  cityNeighs.length > 0 &&
+                  cityNeighs.every((n) => selectedRegions.includes(n.id));
+                const someSelected = cityNeighs.some((n) => selectedRegions.includes(n.id));
+                const selectedCount = cityNeighs.filter((n) => selectedRegions.includes(n.id)).length;
+
+                return (
+                  <div key={city.id}>
+                    {/* Cabeçalho da cidade */}
+                    <div
+                      className={cn(
+                        'flex items-center gap-2 px-3 py-2 cursor-pointer select-none',
+                        someSelected ? 'bg-primary/5' : 'bg-muted/30',
+                      )}
+                      onClick={() => toggleAllCity(city.id)}
+                    >
+                      <Checkbox
+                        checked={allSelected}
+                        data-state={someSelected && !allSelected ? 'indeterminate' : undefined}
+                        onCheckedChange={() => toggleAllCity(city.id)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="text-xs font-semibold flex-1">{city.name}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {selectedCount}/{cityNeighs.length}
+                      </span>
+                    </div>
+
+                    {/* Bairros */}
+                    {cityNeighs.length > 0 ? (
+                      <div className="divide-y divide-border/20">
+                        {cityNeighs.map((neigh) => (
+                          <label
+                            key={neigh.id}
+                            className="flex items-center gap-2 px-5 py-2 cursor-pointer hover:bg-primary/5 transition-colors"
+                          >
+                            <Checkbox
+                              checked={selectedRegions.includes(neigh.id)}
+                              onCheckedChange={() => toggleNeighborhood(neigh.id)}
+                            />
+                            <span className="text-sm">{neigh.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground px-5 py-2 italic">
+                        Nenhum bairro cadastrado.
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          <Button size="sm" className="rounded-xl" onClick={() => saveConfig.mutate({ allowed_regions: config.allowed_regions })} disabled={saveConfig.isPending}>
-            Salvar regiões
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* ══ QUALIFICAÇÕES ════════════════════════════════════════════════════ */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Award className="w-4 h-4 text-primary" /> Lista de Qualificações
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Qualificações que aparecerão para seleção pelo prestador no cadastro.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Ex: NR-10, Curso SENAI, Plomeiro certificado…"
-              value={newQualName}
-              onChange={(e) => setNewQualName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && newQualName.trim()) addQual.mutate(newQualName.trim()); }}
+          {/* Rodapé */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button
+              size="sm"
               className="rounded-xl"
-            />
-            <Button onClick={() => addQual.mutate(newQualName.trim())} disabled={!newQualName.trim() || addQual.isPending} className="rounded-xl gap-2">
-              <Plus className="w-4 h-4" /> Adicionar
+              onClick={() => saveConfig.mutate({ allowed_regions: selectedRegions })}
+              disabled={saveConfig.isPending}
+            >
+              {saveConfig.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Salvar regiões
+            </Button>
+            {selectedRegions.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {selectedRegions.length} bairro{selectedRegions.length !== 1 ? 's' : ''} selecionado{selectedRegions.length !== 1 ? 's' : ''}
+              </p>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-xl gap-1.5 ml-auto"
+              onClick={() => { onClose?.(); setSearchParams({ tab: 'locais-atuacao' }); }}
+            >
+              <ExternalLink className="w-3.5 h-3.5" /> Gerenciar cidades
             </Button>
           </div>
-          <div className="space-y-2">
-            {isLoadingQuals ? (
-              <div className="flex justify-center py-4">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : qualifications.length === 0 ? (
-              <p className="text-sm text-muted-foreground italic text-center py-4">Nenhuma qualificação cadastrada.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {qualifications.map((qual) => (
-                  <div key={qual.id} className="flex items-center justify-between p-3 border border-border/50 rounded-xl bg-gradient-to-r from-card/60 to-muted/20 shadow-sm">
-                    <span className="text-sm font-medium">{qual.name}</span>
-                    <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => deleteQual.mutate(qual.id)} disabled={deleteQual.isPending}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+
         </CardContent>
       </Card>
 
