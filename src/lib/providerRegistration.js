@@ -1,6 +1,10 @@
-import { base44 } from '@/api/base44Client';
 import { supabase } from '@/lib/supabase/client';
 import { getServiceLabel } from '@/lib/constants/providerServiceTypes';
+import {
+  createProvider,
+  createProviderAvailability,
+  listProviderConfig,
+} from '@/lib/repositories/providersRepository';
 
 export const DEFAULT_PROVIDER_FORM = {
   // ── Acesso ──────────────────────────────────────────
@@ -54,7 +58,7 @@ export async function validateProviderForm(form, { mode = 'self' } = {}) {
   // Fetch dynamic config
   let requiredFields = [];
   try {
-    const configs = await base44.entities.ProviderConfig.list();
+    const configs = await listProviderConfig();
     if (configs?.[0]?.required_fields) {
       requiredFields = configs[0].required_fields;
     }
@@ -188,7 +192,14 @@ export async function registerProvider({ form, userId, autoApprove = false, mode
     total_jobs: 0,
   };
 
-  const provider = await base44.entities.Provider.create(payload);
+  const provider = await createProvider(payload);
+
+  if (resolvedUserId && mode === 'self') {
+    await supabase
+      .from('profiles')
+      .update({ role: 'provider' })
+      .eq('id', resolvedUserId);
+  }
 
   const { days, maxSlotsPerDay, slots = [] } = form.schedule;
   
@@ -199,7 +210,7 @@ export async function registerProvider({ form, userId, autoApprove = false, mode
       slots.forEach(slot => {
         if (slot.startTime && slot.endTime) {
           availabilityPromises.push(
-            base44.entities.ProviderAvailability.create({
+            createProviderAvailability({
               provider_id: provider.id,
               day_of_week: day,
               start_time: slot.startTime,
@@ -213,7 +224,7 @@ export async function registerProvider({ form, userId, autoApprove = false, mode
     } else if (form.schedule.startTime && form.schedule.endTime) {
       // Fallback for legacy format
       availabilityPromises.push(
-        base44.entities.ProviderAvailability.create({
+        createProviderAvailability({
           provider_id: provider.id,
           day_of_week: day,
           start_time: form.schedule.startTime,
