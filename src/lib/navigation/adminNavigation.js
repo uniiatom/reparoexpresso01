@@ -4,7 +4,7 @@ import {
   Tag, ArrowRightLeft, Receipt, Lock, RefreshCw,
   Percent, Ticket, Clock, CheckSquare, ListPlus, FileCheck,
   Headphones, ScrollText, LayoutDashboard, Trophy, Home, User, Settings,
-  DollarSign, Users, Layers, Images,
+  DollarSign, Users, Layers, Images, MapPin,
 } from 'lucide-react';
 
 export const ADMIN_NAV_GROUPS = [
@@ -34,7 +34,7 @@ export const ADMIN_NAV_GROUPS = [
     icon: Users,
     items: [
       { value: 'servicos-prestados', icon: Layers, label: 'Serviços Prestados' },
-      { value: 'biblioteca', icon: Images, label: 'Biblioteca' },
+      { value: 'locais-atuacao', icon: MapPin, label: 'Locais de Atuação', badge: 'pendingCoverage' },
       { value: 'providers', icon: UserCheck, label: 'Prestadores', badge: 'pending' },
       { value: 'consulta-cliente', icon: Search, label: 'Clientes' },
       { value: 'photos', icon: Camera, label: 'Fotos', badge: 'pendingPhotos' },
@@ -77,6 +77,7 @@ export const ADMIN_NAV_GROUPS = [
     items: [
       { value: 'tickets', icon: Headphones, label: 'Atendimento' },
       { value: 'logs', icon: ScrollText, label: 'Logs' },
+      { value: 'biblioteca', icon: Images, label: 'Biblioteca' },
     ],
   },
 ];

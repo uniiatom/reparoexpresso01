@@ -39,6 +39,7 @@ import ActivityLog from '../components/admin/ActivityLog';
 import CouponsAdmin from '../components/admin/CouponsAdmin';
 import SurchargeRulesAdmin from '../components/admin/SurchargeRulesAdmin';
 import CashbackConfigAdmin from '../components/admin/CashbackConfigAdmin';
+import AdminLocaisAtuacao from '../components/admin/zones/AdminLocaisAtuacao';
 import { logAdminAction } from '@/lib/adminLog';
 import { useAuth } from '@/lib/AuthContext';
 import { cn } from "@/lib/utils";
@@ -70,6 +71,7 @@ export default function AdminPanel() {
   const [revealedPasswords, setRevealedPasswords] = useState({});
   const [cancelConfirm, setCancelConfirm] = useState(null);
   const [selectedProvider, setSelectedProvider] = useState(null);
+  const [editProviderId, setEditProviderId] = useState(null);
   const [adminUser, setAdminUser] = useState(null);
 
   React.useEffect(() => {
@@ -411,12 +413,15 @@ export default function AdminPanel() {
 
           {/* â”€â”€ Prestadores (inline) â”€â”€ */}
           {activeTab === 'servicos-prestados' && <OfferedServicesAdmin />}
+          {activeTab === 'locais-atuacao' && <AdminLocaisAtuacao />}
           {activeTab === 'biblioteca' && <MediaLibraryAdmin />}
           {activeTab === 'providers' && (
             <AdminProvidersPanel
               providers={providers}
               adminUser={adminUser}
               onSelectProvider={setSelectedProvider}
+              editProvider={editProviderId ? providers.find((p) => p.id === editProviderId) : null}
+              onEditComplete={() => setEditProviderId(null)}
               onApprove={(id, name) => approveProvider.mutate({ id, approved: true, providerName: name })}
               onBlock={(id, name) => approveProvider.mutate({ id, approved: false, providerName: name })}
             />
@@ -430,6 +435,10 @@ export default function AdminPanel() {
         <ProviderDetailsModal
           provider={selectedProvider}
           onClose={() => setSelectedProvider(null)}
+          onEdit={(provider) => {
+            setSelectedProvider(null);
+            setEditProviderId(provider.id);
+          }}
           onApprove={(id, name) => approveProvider.mutate({ id, approved: true, providerName: name })}
           onReject={({ providerId, rejectReason, providerName }) =>
             rejectProvider.mutate({ providerId, rejectReason, providerName })}
