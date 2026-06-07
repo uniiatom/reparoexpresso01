@@ -194,6 +194,20 @@ function ConfirmDeleteModal({ user, onConfirm, onClose, isPending }) {
   );
 }
 
+// ── Section divider ──────────────────────────────────────────────────────
+
+function SectionHeader({ icon: Icon, label }) {
+  return (
+    <div className="flex items-center gap-2 pt-1 pb-0.5">
+      <div className="w-5 h-5 rounded-md bg-primary/15 border border-primary/20 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-2.5 h-2.5 text-primary" />
+      </div>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <div className="flex-1 h-px bg-white/[0.05]" />
+    </div>
+  );
+}
+
 // ── Create / Edit Form ────────────────────────────────────────────────────
 
 const EMPTY_FORM = { full_name: '', email: '', password: '', role: 'user', phone: '' };
@@ -203,12 +217,16 @@ function UserForm({ initial = EMPTY_FORM, isEdit = false, onSubmit, isPending, o
   const [showPwd, setShowPwd]     = useState(false);
   const [errors, setErrors]       = useState({});
 
+  const originalEmail = initial.email ?? '';
+  const emailChanged  = isEdit && form.email.trim().toLowerCase() !== originalEmail.trim().toLowerCase();
+
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const validate = () => {
     const e = {};
     if (!form.full_name.trim()) e.full_name = 'Nome obrigatório';
     if (!form.email.trim())     e.email     = 'E-mail obrigatório';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'E-mail inválido';
     if (!isEdit && (!form.password || form.password.length < 6)) e.password = 'Mínimo 6 caracteres';
     if (isEdit && form.password && form.password.length < 6) e.password = 'Mínimo 6 caracteres';
     setErrors(e);
@@ -225,7 +243,11 @@ function UserForm({ initial = EMPTY_FORM, isEdit = false, onSubmit, isPending, o
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-3.5">
+
+      {/* ── Seção 1: Dados pessoais ── */}
+      <SectionHeader icon={User} label="Dados pessoais" />
+
       <Field label="Nome completo" required error={errors.full_name}>
         <Input
           value={form.full_name}
@@ -235,7 +257,33 @@ function UserForm({ initial = EMPTY_FORM, isEdit = false, onSubmit, isPending, o
         />
       </Field>
 
-      <Field label="E-mail" required error={errors.email}>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Tipo de conta" required>
+          <div className="relative">
+            <Select value={form.role} onChange={e => set('role', e.target.value)}>
+              {ROLES.map(r => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </Select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+          </div>
+        </Field>
+
+        <Field label="Telefone">
+          <Input
+            type="tel"
+            value={form.phone}
+            onChange={e => set('phone', e.target.value)}
+            placeholder="(11) 99999-9999"
+          />
+        </Field>
+      </div>
+
+      {/* ── Seção 2: Dados de acesso ── */}
+      <SectionHeader icon={Key} label="Dados de acesso" />
+
+      {/* E-mail */}
+      <Field label="E-mail de acesso" required error={errors.email}>
         <Input
           type="email"
           value={form.email}
@@ -243,10 +291,23 @@ function UserForm({ initial = EMPTY_FORM, isEdit = false, onSubmit, isPending, o
           placeholder="joao@email.com"
           autoComplete="off"
         />
+        {emailChanged && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="flex items-start gap-1.5 mt-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/8 border border-amber-500/20"
+          >
+            <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-[10px] text-amber-300 leading-relaxed">
+              O e-mail será alterado. O usuário deverá usar o novo endereço para acessar.
+            </p>
+          </motion.div>
+        )}
       </Field>
 
+      {/* Senha */}
       <Field
-        label={isEdit ? 'Nova senha (deixe vazio para não alterar)' : 'Senha'}
+        label={isEdit ? 'Nova senha' : 'Senha'}
         required={!isEdit}
         error={errors.password}
       >
@@ -255,7 +316,7 @@ function UserForm({ initial = EMPTY_FORM, isEdit = false, onSubmit, isPending, o
             type={showPwd ? 'text' : 'password'}
             value={form.password}
             onChange={e => set('password', e.target.value)}
-            placeholder={isEdit ? 'Mínimo 6 caracteres' : '••••••••'}
+            placeholder={isEdit ? 'Deixe vazio para não alterar' : '••••••••'}
             autoComplete="new-password"
             className="pr-10"
           />
@@ -267,29 +328,14 @@ function UserForm({ initial = EMPTY_FORM, isEdit = false, onSubmit, isPending, o
             {showPwd ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
           </button>
         </div>
+        {isEdit && (
+          <p className="text-[10px] text-muted-foreground/60 mt-1 pl-0.5">
+            Preencha apenas se quiser definir uma nova senha.
+          </p>
+        )}
       </Field>
 
-      <Field label="Tipo de conta" required>
-        <div className="relative">
-          <Select value={form.role} onChange={e => set('role', e.target.value)}>
-            {ROLES.map(r => (
-              <option key={r.value} value={r.value}>{r.label}</option>
-            ))}
-          </Select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-        </div>
-      </Field>
-
-      <Field label="Telefone">
-        <Input
-          type="tel"
-          value={form.phone}
-          onChange={e => set('phone', e.target.value)}
-          placeholder="(11) 99999-9999"
-        />
-      </Field>
-
-      <div className="flex gap-2 pt-2">
+      <div className="flex gap-2 pt-1">
         <Button
           type="button"
           variant="outline"
@@ -306,7 +352,9 @@ function UserForm({ initial = EMPTY_FORM, isEdit = false, onSubmit, isPending, o
         >
           {isPending
             ? <Loader2 className="w-4 h-4 animate-spin" />
-            : isEdit ? <><CheckCircle2 className="w-4 h-4 mr-1.5" />Salvar</> : <><Plus className="w-4 h-4 mr-1.5" />Criar</>
+            : isEdit
+              ? <><CheckCircle2 className="w-4 h-4 mr-1.5" />Salvar alterações</>
+              : <><Plus className="w-4 h-4 mr-1.5" />Criar usuário</>
           }
         </Button>
       </div>
