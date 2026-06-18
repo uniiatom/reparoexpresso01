@@ -1,0 +1,80 @@
+{
+  "name": "QuoteRequest",
+  "type": "object",
+  "properties": {
+    "client_name": {
+      "type": "string",
+      "description": "Nome do cliente"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Email do cliente"
+    },
+    "client_phone": {
+      "type": "string",
+      "description": "Telefone do cliente"
+    },
+    "category_id": {
+      "type": "string",
+      "description": "ID da categoria de servi\u00e7o"
+    },
+    "category_name": {
+      "type": "string",
+      "description": "Nome da categoria"
+    },
+    "professional_id": {
+      "type": "string",
+      "description": "ID do profissional (se espec\u00edfico)"
+    },
+    "professional_name": {
+      "type": "string",
+      "description": "Nome do profissional"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o detalhada do servi\u00e7o necess\u00e1rio"
+    },
+    "city": {
+      "type": "string",
+      "description": "Cidade do servi\u00e7o"
+    },
+    "state": {
+      "type": "string",
+      "description": "Estado do servi\u00e7o"
+    },
+    "preferred_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data preferida para o servi\u00e7o"
+    },
+    "budget": {
+      "type": "string",
+      "enum": [
+        "ate_200",
+        "200_500",
+        "500_1000",
+        "1000_3000",
+        "acima_3000",
+        "a_combinar"
+      ],
+      "description": "Or\u00e7amento estimado"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "contacted",
+        "accepted",
+        "rejected",
+        "completed"
+      ],
+      "default": "pending",
+      "description": "Status da solicita\u00e7\u00e3o"
+    }
+  },
+  "required": [
+    "client_name",
+    "description",
+    "category_id"
+  ]
+}

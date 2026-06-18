@@ -18,6 +18,7 @@ import FleetMap from "@/components/FleetMap";
 import ServiceSearch from "@/components/ServiceSearch";
 import OfferedServicesCatalog from '@/components/offered-services/OfferedServicesCatalog';
 import ProviderHomePanel from '@/components/home/ProviderHomePanel';
+import TopProfissionais from '@/components/home/TopProfissionais';
 import AppLoadingScreen from '@/components/ui/AppLoadingScreen';
 import { ROLES } from '@/lib/auth/roles';
 
@@ -340,6 +341,9 @@ export default function Home() {
               </span>
             </button>
           </div>
+
+          {/* Top Profissionais */}
+          <TopProfissionais />
 
           {/* Trust */}
           <div className="w-full px-3 sm:px-6 lg:px-10 mt-4 grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-7 gap-3 pb-10">

@@ -1,0 +1,31 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "description": "ID do pedido de servi\u00e7o"
+    },
+    "sender_role": {
+      "type": "string",
+      "enum": [
+        "cliente",
+        "prestador"
+      ],
+      "description": "Quem enviou a mensagem"
+    },
+    "sender_name": {
+      "type": "string",
+      "description": "Nome de quem enviou"
+    },
+    "text": {
+      "type": "string",
+      "description": "Texto da mensagem"
+    }
+  },
+  "required": [
+    "request_id",
+    "sender_role",
+    "text"
+  ]
+}

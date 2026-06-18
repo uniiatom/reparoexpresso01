@@ -1,0 +1,30 @@
+{
+  "name": "ServiceCategory",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome da categoria de servi\u00e7o"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Nome do \u00edcone Lucide para a categoria"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o breve da categoria"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "URL da imagem da categoria"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se a categoria \u00e9 destaque na home"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

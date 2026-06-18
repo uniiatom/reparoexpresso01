@@ -1,0 +1,42 @@
+{
+  "name": "Favorite",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "ID do cliente que marcou como favorito"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Email do cliente"
+    },
+    "provider_id": {
+      "type": "string",
+      "description": "ID do prestador favorito"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Nome do prestador (desnormalizado)"
+    },
+    "provider_photo_url": {
+      "type": "string",
+      "description": "Foto do prestador (desnormalizado)"
+    },
+    "provider_rating": {
+      "type": "number",
+      "description": "Avalia\u00e7\u00e3o do prestador (desnormalizado)"
+    },
+    "provider_city": {
+      "type": "string",
+      "description": "Cidade do prestador (desnormalizado)"
+    },
+    "provider_state": {
+      "type": "string",
+      "description": "Estado do prestador (desnormalizado)"
+    }
+  },
+  "required": [
+    "client_id",
+    "provider_id"
+  ]
+}

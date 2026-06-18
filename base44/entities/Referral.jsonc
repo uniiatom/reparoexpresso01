@@ -1,0 +1,66 @@
+{
+  "name": "Referral",
+  "type": "object",
+  "properties": {
+    "referrer_id": {
+      "type": "string",
+      "description": "ID do usu\u00e1rio que fez a indica\u00e7\u00e3o"
+    },
+    "referrer_email": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio que fez a indica\u00e7\u00e3o"
+    },
+    "referrer_name": {
+      "type": "string",
+      "description": "Nome do usu\u00e1rio que fez a indica\u00e7\u00e3o"
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "C\u00f3digo \u00fanico de refer\u00eancia"
+    },
+    "referred_client_id": {
+      "type": "string",
+      "description": "ID do cliente referenciado"
+    },
+    "referred_client_email": {
+      "type": "string",
+      "description": "Email do cliente referenciado"
+    },
+    "referred_client_name": {
+      "type": "string",
+      "description": "Nome do cliente referenciado"
+    },
+    "service_request_id": {
+      "type": "string",
+      "description": "ID do servi\u00e7o contratado pelo cliente referenciado"
+    },
+    "reward_amount": {
+      "type": "number",
+      "default": 10,
+      "description": "Valor da recompensa em R$"
+    },
+    "reward_status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "confirmada",
+        "paga"
+      ],
+      "default": "pendente",
+      "description": "Status da recompensa"
+    },
+    "service_completed_date": {
+      "type": "string",
+      "description": "Data em que o servi\u00e7o foi conclu\u00eddo"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es adicionais"
+    }
+  },
+  "required": [
+    "referrer_id",
+    "referral_code",
+    "reward_amount"
+  ]
+}

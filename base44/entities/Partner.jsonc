@@ -1,0 +1,95 @@
+{
+  "name": "Partner",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID do usu\u00e1rio vinculado"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nome completo ou raz\u00e3o social"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email do parceiro"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefone / WhatsApp"
+    },
+    "cnpj": {
+      "type": "string",
+      "description": "CNPJ da empresa"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Nome da empresa"
+    },
+    "partner_type": {
+      "type": "string",
+      "enum": [
+        "lojista",
+        "vendedor"
+      ],
+      "description": "Tipo de parceiro"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "Foto de perfil"
+    },
+    "address": {
+      "type": "string",
+      "description": "Endere\u00e7o completo"
+    },
+    "city": {
+      "type": "string",
+      "description": "Cidade"
+    },
+    "state": {
+      "type": "string",
+      "description": "Estado/UF"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do neg\u00f3cio"
+    },
+    "products_services": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Produtos ou servi\u00e7os oferecidos"
+    },
+    "commission_rate": {
+      "type": "number",
+      "default": 0,
+      "description": "Taxa de comiss\u00e3o (%)"
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Aprovado pelo admin"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Ativo ou inativo"
+    },
+    "rating": {
+      "type": "number",
+      "default": 5,
+      "description": "Avalia\u00e7\u00e3o do parceiro"
+    },
+    "total_sales": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de vendas"
+    }
+  },
+  "required": [
+    "name",
+    "email",
+    "partner_type"
+  ]
+}

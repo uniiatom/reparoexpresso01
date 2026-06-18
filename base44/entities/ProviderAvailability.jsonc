@@ -1,0 +1,38 @@
+{
+  "name": "ProviderAvailability",
+  "type": "object",
+  "properties": {
+    "provider_id": {
+      "type": "string",
+      "description": "ID do prestador"
+    },
+    "day_of_week": {
+      "type": "integer",
+      "description": "Dia da semana (0=domingo, 6=s\u00e1bado)"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "Hora inicial (HH:MM)"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "Hora final (HH:MM)"
+    },
+    "is_available": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se est\u00e1 dispon\u00edvel neste hor\u00e1rio"
+    },
+    "max_slots_per_day": {
+      "type": "number",
+      "default": 5,
+      "description": "M\u00e1ximo de servi\u00e7os por dia"
+    }
+  },
+  "required": [
+    "provider_id",
+    "day_of_week",
+    "start_time",
+    "end_time"
+  ]
+}

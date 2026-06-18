@@ -1,0 +1,77 @@
+{
+  "name": "CustomerLoyalty",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "ID do cliente"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Email do cliente"
+    },
+    "total_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de pontos acumulados"
+    },
+    "available_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Pontos dispon\u00edveis para resgate"
+    },
+    "used_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de pontos j\u00e1 utilizados"
+    },
+    "total_spent": {
+      "type": "number",
+      "default": 0,
+      "description": "Valor total gasto em servi\u00e7os"
+    },
+    "total_services": {
+      "type": "number",
+      "default": 0,
+      "description": "Quantidade total de servi\u00e7os contratados"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold",
+        "platinum"
+      ],
+      "default": "bronze",
+      "description": "N\u00edvel de fidelidade do cliente"
+    },
+    "tier_benefits": {
+      "type": "object",
+      "properties": {
+        "points_multiplier": {
+          "type": "number",
+          "default": 1,
+          "description": "Multiplicador de pontos por tier"
+        },
+        "discount_percentage": {
+          "type": "number",
+          "default": 0,
+          "description": "Desconto adicional por tier"
+        }
+      }
+    },
+    "last_service_date": {
+      "type": "string",
+      "description": "Data do \u00faltimo servi\u00e7o"
+    },
+    "expiring_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Pontos que expiram em 12 meses"
+    }
+  },
+  "required": [
+    "client_id"
+  ]
+}

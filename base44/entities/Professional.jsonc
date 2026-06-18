@@ -1,0 +1,92 @@
+{
+  "name": "Professional",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome completo do profissional"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email do profissional"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefone do profissional"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "URL da foto do profissional"
+    },
+    "category_id": {
+      "type": "string",
+      "description": "ID da categoria de servi\u00e7o"
+    },
+    "category_name": {
+      "type": "string",
+      "description": "Nome da categoria (desnormalizado)"
+    },
+    "city": {
+      "type": "string",
+      "description": "Cidade de atua\u00e7\u00e3o"
+    },
+    "state": {
+      "type": "string",
+      "description": "Estado de atua\u00e7\u00e3o"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do profissional e servi\u00e7os"
+    },
+    "experience_years": {
+      "type": "number",
+      "description": "Anos de experi\u00eancia"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Avalia\u00e7\u00e3o m\u00e9dia (1-5)"
+    },
+    "total_reviews": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de avalia\u00e7\u00f5es"
+    },
+    "total_jobs": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de servi\u00e7os realizados"
+    },
+    "price_range": {
+      "type": "string",
+      "enum": [
+        "$",
+        "$$",
+        "$$$",
+        "$$$$"
+      ],
+      "description": "Faixa de pre\u00e7o"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o profissional \u00e9 verificado"
+    },
+    "portfolio_images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs das imagens do portf\u00f3lio"
+    },
+    "services_offered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lista de servi\u00e7os oferecidos"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

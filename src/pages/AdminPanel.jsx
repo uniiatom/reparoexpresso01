@@ -80,19 +80,7 @@ export default function AdminPanel() {
     setAdminUser(authUser ?? null);
   }, [authUser]);
 
-  if (authUser?.role === 'attendant') {
-    return (
-      <div className="container max-w-5xl mx-auto py-8 px-4 space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Central de suporte</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Papel atendente: acesso apenas aos tickets (PRD Â§2.4).
-          </p>
-        </div>
-        <TicketsAdmin />
-      </div>
-    );
-  }
+  // ── TODOS os hooks devem ser chamados ANTES de qualquer early return ──
 
   const togglePassword = (reqId) => {
     setRevealedPasswords(prev => ({ ...prev, [reqId]: !prev[reqId] }));
@@ -240,6 +228,21 @@ export default function AdminPanel() {
       setSearchParams({ tab }, { replace: true });
     }
   };
+
+  // Early return para atendente — deve vir APÓS todos os hooks
+  if (authUser?.role === 'attendant') {
+    return (
+      <div className="container max-w-5xl mx-auto py-8 px-4 space-y-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Central de suporte</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Papel atendente: acesso apenas aos tickets (PRD §2.4).
+          </p>
+        </div>
+        <TicketsAdmin />
+      </div>
+    );
+  }
 
   return (
     <>

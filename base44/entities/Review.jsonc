@@ -1,0 +1,54 @@
+{
+  "name": "Review",
+  "type": "object",
+  "properties": {
+    "professional_id": {
+      "type": "string",
+      "description": "ID do profissional avaliado"
+    },
+    "provider_id": {
+      "type": "string",
+      "description": "ID do prestador avaliado (alternativa)"
+    },
+    "service_request_id": {
+      "type": "string",
+      "description": "ID do servi\u00e7o relacionado"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Nome do cliente que avaliou"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "ID do cliente que avaliou"
+    },
+    "overall_rating": {
+      "type": "number",
+      "description": "Nota geral de 1 a 5"
+    },
+    "punctuality_rating": {
+      "type": "number",
+      "description": "Avalia\u00e7\u00e3o de pontualidade (1-5)"
+    },
+    "quality_rating": {
+      "type": "number",
+      "description": "Avalia\u00e7\u00e3o de qualidade do trabalho (1-5)"
+    },
+    "behavior_rating": {
+      "type": "number",
+      "description": "Avalia\u00e7\u00e3o de educa\u00e7\u00e3o e comportamento (1-5)"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Coment\u00e1rio da avalia\u00e7\u00e3o"
+    },
+    "service_description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do servi\u00e7o realizado"
+    }
+  },
+  "required": [
+    "professional_id",
+    "overall_rating"
+  ]
+}
