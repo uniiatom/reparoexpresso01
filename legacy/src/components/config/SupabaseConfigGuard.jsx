@@ -22,8 +22,6 @@ export default function SupabaseConfigGuard({ children }) {
               <li>VITE_SUPABASE_URL</li>
               <li>VITE_SUPABASE_PUBLISHABLE_KEY</li>
               <li>VITE_SUPABASE_PROJECT_ID</li>
-              <li>VITE_BASE44_APP_ID</li>
-              <li>VITE_BASE44_APP_BASE_URL</li>
             </ul>
           </li>
           <li>No terminal do projeto: <code className="text-xs bg-zinc-800 px-1 py-0.5 rounded">pnpm netlify:env</code> (após <code className="text-xs bg-zinc-800 px-1 py-0.5 rounded">netlify login</code> e <code className="text-xs bg-zinc-800 px-1 py-0.5 rounded">netlify link</code>)</li>

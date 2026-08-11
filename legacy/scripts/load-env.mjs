@@ -47,8 +47,6 @@ export function getRequiredViteEnvKeys() {
     'VITE_SUPABASE_URL',
     'VITE_SUPABASE_PUBLISHABLE_KEY',
     'VITE_SUPABASE_PROJECT_ID',
-    'VITE_BASE44_APP_ID',
-    'VITE_BASE44_APP_BASE_URL',
   ];
 }
 
@@ -58,10 +56,6 @@ export function validateViteEnv(env = {}) {
 
   if (!url) missing.push('VITE_SUPABASE_URL (ou VITE_SUPABASE_PROJECT_ID)');
   if (!key) missing.push('VITE_SUPABASE_PUBLISHABLE_KEY');
-
-  for (const name of ['VITE_BASE44_APP_ID', 'VITE_BASE44_APP_BASE_URL']) {
-    if (!env[name]?.trim()) missing.push(name);
-  }
 
   return { ok: missing.length === 0, missing, supabase: { url, key } };
 }

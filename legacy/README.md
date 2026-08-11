@@ -1,39 +1,38 @@
-**Welcome to your Base44 project** 
+# legacy/ — app React/Vite (congelado, referência)
 
-**About**
+Este é o app original do Reparo Expresso (React 18 + Vite + Supabase), movido para cá em `2026-08-11` como ponto de partida da migração para Flutter. Ver [`/MIGRATION.md`](../MIGRATION.md) na raiz para o plano completo.
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+**Status: congelado.** Não recebe novas features nem correções de produto — só é mantido aqui para consulta enquanto os apps novos (`/apps/client`, `/apps/provider`, `/apps/admin`) são construídos. Bugs críticos podem ser corrigidos aqui se este app ainda estiver em uso paralelo, mas o destino de qualquer funcionalidade nova é o Flutter.
 
-This project contains everything you need to run your app locally.
+O backend (Supabase — migrations e Edge Functions) **não** está aqui, continua ativo em [`/supabase`](../supabase) na raiz e é compartilhado por este app legado e pelos apps novos.
 
-**Edit the code in your local development environment**
+## Rodar localmente
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
-
-**Prerequisites:** 
-
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
-
-```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
-
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+```bash
+cd legacy
+pnpm install
+pnpm run dev      # dev server (porta 3002)
+pnpm run build    # build de produção em legacy/dist
 ```
 
-Run the app: `npm run dev`
+Variáveis de ambiente: copiar `.env.example` para `.env` (já existe um `.env` local não versionado). Ver `VITE_SUPABASE_*` — as mesmas credenciais do projeto Supabase usado pelos apps novos.
 
-**Publish your changes**
+## Onde procurar o quê (para portar para Flutter)
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+| Área | Caminho |
+|---|---|
+| Páginas/telas | `src/pages/` |
+| Componentes | `src/components/` (`admin/`, `provider/`, `auth/`, `wallet/`, `shared/`, `ui/` etc.) |
+| Cliente Supabase | `src/lib/supabase/` |
+| Auth e roles | `src/lib/auth/` (`roles.js`, `mapSessionUser.js`), `src/lib/AuthContext.jsx`, `src/lib/supabaseAuthAdapter.js` |
+| Acesso a dados | `src/lib/repositories/` |
+| Catálogo de serviços (hardcoded — migrar para tabelas `ServiceCategory`/`ServiceSubcategory`) | `src/lib/serviceTypes.js`, `src/lib/offeredServices.js` |
+| Hooks customizados | `src/hooks/` |
+| Design tokens (cores/tipografia) | `tailwind.config.js` |
+| Config de páginas/rotas | `src/App.jsx` |
 
-**Docs & Support**
+Documentação funcional completa (regras de negócio, fluxos, glossário de status) está em [`/PRD.md`](../PRD.md), não neste README.
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+## Histórico
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+Este projeto começou na plataforma Base44 (pasta `base44/` aqui dentro, hoje inativa) e foi migrado para Supabase — ver `docs/functions-inventory.md` na raiz para o inventário de Edge Functions.
