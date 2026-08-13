@@ -57,7 +57,6 @@ Deno.serve(async (req) => {
         wallet_id: wallet.id,
         owner_id: user.id,
         owner_name: user.full_name,
-        owner_email: user.email,
         amount: bonusAmount,
         reason: 'coupon_excess',
         related_coupon_code: couponCode || null,

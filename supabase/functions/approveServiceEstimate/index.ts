@@ -28,15 +28,13 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'Você não tem permissão para aprovar este serviço' }, 403);
     }
 
+    // Não existe coluna pra approval_notes/approved_at/approved_by em
+    // service_requests (ver MIGRATION.md seção 0.1) — só o status é
+    // persistido. `notes` segue no corpo da notificação abaixo.
     const newStatus = approved ? 'aceito' : 'cancelado';
     await supabase
       .from('service_requests')
-      .update({
-        status: newStatus,
-        approval_notes: notes,
-        approved_at: new Date().toISOString(),
-        approved_by: user.full_name,
-      })
+      .update({ status: newStatus })
       .eq('id', request_id);
 
     if (service.provider_id) {

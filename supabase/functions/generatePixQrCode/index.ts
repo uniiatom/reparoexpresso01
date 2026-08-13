@@ -28,16 +28,11 @@ Deno.serve(async (req) => {
     const pixKey = `00020126360014br.gov.bcb.pix0136${pixId}`;
     const qrCodeData = `00020126360014br.gov.bcb.pix0136${pixId}5204000053039865802BR5913ME SOCORRO6009SAO PAULO62410503***63043D91`;
 
-    await supabase
-      .from('service_requests')
-      .update({
-        pix_key: pixKey,
-        pix_id: pixId,
-        pix_amount: amount,
-        pix_created_at: new Date().toISOString(),
-        pix_status: 'pending',
-      })
-      .eq('id', requestId);
+    // Não existe coluna pra pix_key/pix_id/pix_amount/pix_created_at/
+    // pix_status em service_requests (ver MIGRATION.md seção 0.1) — nada lê
+    // esse estado hoje, o QR/copia-e-cola é gerado e devolvido direto pro
+    // caller. "Sem detecção automática de pagamento confirmado" já é
+    // limitação conhecida (ver seção 3).
 
     return jsonResponse({
       success: true,

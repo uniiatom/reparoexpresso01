@@ -29,19 +29,20 @@ Deno.serve(async (req) => {
     const provider = providers[0];
     const addressLine = [company_data.endereco, company_data.numero].filter(Boolean).join(', ');
 
+    // Schema real (ver /MIGRATION.md, seção 0.1) não tem coluna pro número
+    // do CNPJ nem `zip_code`/`cnpj_url`/`cnpj_status` — só os dados
+    // resultantes da consulta (razão social/fantasia) e os documentos que
+    // têm slot próprio (`address_proof_url`, `legal_rep_id_url`). O CNPJ
+    // em si (`cnpj`, vindo do body) não é persistido por falta de coluna.
     const { error: uErr } = await supabase.from('providers').update({
-      cnpj,
       company_name: company_data.razao_social,
       company_fantasy_name: company_data.nome_fantasia,
       address: addressLine || null,
       neighborhood: company_data.bairro || null,
       city: company_data.cidade || null,
       state: company_data.uf || null,
-      zip_code: company_data.cep || null,
-      cnpj_url: documents.cnpj_file || null,
       address_proof_url: documents.address_proof || null,
       legal_rep_id_url: documents.legal_rep_id || null,
-      cnpj_status: 'enviado',
       fiscal_data_verified: true,
       fiscal_data_verified_at: new Date().toISOString(),
     }).eq('id', provider.id);

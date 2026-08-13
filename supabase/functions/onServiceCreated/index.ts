@@ -1,5 +1,6 @@
 import { handleOptions, jsonResponse } from '../_shared/cors.ts';
 import { getServiceClient } from '../_shared/supabase.ts';
+import { isServiceRoleRequest } from '../_shared/internalInvoke.ts';
 
 function generatePassword() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -16,6 +17,13 @@ async function generateServiceNumber(supabase: ReturnType<typeof getServiceClien
 Deno.serve(async (req) => {
   const options = handleOptions(req);
   if (options) return options;
+
+  // Só chamada internamente (processRecurringServices) via
+  // invokeInternalFunction com a service role key — nenhum app cliente
+  // chama isso direto.
+  if (!isServiceRoleRequest(req)) {
+    return jsonResponse({ error: 'Unauthorized' }, 401);
+  }
 
   try {
     const body = await req.json();

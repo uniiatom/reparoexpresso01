@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const supabase = getServiceClient();
     const { data: serviceRequest, error: sErr } = await supabase
       .from('service_requests')
-      .select('*')
+      .select('*, professions(name), sub_services(name)')
       .eq('id', serviceRequestId)
       .maybeSingle();
 
@@ -29,10 +29,16 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'No provider assigned to this service' }, 400);
     }
 
+    // `service_pricing.service_type` ainda usa o vocabulário antigo (texto
+    // livre definido pelo admin) — tenta casar pelo nome do sub-serviço ou
+    // da profissão. Sem garantia de bater 1:1 (ver MIGRATION.md, decisão de
+    // produto pendente sobre o vocabulário novo x antigo); cai no split
+    // padrão 70/30 se não achar.
+    const serviceLabel = serviceRequest.sub_services?.name ?? serviceRequest.professions?.name ?? '';
     const { data: pricingRows } = await supabase
       .from('service_pricing')
       .select('*')
-      .eq('service_type', serviceRequest.service_type)
+      .ilike('service_type', serviceLabel)
       .limit(1);
 
     const priceConfig = pricingRows?.[0];
@@ -51,12 +57,11 @@ Deno.serve(async (req) => {
       platformFee = finalPrice * 0.3;
     }
 
-    await supabase.from('service_requests').update({
-      payment_status: 'processed',
-      provider_payout_amount: providerAmount,
-      platform_fee: platformFee,
-      payout_processed_at: new Date().toISOString(),
-    }).eq('id', serviceRequestId);
+    // Não há coluna em `service_requests` para persistir o repasse calculado
+    // aqui (payout_processed_at/provider_payout_amount/platform_fee nunca
+    // existiram no schema real — ver MIGRATION.md seção 0.1). O repasse de
+    // prestador de verdade é rastreado via `biweekly_closings`, não por OS
+    // individual; esta function só calcula e retorna o split pro caller.
 
     return jsonResponse({
       success: true,

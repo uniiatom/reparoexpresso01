@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
 
     const { data: serviceRequest, error: serviceError } = await supabase
       .from('service_requests')
-      .select('*')
+      .select('*, professions(name, slug), sub_services(name, slug)')
       .eq('id', service_request_id)
       .maybeSingle();
 
@@ -76,8 +76,10 @@ Deno.serve(async (req) => {
       })
       .eq('id', service_request_id);
 
+    const serviceLabel = serviceRequest.sub_services?.name ?? serviceRequest.professions?.name ?? 'Serviço';
+
     if (newStatus === 'concluido') {
-      const warrantyDays = serviceRequest.service_type === 'desentupimento' ? 15 : 90;
+      const warrantyDays = serviceRequest.sub_services?.slug === 'desentupimento' ? 15 : 90;
       const warrantyEndDate = new Date();
       warrantyEndDate.setDate(warrantyEndDate.getDate() + warrantyDays);
 
@@ -91,14 +93,26 @@ Deno.serve(async (req) => {
     }
 
     if (serviceRequest.client_id) {
-      await supabase.from('client_notifications').insert({
-        client_id: serviceRequest.client_id,
-        client_email: serviceRequest.created_by,
-        type: notificationType,
-        title: completion_type === 'success' ? 'Serviço Concluído' : 'Atualização no Serviço',
-        message: notificationMessage,
-        action_url: `/acompanhar/${service_request_id}`,
-      });
+      // `client_notifications.client_id` ainda espera o `auth.uid()` do
+      // cliente (tabela não faz parte da reestruturação do catálogo/schema
+      // novo) — mas `service_requests.client_id` agora é `clients.id`.
+      // Resolve o `user_id` antes de gravar a notificação.
+      const { data: clientRow } = await supabase
+        .from('clients')
+        .select('user_id')
+        .eq('id', serviceRequest.client_id)
+        .maybeSingle();
+
+      if (clientRow?.user_id) {
+        await supabase.from('client_notifications').insert({
+          client_id: clientRow.user_id,
+          client_email: serviceRequest.created_by,
+          type: notificationType,
+          title: completion_type === 'success' ? 'Serviço Concluído' : 'Atualização no Serviço',
+          message: notificationMessage,
+          action_url: `/acompanhar/${service_request_id}`,
+        });
+      }
     }
 
     await supabase.from('admin_activity_logs').insert({
@@ -107,7 +121,7 @@ Deno.serve(async (req) => {
       actor_email: user.email,
       entity_type: 'ServiceRequest',
       entity_id: service_request_id,
-      entity_label: `${serviceRequest.service_type} - ${serviceRequest.client_name}`,
+      entity_label: `${serviceLabel} - ${serviceRequest.client_name}`,
       old_value: serviceRequest.status,
       new_value: newStatus,
       details: `Conclusão: ${completion_type}${reason ? ` - Motivo: ${reason}` : ''}`,
@@ -118,6 +132,7 @@ Deno.serve(async (req) => {
         data: { ...serviceRequest, status: newStatus, provider_id: provider.id },
         old_status: serviceRequest.status,
       });
+      await invokeInternalFunction('awardLoyaltyPoints', { request_id: service_request_id });
     }
 
     return jsonResponse({      success: true,

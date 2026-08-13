@@ -1,11 +1,17 @@
 import { handleOptions, jsonResponse } from '../_shared/cors.ts';
-import { getServiceClient } from '../_shared/supabase.ts';
+import { requireAdminOrService } from '../_shared/supabase.ts';
 
 Deno.serve(async (req) => {
   const options = handleOptions(req);
   if (options) return options;
 
   try {
+    // Só admin (`ClosingAlertModal.jsx`) ou chamada interna com a service
+    // role key — ver /MIGRATION.md, Fase 6.
+    const auth = await requireAdminOrService(req);
+    if ('error' in auth) return auth.error;
+    const { supabase } = auth;
+
     const { provider_id, provider_name, net_amount, period_label, total_services, closing_id } =
       await req.json();
 
@@ -13,7 +19,6 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'Dados obrigatórios ausentes' }, 400);
     }
 
-    const supabase = getServiceClient();
     const formattedAmount = Number(net_amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 
     await supabase.from('provider_notifications').insert({

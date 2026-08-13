@@ -1,5 +1,5 @@
 import { handleOptions, jsonResponse } from '../_shared/cors.ts';
-import { getServiceClient } from '../_shared/internalInvoke.ts';
+import { getServiceClient, isServiceRoleRequest } from '../_shared/internalInvoke.ts';
 
 const VISIBILITY_BONUS: Record<number, number> = { 1: 0, 2: 5, 3: 10, 4: 15, 5: 25 };
 const LEVEL_NAMES: Record<number, string> = {
@@ -18,6 +18,13 @@ Deno.serve(async (req) => {
   const options = handleOptions(req);
   if (options) return options;
 
+  // Só chamada internamente (recalcAllProviderLevels, updateProviderJobCount)
+  // via invokeInternalFunction com a service role key — nenhum app cliente
+  // chama isso direto.
+  if (!isServiceRoleRequest(req)) {
+    return jsonResponse({ error: 'Unauthorized' }, 401);
+  }
+
   try {
     const body = await req.json();
     const providerId = body.provider_id ?? body.event?.data?.provider_id ?? body.data?.provider_id;
@@ -26,7 +33,7 @@ Deno.serve(async (req) => {
     const supabase = getServiceClient();
     const { data: provider } = await supabase
       .from('providers')
-      .select('id, name, total_jobs, rating')
+      .select('id, name, rating')
       .eq('id', providerId)
       .maybeSingle();
 
@@ -43,7 +50,9 @@ Deno.serve(async (req) => {
       ? withRatings.reduce((sum, s) => sum + Number(s.rating_client), 0) / withRatings.length
       : Number(provider.rating || 5);
 
-    const totalJobs = completedServices?.length ?? provider.total_jobs ?? 0;
+    // `providers.total_jobs` não existe no schema real (ver /MIGRATION.md,
+    // seção 0.1) — sempre recalculado a partir de `service_requests`.
+    const totalJobs = completedServices?.length ?? 0;
     const level = resolveLevel(totalJobs, averageRating);
 
     const { data: existing } = await supabase

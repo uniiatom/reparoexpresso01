@@ -34,7 +34,6 @@ Deno.serve(async (req) => {
         type: 'extra_charges_rejected',
         service_id,
         service_number: service?.service_number,
-        client_name: service?.client_name,
         title: 'Orçamento Extra Rejeitado',
         message: `${service?.client_name} rejeitou o orçamento extra solicitado`,
         is_read: false,

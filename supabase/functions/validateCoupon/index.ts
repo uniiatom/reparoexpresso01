@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders });
     }
 
-    const { couponCode, amount, service_type, provider_id } = await req.json();
+    const { couponCode, amount, profession_id, provider_id } = await req.json();
     if (!couponCode) {
       return Response.json({ error: 'Código do cupom é obrigatório' }, { status: 400, headers: corsHeaders });
     }
@@ -87,9 +87,9 @@ Deno.serve(async (req) => {
     }
 
     if (
-      coupon.service_types?.length &&
-      service_type &&
-      !coupon.service_types.includes(service_type)
+      coupon.profession_ids?.length &&
+      profession_id &&
+      !coupon.profession_ids.includes(profession_id)
     ) {
       return Response.json({ valid: false, message: 'Cupom não é válido para este serviço' }, { status: 400, headers: corsHeaders });
     }

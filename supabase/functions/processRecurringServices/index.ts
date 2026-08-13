@@ -35,13 +35,23 @@ Deno.serve(async (req) => {
       const nextServiceDate = new Date(`${schedule.next_service_date}T00:00:00`);
       if (today < nextServiceDate) continue;
 
+      // `service_requests.profession_id` é obrigatório (ver MIGRATION.md
+      // seção 0.1) — agendas antigas criadas antes da coluna existir não têm
+      // como ser processadas automaticamente; pula sem derrubar o cron
+      // inteiro pros demais agendamentos.
+      if (!schedule.profession_id) {
+        results.push({ schedule_id: schedule.id, skipped: true, reason: 'profession_id ausente' });
+        continue;
+      }
+
       const { data: serviceRequest, error: createErr } = await supabase
         .from('service_requests')
         .insert({
           client_id: schedule.client_id,
           client_name: schedule.client_name,
           client_phone: schedule.client_phone,
-          service_type: schedule.service_type,
+          profession_id: schedule.profession_id,
+          sub_service_id: schedule.sub_service_id,
           description: `[MANUTENÇÃO RECORRENTE] ${schedule.description || ''}`,
           address: schedule.address,
           city: schedule.city,

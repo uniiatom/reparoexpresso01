@@ -29,14 +29,21 @@ Deno.serve(async (req) => {
 
     const { data: provider, error } = await supabase
       .from('providers')
-      .select('id, name, total_jobs, rating')
+      .select('id, name, rating')
       .eq('id', providerId)
       .maybeSingle();
 
     if (error) throw error;
     if (!provider) return jsonResponse({ error: 'Provider not found' }, 404);
 
-    const totalJobs = provider.total_jobs || 0;
+    // `providers.total_jobs` não existe no schema real (ver /MIGRATION.md,
+    // seção 0.1) — recalculado a partir de `service_requests`.
+    const { count } = await supabase
+      .from('service_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('provider_id', providerId)
+      .eq('status', 'concluido');
+    const totalJobs = count ?? 0;
     const rating = Number(provider.rating || 0);
     const nextLevel = getNextLevel(totalJobs, rating);
 

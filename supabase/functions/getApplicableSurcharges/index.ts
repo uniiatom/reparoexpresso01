@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const now = body.datetime ? new Date(body.datetime) : new Date();
-    const serviceType = body.service_type || null;
+    const professionId = body.profession_id || null;
 
     const brOffset = -3 * 60;
     const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes() + brOffset;
@@ -35,8 +35,8 @@ Deno.serve(async (req) => {
     const applicable = [];
 
     for (const rule of allRules ?? []) {
-      if (!rule.applies_to_all_services && serviceType) {
-        if (!rule.service_types?.includes(serviceType)) continue;
+      if (!rule.applies_to_all_services && professionId) {
+        if (!rule.profession_ids?.includes(professionId)) continue;
       }
 
       let matches = false;

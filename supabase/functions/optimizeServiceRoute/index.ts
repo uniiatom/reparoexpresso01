@@ -38,6 +38,19 @@ Deno.serve(async (req) => {
       .eq('is_approved', true)
       .eq('is_online', true);
 
+    // `providers.specialties` não existe — habilidades do prestador vivem em
+    // `provider_professions` (ver MIGRATION.md seção 0.1).
+    const providerIds = (allProviders ?? []).map((p) => p.id);
+    const { data: providerProfessionRows } = providerIds.length
+      ? await supabase.from('provider_professions').select('provider_id, profession_id').in('provider_id', providerIds)
+      : { data: [] as Array<{ provider_id: string; profession_id: string }> };
+    const professionsByProvider = new Map<string, Set<string>>();
+    for (const row of providerProfessionRows ?? []) {
+      const set = professionsByProvider.get(row.provider_id) ?? new Set<string>();
+      set.add(row.profession_id);
+      professionsByProvider.set(row.provider_id, set);
+    }
+
     const groupedByDateCity: Record<string, Array<Record<string, unknown>>> = {};
     for (const r of allRequests ?? []) {
       const key = `${r.scheduled_date}_${r.city}`;
@@ -59,7 +72,7 @@ Deno.serve(async (req) => {
       for (let i = 0; i < sortedRequests.length - 1; i++) {
         const current = sortedRequests[i];
         const candidates = sortedRequests.slice(i + 1).filter((r) => {
-          if (r.service_type !== current.service_type) return false;
+          if (r.profession_id !== current.profession_id) return false;
           const dist = calculateDistance(
             Number(current.latitude || 0),
             Number(current.longitude || 0),
@@ -73,10 +86,7 @@ Deno.serve(async (req) => {
 
         const cluster = [current, ...candidates];
         const bestProvider = (allProviders ?? []).find((p) =>
-          Array.isArray(p.specialties) &&
-          p.specialties.some((s: string) =>
-            s.toLowerCase().includes(String(current.service_type).toLowerCase())
-          )
+          professionsByProvider.get(p.id)?.has(current.profession_id)
         );
 
         if (!bestProvider) continue;

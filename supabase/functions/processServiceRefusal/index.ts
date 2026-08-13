@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     const supabase = getServiceClient();
     const { data: serviceRequest, error: sErr } = await supabase
       .from('service_requests')
-      .select('*')
+      .select('*, professions(name), sub_services(name)')
       .eq('id', service_request_id)
       .maybeSingle();
 
@@ -56,22 +56,19 @@ Deno.serve(async (req) => {
       actor_email: user.email,
       entity_type: 'ServiceRequest',
       entity_id: service_request_id,
-      entity_label: `${serviceRequest.service_type} - ${serviceRequest.client_name}`,
+      entity_label: `${serviceRequest.sub_services?.name ?? serviceRequest.professions?.name ?? 'Serviço'} - ${serviceRequest.client_name}`,
       old_value: serviceRequest.status,
       new_value: 'aguardando',
       details: `Recusa técnica justificada. Motivos: ${reasons.join(', ')}. Descrição: ${description}.`,
     });
 
     if (clientId) {
-      const { data: client } = await supabase
-        .from('clients')
-        .select('email')
-        .eq('id', clientId)
-        .maybeSingle();
-
+      // `clients` não tem coluna `email` (fica em auth.users/profiles, ver
+      // MIGRATION.md seção 0.1) — `created_by` já guarda o e-mail do cliente
+      // que abriu a OS (mesmo padrão usado em sendExtraChargesRequest).
       await supabase.from('client_notifications').insert({
         client_id: clientId,
-        client_email: client?.email || serviceRequest.client_email || '',
+        client_email: serviceRequest.created_by || '',
         type: 'warning',
         title: 'Buscando novo prestador',
         message: `O prestador não pôde executar o serviço no local (${reasons.join(', ')}). Estamos buscando outro profissional para você automaticamente.`,

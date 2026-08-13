@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
 
     const { data: services, error } = await supabase
       .from('service_requests')
-      .select('*')
+      .select('*, professions(name), sub_services(name)')
       .gte('scheduled_date', todayStr)
       .lte('scheduled_date', tomorrowStr)
       .in('status', ['agendado', 'aceito']);
@@ -31,12 +31,12 @@ Deno.serve(async (req) => {
     let notified = 0;
     for (const service of services) {
       const serviceTime = service.scheduled_time || '(horário a definir)';
-      const serviceName = String(service.service_type || 'Serviço').replace(/_/g, ' ');
+      const serviceName = service.sub_services?.name ?? service.professions?.name ?? 'Serviço';
 
       if (service.client_id) {
         await supabase.from('client_notifications').insert({
           client_id: service.client_id,
-          client_email: service.client_email || service.created_by || '',
+          client_email: service.created_by || '',
           type: 'reminder',
           title: `Lembrete: serviço amanhã`,
           message: `Seu serviço de ${serviceName} está agendado para ${service.scheduled_date} às ${serviceTime}.`,

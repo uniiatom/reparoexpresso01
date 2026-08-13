@@ -61,10 +61,9 @@ Deno.serve(async (req) => {
       },
     });
 
-    await supabase
-      .from('service_requests')
-      .update({ checkout_url: session.url })
-      .eq('id', service_id);
+    // Não existe coluna checkout_url em service_requests (ver MIGRATION.md
+    // seção 0.1) — o link é devolvido direto pro caller abaixo, ninguém lê
+    // de volta do banco hoje.
 
     return jsonResponse({
       success: true,

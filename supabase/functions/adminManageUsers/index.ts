@@ -29,6 +29,8 @@ Deno.serve(async (req) => {
       const password  = String(body.password   ?? '');
       const fullName  = String(body.full_name  ?? '').trim();
       const role      = String(body.role       ?? 'user');
+      // `profiles`/`clients` não têm coluna `phone` (fica só em `clients`,
+      // preenchida abaixo) — ver MIGRATION.md seção 0.1.
       const phone     = body.phone ? String(body.phone).trim() : null;
 
       if (!email)                        return jsonResponse({ error: 'Informe o e-mail.' }, 400);
@@ -52,7 +54,6 @@ Deno.serve(async (req) => {
         email,
         full_name: fullName,
         role,
-        ...(phone ? { phone } : {}),
       };
       await supabase.from('profiles').upsert(profilePayload);
 
@@ -60,7 +61,6 @@ Deno.serve(async (req) => {
       if (role === 'user') {
         await supabase.from('clients').upsert({
           user_id: newUserId,
-          email,
           name: fullName,
           phone: phone ?? '',
         });
@@ -85,12 +85,11 @@ Deno.serve(async (req) => {
         if (error) return jsonResponse({ error: error.message }, 400);
       }
 
-      // Update profile
+      // Update profile (não tem coluna phone — ver MIGRATION.md seção 0.1)
       const profileUpdate: Record<string, unknown> = {};
       if (body.full_name !== undefined) profileUpdate.full_name = String(body.full_name).trim();
       if (body.email     !== undefined) profileUpdate.email     = String(body.email).trim().toLowerCase();
       if (body.role      !== undefined) profileUpdate.role      = String(body.role);
-      if (body.phone     !== undefined) profileUpdate.phone     = body.phone;
 
       if (Object.keys(profileUpdate).length > 0) {
         await supabase.from('profiles').update(profileUpdate).eq('id', userId);

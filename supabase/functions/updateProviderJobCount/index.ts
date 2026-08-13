@@ -1,10 +1,16 @@
 import { handleOptions, jsonResponse } from '../_shared/cors.ts';
-import { getServiceClient } from '../_shared/internalInvoke.ts';
-import { invokeInternalFunction } from '../_shared/internalInvoke.ts';
+import { getServiceClient, isServiceRoleRequest, invokeInternalFunction } from '../_shared/internalInvoke.ts';
 
 Deno.serve(async (req) => {
   const options = handleOptions(req);
   if (options) return options;
+
+  // Só chamada internamente (completeServiceRequest) via
+  // invokeInternalFunction com a service role key — nenhum app cliente
+  // chama isso direto.
+  if (!isServiceRoleRequest(req)) {
+    return jsonResponse({ error: 'Unauthorized' }, 401);
+  }
 
   try {
     const body = await req.json();
@@ -38,8 +44,10 @@ Deno.serve(async (req) => {
 
     const averageRating = ratedCount > 0 ? totalRating / ratedCount : 5;
 
+    // `providers.total_jobs` não existe no schema real (ver /MIGRATION.md,
+    // seção 0.1) — o total é sempre recalculado a partir de
+    // `service_requests` (como aqui), não fica guardado em cache na linha.
     await supabase.from('providers').update({
-      total_jobs: jobCount,
       rating: parseFloat(averageRating.toFixed(1)),
       total_reviews: ratedCount,
     }).eq('id', serviceRequest.provider_id);

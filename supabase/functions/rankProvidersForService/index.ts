@@ -21,8 +21,8 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'Forbidden: Admin access required' }, 403);
     }
 
-    const { service_type, latitude, longitude, max_distance = 20 } = await req.json();
-    if (!service_type || latitude === undefined || longitude === undefined) {
+    const { profession_id, latitude, longitude, max_distance = 20 } = await req.json();
+    if (!profession_id || latitude === undefined || longitude === undefined) {
       return jsonResponse({ error: 'Missing required parameters' }, 400);
     }
 
@@ -33,9 +33,18 @@ Deno.serve(async (req) => {
       .eq('is_approved', true)
       .eq('is_online', true);
 
-    const relevant = (providers ?? []).filter((p) =>
-      Array.isArray(p.specialties) && p.specialties.includes(service_type)
-    );
+    // `providers.specialties` não existe — habilidades reais vivem em
+    // `provider_professions` (ver MIGRATION.md seção 0.1).
+    const providerIds = (providers ?? []).map((p) => p.id);
+    const { data: matchingRows } = providerIds.length
+      ? await supabase
+          .from('provider_professions')
+          .select('provider_id')
+          .eq('profession_id', profession_id)
+          .in('provider_id', providerIds)
+      : { data: [] as Array<{ provider_id: string }> };
+    const matchingIds = new Set((matchingRows ?? []).map((r) => r.provider_id));
+    const relevant = (providers ?? []).filter((p) => matchingIds.has(p.id));
 
     const { data: allRequests } = await supabase
       .from('service_requests')
@@ -46,6 +55,7 @@ Deno.serve(async (req) => {
     const ranked = relevant.map((provider) => {
       const providerRequests = (allRequests ?? []).filter((r) => r.provider_id === provider.id);
       const totalAssigned = providerRequests.length;
+      const totalCompleted = providerRequests.filter((r) => r.status === 'concluido').length;
       const rejected = providerRequests.filter((r) => r.status === 'cancelado').length;
       const rejectionRate = totalAssigned > 0 ? rejected / totalAssigned : 0;
       const acceptanceRate = 1 - rejectionRate;
@@ -64,7 +74,7 @@ Deno.serve(async (req) => {
         provider_id: provider.id,
         name: provider.name,
         rating,
-        total_jobs: provider.total_jobs || 0,
+        total_jobs: totalCompleted,
         totalAssigned,
         rejectionRate: Math.round(rejectionRate * 100),
         acceptanceRate: Math.round(acceptanceRate * 100),
@@ -76,7 +86,7 @@ Deno.serve(async (req) => {
 
     return jsonResponse({
       success: true,
-      service_type,
+      profession_id,
       ranked_providers: ranked,
       total_providers: ranked.length,
     });

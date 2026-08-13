@@ -21,7 +21,10 @@ Deno.serve(async (req) => {
     const period = resolveClosingPeriod(body);
     const supabase = getServiceClient();
 
-    let query = supabase.from('service_requests').select('*').eq('status', 'concluido');
+    let query = supabase
+      .from('service_requests')
+      .select('*, professions(name), sub_services(name)')
+      .eq('status', 'concluido');
     if (body.provider_id) query = query.eq('provider_id', body.provider_id);
 
     const { data: allServices, error } = await query;
@@ -40,7 +43,7 @@ Deno.serve(async (req) => {
       if (!s.provider_id) errs.push('Sem prestador vinculado');
       if (!s.provider_name) errs.push('Nome do prestador ausente');
       if (!s.final_price || Number(s.final_price) <= 0) errs.push('Valor final não informado ou zerado');
-      if (!s.service_type) errs.push('Tipo de serviço não informado');
+      if (!s.professions?.name && !s.sub_services?.name) errs.push('Tipo de serviço não informado');
 
       if (errs.length) {
         issues.push({
@@ -76,7 +79,7 @@ Deno.serve(async (req) => {
       const serviceDetails = data.services.map((s) => ({
         id: s.id,
         service_number: s.service_number,
-        service_type: s.service_type,
+        service_type: s.sub_services?.name ?? s.professions?.name ?? null,
         client_name: s.client_name,
         final_price: s.final_price,
         completed_at: s.updated_at,
